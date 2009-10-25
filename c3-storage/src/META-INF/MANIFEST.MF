@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-Version: 1.0.0
+Bundle-Name: C3 Storage
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.aphreet.c3.platform.storage
+Spring-Context: *
+Import-Library: org.springframework.spring;version="[2.5.6.A,2.5.6.A]"
+Import-Bundle: com.springsource.com.sleepcat.je;version="[3.3.87,3.3.87]",
+ org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
+ org.aphreet.c3.platform;version="[1.0.0,1.0.0]"
+Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
+ org.apache.commons.logging;version="[1.1.1,1.1.1]"
+Export-Package: org.aphreet.c3.platform.storage.common
+
