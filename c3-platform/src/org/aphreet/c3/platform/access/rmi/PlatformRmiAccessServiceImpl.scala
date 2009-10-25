@@ -1,0 +1,49 @@
+package org.aphreet.c3.platform.access.rmi
+
+import java.util.HashMap
+
+import java.io.File
+
+import scala.collection.jcl.{HashMap => JMap}
+
+import org.aphreet.c3.platform.resource.{DataWrapper, Resource}
+
+import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
+
+@Component("platformRmiAccessService")
+class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
+
+  var accessEndpoint:PlatformAccessEndpoint = null
+  
+  @Autowired
+  def setAccessEndpoint(endpoint:PlatformAccessEndpoint) = {accessEndpoint= endpoint}
+ 
+  def add(metadata:HashMap[String, String], file:String):String = {
+    
+    val resource = new Resource
+    resource.metadata ++ new JMap(metadata)
+    resource.data = DataWrapper.wrap(new File(file))
+    accessEndpoint.add(resource)
+  }
+  
+  def get(ra:String):Array[Byte] = {
+    null
+  }
+  
+  def getMetadata(ra:String):HashMap[String, String] = {
+    
+    val resource = accessEndpoint get ra
+    
+    if(resource != null){
+    	val map = new JMap[String, String]
+    
+    	map ++ resource.metadata
+    
+    	map.underlying
+    }else{
+      null
+    }
+  }
+  
+}
