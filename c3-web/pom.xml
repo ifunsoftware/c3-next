@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.aphreet.c3</groupId>
+	<artifactId>c3-web</artifactId>
+	<version>1.0.0</version>
+	<packaging>war</packaging>
+	<name>C3 Web</name>
+
+	<parent>
+		<groupId>org.aphreet.c3</groupId>
+		<artifactId>main</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.aphreet.c3</groupId>
+			<artifactId>c3-platform</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.facelets</groupId>
+			<artifactId>com.springsource.com.sun.facelets</artifactId>
+			<version>1.1.14</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.myfaces</groupId>
+			<artifactId>org.apache.myfaces-library</artifactId>
+			<type>libd</type>
+			<version>1.2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.richfaces</groupId>
+			<artifactId>com.springsource.org.richfaces.impl</artifactId>
+			<version>3.2.1.GA</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.richfaces</groupId>
+			<artifactId>com.springsource.org.richfaces</artifactId>
+			<version>3.2.1.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		
+	</dependencies>
+	<!--
+		<build> <defaultGoal>package</defaultGoal>
+		<sourceDirectory>src</sourceDirectory>
+		<outputDirectory>bin</outputDirectory> <resources> <resource>
+		<directory>src/</directory> <includes>
+		<include>META-INF/spring/*.xml</include> </includes> </resource>
+		</resources> <plugins> <plugin> <groupId>org.scala-tools</groupId>
+		<artifactId>maven-scala-plugin</artifactId> <executions> <execution>
+		<goals> <goal>compile</goal> </goals> </execution> </executions>
+		<configuration> <sourceDir>src</sourceDir> <jvmArgs>
+		<jvmArg>-Xms64m</jvmArg> <jvmArg>-Xmx1024m</jvmArg> </jvmArgs>
+		</configuration> </plugin> <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-jar-plugin</artifactId> <executions> <execution>
+		</execution> </executions> <configuration>
+		<classesDirectory>${project.build.outputDirectory}</classesDirectory>
+		<manifestLocation>META-INF</manifestLocation> <archive> <manifestFile>
+		src/META-INF/MANIFEST.MF </manifestFile>
+		<addMavenDescriptor>false</addMavenDescriptor> </archive>
+		</configuration> </plugin> </plugins> </build>
+	-->
+</project>

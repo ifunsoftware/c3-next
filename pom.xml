@@ -12,6 +12,7 @@
 		<module>c3-platform</module>
 		<module>c3-storage</module>
 		<module>c3-storage-file</module>
+		<module>c3-web</module>
 	</modules>
 
 	<properties>
@@ -36,9 +37,24 @@
 	</dependencyManagement>
 
 	<dependencies>
+		
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-compiler</artifactId>
+			<version>2.7.6</version>
+			<scope>provided</scope>
+		</dependency>
+	
+		<dependency>
+			<groupId>org.scala-lang-osgi</groupId>
+			<artifactId>scala-compiler</artifactId>
+			<version>2.7.6</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.scala-lang-osgi</groupId>
+			<artifactId>scala-library</artifactId>
 			<version>2.7.6</version>
 			<scope>provided</scope>
 		</dependency>
