@@ -1,9 +1,11 @@
-package org.aphreet.c3.webbeans;
+package org.aphreet.c3.web.webbeans;
 
-import javax.annotation.PostConstruct;
-import javax.faces.context.FacesContext;
+import java.util.Date;
 
+import org.aphreet.c3.web.entity.User;
+import org.aphreet.c3.web.service.UserService;
 import org.aphreet.springframework.web.HttpParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -12,10 +14,8 @@ import org.springframework.stereotype.Component;
 @Scope("request")
 public class SimpleBean {
 
-	@PostConstruct
-	public void init(){
-		System.out.println(FacesContext.getCurrentInstance().getExternalContext().getSession(true).toString());
-	}
+	@Autowired
+	private UserService userService;
 	
 	@HttpParam("id")
 	private String id = "";
@@ -29,6 +29,12 @@ public class SimpleBean {
 	}
 	
 	public String doIt(){
+		
+		User user = new User();
+		user.setName(String.valueOf(new Date().getTime()));
+		
+		userService.addUser(user);
+		
 		id="sdasd";
 		return "success";
 	}

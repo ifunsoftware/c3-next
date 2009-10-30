@@ -47,7 +47,28 @@
 			<version>3.2.1.GA</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>org.hibernate.ejb-library</artifactId>
+			<type>libd</type>
+			<version>3.3.1.ga</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.dbcp</artifactId>
+			<version>1.2.2.osgi</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysql.jdbc</groupId>
+			<artifactId>com.springsource.com.mysql.jdbc</artifactId>
+			<version>5.1.6</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 	<!--
 		<build> <defaultGoal>package</defaultGoal>
