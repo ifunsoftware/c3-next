@@ -32,6 +32,7 @@
 			<artifactId>org.apache.myfaces-library</artifactId>
 			<type>libd</type>
 			<version>1.2.2</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -53,6 +54,7 @@
 			<artifactId>org.hibernate.ejb-library</artifactId>
 			<type>libd</type>
 			<version>3.3.1.ga</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
