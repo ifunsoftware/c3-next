@@ -13,5 +13,6 @@ Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
 Export-Package: org.aphreet.c3.platform.access,
  org.aphreet.c3.platform.management,
  org.aphreet.c3.platform.resource,
+ org.aphreet.c3.platform.search,
  org.aphreet.c3.platform.storage
 

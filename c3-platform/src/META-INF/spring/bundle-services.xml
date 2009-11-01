@@ -12,6 +12,9 @@
     <service id="storageService" ref="storageManager"                                  
        interface="org.aphreet.c3.platform.storage.StorageManager" />
        
+    <service id="searchService" ref="searchManager"
+       interface="org.aphreet.c3.platform.search.SearchManager"/>
+       
     <service id="accessService" ref="platformAccessEndpoint"
        interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
        
