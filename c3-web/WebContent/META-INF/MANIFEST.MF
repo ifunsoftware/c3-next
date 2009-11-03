@@ -4,7 +4,6 @@ Bundle-Name: C3 Web
 Bundle-Version: 1.0.0
 Bundle-SymbolicName: org.aphreet.c3.web
 Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
- org.springframework.web;version="[2.5.6.A,2.5.6.A]",
  com.springsource.org.apache.myfaces.javax.faces;version="[1.2.2,1.2.2]",
  com.springsource.org.apache.myfaces;version="[1.2.2,1.2.2]",
  com.springsource.org.apache.commons.collections;version="[3.2.0,3.2.1]",
@@ -18,8 +17,18 @@ Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  com.springsource.org.hibernate.validator;version="[3.0.0.GA,3.0.0.GA]",
  org.springframework.security.core;version="[2.0.5.RELEASE,2.0.5.RELEASE]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
- org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]"
-Import-Library: org.springframework.spring;version="[2.5.6.A,2.5.6.A]"
+ org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
+ org.springframework.aop;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.beans;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.context;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.context.support;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.core;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.jdbc;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.jms;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.orm;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.transaction;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.web;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.web.servlet;version="[2.5.6.SEC01,2.5.6.SEC01]"
 Import-Package: com.springsource.server.deployer.app.spring;version="[1.0.0,1.0.0]",
  com.springsource.server.web.dm;version="[1.0.0,1.0.0]",
  javax.annotation;version="[1.0.0,1.0.0]",
