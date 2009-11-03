@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="head_welcome">Добро пожаловать!</entry>
+	<entry key="notify_message_body">Пользователь {0} написал:
+
+{1}
+
+----
+
+Вы получили данное сообщение т.к. подписались на обновления в сервисе С3.
+Вы можете изменить это на вашей странице http://dev.aphreet.org/c3/user.xhtml</entry>
+	<entry key="sure">Вы уверены?</entry>
+	<entry key="wiki_no_page">Страницы с таким названием не существует.</entry>
+	<entry key="wiki_notification_title">Изменения вики: {0}</entry>
+	<entry key="wiki_notification_new">Пользователь {0} создал новую вики-страницу: {1}
+
+Вы можете посмотреть ее здесь: http://dev.aphreet.org/c3/group/wiki.xhtml?id={2}&amp;name={3}
+
+-------
+  
+Вы получили данное сообщение т.к. подписались на обновления в сервисе С3.
+Вы можете изменить это на вашей странице http://dev.aphreet.org/c3/user.xhtml</entry>
+	<entry key="wiki_notification_edit">Пользователь {0} отредактировал вики-страницу: {1}
+
+Вы можете посмотреть ее здесь: http://dev.aphreet.org/c3/group/wiki.xhtml?id={2}&amp;name={3}
+
+-------
+  
+Вы получили данное сообщение т.к. подписались на обновления в сервисе С3.
+Вы можете изменить это на вашей странице http://dev.aphreet.org/c3/user.xhtml</entry>
+</properties>

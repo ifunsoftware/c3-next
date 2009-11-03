@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<!-- Menu items -->
+	<entry key="Welcome">Добро пожаловать в C3!</entry>
+	<entry key="blog">Блог</entry>
+	<entry key="files">Файлы</entry>
+	<entry key="groups">Группы</entry>
+	<!-- General items -->
+	<entry key="create">Создать</entry>
+	<entry key="add">Добавить</entry>
+	<entry key="cancel">Отмена</entry>
+	<entry key="edit">Редактировать</entry>
+	<entry key="save">Сохранить</entry>
+	<entry key="delete">Удалить</entry>
+	<entry key="yes">Да</entry>
+	<!-- Sign up and register -->
+	<entry key="signin">Вход</entry>
+	<entry key="signout">Выход</entry>
+	<entry key="signin_button">Войти</entry>
+	<entry key="signin_title">Вход на сайт</entry>
+	<entry key="register">Регистрация</entry>
+	<entry key="word_or"> или </entry>
+	
+	<entry key="language">Язык</entry>
+	
+	<entry key="signup_title">Регистрация</entry>
+	<entry key="username_field">Имя пользователя</entry>
+	<entry key="password_field">Пароль</entry>
+	<entry key="email_field">E-Mail</entry>
+	<entry key="signup_button">Зарегистрироваться</entry>
+	<!-- File tree -->
+	<entry key="file_tree">Дерево каталогов</entry>
+	<entry key="upload_file">Добавить файл</entry>
+	<entry key="create_dir">Создать каталог</entry>
+	<!-- mine -->
+	<entry key="delete">Удалить</entry>
+	<entry key="yes">Да</entry>
+	<entry key="sure">Уверены, что хотите удалить</entry>
+	<!-- Groups -->
+	<entry key="work_groups">Рабочие Группы</entry>
+	<entry key="search">Поиск</entry>
+	
+	<!-- Groups -->
+	<entry key="group_name">Название группы</entry>
+	<entry key="group_descr">Описание группы</entry>
+	<entry key="create_group">Cоздание рабочей группы</entry>
+	<entry key="group_discussion">Обсуждение</entry>
+	<entry key="group_create_discussion">Создание обсуждения</entry>
+	<entry key="group_members">Участники</entry>
+	<entry key="group_tags">Облако тегов</entry>
+	
+	<entry key="group_main">Группа</entry>
+	<entry key="group_messages">Обсуждения</entry>
+	<entry key="group_documents">Документы</entry>
+	<entry key="group_wiki">Вики</entry>
+	<entry key="group_admin">Управление группой</entry>
+	<!-- User profile -->
+	
+	<entry key="profile_login">Имя пользователя</entry>
+	<entry key="profile_name">Имя</entry>
+	<entry key="profile_family">Фамилия</entry>
+	<entry key="profile_birth">Дата рождения</entry>
+	<entry key="profile_info">О себе</entry>
+	<entry key="profile_im">IM</entry>
+	<entry key="profile_set_mail">Уведомлять меня о новых сообщениях</entry>
+	<entry key="profile_profile">Профиль пользователя</entry>
+	<entry key="profile_settings">Настройки</entry>
+	
+	<entry key="resource_title">Ресурс</entry>
+	<entry key="resource_author">Автор</entry>
+	<entry key="resource_comments">Комментарии</entry>
+	<entry key="resource_tags">Теги</entry>
+	<entry key="edit_resource_title">Редактирование ресурса</entry>
+	<entry key="main_search">Поиск</entry>
+	<entry key="main_groups">Группы</entry>
+	<entry key="main_about">О нас</entry>
+	<entry key="main_home">Главная</entry>
+	
+	<entry key="wiki_editing">Редактирование</entry>
+	<entry key="wiki_history">История изменений</entry>
+	<entry key="wiki_minor_edit">Второстипенное изменение. Не отправлять уведомления.</entry>
+	
+</properties>

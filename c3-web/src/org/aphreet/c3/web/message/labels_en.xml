@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<!-- Menu items -->
+	<entry key="Welcome">Welcome to C3!</entry>
+	<entry key="blog">Blog</entry>
+	<entry key="files">Files</entry>
+	<entry key="groups">Groups</entry>
+	<!-- General items -->
+	<entry key="create">Create</entry>
+	<entry key="add">Add</entry>
+	<entry key="cancel">Cancel</entry>
+	<entry key="edit">Edit</entry>
+	<entry key="save">Save</entry>
+	<entry key="delete">Delete</entry>
+	<entry key="yes">Yes</entry>
+	<!-- Sign up and register -->
+	<entry key="signin">Sign in</entry>
+	<entry key="signout">Sign out</entry>
+	<entry key="signin_button">Sign in</entry>
+	<entry key="signin_title">Sign in to C3</entry>
+	<entry key="register">Register</entry>
+	<entry key="word_or"> or </entry>
+	
+	<entry key="language">Language</entry>
+	
+	<entry key="signup_title">Create your account</entry>
+	<entry key="username_field">User name</entry>
+	<entry key="password_field">Password</entry>
+	<entry key="email_field">E-Mail</entry>
+	<entry key="signup_button">Create account</entry>
+	<!-- File tree -->
+	<entry key="file_tree">File tree</entry>
+	<entry key="upload_file">Upload file</entry>
+	<entry key="create_dir">Create directory</entry>
+<!-- mine -->
+	<entry key="delete">delete</entry>
+	<entry key="yes">yes</entry>
+	<entry key="sure">Are you sure, wanna to delete</entry>
+	<!-- Groups -->
+	<entry key="work_groups">Work Groups</entry>
+	<entry key="search">Search</entry>
+
+
+	<!-- Groups -->
+	<entry key="group_name">Name</entry>
+	<entry key="group_descr">Description</entry>
+	<entry key="create_group">Create work group</entry>
+	<entry key="group_discussion">Discussion</entry>
+	<entry key="group_create_discussion">Create new discussion</entry>
+	<entry key="group_members">Members</entry>
+	<entry key="group_tags">Tag's Cloud</entry>
+	
+	<entry key="group_main">Group</entry>
+	<entry key="group_messages">Messaging</entry>
+	<entry key="group_documents">Documents</entry>
+	<entry key="group_wiki">Wiki</entry>
+	<entry key="group_admin">Manage group</entry>
+	
+
+
+
+	<entry key="profile_login">User name</entry>
+	<entry key="profile_name">First name</entry>
+	<entry key="profile_family">Last name</entry>
+	<entry key="profile_birth">Birth date</entry>
+	<entry key="profile_info">About</entry>
+	<entry key="profile_im">IM</entry>
+	<entry key="profile_set_mail">Notify me by e-mail about new messages</entry>
+	<entry key="profile_profile">User Profile</entry>
+	<entry key="profile_settings">Settings</entry>
+
+	<entry key="resource_comments">Comments</entry>
+	<entry key="resource_author">Author</entry>
+	<entry key="resource_title">Resource</entry>
+	<entry key="resource_tags">Tags</entry>
+	<entry key="edit_resource_title">Edit Resource</entry>
+	<entry key="main_search">Search</entry>
+	<entry key="main_groups">Groups</entry>
+	<entry key="main_about">About us</entry>
+	<entry key="main_home">Home</entry>
+	
+	<entry key="wiki_editing">Editing</entry>
+	<entry key="wiki_history">History</entry>
+	<entry key="wiki_minor_edit">Minor edit. Don't send change notifications</entry>
+	
+</properties>
