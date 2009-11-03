@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/template.jspx">
+		<ui:define name="htitle">Internal Server Error</ui:define>
+	
+		<ui:define name="title">Error</ui:define>
+	
+		<ui:define name="sub_title">500 |</ui:define>
+	
+		<ui:define name="body">
+			<h3>Internal Server Error</h3>
+			<h:outputText value="See log for details"/>
+		</ui:define>
+	</ui:composition>
+	
+</jsp:root>

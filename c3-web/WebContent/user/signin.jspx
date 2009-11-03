@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+
+	<ui:composition template="/template.jspx">
+		<ui:define name="htitle"><h:outputText value="#{msgs.signin_title}"/></ui:define>
+		
+		<ui:define name="title"><h:outputText value="#{msgs.signin_title}"/></ui:define>
+		
+		<ui:define name="body">
+			<form method="post" action="j_spring_security_check">
+			<table>
+				<tbody>
+					<tr>
+						<td><label for="j_username"><h:outputText value="#{msgs.username_field}"/></label></td>
+						<td><input id="j_username" type="text" name="j_username" /></td>
+					</tr>
+					<tr>
+						<td><label for="j_password"><h:outputText value="#{msgs.password_field}"/></label></td>
+						<td><input id="j_password" type="password" name="j_password"
+							value="" /></td>
+					</tr>
+					<tr>
+						<td><input type="submit" value="#{msgs.signin_button}" /></td>
+					</tr>
+				</tbody>
+			</table>
+			</form>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

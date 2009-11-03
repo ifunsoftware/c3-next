@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/group/tpl.jspx">
+	
+		<ui:define name="sub_title">#{msgs.group_messages}</ui:define>
+		
+		<ui:define name="group_body">
+			<div class="center_page">
+			<rich:dataTable styleClass="table_1"  value="#{groupBean.messages}" var="message" >
+			<f:facet name="header"><h:outputText value="#{msgs.group_messages}" /></f:facet>
+				<rich:column styleClass="name_disc" >
+					<h:outputLink value="message.xhtml">
+						<h:outputText value="#{message.title}"/>
+						<f:param name="id" value="#{message.id}"/>	
+					</h:outputLink>
+				</rich:column >
+				<rich:column styleClass="author_disc">
+					<h:outputLink value="user.xhtml">
+						<h:outputText value="#{message.owner.name}" />
+						<f:param name="id" value="#{message.owner.id}"/>
+					</h:outputLink>
+				</rich:column>
+				<rich:column styleClass="data_disc">
+					<h:outputText value="#{message.createDate}">
+						<f:convertDateTime pattern="M/d/yy hh:mm"/>
+					</h:outputText>
+				</rich:column>
+			</rich:dataTable>
+			
+			<br/>
+			<h:outputLink value="group/addmsg.xhtml">
+				Create discussion
+				<f:param name="id" value="#{groupBean.groupId}"/>
+			</h:outputLink>
+			</div>
+		</ui:define>
+	</ui:composition>
+	
+</jsp:root>

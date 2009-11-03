@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/group/tpl.jspx">
+		
+		<ui:define name="htitle">
+			<h:outputText value="#{msgs.group_create_discussion}"/>
+		</ui:define>
+		
+		<ui:define name="sub_title">#{msgs.group_create_discussion}</ui:define>
+		
+		<ui:define name="group_body">
+			<div class="center_page">
+			<h:form>
+				<h:panelGrid columns="3">
+
+					<h:outputLabel value="Title" for="msg_title" />
+					<h:inputText id="msg_title" value="#{groupBean.title}">
+						<rich:beanValidator/>
+					</h:inputText>
+					<rich:message for="msg_title" />
+
+					<h:outputLabel value="Text" for="msg_text" />
+					<h:inputTextarea id="msg_text" value="#{groupBean.text}">
+						<rich:beanValidator/>
+					</h:inputTextarea>
+					<rich:message for="msg_text" />
+
+					
+					<h:commandButton action="#{groupBean.addMessage}" value="#{msgs.add}"/>
+					
+				</h:panelGrid>
+				<input type="hidden" value="#{groupBean.groupId}" name="id"/>
+			</h:form>
+			</div>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

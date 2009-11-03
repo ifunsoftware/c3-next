@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/group/resource-tpl.jspx">
+		
+		<ui:define name="htitle">
+			<h:outputText value="#{groupBean.pageName} page"/>
+		</ui:define>
+		
+		<ui:define name="sub_title">#{msgs.group_wiki}</ui:define>
+	
+		<ui:define name="resource_name">#{groupBean.pageName}</ui:define>
+		
+		<ui:define name="resource_controls">
+			<h:outputLink value="group/wiki/edit.xhtml">
+				<img src="images/icons/draw-freehand.png" title="#{msgs.edit}"/>
+				<f:param name="id" value="#{requestBean.id}"/>
+				<f:param name="name" value="#{groupBean.pageName}"/>
+			</h:outputLink>
+			<h:outputLink value="group/wiki/history.xhtml">
+				<img src="images/icons/mail-mark-task.png" title="#{msgs.wiki_history}"/>
+				<f:param name="id" value="#{groupBean.groupId}"/>
+				<f:param name="name" value="#{groupBean.pageName}"/>
+			</h:outputLink>
+		</ui:define>
+		
+		<ui:define name="resource_content">
+			<h:panelGroup rendered="#{groupBean.showRevision}">
+				<p>Revision: #{groupBean.revision}</p>
+			</h:panelGroup>
+					
+			<h:panelGroup rendered="#{!groupBean.newPage}">
+				<div class="wiki_content">
+					<h:outputText value="#{groupBean.text}" escape="false"/>
+				</div>
+			</h:panelGroup>
+					
+			<h:panelGroup rendered="#{groupBean.newPage}">
+				<div class="wiki_content">
+					<p>#{msgs.wiki_no_page}</p>
+					<h:outputLink value="group/wiki/edit.xhtml">
+						<h:outputText value="#{msgs.create}"/>
+						<f:param name="id" value="#{groupBean.groupId}"/>
+						<f:param name="name" value="#{groupBean.pageName}"/>
+					</h:outputLink>
+				</div>
+			</h:panelGroup>
+		
+		</ui:define>
+	
+	
+	</ui:composition>
+</jsp:root>

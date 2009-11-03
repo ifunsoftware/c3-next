@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/template.jspx">
+		
+		<ui:define name="title">#{groupBean.group.name} |</ui:define>
+		
+		<ui:define name="body_menu">
+			<div class="wrap_head_menu">
+				<ul>
+					<li class="list_menu #{groupBean.mainStyle}">
+						<h:outputLink value="group/main.xhtml">
+							<h:outputText value="#{msgs.group_main}" escape="false"/>		
+							<f:param name="id" value="#{groupBean.groupId}"/>
+						</h:outputLink>
+					</li>
+					<li class="list_menu #{groupBean.msgStyle}">
+						<h:outputLink value="group/messages.xhtml">
+							<h:outputText value="#{msgs.group_messages}" escape="false"/>		
+							<f:param name="id" value="#{groupBean.groupId}"/>
+						</h:outputLink>
+					</li>
+					<li class="list_menu #{groupBean.docStyle}">
+						<h:outputLink value="group/documents.xhtml">
+							<h:outputText value="#{msgs.group_documents}" escape="false"/>		
+							<f:param name="id" value="#{groupBean.groupId}"/>
+						</h:outputLink>
+					</li>
+					<li class="list_menu #{groupBean.wikiStyle}">
+						<h:outputLink value="group/wiki.xhtml">
+							<h:outputText value="#{msgs.group_wiki}" escape="false"/>		
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="Main"/>
+						</h:outputLink>
+					</li>
+					<li class="list_menu #{groupBean.mngStyle}">
+						<h:outputLink value="group/manage.xhtml">
+							<h:outputText value="#{msgs.group_admin}" escape="false"/>		
+							<f:param name="id" value="#{groupBean.groupId}"/>
+						</h:outputLink>
+					</li>
+				</ul>
+			</div>
+		</ui:define>
+		<ui:define name="body">
+			<ui:insert name="group_body"/>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

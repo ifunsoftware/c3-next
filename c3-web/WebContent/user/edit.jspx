@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/template.jspx">
+		<ui:define name="htitle">
+			<h:outputText value="#{editUserBean.user.name}'s profile"/>
+		</ui:define>
+		
+		<ui:define name="title">#{viewUserBean.userName} |</ui:define>
+		
+		<ui:define name="sub_title">#{msgs.profile_profile}</ui:define>
+	
+		<ui:define name="body">
+		<div class="center_page">
+			<a4j:form>
+				<h:panelGrid columns="2">
+						<h:outputText value="#{msgs.profile_name}"/>
+						<h:inputText value="#{editUserBean.name}"/>
+						
+						<h:outputText value="#{msgs.profile_family}"/>
+						<h:inputText value="#{editUserBean.family}"/>
+						
+						<h:outputText value="#{msgs.profile_birth}"/>
+						<h:panelGroup>
+							<rich:calendar id="birth_date" value="#{editUserBean.birthDate}">
+								<rich:beanValidator/>
+							</rich:calendar>
+							<rich:message for="birth_date" />
+						</h:panelGroup>
+						
+						<h:outputText value="#{msgs.profile_im}"/>
+						<h:inputText value="#{editUserBean.im}"/>
+						
+						<h:outputText value="#{msgs.profile_info}"/>
+						<h:inputTextarea value="#{editUserBean.info}"/>
+				</h:panelGrid>
+				<br/>
+				<h4><h:outputText value="#{msgs.profile_settings}"/></h4>
+				<hr/>
+				<h:selectBooleanCheckbox value="#{editUserBean.notifyMe}"/>
+				<h:outputText value="#{msgs.profile_set_mail}"/><br/><br/>
+				<h:commandLink value="#{msgs.save}" action="#{editUserBean.saveProfile}"/>
+			</a4j:form>
+			</div>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

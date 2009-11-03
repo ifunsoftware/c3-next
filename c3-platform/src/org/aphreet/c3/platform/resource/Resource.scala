@@ -1,6 +1,8 @@
 package org.aphreet.c3.platform.resource
 
-import scala.collection.mutable.{HashMap, Map, ArrayBuffer, Buffer}
+import scala.collection.jcl.{HashMap, Map, Buffer, ArrayList}
+
+import java.util.{Map => JMap}
 
 import java.util.Date
 
@@ -12,17 +14,26 @@ class Resource {
   
   var createDate:Date = new Date
   
-  var metadata:Map[String, String] = new HashMap
+  var metadata:HashMap[String, String] = new HashMap
  
-  var systemMetadata:Map[String, String] = new HashMap
+  var systemMetadata:HashMap[String, String] = new HashMap
   
-  var versions:Buffer[ResourceVersion] = new ArrayBuffer
+  var versions:Buffer[ResourceVersion] = new ArrayList
   
   var data:DataWrapper = null
+  
+  
+  def getMetadata:JMap[String, String] = metadata.underlying;
+  
+  def getSysMetadata:JMap[String, String] = metadata.underlying;
+  
+  
   
   override def toString:String = {
     address + " " + createDate + " " + metadata + " " + systemMetadata + " " + versions
   }
+  
+  
   
   def toByteArray:Array[Byte] = {
  
@@ -104,7 +115,7 @@ object Resource {
       new Date(dataIs.readLong)
     }
     
-    def readMap(dataIs:DataInputStream):Map[String, String] = {
+    def readMap(dataIs:DataInputStream):HashMap[String, String] = {
       val map = new HashMap[String, String]
       
       val mapSize = dataIs.readInt
@@ -119,7 +130,7 @@ object Resource {
     
     def readVersions(dataIs:DataInputStream):Buffer[ResourceVersion] = {
       
-      val result = new ArrayBuffer[ResourceVersion]
+      val result = new ArrayList[ResourceVersion]
       
       dataIs.readInt //read version
       val count = dataIs.readInt

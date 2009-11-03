@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/template.jspx">
+	
+		<ui:define name="title">#{msgs.main_search}</ui:define>
+		
+		<ui:define name="body">
+			<form id="search_page" method="get">
+				<input id="search_search" type="text" name="q" value="#{searchBean.query}"/>
+				<input type="submit" value="search"/>
+
+				<br/>
+				<rich:spacer height="20"/> 
+				<h:form rendered="#{searchBean.renderResult}">
+					<rich:dataTable id="dataTable" rows="20" value="#{searchBean.foundResources}" width="100%" var="res" >
+						<rich:column width="30%">
+							<f:facet name="header">Название документа</f:facet>
+							<h:outputLink value="resource.xhtml">
+								<h:outputText value="#{res.title}" />
+								<f:param name="id" value="#{res.id}"/>
+							</h:outputLink>
+						</rich:column>
+						<rich:column width="15%" >
+							<f:facet name="header">Автор</f:facet>
+							#{res.author}
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">Описание</f:facet>
+							<h:outputText value="#{res.description}"/>
+						</rich:column>
+					</rich:dataTable>
+					<rich:spacer height="20" /> 
+					<rich:datascroller for="dataTable" maxPages="20"/>
+				</h:form>
+			</form>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

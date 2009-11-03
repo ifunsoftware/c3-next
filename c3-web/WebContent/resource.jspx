@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/template.jspx">
+	
+		<ui:define name="htitle">
+			<h:outputText value="#{msgs.resource_title} #{viewResourceBean.resource.title}"/>
+		</ui:define>
+		
+		<ui:define name="title">#{msgs.resource_title} |</ui:define>
+		
+		<ui:define name="sub_title">#{viewResourceBean.resource.title}</ui:define>
+		
+		<ui:define name="body">
+			<p class="wiki_title">#{viewResourceBean.resource.title} <span>(
+			<h:outputLink value="resource/edit.xhtml">
+				<h:outputText value="#{msgs.edit}" />
+				<f:param name="id" value="#{viewResourceBean.resource.id}" />
+			</h:outputLink> ) </span></p>
+			<hr />
+
+			<h:panelGrid columns="2">
+				<h:outputText value="Owner:"/>
+				
+				<h:outputLink value="user.xhtml">
+					<h:outputText value="#{viewResourceBean.resource.owner.name}" />
+					<f:param name="id" value="#{viewResourceBean.resource.owner.id}"/>
+				</h:outputLink>
+				
+				<h:outputText value="Link:"/>
+				<h:outputLink value="#{viewResourceBean.link}" target="_blank">
+					<h:outputText value="#{viewResourceBean.link}"/>
+				</h:outputLink>
+			</h:panelGrid>
+			<br />
+		
+			<rich:dataTable id="res_table" columnsWidth="20%.80%" value="#{viewResourceBean.metadata}" var="md">
+				<rich:column>
+					#{md.key}
+				</rich:column>
+				<rich:column>
+					#{md.value}
+				</rich:column>
+			</rich:dataTable>
+			
+			<h:form>
+				<h:commandLink value="#{msgs.delete}" action="#{viewResourceBean.delete}">
+					<f:param name="id" value="#{viewResourceBean.resource.id}"/>
+				</h:commandLink>
+			</h:form>
+
+		</ui:define>
+	</ui:composition>
+</jsp:root>

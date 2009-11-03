@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/group/resource-tpl.jspx">
+	
+		<ui:define name="sub_title">#{msgs.group_wiki}</ui:define>
+		
+		<ui:define name="resource_name">#{msgs.wiki_editing}: #{groupBean.wikiPage.title}</ui:define>
+		
+		<ui:define name="resource_controls">
+			<h:form>
+				<h:commandLink action="#{groupBean.deletePage}">
+					<img src="images/icons/edit-delete.png" title="#{msgs.delete}"/>
+					<f:param name="id" value="#{groupBean.groupId}"/>
+					<f:param name="name" value="#{groupBean.pageName}"/>
+				</h:commandLink>
+			</h:form>
+		</ui:define>
+		
+		<ui:define name="resource_content">
+			<h:form>
+				<h:inputTextarea value="#{groupBean.text}" rows="20" style="width:100%"/><br/>
+				<h:selectBooleanCheckbox value="#{groupBean.minorEdit}"/>#{msgs.wiki_minor_edit}
+				<p>								
+					<span style="display:block; float:left;">
+						<h:commandLink action="#{groupBean.savePage}">
+							<img src="images/icons/dialog-ok.png"/>
+							<h:outputText value="#{msgs.save}"/>
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.pageName}"/>
+						</h:commandLink>
+					</span>
+			
+					<span style="display:block; float:right">
+						<h:outputLink value="group/wiki.xhtml">
+							<img src="images/icons/edit-redo.png"/>
+							<h:outputText value="#{msgs.cancel}"/>
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.pageName}"/>
+						</h:outputLink>
+					</span>
+				</p>
+			</h:form>
+		</ui:define>
+		
+	</ui:composition>
+</jsp:root>
