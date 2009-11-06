@@ -20,14 +20,14 @@ class FileStorage(override val id:String, override val path:String) extends Abst
   
   def storageType:StorageType.Value = StorageType.FIXED
   
-  override protected def storeData(ra:String, data:DataWrapper){
+  override protected def storeData(resource:Resource){
     
-    val targetFile : File = createFile(ra)  
+    val targetFile : File = createFile(resource.address)  
     val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
     
     try{
     	
-    	data writeTo channel
+    	resource.versions(0).data writeTo channel
     	
     }catch{
       case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
@@ -38,7 +38,7 @@ class FileStorage(override val id:String, override val path:String) extends Abst
   }
   
   def fillResourceWithData(resource:Resource) = {
-    resource.data = DataWrapper.wrap(getFileForRA(resource.address))
+    resource.versions(0).data = DataWrapper.wrap(getFileForRA(resource.address))
   }
   
   override protected def deleteData(ra:String){

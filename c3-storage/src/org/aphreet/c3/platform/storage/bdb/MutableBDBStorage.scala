@@ -7,12 +7,15 @@ import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 
 class MutableBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path){
 
-  override protected def prepareMetadata(resource:Resource){
+  override protected def preSave(resource:Resource){
     
-    val version = new ResourceVersion
-    version.date = new Date
-    version.systemMetadata.put(Resource.MD_EMBEDDED_CONTENT, resource.data.stringValue)
-    resource.versions + version
+    resource.isMutable = true
+    
+    for(version <- resource.versions if !version.persisted){
+      version.systemMetadata.put(
+        Resource.MD_EMBEDDED_CONTENT, version.data.stringValue)
+    }
+    
   }
   
   def fillResourceWithData(resource:Resource) = {
@@ -22,7 +25,6 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
         case None => DataWrapper.empty
       }
     }
-    resource.data = DataWrapper.empty
   }
   
   def name = MutableBDBStorage.NAME

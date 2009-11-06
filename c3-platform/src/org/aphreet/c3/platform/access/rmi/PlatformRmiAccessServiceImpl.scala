@@ -6,7 +6,7 @@ import java.io.File
 
 import scala.collection.jcl.{HashMap => JMap}
 
-import org.aphreet.c3.platform.resource.{DataWrapper, Resource}
+import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,7 +23,11 @@ class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
     
     val resource = new Resource
     resource.metadata ++ new JMap(metadata)
-    resource.data = DataWrapper.wrap(new File(file))
+    
+    val version = new ResourceVersion
+    version.data = DataWrapper.wrap(new File(file))
+    resource addVersion version
+    
     accessEndpoint.add(resource)
   }
   

@@ -20,20 +20,23 @@ class Resource {
   
   var versions:Buffer[ResourceVersion] = new ArrayList
   
-  var data:DataWrapper = null
+  var isMutable = false;
   
   
   def getMetadata:JMap[String, String] = metadata.underlying;
   
   def getSysMetadata:JMap[String, String] = metadata.underlying;
   
-  
+  def addVersion(version:ResourceVersion){
+    if(!isMutable){
+      versions.clear
+    }
+    versions add version
+  }
   
   override def toString:String = {
     address + " " + createDate + " " + metadata + " " + systemMetadata + " " + versions
   }
-  
-  
   
   def toByteArray:Array[Byte] = {
  
@@ -140,6 +143,7 @@ object Resource {
         version.revision = dataIs.readInt
         version.date = new Date(dataIs.readLong)
         version.systemMetadata = readMap(dataIs)
+        version.persisted = true
         
         result + version
       }

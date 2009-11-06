@@ -1,6 +1,6 @@
-package org.aphreet.c3.platform.storage.impl
+package org.aphreet.c3.platform.storage.impl;
 
-import org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.LogFactory;
 
 import scala.collection.mutable.HashMap
 
@@ -10,7 +10,7 @@ import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import dispatcher.StorageDispatcher
 import dispatcher.impl.{DefaultStorageDispatcher}
 
-import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.config.PlatformConfigManager;
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -103,7 +103,7 @@ class StorageManagerImpl extends StorageManager{
   def dispatcher:StorageDispatcher = storageDispatcher
   
   
-  def setStorageMode(id:String, mode:StorageMode) = {
+  def setStorageMode(id:String, mode:StorageMode) {
     storages.get(id) match {
       case Some(s) => {
         val currentMode = s.mode

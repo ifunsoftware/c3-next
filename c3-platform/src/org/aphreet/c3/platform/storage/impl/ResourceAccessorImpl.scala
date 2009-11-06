@@ -33,13 +33,19 @@ class ResourceAccessorImpl extends ResourceAccessor{
   def add(resource:Resource):String = {
     
     resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
-      case None => resource.metadata.put(Resource.MD_CONTENT_TYPE, resource.data.mimeType)
+      case None => resource.metadata.put(Resource.MD_CONTENT_TYPE, resource.versions(0).data.mimeType)
       case Some(x) => null
     }
     
     val storage = storageManager.dispatcher.selectStorageForResource(resource)
     
-    storage.add(resource)
+    if(storage != null){
+    	storage.add(resource)
+    }else{
+      throw new StorageException("Failed to find storage for resource")
+    }
+    
+    
   }
   
   def update(resource:Resource):String = {

@@ -39,7 +39,7 @@ class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
     
     val storageName = typeMapping.get(contentType) match {
       case Some(name) => name
-      case None => selectStorageForSize(resource.data.length)
+      case None => selectStorageForSize(resource.versions(0).data.length)
     }
     
     selectStorageForName(storageName)

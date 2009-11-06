@@ -8,13 +8,15 @@ import java.util.{Map => JMap}
 
 class ResourceVersion{
 
-  var date:Date = null
+  var date:Date = new Date
   
   var revision:Int = 0
   
   var systemMetadata:HashMap[String, String] = new HashMap
   
   var data:DataWrapper = null
+  
+  var persisted = false;
   
   override def toString:String = {
     date + " " + revision + " " + systemMetadata 

@@ -43,17 +43,20 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     
     resource.address = ra
     
-    prepareMetadata(resource)
+    preSave(resource)
     
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry(resource.toByteArray)
     
     val tx = env.beginTransaction(null, null)
     try{
+	    storeData(resource)
 	    database.put(tx, key, value)
-	    storeData(ra, resource.data)
      
 	    tx.commit
+     
+    	postSave(resource)
+     
 	    ra
     }catch{
       case e => {
@@ -80,7 +83,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
   def update(resource:Resource):String = {
     val ra = resource.address
     
-    prepareMetadata(resource)
+    preSave(resource)
     
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry(resource.toByteArray)
@@ -88,11 +91,14 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     val tx = env.beginTransaction(null, null)
     
     try{
+    	storeData(resource)
+    	
     	database.put(tx, key, value)
-    
-    	storeData(ra, resource.data)
      
     	tx.commit
+    	
+    	postSave(resource)
+     
     	ra
     }catch{
       case e => {
@@ -137,7 +143,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     }
   }
   
-  protected def storeData(ra:String, data:DataWrapper){
+  protected def storeData(resource:Resource){
     
   }
   
@@ -147,8 +153,14 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     
   }
   
-  protected def prepareMetadata(resource:Resource){
+  protected def preSave(resource:Resource){
     
+  }
+  
+  protected def postSave(resource:Resource){
+    for(version <- resource.versions if !version.persisted){
+      version.persisted = true
+    }
   }
     
 
