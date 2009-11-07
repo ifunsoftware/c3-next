@@ -11,7 +11,7 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
     
     resource.isMutable = true
     
-    for(version <- resource.versions if !version.persisted){
+    for(version <- resource.versions if (version.persisted == false)){
       version.systemMetadata.put(
         Resource.MD_EMBEDDED_CONTENT, version.data.stringValue)
     }
@@ -21,7 +21,7 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
   def fillResourceWithData(resource:Resource) = {
     for(version <- resource.versions){
       version.data = version.systemMetadata.get(Resource.MD_EMBEDDED_CONTENT) match {
-        case Some(value) => DataWrapper.wrap(value)
+        case Some(value:String) => DataWrapper.wrap(value)
         case None => DataWrapper.empty
       }
     }

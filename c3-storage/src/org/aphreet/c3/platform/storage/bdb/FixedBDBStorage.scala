@@ -12,7 +12,7 @@ class FixedBDBStorage(override val id:String, override val path:String) extends 
   
   def fillResourceWithData(resource:Resource) = 
     resource.versions(0).data = resource.versions(0).systemMetadata.get(Resource.MD_EMBEDDED_CONTENT) match {
-      case Some(value) =>  DataWrapper.wrap(value)
+      case Some(value:String) =>  DataWrapper.wrap(value)
       case None => DataWrapper.empty
     }
   
