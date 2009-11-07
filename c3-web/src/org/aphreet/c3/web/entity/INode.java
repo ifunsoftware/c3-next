@@ -24,6 +24,11 @@ public class INode extends Content{
 		this.title = name;
 	}
 	
+	public void syncMetadata(){
+		super.syncMetadata();
+		getMetadata().put(Metadata.FILE_NAME.key(), name);
+	}
+	
 	public void setInodeName(String name){
 		this.name = name;
 	}

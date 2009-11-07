@@ -9,19 +9,8 @@
 		</id>
 		<property name="title" type="text" not-null="true" index="resource_title"/>
 		<property name="createDate" not-null="true"/>
-		
-		<component name="metadata" class="Metadata">
-			<set name="tags" table="resource_tag">
-				<key column="resource_id"/>
-				<many-to-many class="MetadataTag" column="tag_id"/>
-			</set>
-			
-			<map name="values" table="resource_metadata">
-				<key column="resource_id"/>
-				<map-key-many-to-many class="MetadataKey" column="key_id"/>
-				<element column="value" type="string" not-null="true" />
-			</map> 
-		</component>
+	
+		<property name="resourceAddress" type="string" unique="true"/>
 		
 		<many-to-one name="owner" class="User" column="user_id" not-null="true"/>
 		<many-to-one name="group" class="AbstractGroup" column="group_id" not-null="true" lazy="false"/>
@@ -37,7 +26,6 @@
 			
 			<joined-subclass name="Document" table="document">
 				<key column="id"/>
-				<property name="contentAddress" not-null="true" unique="true" column="content_address"/>
 				<property name="contentType" not-null="true" column="content_type"/>
 				<property name="extension" />
 				<list name="versions" cascade="all-delete-orphan">
@@ -75,20 +63,6 @@
 		</joined-subclass>
 	</class>
 	
-	<class name="MetadataKey" table="metadata_key">
-		<id name="id">
-			<generator class="native"/>
-		</id>
-		<property name="name" not-null="true" unique="true"/>
-	</class>
-	
-	<class name="MetadataTag" table="metadata_tag">
-		<id name="id">
-			<generator class="native"/>
-		</id>
-		<property name="name" not-null="true" unique="true"/>
-	</class>
-	
 	<class name="WikiPageVersion" table="wiki_page_version">
 		<id name="id" column="id">
 			<generator class="native"/>
@@ -104,7 +78,6 @@
 		<id name="id" column="id">
 			<generator class="native"/>
 		</id>
-		<property name="storageRevision" not-null="true" column="storage_revision"/>
 		<property name="size"/>
 		<property name="editDate" column="edit_date"/>
 		<many-to-one name="editor" class="User" column="editor_id"/>
@@ -118,6 +91,6 @@
 			node.group.id = :groupId
 	</query>
 	<query name="res_document_by_path">
-		from org.aphreet.c3.entity.Document doc where doc.contentAddress = :path
+		from org.aphreet.c3.entity.Document doc where doc.resourceAddress = :path
 	</query>
 </hibernate-mapping>

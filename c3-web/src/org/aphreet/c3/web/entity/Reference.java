@@ -1,5 +1,8 @@
 package org.aphreet.c3.web.entity;
 
+import org.aphreet.c3.platform.resource.DataWrapperFactory;
+import org.aphreet.c3.platform.resource.ResourceVersion;
+
 public class Reference extends Content{
 
 	private static final long serialVersionUID = 7136810948260249662L;
@@ -7,6 +10,18 @@ public class Reference extends Content{
 	private String uri;
 	
 	private String comment;
+	
+	
+	public void syncMetadata(){
+		super.syncMetadata();
+		getMetadata().put(Metadata.COMMENT.key(), comment);
+		getMetadata().put(Metadata.URI.key(), uri);
+		if(this.id <= 0){
+			ResourceVersion version = new ResourceVersion();
+			version.setData(new DataWrapperFactory().empty());
+			resource.addVersion(version);
+		}
+	}
 	
 	public String getUri() {
 		return uri;

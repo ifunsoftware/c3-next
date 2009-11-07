@@ -7,7 +7,7 @@ import org.aphreet.c3.web.entity.Document;
 import org.aphreet.c3.web.entity.INode;
 import org.aphreet.c3.web.entity.Content;
 import org.aphreet.c3.web.entity.User;
-import org.aphreet.c3.web.storage.ContentWrapper;
+import org.aphreet.c3.platform.resource.*;
 
 public interface IResourceService {
 
@@ -25,7 +25,7 @@ public interface IResourceService {
 	 * @param document
 	 * @param file - content of new document
 	 */
-	public Document saveDocument(Document doc, ContentWrapper content);
+	public Document saveDocument(Document doc, DataWrapper data);
 
 	/**
 	 * Remove resource from group

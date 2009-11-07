@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotifyMessageListener{
 
-	private final static Log logger = LogFactory.getLog(NotifyMessageListener.class);
+	
+	@SuppressWarnings("unused")
+	private final static Log log = LogFactory.getLog(NotifyMessageListener.class);
 	
 //		List<InternetAddress> recipients = new LinkedList<InternetAddress>();
 //		

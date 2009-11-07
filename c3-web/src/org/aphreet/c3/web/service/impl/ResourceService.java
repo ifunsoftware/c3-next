@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.aphreet.c3.platform.resource.*;
 import org.aphreet.c3.web.dao.ResourceDao;
 import org.aphreet.c3.web.entity.AbstractGroup;
 import org.aphreet.c3.web.entity.Document;
@@ -18,16 +19,8 @@ import org.aphreet.c3.web.exception.AccessDeniedException;
 import org.aphreet.c3.web.exception.FileSystemException;
 import org.aphreet.c3.web.exception.NodeAlreadyExistsException;
 import org.aphreet.c3.web.service.IResourceService;
-import org.aphreet.c3.web.service.ISearchService;
-import org.aphreet.c3.web.service.IStorageService;
-import org.aphreet.c3.web.storage.ContentRevision;
-import org.aphreet.c3.web.storage.ContentWrapper;
-import org.aphreet.c3.web.util.SettingsBean;
-import org.aphreet.c3.web.util.collection.CollectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import eu.medsea.mimeutil.MimeUtil;
 
 /**
  * Service provides Resource functionality
@@ -43,27 +36,8 @@ public class ResourceService implements IResourceService{
 	@Autowired
 	private ResourceDao resourceDao;
 	
-	@Autowired
-	private ISearchService searchService;
-	
-	@Autowired
-	private IStorageService storageStorage;
-	
-	@Autowired
-	private SettingsBean settingsBean;
-	
 	@PostConstruct
 	public void init(){
-		
-		String detector = settingsBean.get("mimeDetector");
-		
-		if(detector != null){
-			log.info("Using mime detector: " + detector);
-			MimeUtil.registerMimeDetector(detector);
-		}else{
-			log.info("Using default mime detector");
-		}
-		
 		
 	}
 	
@@ -125,7 +99,7 @@ public class ResourceService implements IResourceService{
 	 * @param file - content of new document
 	 */
 	
-	public Document saveDocument(Document document, ContentWrapper content){
+	public Document saveDocument(Document document, DataWrapper content){
 		
 		User currentUser = document.getOwner();
 		
@@ -138,53 +112,21 @@ public class ResourceService implements IResourceService{
 				
 				document = (Document) existentNode;
 				
-				DocumentVersion previousVersion = document.getHeadVersion();
-				
-				ContentRevision newRevision = storageStorage.updateContent(document.getContentAddress(), content, currentUser);
-				
-				if(newRevision.getRevision() != previousVersion.getStorageRevision()){
-					DocumentVersion newDocVersion = new DocumentVersion();
-					
-					newDocVersion.setDocument(document);
-					newDocVersion.setEditDate(new Date());
-					newDocVersion.setEditor(currentUser);
-					newDocVersion.setSize(content.length());
-					newDocVersion.setStorageRevision(newRevision.getRevision());
-					document.getVersions().add(newDocVersion);
-				}else{
-					if(newRevision.isUpdated()){
-						//in case of unversioned storage replace data in current revision
-						previousVersion.setSize(content.length());
-						previousVersion.setEditor(currentUser);
-						previousVersion.setEditDate(new Date());
-						
-						document.setContentAddress(newRevision.getCa());
-					}
-				}
-				
-				
-				
 			}else{
 				throw new NodeAlreadyExistsException("Node with another type already exists");
 			}
-		}else{
-			
-			ContentRevision newRevision = storageStorage.addContent(content, currentUser);
-		
-			document.setContentAddress(newRevision.getCa());
-			
-			DocumentVersion newVersion = new DocumentVersion();
-			
-			newVersion.setEditDate(new Date());
-			newVersion.setEditor(currentUser);
-			newVersion.setSize(content.length());
-			newVersion.setDocument(document);
-			newVersion.setStorageRevision(newRevision.getRevision());
-		
-			document.setVersions(CollectionFactory.listOf(newVersion));
 		}
 		
-		document.setContentType(content.getMimeType().toString());
+		DocumentVersion version = new DocumentVersion();
+		
+		version.setEditor(currentUser);
+		version.setDocument(document);
+		version.setEditDate(new Date());
+		
+		document.addNewVersion(version, content);
+		document.setContentType(content.mimeType().toString());
+		
+		
 		
 		this.addNode(document);
 		
@@ -253,15 +195,15 @@ public class ResourceService implements IResourceService{
 	}
 	
 	public void getDocumentContent(Document doc, OutputStream out){
-		storageStorage.getContent(doc.getContentAddress(), out);
+		doc.getHeadVersion().getData().writeTo(out);
 	}
 	
 	public void getDocumentContent(Document doc, Integer revision, OutputStream out){
 		
 		if(revision > doc.getVersions().size() || revision < 1){
-			storageStorage.getContent(doc.getContentAddress(), out);
+			doc.getHeadVersion().getData().writeTo(out);
 		}else{
-			storageStorage.getContent(doc.getContentAddress(), doc.getVersions().get(revision-1).getStorageRevision(), out);
+			doc.getVersions().get(revision-1).getData().writeTo(out);
 		}
 		
 		

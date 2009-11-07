@@ -1,6 +1,7 @@
 package org.aphreet.c3.web.entity;
 
 import java.util.Set;
+import org.aphreet.c3.platform.resource.*;
 
 public class Message extends Content{
 
@@ -12,6 +13,15 @@ public class Message extends Content{
 	
 	private Set<Message> children;
 
+	public void syncMetadata(){
+		super.syncMetadata();
+		if(this.id <= 0){
+			ResourceVersion version = new ResourceVersion();
+			version.setData(new DataWrapperFactory().wrap(body));
+			resource.addVersion(version);
+		}
+	}
+	
 	public String getBody() {
 		return body;
 	}

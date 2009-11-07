@@ -17,7 +17,7 @@ public abstract class Content extends AbstractSecureEntity{
 	
 	protected AbstractGroup group;
 
-	protected Resource resource;
+	protected Resource resource = new Resource();
 	
 	protected String resourceAddress;
 	
@@ -31,6 +31,14 @@ public abstract class Content extends AbstractSecureEntity{
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getResourceAddress() {
+		return resourceAddress;
+	}
+
+	public void setResourceAddress(String resourceAddress) {
+		this.resourceAddress = resourceAddress;
 	}
 
 	public Date getCreateDate() {
@@ -58,11 +66,22 @@ public abstract class Content extends AbstractSecureEntity{
 	}
 	
 	public void syncMetadata(){
-		getMetadata().put(Metadata.TITLE.key(), title);
+		
+		Map<String, String> metadata = getMetadata();
+		
+		metadata.put(Metadata.TITLE.key(), title);
+		metadata.put(Metadata.CREATED.key(), createDate.toString());
+		metadata.put(Metadata.OWNER.key(), owner.getName());
+		metadata.put(Metadata.POOL.key(), group.getName());
+		
 	}
 	
 	public Map<String, String> getMetadata(){
 		return resource.getMetadata();
+	}
+	
+	public Map<String, String> getSysMetadata(){
+		return resource.getSysMetadata();
 	}
 	
 	public String getMetadataValue(String key){

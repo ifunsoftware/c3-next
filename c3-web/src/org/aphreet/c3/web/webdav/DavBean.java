@@ -14,7 +14,8 @@ import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.service.IGroupService;
 import org.aphreet.c3.web.service.IResourceService;
 import org.aphreet.c3.web.service.IUserService;
-import org.aphreet.c3.web.storage.ContentWrapper;
+import org.aphreet.c3.platform.resource.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -78,7 +79,7 @@ public class DavBean {
 		try{
 			StreamUtils.readTo(is, tmpFile, true);
 
-			return resourceService.saveDocument(doc, ContentWrapper.wrap(tmpFile));
+			return resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
 		}finally{
 			tmpFile.delete();
 		}

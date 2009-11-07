@@ -1,6 +1,10 @@
 package org.aphreet.c3.web.entity;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import org.aphreet.c3.platform.resource.*;
 
 import eu.medsea.mimeutil.MimeUtil;
 
@@ -8,13 +12,23 @@ public class Document extends INode{
 	
 	private static final long serialVersionUID = -4098268403194406161L;
 
-	private String contentAddress;
-	
 	private String contentType;
 	
 	private String extension;
 
-	private List<DocumentVersion> versions;
+	private List<DocumentVersion> versions = new LinkedList<DocumentVersion>();
+	
+	
+	public void syncMetadata(){
+		super.syncMetadata();
+		
+		Map<String, String> metadata = getMetadata();
+		
+		metadata.put(Metadata.FILE_EXT.key(), extension);
+		metadata.put(Metadata.CONTENT_TYPE.key(), contentType);
+		
+		getSysMetadata().put(Metadata.CONTENT_TYPE.key(), contentType);
+	}
 	
 	
 	public String getHumanReadableSize(){
@@ -60,14 +74,6 @@ public class Document extends INode{
 	//---------Getters and setters here ---------------
 	
 	
-	public String getContentAddress() {
-		return contentAddress;
-	}
-
-	public void setContentAddress(String contentAddress) {
-		this.contentAddress = contentAddress;
-	}
-
 	public String getContentType() {
 		return contentType;
 	}
@@ -92,4 +98,20 @@ public class Document extends INode{
 		this.versions = versions;
 	}
 
+	public void addNewVersion(DocumentVersion version, DataWrapper data){
+		ResourceVersion resVersion = new ResourceVersion();
+		resVersion.setData(data);
+		
+		resource.addVersion(resVersion);
+		
+		if(resource.isMutable()){
+			versions.add(version);
+			version.setSize(data.length());
+		}else{
+			DocumentVersion head = this.getHeadVersion();
+			head.setEditor(version.getEditor());
+			head.setEditDate(resVersion.date());
+			head.setSize(data.length());
+		}
+	}
 }

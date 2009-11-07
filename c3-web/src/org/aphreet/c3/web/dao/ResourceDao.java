@@ -8,7 +8,6 @@ import org.aphreet.c3.web.entity.INode;
 import org.aphreet.c3.web.entity.Message;
 import org.aphreet.c3.web.entity.Content;
 import org.aphreet.c3.web.entity.User;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 @Repository

@@ -11,12 +11,12 @@ import javax.faces.event.ValueChangeListener;
 import org.ajax4jsf.context.AjaxContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.aphreet.c3.platform.resource.*;
 import org.aphreet.c3.web.entity.Document;
 import org.aphreet.c3.web.entity.INode;
 import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.exception.FileSystemException;
 import org.aphreet.c3.web.service.IResourceService;
-import org.aphreet.c3.web.storage.ContentWrapper;
 import org.aphreet.c3.web.util.FacesUtil;
 import org.aphreet.c3.web.util.HttpUtil;
 import org.hibernate.validator.NotEmpty;
@@ -100,12 +100,12 @@ public class GroupDocumentsBean extends IdGroupViewBean
 			if(uploadItem.isTempFile()){
 				File tmpFile = uploadItem.getFile();
 				try{
-					resourceService.saveDocument(doc, ContentWrapper.wrap(tmpFile));
+					resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
 				}finally{
 					tmpFile.delete();
 				}
 			}else{
-				resourceService.saveDocument(doc, ContentWrapper.wrap(uploadItem.getData()));
+				resourceService.saveDocument(doc, new DataWrapperFactory().wrap(uploadItem.getData()));
 			}
 		}
 	}

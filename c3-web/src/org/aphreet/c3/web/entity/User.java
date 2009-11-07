@@ -3,10 +3,9 @@ package org.aphreet.c3.web.entity;
 import java.util.Date;
 import java.util.Set;
 
-import org.aphreet.c3.web.storage.Principal;
 import org.aphreet.c3.web.util.HashUtil;
 
-public class User extends Principal implements Entity{
+public class User implements Entity{
 
 	private static final long serialVersionUID = 1451053400835269982L;
 	
@@ -14,6 +13,8 @@ public class User extends Principal implements Entity{
 	public final static String ROLE_SUPERVISOR = "ROLE_SUPERVISOR";
 	
 	private int id;
+	
+	private String name;
 	
 	private String password;
 	
@@ -26,6 +27,8 @@ public class User extends Principal implements Entity{
 	private Set<String> roles;
 	
 	private UserProfile userProfile;
+
+	
 	
 	public int getId() {
 		return id;
@@ -33,6 +36,14 @@ public class User extends Principal implements Entity{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getPassword() {

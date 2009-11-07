@@ -11,7 +11,6 @@ import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.entity.UserProfile;
 import org.aphreet.c3.web.message.MailingTask;
 import org.aphreet.c3.web.service.IMessageService;
-import org.aphreet.c3.web.service.ISearchService;
 import org.aphreet.c3.web.service.IWikiService;
 import org.aphreet.c3.web.util.SpringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,6 @@ public class MessageService implements IMessageService {
 
 	@Autowired
 	private ResourceDao resourceDao;
-	
-	@Autowired
-	private ISearchService searchService;
 	
 	@Autowired
 	private IWikiService wikiService;

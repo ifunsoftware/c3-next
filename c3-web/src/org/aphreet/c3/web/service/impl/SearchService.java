@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SearchService implements ISearchService {
 	
-	private static Log logger = LogFactory.getLog(SearchService.class);
+	private static Log log = LogFactory.getLog(SearchService.class);
 	
 	/**
 	 * Search resource
@@ -26,15 +26,8 @@ public class SearchService implements ISearchService {
 	 */
 	public List<Content> searchResources(String query){
 		//TODO implement search
-		
+		log.warn("There is no search in this system");
 		return null;
-//		List<Resource> list = null;
-//		try {
-//			list = searcher.search(query);
-//		} catch (Exception e) {
-//			logger.warn(this, e);
-//		}
-//		return list;
 	}
 
 }

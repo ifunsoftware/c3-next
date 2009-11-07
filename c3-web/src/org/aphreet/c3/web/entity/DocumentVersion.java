@@ -6,8 +6,6 @@ public class DocumentVersion extends ContentVersion{
 	
 	private int id;
 	
-	private long storageRevision;
-	
 	private long size;
 	
 	private Document document;
@@ -38,14 +36,6 @@ public class DocumentVersion extends ContentVersion{
 
 	public void setDocument(Document document) {
 		this.document = document;
-	}
-
-	public long getStorageRevision() {
-		return storageRevision;
-	}
-
-	public void setStorageRevision(long storageRevision) {
-		this.storageRevision = storageRevision;
 	}
 
 	public int getId() {

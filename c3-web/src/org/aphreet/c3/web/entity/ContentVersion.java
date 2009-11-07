@@ -3,7 +3,7 @@ package org.aphreet.c3.web.entity;
 import java.util.Date;
 import java.util.Map;
 
-import org.aphreet.c3.platform.resource.ResourceVersion;
+import org.aphreet.c3.platform.resource.*;
 
 public abstract class ContentVersion implements Entity{
 
@@ -41,5 +41,9 @@ public abstract class ContentVersion implements Entity{
 	
 	public void setMetadataValue(String key, String value){
 		getMetadata().put(key, value);
+	}
+	
+	public DataWrapper getData(){
+		return resourceVersion.data();
 	}
 }

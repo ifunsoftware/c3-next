@@ -20,7 +20,6 @@ import org.aphreet.c3.web.entity.WikiPage;
 import org.aphreet.c3.web.entity.WikiPageVersion;
 import org.aphreet.c3.web.message.MailingTask;
 import org.aphreet.c3.web.service.IMessageService;
-import org.aphreet.c3.web.service.ISearchService;
 import org.aphreet.c3.web.service.IWikiService;
 import org.aphreet.c3.web.util.SpringUtil;
 import org.aphreet.c3.web.util.collection.CollectionFactory;
@@ -48,9 +47,6 @@ public class WikiService implements IWikiService {
 	
 	@Autowired
 	private ResourceDao resourceDao;
-	
-	@Autowired
-	private ISearchService searchService;
 	
 	@Autowired
 	private MessageSource messageSource;
@@ -172,7 +168,7 @@ public class WikiService implements IWikiService {
 					if(doc != null){
 						if(doc.getContentType().startsWith("image")){
 							if(doc.getGroup() == group){
-								return new SmartLink("download?id=" + doc.getContentAddress(), 
+								return new SmartLink("download?id=" + doc.getResourceAddress(), 
 										doc.getName(), 
 										"resource.xhtml?id=" + doc.getId(),
 										SmartLinkType.IMG_LINK);
