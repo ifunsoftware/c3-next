@@ -2,8 +2,8 @@
 <!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.aphreet.c3.entity">
-	<class name="Resource" table="resources" abstract="true">
+<hibernate-mapping package="org.aphreet.c3.web.entity">
+	<class name="Content" table="resources" abstract="true">
 		<id name="id" type="int">
 			<generator class="native"/>
 		</id>
@@ -84,13 +84,13 @@
 		<many-to-one name="document" class="Document" column="document_id"/>
 	</class>
 	
-	<query name="res_inode_root">from org.aphreet.c3.entity.INode node 
+	<query name="res_inode_root">from org.aphreet.c3.web.entity.INode node 
 		where 
 			node.parent is null 
 			and 
 			node.group.id = :groupId
 	</query>
 	<query name="res_document_by_path">
-		from org.aphreet.c3.entity.Document doc where doc.resourceAddress = :path
+		from org.aphreet.c3.web.entity.Document doc where doc.resourceAddress = :path
 	</query>
 </hibernate-mapping>

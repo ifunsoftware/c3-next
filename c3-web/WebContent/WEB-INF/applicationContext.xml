@@ -15,9 +15,10 @@
 
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
 		destroy-method="close">
-		<property name="username" value="root" />
-		<property name="password" value="" />
-		<property name="url" value="jdbc:mysql://localhost/c3_next?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />
+		<property name="username" value="c3owner" />
+		<property name="password" value="some_password" />
+		<property name="url"
+			value="jdbc:mysql://localhost/c3_next?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
 		<property name="initialSize" value="1" />
 		<property name="maxActive" value="20" />
@@ -31,23 +32,23 @@
 		<property name="timeBetweenEvictionRunsMillis" value="10000" />
 		<property name="validationQuery" value="select 1 from dual" />
 	</bean>
-	
-	
-	<tx:annotation-driven transaction-manager="txManager"/>
+
+
+	<tx:annotation-driven transaction-manager="txManager" />
 
 
 	<bean id="txManager"
 		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory"/>
+		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	
+
 	<bean id="sessionFactory"
 		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="mappingResources">
 			<list>
-				<value>org/aphreet/c3/web/entity/user.hbm.xml
-				</value>
+				<value>org/aphreet/c3/web/entity/user.hbm.xml</value>
+				<value>org/aphreet/c3/web/entity/resource.hbm.xml</value>
 			</list>
 		</property>
 
@@ -62,5 +63,24 @@
 			</props>
 		</property>
 	</bean>
-    
+
+	<bean id="messageSource"
+		class="org.aphreet.springframework.resource.XMLResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>org.aphreet.c3.web.message.messages
+                                </value>
+				<value>org.aphreet.c3.web.message.labels
+                                </value>
+			</list>
+		</property>
+	</bean>
+
+	<alias name="messageSource" alias="msgs" />
+
+	<bean id="groupBeanFactory" class="org.aphreet.c3.web.webbeans.group.GroupBeanFactory" />
+
+	<bean id="groupBean" factory-bean="groupBeanFactory"
+		factory-method="createGroupBean" scope="request" />
+
 </beans>

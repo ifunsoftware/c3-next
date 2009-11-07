@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.aphreet.c3.entity">
+<hibernate-mapping package="org.aphreet.c3.web.entity">
 	<class name="User" table="users">
 		<id name="id" >
 			<generator class="native"/>
@@ -70,7 +70,7 @@
 	</query>
 	-->
 	
-	<query name="groups_where_user_is_owner">from org.aphreet.c3.entity.AbstractGroup group 
+	<query name="groups_where_user_is_owner">from org.aphreet.c3.web.entity.AbstractGroup group 
 		where group.owner.id = :user_id
 	</query>
 </hibernate-mapping>

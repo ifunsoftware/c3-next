@@ -4,19 +4,21 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	id="WebApp_ID" version="2.5">
 	<display-name>c3-web</display-name>
+
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
-	
 
- <context-param>
-   <param-name>org.richfaces.SKIN</param-name>
-   <param-value>blueSky</param-value>
-</context-param>
-<context-param>
-      <param-name>org.richfaces.CONTROL_SKINNING</param-name>
-      <param-value>enable</param-value>
-</context-param>
+
+	<context-param>
+		<param-name>org.richfaces.SKIN</param-name>
+		<param-value>blueSky</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>org.richfaces.CONTROL_SKINNING</param-name>
+		<param-value>enable</param-value>
+	</context-param>
 
 	<context-param>
 		<param-name>contextClass</param-name>
@@ -40,9 +42,50 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>/WEB-INF/applicationContext.xml
-			/WEB-INF/applicationServices.xml</param-value>
+			/WEB-INF/applicationServices.xml
+			/WEB-INF/securityContext.xml</param-value>
 	</context-param>
 
+	<filter>
+		<filter-name>exFilter</filter-name>
+		<filter-class>org.aphreet.c3.web.filter.ExceptionFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>exFilter</filter-name>
+		<servlet-name>Faces Servlet</servlet-name>
+	</filter-mapping>
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<servlet-name>Faces Servlet</servlet-name>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/j_spring_security_check</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/user/signout</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>txFilter</filter-name>
+		<filter-class>org.aphreet.c3.web.filter.TxFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>txFilter</filter-name>
+		<servlet-name>Faces Servlet</servlet-name>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>txFilter</filter-name>
+		<servlet-name>FileServlet</servlet-name>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>txFilter</filter-name>
+		<servlet-name>MiltonServlet</servlet-name>
+	</filter-mapping>
 	<filter>
 		<display-name>RichFaces Filter</display-name>
 		<filter-name>richfaces</filter-name>
@@ -73,17 +116,6 @@
 	</listener>
 
 	<servlet>
-		<description></description>
-		<display-name>HelloServlet</display-name>
-		<servlet-name>HelloServlet</servlet-name>
-		<servlet-class>org.aphreet.c3.web.HelloServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>HelloServlet</servlet-name>
-		<url-pattern>/HelloServlet</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
 		<servlet-name>Faces Servlet</servlet-name>
 		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
@@ -92,6 +124,31 @@
 		<servlet-name>Faces Servlet</servlet-name>
 		<url-pattern>*.xhtml</url-pattern>
 	</servlet-mapping>
-
+	
+	<servlet>
+		<description></description>
+		<servlet-name>FileServlet</servlet-name>
+		<servlet-class>org.aphreet.c3.web.web.servlet.FileServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>FileServlet</servlet-name>
+		<url-pattern>/download</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>MiltonServlet</servlet-name>
+		<servlet-class>com.bradmcevoy.http.MiltonServlet</servlet-class>
+		<init-param>
+			<param-name>resource.factory.class</param-name>
+			<param-value>org.aphreet.c3.web.webdav.DavResourceFactory</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MiltonServlet</servlet-name>
+		<url-pattern>/dav/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MiltonServlet</servlet-name>
+		<url-pattern>/dav</url-pattern>
+	</servlet-mapping>
 
 </web-app>
