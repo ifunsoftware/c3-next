@@ -24,4 +24,5 @@ class ResourceVersion{
   
   def getMetadata:JMap[String, String] = systemMetadata.underlying
 
+  def setData(_data:DataWrapper) = {data = _data}
 }

@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.resource
 
-import java.io.{InputStream, File, FileInputStream, ByteArrayInputStream}
+import java.io.{InputStream, OutputStream, File, FileInputStream, ByteArrayInputStream, BufferedInputStream, BufferedOutputStream}
 import java.nio.channels.{FileChannel, WritableByteChannel}
 import java.nio.ByteBuffer
 import java.lang.StringBuilder
@@ -24,6 +24,8 @@ abstract class DataWrapper {
   def inputStream:InputStream
   
   def writeTo(channel:WritableByteChannel)
+  
+  def writeTo(out:OutputStream)
   
   def stringValue:String
  
@@ -51,6 +53,26 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     }
   }
   
+  def writeTo(out:OutputStream) = {
+    val is = inputStream
+    
+    val bis = new BufferedInputStream(is)
+    val bos = new BufferedOutputStream(out)
+    
+    val buffer = new Array[Byte](2048)
+    
+    try{
+    
+      var read:Int = bis.read(buffer)
+      while(read >=0){
+        bos.write(buffer, 0, read)
+        read = bis.read(buffer)
+      }
+    }finally{
+      bis.close()
+    }
+  }
+  
   def stringValue:String = file.getAbsolutePath
   
   def length:Long = file.length
@@ -64,6 +86,10 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
   def inputStream = new ByteArrayInputStream(bytes)
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(bytes))
+  
+  def writeTo(out:OutputStream) = {
+    out.write(bytes)
+  }
   
   def stringValue:String = new String(bytes)
   
@@ -80,6 +106,10 @@ class StringDataWrapper(val value:String) extends DataWrapper {
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(value.getBytes))
  
+  def writeTo(out:OutputStream) = {
+    out.write(value.getBytes)
+  }
+  
   def stringValue:String = value
   
   def length:Long = value.getBytes.length
@@ -92,6 +122,8 @@ class EmptyDataWrapper extends DataWrapper {
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(new Array[Byte](0)))
  
+  def writeTo(out:OutputStream) = {}
+  
   def stringValue:String = ""
   
   def length:Long = 0
