@@ -12,17 +12,20 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
   var commandList:List[Command] = List()
   
   { 
+    register(new AddStorageCommand)
+    register(new GetPlatformPropertiesCommand)
+    register(new HelpCommand)
     register(new ListStorageCommand)
     register(new ListStorageTypesCommand)
-    register(new AddStorageCommand)
-    register(new SetStorageModeCommand)
-    register(new GetPlatformPropertiesCommand)
     register(new SetPlatformPropertyCommand)
+    register(new SetStorageModeCommand)
+    
+    HelpCommand.commandList = commandList
   }
   
   def getCommand(query:String):Option[Command] = {
     
-    val input = List.fromArray(query.split("\\s+"))
+    val input = List.fromArray(query.trim.split("\\s+"))
     
     val classAndParams = root.classForInput(input)
     
@@ -33,7 +36,7 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
       command.management = managementService
       Some(command)
     }else{
-    	None
+      Some(new ErrorCommand("Command not found. Type help to get list of all commands"))
     }
   }
   
@@ -41,6 +44,8 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
     commandList = commandList ::: List(command)
     root.addCommand(command.name, command.getClass)
   }
+  
+  
   
   class CommandTreeNode(val commandClass:Class[_]) {
     val map = new HashMap[String, CommandTreeNode]

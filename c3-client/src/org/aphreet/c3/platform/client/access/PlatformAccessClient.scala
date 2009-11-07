@@ -25,17 +25,23 @@ object PlatformAccessClient {
   
   def main(args : Array[String]) : Unit = {
     
-    for(fname <- args){
-      val file = new File(fname)
-      
-      if(file.exists){
+    var path:String = ""
+    
+    if(args.length > 0){
+      path = args(0)
+    }else{
+      path = "d:/music"
+    }
+    
+    val dir = new File(path)
+    
+    for(file <- dir.listFiles){
+      if(file.isFile){
     	val ra = accessService.add(new HashMap[String, String], file.getAbsolutePath)
-    	println("file " + fname + " saved with address " + ra)
+    	println("file " + file.getName + " saved with address " + ra)
       }else{
-        println("file " + fname + " not exitst")
+        println("file " + file.getName + " not exitst")
       }
-      
-      
     }
   }
 }
