@@ -1,4 +1,4 @@
-package org.aphreet.c3.web.web.filter;
+package org.aphreet.c3.web.servlet;
 
 import java.io.IOException;
 

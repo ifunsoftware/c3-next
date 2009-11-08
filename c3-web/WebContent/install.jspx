@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<base href="#{appBean.appBasePath}" />
+	<title>C3 Service - <h:outputText value=" " /><ui:insert name="htitle">Installation</ui:insert></title>
+	<link rel="stylesheet" href="css/base.css" />
+</head>
+<body>
+	<div class="head_wrap">
+		<div class="head">
+			<div class="head_title">
+				<p><a href="index.xhtml">C3 Service</a></p>
+				<p id="mantra">Content Collaboration Communication</p>
+			</div>
+			<div class="head_right">
+				<div class="head_control">
+					<ul>
+						<li class="list_menu">none</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="wrap">
+		
+		<div class="wrap_head">
+			<div class="wrap_head_title">
+				<p>Install C3<span></span></p>
+			</div>
+		</div>
+		<div class="main_wrap">
+			<div id="content_wrap">
+				Type here password and e-mail for admin account.
+				<h:form>
+					<h:panelGrid columns="3">
+
+					<h:outputLabel for="password" value="#{msgs.password_field}" />
+					<h:inputSecret id="password" value="#{installBean.password}" >
+						<rich:ajaxValidator event="onblur"/>
+					</h:inputSecret>
+					<rich:message for="password" />
+
+					<h:outputLabel for="mail" value="#{msgs.email_field}" />
+					<h:inputText id="mail" value="#{installBean.mail}">
+						<rich:ajaxValidator event="onblur" />
+					</h:inputText>
+					<rich:message for="mail" />
+
+					<h:commandButton value="Install"
+						action="#{installBean.install}" />
+
+				</h:panelGrid>
+				</h:form>
+			</div>
+		</div>
+		<div class="footer_wrap">
+			<div class="footer_version">
+				<p>#{appBean.version}</p>
+			</div>
+			<div class="footer_menu">
+				<ul>
+					<li class="list_menu"><a href="index.xhtml">#{msgs.main_home}</a></li>
+					<li class="list_menu"><a href="about.xhtml">#{msgs.main_about}</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+<ui:debug rendered="true" />
+</html>

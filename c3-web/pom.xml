@@ -91,6 +91,20 @@
 			<version>2.0.5.RELEASE</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+    <groupId>javax.el</groupId>
+    <artifactId>com.springsource.javax.el</artifactId>
+    <version>1.0.0</version>
+    <scope>provided</scope>
+</dependency>
+
+<dependency>
+    <groupId>javax.validation</groupId>
+    <artifactId>com.springsource.javax.validation</artifactId>
+    <version>1.0.0.GA</version>
+    <scope>provided</scope>
+</dependency>
 
 	</dependencies>
 	<!--

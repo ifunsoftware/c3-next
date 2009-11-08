@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns="http://www.springframework.org/schema/security"
-        xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
               http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.4.xsd">
 
-        <http auto-config="true">
-        <anonymous username="anonymous" granted-authority="ROLE_ANONYMOUS" />
-        <intercept-url pattern="/index.xhtml" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
-        <intercept-url pattern="/user/signup.xhtml" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
-                <intercept-url pattern="/**" access="ROLE_USER" />
-                
-                <intercept-url pattern="/group/add.xhtml*" access="ROLE_SUPERVISOR" />
-                
-                <intercept-url pattern="/user/signin.xhtml*" filters="none"/>
-                <intercept-url pattern="/a4j/**" filters="none" />
-                <intercept-url pattern="/css/**" filters="none" />
-        
-        <form-login login-page="/user/signin.xhtml" default-target-url="/index.xhtml"/>
-        <logout invalidate-session="true" logout-success-url="/index.xhtml" logout-url="/user/signout"/>
-        </http>
-        
-        <authentication-provider>
-                <password-encoder hash="sha"/>
-                <jdbc-user-service data-source-ref="dataSource"/>
-        </authentication-provider>
-        
+	<http auto-config="true">
+		<anonymous username="anonymous" granted-authority="ROLE_ANONYMOUS" />
+		<intercept-url pattern="/index.xhtml" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/user/signup.xhtml" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/**" access="ROLE_USER" />
+
+		<intercept-url pattern="/group/add.xhtml*" access="ROLE_SUPERVISOR" />
+
+		<intercept-url pattern="/user/signin.xhtml*" filters="none" />
+		<intercept-url pattern="/install.xhtml*" filters="none" />
+		<intercept-url pattern="/a4j/**" filters="none" />
+		<intercept-url pattern="/css/**" filters="none" />
+
+		<form-login login-page="/user/signin.xhtml"
+			default-target-url="/index.xhtml" />
+		<logout invalidate-session="true" logout-success-url="/index.xhtml"
+			logout-url="/user/signout" />
+	</http>
+
+	<authentication-provider>
+		<password-encoder hash="sha" />
+		<jdbc-user-service data-source-ref="dataSource" />
+	</authentication-provider>
+
 </beans:beans>

@@ -31,7 +31,7 @@ public class AddUserBean {
 	private IGroupService groupService;
 	
 	@NotEmpty
-	@Length(min=6, max=40)
+	@Length(min=3, max=40)
 	private String name;
 	
 	@NotEmpty

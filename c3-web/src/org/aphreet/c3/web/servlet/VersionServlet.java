@@ -1,4 +1,4 @@
-package org.aphreet.c3.web.web.servlet;
+package org.aphreet.c3.web.servlet;
 
 import java.util.Scanner;
 

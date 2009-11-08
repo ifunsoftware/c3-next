@@ -12,7 +12,7 @@
 
 	<context-param>
 		<param-name>org.richfaces.SKIN</param-name>
-		<param-value>blueSky</param-value>
+		<param-value>my</param-value>
 	</context-param>
 
 	<context-param>
@@ -48,7 +48,7 @@
 
 	<filter>
 		<filter-name>exFilter</filter-name>
-		<filter-class>org.aphreet.c3.web.filter.ExceptionFilter</filter-class>
+		<filter-class>org.aphreet.c3.web.servlet.ExceptionFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>exFilter</filter-name>
@@ -72,7 +72,7 @@
 	</filter-mapping>
 	<filter>
 		<filter-name>txFilter</filter-name>
-		<filter-class>org.aphreet.c3.web.filter.TxFilter</filter-class>
+		<filter-class>org.aphreet.c3.web.servlet.TxFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>txFilter</filter-name>
@@ -128,7 +128,7 @@
 	<servlet>
 		<description></description>
 		<servlet-name>FileServlet</servlet-name>
-		<servlet-class>org.aphreet.c3.web.web.servlet.FileServlet</servlet-class>
+		<servlet-class>org.aphreet.c3.web.servlet.FileServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>FileServlet</servlet-name>

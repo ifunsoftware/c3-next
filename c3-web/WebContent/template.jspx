@@ -11,22 +11,6 @@
 	<base href="#{appBean.appBasePath}" />
 	<title>C3 Service - <h:outputText value=" " /><ui:insert name="htitle">Default Title</ui:insert></title>
 	<link rel="stylesheet" href="css/base.css" />
-<!-- 	
-	<script language="javascript">
-		A4J.AJAX.onError = function(req, status, message){
-			window.alert("Custom onError handler "+message);
-		};
-
-		A4J.AJAX.onExpired = function(loc, expiredMsg){
-			if(window.confirm("Custom onExpired handler "+expiredMsg+" for a location: "+loc)){
-				return loc;
-			} else {
-				return false;
-			}
-		}
-		
-	</script>
--->	
 </head>
 <body>
 	<div class="head_wrap">

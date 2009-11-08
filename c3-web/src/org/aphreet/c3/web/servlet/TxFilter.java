@@ -1,4 +1,4 @@
-package org.aphreet.c3.web.web.filter;
+package org.aphreet.c3.web.servlet;
 
 import java.io.IOException;
 
@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.context.ContextLoader;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 
 /**
  * Filter create new transaction on request an commit it in the end of request procession
@@ -65,7 +65,7 @@ public class TxFilter implements Filter{
 	}
 
 	public void init(FilterConfig arg0) throws ServletException {
-		XmlWebApplicationContext context = (XmlWebApplicationContext) ContextLoader.getCurrentWebApplicationContext();
+		AbstractApplicationContext context = (AbstractApplicationContext) ContextLoader.getCurrentWebApplicationContext();
 		txManager = (PlatformTransactionManager) context.getBean("txManager");
 	
 		a4jPrefix = arg0.getServletContext().getContextPath() + "/a4j/";

@@ -99,7 +99,7 @@
 						<h:outputText value="#{msgs.upload_file}"/>
 					</f:facet>
 					<a4j:form id="file_upload_form">
-						<rich:fileUpload allowFlash="false"
+						<rich:fileUpload allowFlash="true" id="file_upload_comp"
 							fileUploadListener="#{groupBean.processUpload}"
 							uploadData="#{groupBean.uploadData}" autoclear="true"
 							maxFilesQuantity="5">

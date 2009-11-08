@@ -30,8 +30,6 @@ public class RequestBean {
 		String userName = null;
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
-		
-		
 		if(auth != null){
 			userName = auth.getName();
 		}else{
@@ -46,7 +44,7 @@ public class RequestBean {
 	}
 	
 	public Boolean getAnonymous(){
-		return currentUser.getName().equals("anonymous");
+		return currentUser == null || currentUser.getName().equals("anonymous");
 	}
 	
 	public String getId(){
