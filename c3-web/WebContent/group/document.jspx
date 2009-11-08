@@ -81,7 +81,7 @@
 					<td colspan="2">
 						<h:outputLink value="download">
 							Download
-							<f:param name="id" value="#{groupBean.document.contentAddress}"/>
+							<f:param name="id" value="#{groupBean.document.resourceAddress}"/>
 							<f:param name="rev" value="#{groupBean.revisionNumber}"/>
 						</h:outputLink>
 					</td>

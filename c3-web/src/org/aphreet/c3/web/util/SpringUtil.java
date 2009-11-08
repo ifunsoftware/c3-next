@@ -4,13 +4,13 @@ import java.util.Locale;
 
 import javax.faces.context.FacesContext;
 
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.web.context.ContextLoader;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 
 public class SpringUtil {
 
-	private static XmlWebApplicationContext context = 
-		(XmlWebApplicationContext) ContextLoader.getCurrentWebApplicationContext();
+	private static AbstractApplicationContext context = 
+		(AbstractApplicationContext) ContextLoader.getCurrentWebApplicationContext();
 	
 	
 	public static Object getBean(String name){

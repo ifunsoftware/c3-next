@@ -67,7 +67,12 @@ public class Document extends INode{
 	}
 	
 	public DocumentVersion getHeadVersion(){
-		return versions.get(versions.size()-1);
+		if(!versions.isEmpty()){
+			return versions.get(versions.size()-1);
+		}else{
+			return null;
+		}
+		
 	}
 	
 
@@ -109,9 +114,16 @@ public class Document extends INode{
 			version.setSize(data.length());
 		}else{
 			DocumentVersion head = this.getHeadVersion();
-			head.setEditor(version.getEditor());
-			head.setEditDate(resVersion.date());
-			head.setSize(data.length());
+			if(head == null){
+				version.setSize(data.length());
+				versions.add(version);
+			}else{
+				head.setEditor(version.getEditor());
+				head.setEditDate(resVersion.date());
+				head.setSize(data.length());
+			}
+			
+			
 		}
 	}
 }

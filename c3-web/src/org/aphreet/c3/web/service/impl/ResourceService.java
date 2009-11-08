@@ -100,7 +100,7 @@ public class ResourceService implements IResourceService{
 	 */
 	
 	public Document saveDocument(Document document, DataWrapper content){
-		
+		log.debug("Saving document with name: " + document.getName());
 		User currentUser = document.getOwner();
 		
 		INode parent = document.getParent();

@@ -38,7 +38,6 @@ import eu.medsea.mimeutil.MimeUtil;
 public class GroupDocumentsBean extends IdGroupViewBean 
 	implements FileUploadListener, DropListener, NodeSelectedListener, ValueChangeListener{
 
-
 	@Autowired private IResourceService resourceService;
 	
 	private final static String SELECTED_ROW_KEY = "selected-row";
@@ -81,6 +80,7 @@ public class GroupDocumentsBean extends IdGroupViewBean
 	}
 	
 	public void processUpload(UploadEvent event) {
+		logger.info("processing upload: " + event.toString());
 		List<UploadItem> uploadItems = event.getUploadItems();
 		
 		INode parent = getCurrentParent();

@@ -44,7 +44,7 @@
 						<rich:treeNode type="file" dragType="file" acceptedTypes="">
 							<rich:dndParam name="label" type="drag" value="File: #{item.name}" />
 							<div class="file_name file_primary_column"><h:outputText value="#{item.name}" escape="true" /></div>
-							<div class="file_edit file_other_column"><a href="download?id=#{item.contentAddress}" target="_blank">download</a></div>
+							<div class="file_edit file_other_column"><a href="download?id=#{item.resourceAddress}" target="_blank">download</a></div>
 							<div class="file_view file_other_column"><a href="group/document.xhtml?id=#{item.id}">view</a></div>
 							<div class="file_date file_other_column">
 								<h:outputText value="#{item.createDate}">
