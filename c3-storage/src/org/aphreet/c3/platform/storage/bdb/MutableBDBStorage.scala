@@ -25,6 +25,7 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
         case None => DataWrapper.empty
       }
     }
+    resource.isMutable = true
   }
   
   def name = MutableBDBStorage.NAME

@@ -4,9 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.PreDestroy;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aphreet.c3.web.entity.AbstractGroup;
 import org.aphreet.c3.web.entity.Document;
 import org.aphreet.c3.web.entity.INode;
@@ -34,6 +39,10 @@ public class DavBean {
 
 	@Autowired
 	private IGroupService groupService;
+	
+	private static final Log logger = LogFactory.getLog(DavBean.class);
+	
+	private Set<File> tempFiles = new HashSet<File>();
 	
 	public Set<AbstractGroup> getGroupsForUser(User user){
 		
@@ -65,7 +74,7 @@ public class DavBean {
 	}
 	
 	public void writeDocumentToOs(Document document, OutputStream stream){
-		resourceService.getDocumentContent(document, stream);
+		document.getHeadVersion().getData().writeTo(stream);
 	}
 	
 	public void addNode(INode node){
@@ -76,13 +85,12 @@ public class DavBean {
 
 		File tmpFile = File.createTempFile("c3-dav-upload-" + UUID.randomUUID().toString(), "tmp");
 		
-		try{
-			StreamUtils.readTo(is, tmpFile, true);
+		tempFiles.add(tmpFile);
 
-			return resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
-		}finally{
-			tmpFile.delete();
-		}
+		StreamUtils.readTo(is, tmpFile, true);
+
+		return resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
+		
 	}
 	
 	public Set<INode> getRootNodes(AbstractGroup group, User user){
@@ -99,5 +107,16 @@ public class DavBean {
 	
 	public User authenticate(String userName, String password){
 		return userService.authUser(userName, password);
+	}
+	
+	@PreDestroy
+	public void destroy(){
+		for(File tmpFile : tempFiles){
+			try{
+				tmpFile.delete();
+			}catch(Throwable e){
+				logger.warn("Failed to remove temp file: " + tmpFile.getAbsolutePath(), e);
+			}
+		}
 	}
 }

@@ -8,6 +8,8 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans.xsd">                    
     
-    <reference id="storageService" interface="org.aphreet.c3.platform.storage.StorageManager"/>
-
+	<reference id="accessService" interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
+	
+	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
+	
 </beans:beans>  

@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.resource
 
-import java.io.{InputStream, OutputStream, File, FileInputStream, ByteArrayInputStream, BufferedInputStream, BufferedOutputStream}
+import java.io.{InputStream, OutputStream, File, FileInputStream, ByteArrayInputStream, ByteArrayOutputStream, BufferedInputStream, BufferedOutputStream}
 import java.nio.channels.{FileChannel, WritableByteChannel}
 import java.nio.ByteBuffer
 import java.lang.StringBuilder
@@ -57,7 +57,6 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     val is = inputStream
     
     val bis = new BufferedInputStream(is)
-    val bos = new BufferedOutputStream(out)
     
     val buffer = new Array[Byte](2048)
     
@@ -65,7 +64,7 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     
       var read:Int = bis.read(buffer)
       while(read >=0){
-        bos.write(buffer, 0, read)
+        out.write(buffer, 0, read)
         read = bis.read(buffer)
       }
     }finally{
@@ -73,7 +72,13 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     }
   }
   
-  def stringValue:String = file.getAbsolutePath
+  def stringValue:String = {
+    val out = new ByteArrayOutputStream
+    
+    this writeTo out
+
+    new String(out.toByteArray)
+  }
   
   def length:Long = file.length
 

@@ -20,6 +20,8 @@ public class Message extends Content{
 			version.setData(new DataWrapperFactory().wrap(body));
 			resource.addVersion(version);
 		}
+		getMetadata().put(Metadata.CONTENT_TYPE.key(), "application/c3-message");
+		getSysMetadata().put(Metadata.CONTENT_TYPE.key(), "application/c3-message");
 	}
 	
 	public String getBody() {

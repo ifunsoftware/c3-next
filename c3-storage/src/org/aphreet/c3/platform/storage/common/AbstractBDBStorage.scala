@@ -12,9 +12,10 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
   
   var database : Database = null
   
+  protected val storageName:String = name + "-" + id
+  
   protected val storagePath:String = path + File.separator + storageName
   
-  protected val storageName:String = name + "-" + id
   
   {
     val envConfig = new EnvironmentConfig

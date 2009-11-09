@@ -58,7 +58,7 @@
 					<rich:column>
 						<h:outputLink value="download">
 							download
-							<f:param name="id" value="#{groupBean.document.contentAddress}"/>
+							<f:param name="id" value="#{groupBean.document.resourceAddress}"/>
 							<f:param name="rev" value="#{rev.number}"/>
 						</h:outputLink>
 					</rich:column>

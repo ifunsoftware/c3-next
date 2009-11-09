@@ -19,6 +19,7 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
     register(new ListStorageTypesCommand)
     register(new SetPlatformPropertyCommand)
     register(new SetStorageModeCommand)
+    register(new ShowResourceCommand)
     
     HelpCommand.commandList = commandList
   }

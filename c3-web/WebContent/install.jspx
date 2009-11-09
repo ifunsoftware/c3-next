@@ -52,6 +52,12 @@
 						<rich:ajaxValidator event="onblur" />
 					</h:inputText>
 					<rich:message for="mail" />
+					
+					<h:outputLabel for="path" value="Data path" />
+					<h:inputText id="path" value="#{installBean.path}">
+						<rich:ajaxValidator event="onblur" />
+					</h:inputText>
+					<rich:message for="path" />
 
 					<h:commandButton value="Install"
 						action="#{installBean.install}" />

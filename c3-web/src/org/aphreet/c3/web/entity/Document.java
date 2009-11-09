@@ -1,9 +1,12 @@
 package org.aphreet.c3.web.entity;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aphreet.c3.platform.resource.*;
 
 import eu.medsea.mimeutil.MimeUtil;
@@ -12,6 +15,8 @@ public class Document extends INode{
 	
 	private static final long serialVersionUID = -4098268403194406161L;
 
+	private final static Log logger = LogFactory.getLog(Document.class);
+	
 	private String contentType;
 	
 	private String extension;
@@ -126,4 +131,27 @@ public class Document extends INode{
 			
 		}
 	}
+	
+	public void setResource(Resource resource) {
+		super.setResource(resource);
+		
+		List<ResourceVersion> resourceVersions = resource.getVersions();
+		
+		Iterator<DocumentVersion> docIterator = versions.iterator();
+		Iterator<ResourceVersion> resIterator = resourceVersions.iterator();
+		
+		while(docIterator.hasNext() && resIterator.hasNext()){
+			DocumentVersion version = docIterator.next();
+			ResourceVersion resVersion = resIterator.next();
+			
+			version.setResourceVersion(resVersion);
+		}
+		
+		if(docIterator.hasNext() || resIterator.hasNext()){
+			logger.warn("Versions inconsitency detected");
+		}
+		
+		
+	}
 }
+ 

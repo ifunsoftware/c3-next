@@ -13,6 +13,8 @@ public abstract class Content extends AbstractSecureEntity{
 	
 	protected Date createDate;
 	
+	protected Date lastEditDate = new Date();
+	
 	protected User owner;
 	
 	protected AbstractGroup group;
@@ -65,6 +67,22 @@ public abstract class Content extends AbstractSecureEntity{
 		this.group = group;
 	}
 	
+	public Resource getResource() {
+		return resource;
+	}
+
+	public void setResource(Resource resource) {
+		this.resource = resource;
+	}
+
+	public Date getLastEditDate() {
+		return lastEditDate;
+	}
+
+	public void setLastEditDate(Date lastEditDate) {
+		this.lastEditDate = lastEditDate;
+	}
+
 	public void syncMetadata(){
 		
 		Map<String, String> metadata = getMetadata();

@@ -1,7 +1,5 @@
 package org.aphreet.c3.web.service;
 
-import java.io.OutputStream;
-
 import org.aphreet.c3.web.entity.AbstractGroup;
 import org.aphreet.c3.web.entity.Document;
 import org.aphreet.c3.web.entity.INode;
@@ -64,10 +62,5 @@ public interface IResourceService {
 	public Document getDocumentWithCa(String path);
 	
 	public INode getINodeWithPath(String path, AbstractGroup group);
-
-	public void getDocumentContent(Document doc, OutputStream out);
-	
-	public void getDocumentContent(Document doc, Integer revision, OutputStream out);
-	
 
 }

@@ -46,4 +46,12 @@ public abstract class ContentVersion implements Entity{
 	public DataWrapper getData(){
 		return resourceVersion.data();
 	}
+
+	public ResourceVersion getResourceVersion() {
+		return resourceVersion;
+	}
+
+	public void setResourceVersion(ResourceVersion resourceVersion) {
+		this.resourceVersion = resourceVersion;
+	}
 }

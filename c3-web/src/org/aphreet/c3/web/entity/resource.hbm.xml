@@ -9,6 +9,7 @@
 		</id>
 		<property name="title" type="text" not-null="true" index="resource_title"/>
 		<property name="createDate" not-null="true"/>
+		<property name="lastEditDate"/>
 	
 		<property name="resourceAddress" type="string" unique="true"/>
 		

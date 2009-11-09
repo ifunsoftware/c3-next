@@ -1,5 +1,6 @@
 package org.aphreet.c3.web.service.impl;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -27,7 +28,7 @@ public class SearchService implements ISearchService {
 	public List<Content> searchResources(String query){
 		//TODO implement search
 		log.warn("There is no search in this system");
-		return null;
+		return Collections.emptyList();
 	}
 
 }

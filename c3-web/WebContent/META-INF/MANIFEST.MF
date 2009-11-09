@@ -3,6 +3,7 @@ Class-Path:
 Bundle-Name: C3 Web
 Bundle-Version: 1.0.0
 Bundle-SymbolicName: org.aphreet.c3.web
+Web-ContextPath: /c3
 Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  com.springsource.org.apache.myfaces.javax.faces;version="[1.2.2,1.2.2]",
@@ -31,7 +32,8 @@ Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  org.springframework.web;version="[2.5.6.SEC01,2.5.6.SEC01]",
  org.springframework.web.servlet;version="[2.5.6.SEC01,2.5.6.SEC01]",
  com.springsource.javax.el;version="[1.0.0,1.0.0]",
- com.springsource.javax.validation;version="[1.0.0.GA,1.0.0.GA]"
+ com.springsource.javax.validation;version="[1.0.0.GA,1.0.0.GA]",
+ com.springsource.org.apache.commons.lang;version="[2.4.0,2.4.0]"
 Import-Package: com.springsource.server.deployer.app.spring;version="[1.0.0,1.0.0]",
  com.springsource.server.web.dm;version="[1.0.0,1.0.0]",
  javax.annotation;version="[1.0.0,1.0.0]",

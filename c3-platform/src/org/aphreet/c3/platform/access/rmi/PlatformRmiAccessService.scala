@@ -10,4 +10,5 @@ trait PlatformRmiAccessService {
   
   def getMetadata(ra:String):HashMap[String, String]
   
+  def getResourceAsString(ra:String):String
 }

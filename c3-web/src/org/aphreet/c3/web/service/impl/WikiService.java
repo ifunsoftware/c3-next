@@ -22,7 +22,6 @@ import org.aphreet.c3.web.message.MailingTask;
 import org.aphreet.c3.web.service.IMessageService;
 import org.aphreet.c3.web.service.IWikiService;
 import org.aphreet.c3.web.util.SpringUtil;
-import org.aphreet.c3.web.util.collection.CollectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -76,7 +75,7 @@ public class WikiService implements IWikiService {
 		}
 		
 		try{
-			return page.getVersions().get(revision);
+			return page.getVersions().get(revision-1);
 		}catch(IndexOutOfBoundsException e){
 			return null;
 		}
@@ -96,7 +95,8 @@ public class WikiService implements IWikiService {
 			version.setHtmlBody(this.parseWikiText(text, page.getGroup()));
 			version.setEditDate(new Date());
 			version.setEditor(editor);
-			page.getVersions().add(version);
+			page.addVersion(version);
+			page.setLastEditDate(version.getEditDate());
 			
 			if(notify){
 				processNotifiaction(page, false);
@@ -116,8 +116,7 @@ public class WikiService implements IWikiService {
 		version.setEditDate(page.getCreateDate());
 		version.setEditor(page.getOwner());
 		
-		page.setVersions(CollectionFactory.listOf(version));
-		
+		page.addVersion(version);
 		
 		wikiDao.persist(page);
 		

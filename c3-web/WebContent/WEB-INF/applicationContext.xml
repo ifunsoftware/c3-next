@@ -62,6 +62,25 @@
 				<prop key="hibernate.format_sql">true</prop>
 			</props>
 		</property>
+		
+		<property name="eventListeners">
+			<map>
+				<entry key="pre-insert">
+					<ref bean="resourcePersistenceListener"/>
+				</entry>
+				<entry key="pre-update">
+					<ref bean="resourcePersistenceListener"/>
+				</entry>
+				<entry key="post-load">
+					<ref bean="resourcePersistenceListener"/>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean id="resourcePersistenceListener"
+		class="org.aphreet.c3.web.dao.listener.ResourcePersistenceListener">
+		<property name="platformAccessEndpoint" ref="accessService" />
 	</bean>
 
 	<bean id="messageSource"

@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.resource
 
 import scala.collection.jcl.{HashMap, Map, Buffer, ArrayList}
 
-import java.util.{Map => JMap}
+import java.util.{Map => JMap, List => JList}
 
 import java.util.Date
 
@@ -18,14 +18,16 @@ class Resource {
  
   var systemMetadata:HashMap[String, String] = new HashMap
   
-  var versions:Buffer[ResourceVersion] = new ArrayList
+  var versions:ArrayList[ResourceVersion] = new ArrayList
   
   var isMutable = false;
   
   
-  def getMetadata:JMap[String, String] = metadata.underlying;
+  def getMetadata:JMap[String, String] = metadata.underlying
   
-  def getSysMetadata:JMap[String, String] = metadata.underlying;
+  def getSysMetadata:JMap[String, String] = systemMetadata.underlying
+  
+  def getVersions:JList[ResourceVersion] = versions.underlying
   
   def addVersion(version:ResourceVersion){
     if(!isMutable){
@@ -35,7 +37,30 @@ class Resource {
   }
   
   override def toString:String = {
-    address + " " + createDate + " " + metadata + " " + systemMetadata + " " + versions
+    
+    val builder = new StringBuilder
+    
+    builder.append("Resource:\n").append("Address: ").append(address)
+    	.append("\nCreate date: ").append(createDate)
+    	.append("\n\nMetadata: ")
+    
+    for((key, value) <- metadata){
+      builder.append("\n").append(key).append(" -> ").append(value)
+    }
+    
+    builder.append("\n\nSystem metadata:" )
+    
+    for((key, value) <- systemMetadata){
+      builder.append("\n").append(key).append(" -> ").append(value)
+    }
+    
+    builder.append("\n\nVersions:")
+    
+    for(i <- 1 to versions.size){
+      builder.append("\nVer ").append(i).append(": ").append(versions(i-1).toString)
+    }
+    
+    builder.toString
   }
   
   def toByteArray:Array[Byte] = {

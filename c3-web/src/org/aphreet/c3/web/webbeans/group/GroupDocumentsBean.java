@@ -1,9 +1,11 @@
 package org.aphreet.c3.web.webbeans.group;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.event.ValueChangeListener;
@@ -45,6 +47,7 @@ public class GroupDocumentsBean extends IdGroupViewBean
 	private final static Log logger = LogFactory.getLog(GroupDocumentsBean.class);
 	
 	private List<File> uploadData;
+	
 	private TreeNode<INode> fileTree;
 	
 	@NotEmpty
@@ -53,7 +56,8 @@ public class GroupDocumentsBean extends IdGroupViewBean
 	@NotEmpty
 	private String nodeName;
 	
-
+	private Set<File> tempFiles = new HashSet<File>();
+	
 	private INode currentNode;
 
 	private int moveId = -1;
@@ -99,11 +103,8 @@ public class GroupDocumentsBean extends IdGroupViewBean
 			
 			if(uploadItem.isTempFile()){
 				File tmpFile = uploadItem.getFile();
-				try{
-					resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
-				}finally{
-					tmpFile.delete();
-				}
+				tempFiles.add(tmpFile);
+				resourceService.saveDocument(doc, new DataWrapperFactory().wrap(tmpFile));
 			}else{
 				resourceService.saveDocument(doc, new DataWrapperFactory().wrap(uploadItem.getData()));
 			}
@@ -269,6 +270,17 @@ public class GroupDocumentsBean extends IdGroupViewBean
 			}
 		}
 		throw new FileSystemException("Can't generate find name for node");
+	}
+	
+	@PreDestroy
+	public void destroy(){
+		for(File tmpFile : tempFiles){
+			try{
+				tmpFile.delete();
+			}catch(Throwable e){
+				logger.warn("Failed to remove temp file: " + tmpFile.getAbsolutePath(), e);
+			}
+		}
 	}
 	
 	//-------------- getters and setters -------------------

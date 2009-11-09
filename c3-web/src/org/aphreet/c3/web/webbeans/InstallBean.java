@@ -6,12 +6,14 @@ import javax.annotation.PostConstruct;
 
 import org.aphreet.c3.web.entity.SingleUserGroup;
 import org.aphreet.c3.web.entity.User;
+import org.aphreet.c3.web.service.IPlatformControllService;
 import org.aphreet.c3.web.service.IUserService;
 import org.aphreet.c3.web.util.HashUtil;
 import org.aphreet.c3.web.util.HttpUtil;
 import org.aphreet.c3.web.util.collection.CollectionFactory;
 import org.hibernate.validator.Email;
 import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,11 +25,17 @@ public class InstallBean {
 	@Autowired
 	private IUserService userService;
 	
+	@Autowired
+	private IPlatformControllService platformControllService;
+	
 	@Length(min=5)
 	private String password;
 
 	@Email
 	private String mail;
+	
+	@NotEmpty
+	private String path;
 	
 	@PostConstruct
 	public void init(){
@@ -67,6 +75,13 @@ public class InstallBean {
 		
 		userService.createUser(user);
 		
+		//FixedBDBStorage
+		//FileStorage
+		//MutableBDBStorage
+		platformControllService.createStorage("FixedBDBStorage", path);
+		platformControllService.createStorage("FileStorage", path);
+		platformControllService.createStorage("MutableBDBStorage", path);
+		
 		return "success";
 	}
 	
@@ -84,6 +99,14 @@ public class InstallBean {
 
 	public void setMail(String mail) {
 		this.mail = mail;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 	
 	

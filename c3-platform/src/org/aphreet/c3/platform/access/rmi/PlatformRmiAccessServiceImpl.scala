@@ -31,6 +31,18 @@ class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
     accessEndpoint.add(resource)
   }
   
+  def getResourceAsString(ra:String):String = {
+    
+    val resource = accessEndpoint get ra;
+    
+    if(resource != null){
+      val result = resource.toString
+      result
+    }else{
+      null
+    }
+  }
+  
   def get(ra:String):Array[Byte] = {
     null
   }

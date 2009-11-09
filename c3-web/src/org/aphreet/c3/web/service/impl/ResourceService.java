@@ -1,6 +1,5 @@
 package org.aphreet.c3.web.service.impl;
 
-import java.io.OutputStream;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -192,21 +191,6 @@ public class ResourceService implements IResourceService{
 	 */
 	public Document getDocumentWithCa(String path){
 		return resourceDao.getDocumentWithPath(path);
-	}
-	
-	public void getDocumentContent(Document doc, OutputStream out){
-		doc.getHeadVersion().getData().writeTo(out);
-	}
-	
-	public void getDocumentContent(Document doc, Integer revision, OutputStream out){
-		
-		if(revision > doc.getVersions().size() || revision < 1){
-			doc.getHeadVersion().getData().writeTo(out);
-		}else{
-			doc.getVersions().get(revision-1).getData().writeTo(out);
-		}
-		
-		
 	}
 
 	@Override
