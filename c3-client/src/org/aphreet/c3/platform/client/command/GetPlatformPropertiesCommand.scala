@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.client.command
 
-import scala.collection.mutable.HashMap
+import scala.collection.jcl.HashMap
 
 class GetPlatformPropertiesCommand extends Command{
 
