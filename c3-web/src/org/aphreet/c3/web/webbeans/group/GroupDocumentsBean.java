@@ -20,6 +20,7 @@ import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.exception.FileSystemException;
 import org.aphreet.c3.web.service.IResourceService;
 import org.aphreet.c3.web.util.FacesUtil;
+import org.aphreet.c3.web.util.FileUtil;
 import org.aphreet.c3.web.util.HttpUtil;
 import org.hibernate.validator.NotEmpty;
 import org.richfaces.component.html.HtmlTree;
@@ -34,8 +35,6 @@ import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
 import org.richfaces.model.UploadItem;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import eu.medsea.mimeutil.MimeUtil;
 
 public class GroupDocumentsBean extends IdGroupViewBean 
 	implements FileUploadListener, DropListener, NodeSelectedListener, ValueChangeListener{
@@ -260,7 +259,7 @@ public class GroupDocumentsBean extends IdGroupViewBean
 			return name;
 		}
 		
-		String ext = MimeUtil.getExtension(name);
+		String ext = FileUtil.getExtension(name);
 		String baseName = name.replaceAll("[.]" + ext + "$", "");
 		
 		for(int i=0; i< Integer.MAX_VALUE; i++){

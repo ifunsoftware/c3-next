@@ -18,6 +18,7 @@
 		<dependency>
 			<groupId>org.aphreet.c3</groupId>
 			<artifactId>c3-platform</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -32,20 +33,6 @@
 			<artifactId>org.apache.myfaces-library</artifactId>
 			<type>libd</type>
 			<version>1.2.2</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.richfaces</groupId>
-			<artifactId>com.springsource.org.richfaces.impl</artifactId>
-			<version>3.2.1.GA</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.richfaces</groupId>
-			<artifactId>com.springsource.org.richfaces</artifactId>
-			<version>3.2.1.GA</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -103,7 +90,7 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.lang</artifactId>
 			<version>2.4.0</version>
-			<scope>proviede</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -119,26 +106,140 @@
 			<version>1.4.0</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>com.springsource.javax.servlet</artifactId>
+			<version>2.5.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss</groupId>
+			<artifactId>richfaces-api</artifactId>
+			<version>3.3.2.SR1</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/richfaces-api-3.3.2.SR1.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss</groupId>
+			<artifactId>richfaces-impl</artifactId>
+			<version>3.3.2.SR1</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/richfaces-impl-3.3.2.SR1.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss</groupId>
+			<artifactId>richfaces-ui</artifactId>
+			<version>3.3.2.SR1</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/richfaces-ui-3.3.2.SR1.jar</systemPath>
+		</dependency>
+    	
+		<dependency>
+			<groupId>be.devijver</groupId>
+			<artifactId>wikiparser</artifactId>
+			<version>0.1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/wikiparser.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.bradmcevoy</groupId>
+			<artifactId>milton-api</artifactId>
+			<version>1.4.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/milton-api-1.4.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.springsource.server</groupId>
+			<artifactId>deployer.core</artifactId>
+			<version>1.0.2-SR02</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/com.springsource.server.deployer.core-1.0.2.SR02.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.springsource.server</groupId>
+			<artifactId>web.dm</artifactId>
+			<version>1.0.2-SR02</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/com.springsource.server.web.dm-1.0.2.SR02.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.osgi</groupId>
+			<artifactId>org.springframework.osgi.core</artifactId>
+			<version>1.2.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
-	<!--
-		<build> <defaultGoal>package</defaultGoal>
+
+	<repositories>
+      <repository>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <id>repository.jboss.com</id>
+         <name>Jboss Repository for Maven</name>
+         <url>
+            http://repository.jboss.com/maven2/
+         </url>
+         <layout>default</layout>
+      </repository>
+    
+    <repository>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <id>repository.jboss.com</id>
+         <name>Jboss Repository for Maven</name>
+         <url>
+            http://repository.jboss.com/maven2/
+         </url>
+         <layout>default</layout>
+      </repository>
+    </repositories>
+
+	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<outputDirectory>bin</outputDirectory> <resources> <resource>
-		<directory>src/</directory> <includes>
-		<include>META-INF/spring/*.xml</include> </includes> </resource>
-		</resources> <plugins> <plugin> <groupId>org.scala-tools</groupId>
-		<artifactId>maven-scala-plugin</artifactId> <executions> <execution>
-		<goals> <goal>compile</goal> </goals> </execution> </executions>
-		<configuration> <sourceDir>src</sourceDir> <jvmArgs>
-		<jvmArg>-Xms64m</jvmArg> <jvmArg>-Xmx1024m</jvmArg> </jvmArgs>
-		</configuration> </plugin> <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-jar-plugin</artifactId> <executions> <execution>
-		</execution> </executions> <configuration>
-		<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-		<manifestLocation>META-INF</manifestLocation> <archive> <manifestFile>
-		src/META-INF/MANIFEST.MF </manifestFile>
-		<addMavenDescriptor>false</addMavenDescriptor> </archive>
-		</configuration> </plugin> </plugins> </build>
-	-->
+		<outputDirectory>bin</outputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webXml>WebContent/WEB-INF/web.xml</webXml>
+					<warSourceDirectory>WebContent</warSourceDirectory>
+					<archive>
+						<manifestFile>
+							WebContent/META-INF/MANIFEST.MF
+                        </manifestFile>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

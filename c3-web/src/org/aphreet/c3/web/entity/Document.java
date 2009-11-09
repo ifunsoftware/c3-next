@@ -8,8 +8,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aphreet.c3.platform.resource.*;
-
-import eu.medsea.mimeutil.MimeUtil;
+import org.aphreet.c3.web.util.FileUtil;
 
 public class Document extends INode{
 	
@@ -41,7 +40,7 @@ public class Document extends INode{
 	}
 	
 	public void setInodeName(String name){
-		String extension = MimeUtil.getExtension(name);
+		String extension = FileUtil.getExtension(name);
 		name = name.replaceAll("." + extension + "$", "");
 		
 		this.name = name;

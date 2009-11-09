@@ -1,6 +1,0 @@
-<?xml version="1.0" ?>
-<Context cookies="true" override="true">
- 
-   <Manager pathname="c3_sessions.ser" class="org.apache.catalina.session.PersistentManager"/>
-
-</Context>
