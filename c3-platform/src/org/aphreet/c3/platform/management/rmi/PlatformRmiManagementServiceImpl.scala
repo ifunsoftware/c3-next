@@ -5,7 +5,8 @@ import org.aphreet.c3.platform.storage.{StorageType, StorageMode, RW, USER_RO, U
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.collection.mutable.HashMap
+import java.util.{HashMap => JHashMap}
+import scala.collection.jcl.HashMap
 
 @Component("platformRmiManagementService")
 class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
@@ -46,6 +47,11 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
     managementEndpoint.setPlatformProperty(key, value)
   }
   
-  def platformProperties:HashMap[String, String] = managementEndpoint.getPlatformProperties
+  def platformProperties:HashMap[String, String] = {
+    
+    val map = new JHashMap[String, String]()
+    map.putAll(managementEndpoint.getPlatformProperties)
+    new HashMap(map)
+  }
   
 }

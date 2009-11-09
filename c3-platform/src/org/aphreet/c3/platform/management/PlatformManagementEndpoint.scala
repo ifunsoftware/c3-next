@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 
-import scala.collection.mutable.HashMap
+import java.util.{Map => JMap}
 
 trait PlatformManagementEndpoint {
   
@@ -16,7 +16,7 @@ trait PlatformManagementEndpoint {
   
   def setStorageMode(id:String, mode:StorageMode)
   
-  def getPlatformProperties:HashMap[String, String]
+  def getPlatformProperties:JMap[String, String]
   
   def setPlatformProperty(key:String, value:String)
 

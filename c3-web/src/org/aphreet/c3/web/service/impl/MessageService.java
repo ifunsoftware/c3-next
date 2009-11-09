@@ -1,20 +1,30 @@
 package org.aphreet.c3.web.service.impl;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aphreet.c3.web.dao.ResourceDao;
 import org.aphreet.c3.web.entity.AbstractGroup;
 import org.aphreet.c3.web.entity.Message;
 import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.entity.UserProfile;
 import org.aphreet.c3.web.message.MailingTask;
+import org.aphreet.c3.web.service.IConfigService;
 import org.aphreet.c3.web.service.IMessageService;
 import org.aphreet.c3.web.service.IWikiService;
 import org.aphreet.c3.web.util.SpringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,6 +46,14 @@ public class MessageService implements IMessageService {
 
 	@Autowired
 	private MessageSource messageSource;
+	
+	@Autowired
+	private IConfigService configService;
+	
+	@Autowired
+	private JavaMailSender mailSender;
+	
+	private final Log logger = LogFactory.getLog(getClass());
 	
 
 	public Message loadDiscussionById(Integer id, User currentUser){
@@ -90,16 +108,41 @@ public class MessageService implements IMessageService {
 	 * @param messageContents
 	 */
 	public void sendMessage(MailingTask task){
-		//TODO implement mail send
-//		try {
-//			Session session = connectionFactory.createConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
-//			MessageProducer producer = session.createProducer(mailQueue);
-//			
-//			ObjectMessage message = session.createObjectMessage(task);
-//			
-//			producer.send(message);
-//		} catch (JMSException e) {
-//			e.printStackTrace();
-//		}
+		if(!configService.isMailEnabled()){
+			return;
+		}
+		List<InternetAddress> recipients = new LinkedList<InternetAddress>();
+		
+		for(String address:task.getAddresses()){
+			try{
+				recipients.add(new InternetAddress(address));
+			}catch(AddressException e){
+				logger.warn("wrong address: " + address);
+			}
+		}
+		
+		if(recipients.isEmpty()){
+			return;
+		}
+		
+		try{
+			InternetAddress groupAddress = new InternetAddress(task.getGroup() + "@" + configService.getMailDomain());
+			
+			MimeMessage msg = mailSender.createMimeMessage();
+			msg.setFrom(groupAddress);
+			msg.setRecipient(javax.mail.Message.RecipientType.TO, groupAddress);
+			msg.setReplyTo(new InternetAddress[]{groupAddress});
+			msg.setRecipients(javax.mail.Message.RecipientType.BCC, recipients.toArray(new InternetAddress[]{}));
+			
+			msg.setSubject(task.getTitle());
+			msg.setText(task.getMessage());
+			msg.setHeader("X-Mailer", "JavaMailer");
+			msg.setSentDate(new Date());
+			
+			mailSender.send(msg);
+			
+		}catch(Exception e){
+			logger.warn(e.getClass().getCanonicalName() + " " + e.getMessage());
+		}
 	}
 }

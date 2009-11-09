@@ -4,9 +4,7 @@ import java.io.{File, StringWriter, FileWriter}
 
 import java.util.{List => JList}
 
-import scala.collection.mutable.HashMap
-
-import scala.collection.jcl.{LinkedList, Conversions, Set}
+import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
 import org.aphreet.c3.platform.storage.{StorageParams, StorageMode, StorageModeParser}
 
@@ -60,7 +58,7 @@ class PlatformConfigManager {
     	  new StorageParams(
     	    storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
     	    List.fromIterator(idArray.elements),
-    		storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString,
+    		storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString.replaceAll("\\+", "\\"),
     		storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
     		StorageModeParser.valueOf(storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString)
          ))

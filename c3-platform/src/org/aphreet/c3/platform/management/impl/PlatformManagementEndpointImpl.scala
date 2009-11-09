@@ -9,7 +9,9 @@ import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.collection.mutable.HashMap
+import scala.collection.jcl.HashMap
+
+import java.util.{Map => JMap, Collections}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -19,6 +21,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   var storageManager:StorageManager = null
 
   var configManager:PlatformConfigManager = null
+  
+  private var currentConfig:JMap[String, String] = null;
   
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
@@ -35,13 +39,24 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def setStorageMode(id:String, mode:StorageMode) = storageManager.setStorageMode(id, mode)
  
-  def getPlatformProperties:HashMap[String, String] = configManager.getPlatformParam
+  def getPlatformProperties:JMap[String, String] = {
+    
+    if(currentConfig == null){
+      currentConfig = configManager.getPlatformParam.underlying
+    }
+    Collections.unmodifiableMap[String, String](currentConfig)
+  }
   
   def setPlatformProperty(key:String, value:String) = {
-    val config = configManager.getPlatformParam
     
-    config.put(key, value)
-    
-    configManager.setPlatformParam(config)
+	  this.synchronized{
+
+		  val config = configManager.getPlatformParam
+
+		  config.put(key, value)
+		  currentConfig.put(key,value)
+
+		  configManager.setPlatformParam(config)
+	  }
   }
 }

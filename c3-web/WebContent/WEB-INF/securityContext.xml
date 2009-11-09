@@ -12,6 +12,8 @@
 
 		<intercept-url pattern="/group/add.xhtml*" access="ROLE_SUPERVISOR" />
 
+		<intercept-url pattern="/config.xhtml*" access="ROLE_SUPERVISOR" />
+		
 		<intercept-url pattern="/user/signin.xhtml*" filters="none" />
 		<intercept-url pattern="/install.xhtml*" filters="none" />
 		<intercept-url pattern="/a4j/**" filters="none" />

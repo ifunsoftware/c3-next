@@ -82,6 +82,8 @@ public class InstallBean {
 		platformControllService.createStorage("FileStorage", path);
 		platformControllService.createStorage("MutableBDBStorage", path);
 		
+		HttpUtil.sendRedirect("/index.xhtml");
+		
 		return "success";
 	}
 	
