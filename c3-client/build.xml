@@ -1,0 +1,49 @@
+<project name="c3-client">
+
+	<target name="init">
+		<property name="lib.dir" value="lib"/>
+		
+		<path id="build.classpath">	
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		
+		<taskdef resource="scala/tools/ant/antlib.xml">
+		    <classpath>
+		    	<pathelement location="support/scala-compiler.jar"/>
+		        <pathelement location="${lib.dir}/scala-library.jar"/>
+		   	</classpath>
+		</taskdef>
+	</target>
+	
+    <target name="clean" depends="init">
+        <delete dir="bin"/>
+    </target>
+
+    <target name="compile" depends="init">
+    	<mkdir dir="bin"/>
+    	<scalac srcdir="src" destdir="bin" classpathref="build.classpath" force="changed"/>
+    </target>
+
+    <target name="jar" depends="compile">
+    	<delete file="c3-client.jar"/>
+    	<jar jarfile="c3-client.jar"> 
+    		<manifest>
+    			<attribute name="Main-Class" value="org.aphreet.c3.platform.client.PlatformClient"/>
+    		</manifest>
+    		<fileset dir="bin" includes="**/*.class" />
+    		<zipfileset src="${lib.dir}/commons-logging.jar" />
+    		<zipfileset src="${lib.dir}/log4j-1.2.15.jar" />
+    		<zipfileset src="${lib.dir}/scala-library.jar" />
+    		<zipfileset src="${lib.dir}/slf4j-api-1.5.0.jar" />
+    		<zipfileset src="${lib.dir}/slf4j-log4j12-1.5.0.jar" />
+    		<zipfileset src="${lib.dir}/spring.jar" />
+    	</jar>
+    </target>
+
+    <target name="run">
+        <java jar="build/jar/HelloWorld.jar" fork="true"/>
+    </target>
+
+</project>
