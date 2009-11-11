@@ -223,10 +223,19 @@
 				<configuration>
 					<webXml>WebContent/WEB-INF/web.xml</webXml>
 					<warSourceDirectory>WebContent</warSourceDirectory>
+					<webResources>
+						<resource>
+							<directory>src</directory>
+							<targetPath>WEB-INF/classes</targetPath>
+							<includes>
+								<include>**/*.xml</include>
+							</includes>
+						</resource>
+					</webResources>
 					<archive>
 						<manifestFile>
 							WebContent/META-INF/MANIFEST.MF
-                        </manifestFile>
+						</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
