@@ -35,7 +35,7 @@ class PlatformConfigManager {
     val configDir = new File(configPath)
     if(!configDir.exists) configDir.mkdirs
     
-    log info "Configuration path: " + configPath
+    log info "Configuration path: " + configPath  
   }
   
   def getStorageParams:List[StorageParams] = {
