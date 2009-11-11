@@ -4,7 +4,7 @@ import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import java.io.{File, OutputStream}
 
-import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus}
+import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
 
 abstract class AbstractBDBStorage(val storageId:String, override val path:String) extends AbstractStorage(storageId, path){
 
@@ -51,7 +51,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     
     val tx = env.beginTransaction(null, null)
     try{
-	    storeData(resource)
+	    storeData(resource, tx)
 	    database.put(tx, key, value)
      
 	    tx.commit
@@ -75,7 +75,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     if(database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
       resource.address = ra
-      fillResourceWithData(resource)
+      loadData(resource)
       Some(resource)
     }else None
     
@@ -92,7 +92,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     val tx = env.beginTransaction(null, null)
     
     try{
-    	storeData(resource)
+    	storeData(resource, tx)
     	
     	database.put(tx, key, value)
      
@@ -114,8 +114,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     
     val tx = env.beginTransaction(null, null)
     try{
+    	deleteData(ra, tx)
     	database.delete(tx, key)
-    	deleteData(ra)
+    	
     	tx.commit
     }catch{
       case e => {
@@ -144,19 +145,22 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     }
   }
   
-  protected def storeData(resource:Resource){
-    
+  protected def storeData(resource:Resource, tx:Transaction){
+    storeData(resource)
   }
   
-  def fillResourceWithData(resource:Resource)
+  protected def storeData(resource:Resource){}
   
-  protected def deleteData(ra:String){
-    
+  
+  protected def deleteData(ra:String, tx:Transaction){
+    deleteData(ra)
   }
   
-  protected def preSave(resource:Resource){
-    
-  }
+  protected def deleteData(ra:String){}
+  
+  def loadData(resource:Resource)
+  
+  protected def preSave(resource:Resource){}
   
   protected def postSave(resource:Resource){
     for(version <- resource.versions if !version.persisted){

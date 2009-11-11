@@ -37,7 +37,7 @@ class FileStorage(override val id:String, override val path:String) extends Abst
     }
   }
   
-  def fillResourceWithData(resource:Resource) = {
+  def loadData(resource:Resource) = {
     resource.versions(0).data = DataWrapper.wrap(getFileForRA(resource.address))
   }
   

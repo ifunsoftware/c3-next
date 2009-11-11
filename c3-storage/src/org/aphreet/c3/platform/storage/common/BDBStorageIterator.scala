@@ -40,7 +40,7 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
     previousResource
   }
   
-  protected def loadData(resource:Resource) = storage.fillResourceWithData(resource)
+  protected def loadData(resource:Resource) = storage.loadData(resource)
   
   def close = {
     try{

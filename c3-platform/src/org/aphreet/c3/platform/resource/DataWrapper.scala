@@ -27,6 +27,12 @@ abstract class DataWrapper {
   
   def writeTo(out:OutputStream)
   
+  def getBytes:Array[Byte] = {
+    val stream = new ByteArrayOutputStream;
+    writeTo(stream)
+    stream.toByteArray
+  }
+  
   def stringValue:String
  
   def length:Long
@@ -34,7 +40,7 @@ abstract class DataWrapper {
   def mimeType:String
   
   protected def top(types:java.util.Collection[_]):String = {
-    types.iterator.next.asInstanceOf[MimeType].getMediaType
+    types.iterator.next.asInstanceOf[MimeType].toString
   }
 }
 
@@ -95,6 +101,8 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
   def writeTo(out:OutputStream) = {
     out.write(bytes)
   }
+  
+  override def getBytes:Array[Byte] = bytes
   
   def stringValue:String = new String(bytes)
   

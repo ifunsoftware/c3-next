@@ -4,17 +4,35 @@ import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 import org.aphreet.c3.platform.storage.StorageType
 
-class FixedBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path){
+import com.sleepycat.je._
 
-  override protected def preSave(resource:Resource){
-    resource.versions(0).systemMetadata.put(Resource.MD_EMBEDDED_CONTENT, resource.versions(0).data.stringValue)
+class FixedBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path){
+  
+  override protected def storeData(resource:Resource, tx:Transaction){
+    val key = new DatabaseEntry((resource.address + "-data").getBytes)
+    val value = new DatabaseEntry(resource.versions(0).data.getBytes)
+    
+    database.put(tx, key,value)
   }
   
-  def fillResourceWithData(resource:Resource) = 
-    resource.versions(0).data = resource.versions(0).systemMetadata.get(Resource.MD_EMBEDDED_CONTENT) match {
-      case Some(value:String) =>  DataWrapper.wrap(value)
-      case None => DataWrapper.empty
-    }
+  def loadData(resource:Resource) = {
+    
+    val key = new DatabaseEntry((resource.address + "-data").getBytes)
+    val value = new DatabaseEntry()
+    
+    if(database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS)
+      resource.versions(0).data = DataWrapper.wrap(value.getData)
+    else
+      throw new StorageException("Failed to get data from FixedBDBStorage, operation status is not SUCCESS for resource: " + resource.address)
+    
+  }
+  
+  override def deleteData(ra:String, tx:Transaction){
+    
+    val dataKey = new DatabaseEntry((ra + "-data").getBytes)    
+    database.delete(tx, dataKey)
+    
+  }
   
   def name = FixedBDBStorage.NAME
   

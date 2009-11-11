@@ -90,7 +90,7 @@ public abstract class Content extends AbstractSecureEntity{
 		metadata.put(Metadata.TITLE.key(), title);
 		metadata.put(Metadata.CREATED.key(), createDate.toString());
 		metadata.put(Metadata.OWNER.key(), owner.getName());
-		metadata.put(Metadata.POOL.key(), group.getName());
+		metadata.put(Metadata.POOL.key(), group.getUrlName());
 		
 	}
 	
