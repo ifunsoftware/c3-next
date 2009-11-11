@@ -13,8 +13,8 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
   
   { 
     register(new AddStorageCommand)
-    register(new GetPlatformPropertiesCommand)
     register(new HelpCommand)
+    register(new GetPlatformPropertiesCommand)
     register(new ListStorageCommand)
     register(new ListStorageTypesCommand)
     register(new SetPlatformPropertyCommand)

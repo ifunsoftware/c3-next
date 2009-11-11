@@ -5,7 +5,7 @@ import scala.collection.jcl.HashMap
 class GetPlatformPropertiesCommand extends Command{
 
   def execute:String = {
-    val map:HashMap[String, String] = management.platformProperties
+    val map:HashMap[String, String] = new HashMap(management.platformProperties)
     
     map.map(e => e._1 + "=" + e._2 + "\n").foldLeft("")(_ + _)
   }

@@ -49,12 +49,16 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def setPlatformProperty(key:String, value:String) = {
     
+    
 	  this.synchronized{
 
 		  val config = configManager.getPlatformParam
 
 		  config.put(key, value)
-		  currentConfig.put(key,value)
+		  
+		  if(currentConfig != null){
+			  currentConfig.put(key,value)
+		  }
 
 		  configManager.setPlatformParam(config)
 	  }

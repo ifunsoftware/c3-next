@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.management.rmi
 
-import scala.collection.jcl.HashMap
+import java.util.HashMap
 
 trait PlatformRmiManagementService {
 
