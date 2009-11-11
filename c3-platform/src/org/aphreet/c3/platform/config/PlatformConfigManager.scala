@@ -29,7 +29,8 @@ class PlatformConfigManager {
   
   @PostConstruct 
   def init = {
-    configPath = System.getenv("C3_CONFIG_PATH")
+    configPath = System.getProperty("c3.home")
+    //configPath = System.getenv("C3_CONFIG_PATH")
     
     val configDir = new File(configPath)
     if(!configDir.exists) configDir.mkdirs
