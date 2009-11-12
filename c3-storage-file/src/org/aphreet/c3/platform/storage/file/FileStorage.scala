@@ -14,7 +14,7 @@ class FileStorage(override val id:String, override val path:String) extends Abst
   var dataPath : File = null  
   
   {
-	dataPath = new File(storagePath, "data");
+	dataPath = new File(storagePath, "data")
 	if(!dataPath.exists) dataPath.mkdirs
   }
   

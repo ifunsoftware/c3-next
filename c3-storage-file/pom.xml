@@ -25,6 +25,13 @@
 			<artifactId>c3-storage</artifactId>
 		</dependency>
 		
+		<dependency>
+			<groupId>com.sleepycat.je</groupId>
+			<artifactId>com.springsource.com.sleepycat.je</artifactId>
+			<version>3.3.87</version>
+			<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 	
 	<build>
