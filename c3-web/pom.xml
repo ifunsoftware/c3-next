@@ -28,6 +28,7 @@
 			<scope>provided</scope>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.apache.myfaces</groupId>
 			<artifactId>org.apache.myfaces-library</artifactId>
@@ -35,6 +36,26 @@
 			<version>1.2.2</version>
 			<scope>provided</scope>
 		</dependency>
+-->
+	<dependency>
+    <groupId>javax.faces</groupId>
+    <artifactId>com.springsource.javax.faces</artifactId>
+    <version>1.2.0.09</version>
+    <scope>provided</scope>
+</dependency>
+
+<dependency>
+    <groupId>com.sun.faces</groupId>
+    <artifactId>com.springsource.com.sun.faces</artifactId>
+    <version>1.2.0.09</version>
+    <scope>provided</scope>
+</dependency>
+
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>com.springsource.javax.servlet.jsp.jstl</artifactId>
+    <version>1.2.0</version>
+</dependency>
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
