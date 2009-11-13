@@ -74,13 +74,9 @@ public class InstallBean {
 		user.setPassword("");
 		
 		userService.createUser(user);
-		
-		//FixedBDBStorage
-		//FileStorage
-		//MutableBDBStorage
-		platformControllService.createStorage("FixedBDBStorage", path);
-		platformControllService.createStorage("FileStorage", path);
-		platformControllService.createStorage("MutableBDBStorage", path);
+
+		platformControllService.createStorage("PureBDBStorage", path);
+		platformControllService.createStorage("FileBDBStorage", path);
 		
 		HttpUtil.sendRedirect("/index.xhtml");
 		

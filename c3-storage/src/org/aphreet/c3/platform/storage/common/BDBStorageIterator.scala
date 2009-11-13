@@ -6,6 +6,8 @@ import org.aphreet.c3.platform.resource.Resource
 
 class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 
+  val RESOURCE_ADDRESS_LENGTH = 41
+  
   val cursor:Cursor = storage.database.openCursor(null, null)
   
   private var resource:Resource = null
@@ -15,7 +17,11 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
     val databaseValue = new DatabaseEntry
     
     if(cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS){
-      resource = Resource.fromByteArray(databaseValue.getData)
+      
+      val key = new String(databaseKey.getData)
+      if(key.length == RESOURCE_ADDRESS_LENGTH){
+    	  resource = Resource.fromByteArray(databaseValue.getData)
+      }
     }else{
       resource = null
     } 

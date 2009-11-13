@@ -2,25 +2,25 @@ package org.aphreet.c3.platform.storage.dispatcher.impl
 
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
-import org.aphreet.c3.platform.storage.StorageType._
-
 import scala.collection.mutable.HashMap
 import scala.collection.immutable.TreeSet
+
+import scala.util.matching.Regex
 
 class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
 
   val storages = new HashMap[String, List[Storage]]
   
-  val typeMapping = new HashMap[String, String]
+  val typeMapping = new HashMap[String, Boolean]
   
-  val sizeRanges = List((500000, "FileStorage"))
+  val sizeRanges = List((500000, "FileBDBStorage"))
   
-  val default = "FixedBDBStorage"
+  val default = "PureBDBStorage"
   
   { 
     
-    typeMapping.put("application/c3-wiki", "MutableBDBStorage")
-    typeMapping.put("application/c3-message", "FixedBDBStorage")
+    typeMapping.put("application/c3-wiki", true)
+    typeMapping.put("application/c3-message", false)
     
     for(s <- sts){
       storages.get(s.name) match {
@@ -32,17 +32,21 @@ class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
   
   def selectStorageForResource(resource:Resource):Storage = {
     
-    val contentType = resource.systemMetadata.get(Resource.MD_CONTENT_TYPE) match {
-      case Some(x) => x
-      case None => ""
+    resource.isVersioned = resource.systemMetadata.get(Resource.MD_CONTENT_TYPE) match {
+      case Some(contentType) => {
+        typeMapping.get(contentType) match{
+          case Some(vers) => vers
+          case None => false
+        }
+        
+      }
+      case None => false
     }
     
-    val storageName = typeMapping.get(contentType) match {
-      case Some(name) => name
-      case None => selectStorageForSize(resource.versions(0).data.length)
-    }
+    val storageName = selectStorageForSize(resource.versions(0).data.length)
     
     selectStorageForName(storageName)
+
   }
   
   private def selectStorageForSize(size:Long):String = {

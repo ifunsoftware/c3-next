@@ -27,8 +27,6 @@ trait Storage {
   
   def mode_=(mode:StorageMode)
   
-  def storageType:StorageType.Value
-  
   def iterator:StorageIterator
   
   def close;

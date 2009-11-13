@@ -113,7 +113,7 @@ public class Document extends INode{
 		
 		resource.addVersion(resVersion);
 		
-		if(resource.isMutable()){
+		if(resource.isVersioned()){
 			versions.add(version);
 			version.setSize(data.length());
 		}else{

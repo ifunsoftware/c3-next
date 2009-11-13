@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.management.rmi
 
-import org.aphreet.c3.platform.storage.{StorageType, StorageMode, RW, USER_RO, USER_U, StorageException}
+import org.aphreet.c3.platform.storage.{StorageMode, RW, USER_RO, USER_U, StorageException}
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,12 +18,7 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   
   def listStorages:List[StorageDescription] = {
      for(s <-managementEndpoint.listStorages)
-       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.storageType match {
-         case StorageType.FIXED => "FIXED"
-         case StorageType.MUTABLE => "MUTABLE"
-         case _ => ""
-       },
-       s.path, s.mode.name)
+       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.path, s.mode.name)
   }
    
   def listStorageTypes:List[String] = managementEndpoint.listStorageTypes

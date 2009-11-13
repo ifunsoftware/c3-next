@@ -20,7 +20,7 @@ class Resource {
   
   var versions:ArrayList[ResourceVersion] = new ArrayList
   
-  var isMutable = false;
+  var isVersioned = false;
   
   
   def getMetadata:JMap[String, String] = metadata.underlying
@@ -30,7 +30,7 @@ class Resource {
   def getVersions:JList[ResourceVersion] = versions.underlying
   
   def addVersion(version:ResourceVersion){
-    if(!isMutable){
+    if(!isVersioned){
       versions.clear
     }
     versions add version
@@ -107,6 +107,9 @@ class Resource {
 	val dataOs = new DataOutputStream(byteOs)
  
     dataOs.writeInt(0) //resource class verison, for future
+    
+    dataOs.writeBoolean(isVersioned)
+    
     writeString(address, dataOs)
     writeDate(createDate, dataOs)
     
@@ -184,6 +187,8 @@ object Resource {
     val dataIn = new DataInputStream(byteIn)
     
     dataIn.readInt //resource class version
+    
+    resource.isVersioned = dataIn.readBoolean
     
     resource.address = readString(dataIn)
     resource.createDate = new Date(dataIn.readLong)

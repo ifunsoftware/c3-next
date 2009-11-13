@@ -9,7 +9,7 @@ class ListStorageCommand extends Command {
     
     for(storage <- storages){
       
-      builder.append(String.format("%-20s %4s %-7s %-10s %s\n", storage.storageType, storage.id, storage.contentType, storage.mode, storage.path))
+      builder.append(String.format("%-20s %4s %-10s %s\n", storage.storageType, storage.id, storage.mode, storage.path))
       
     }
     

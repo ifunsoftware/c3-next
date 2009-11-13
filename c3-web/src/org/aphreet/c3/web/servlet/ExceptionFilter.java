@@ -12,6 +12,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * In case of uncaught exceptions filter redirects to error 500 page
  * @author aphreet
@@ -19,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ExceptionFilter implements Filter {
 
+	private final Log logger = LogFactory.getLog(getClass());
+	
 	public void init(FilterConfig arg0) throws ServletException {
 
 	}
@@ -38,7 +43,7 @@ public class ExceptionFilter implements Filter {
 					return;
 				}
 			}
-			e.printStackTrace();
+			logger.error(e);
 			sendRedirect(request, response, "/error/500.xhtml");
 			
 		}

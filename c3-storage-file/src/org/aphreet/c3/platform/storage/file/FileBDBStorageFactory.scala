@@ -4,14 +4,16 @@ import org.aphreet.c3.platform.storage.common.AbstractStorageFactory
 import org.springframework.stereotype.Component
 
 @Component
-class FileStorageFactory extends AbstractStorageFactory{
+class FileBDBStorageFactory extends AbstractStorageFactory{
 
-   protected def createNewStorage(params:StorageParams):Storage = {
+  protected def createNewStorage(params:StorageParams):Storage = {
     
-    val storage = new FileStorage(params.id, params.path)
+    val storage = new FileBDBStorage(params.id, params.path)
     storage.secondaryIds = params.secIds
     storage
+    
   }
   
-  def name:String = FileStorage.NAME
+  def name:String = FileBDBStorage.NAME
+  
 }

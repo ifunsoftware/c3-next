@@ -1,30 +1,35 @@
 package org.aphreet.c3.platform.storage.bdb
 
-import java.util.Date
-
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 
 import com.sleepycat.je._
 
-class MutableBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path){
-  
+class PureBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path) {
+
   override protected def storeData(resource:Resource, tx:Transaction){
     
-    resource.isMutable = true
-    
-    for(version <- resource.versions if (version.persisted == false)){
-      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis)
-      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+    def storeVersionData(key:String, version:ResourceVersion){
       
-      val key = new DatabaseEntry(versionKey.getBytes)
-      val value = new DatabaseEntry(version.data.getBytes)
-   
-      database.put(tx, key,value)
+      val dbKey = new DatabaseEntry(key.getBytes)
+	  val dbValue = new DatabaseEntry(version.data.getBytes)
+	   
+	  database.put(tx, dbKey, dbValue)
     }
     
-    
-    
+    if(resource.isVersioned){
+	  for(version <- resource.versions){
+	    if(version.persisted == false){
+	      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis)
+	      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+          storeVersionData(versionKey, version)
+	    }
+	  }
+    }else{
+      val versionKey = resource.address + "-data"
+      resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+      storeVersionData(versionKey, resource.versions(0))
+    }
   }
   
   def loadData(resource:Resource) = {
@@ -43,9 +48,6 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
       else
         throw new StorageException("Failed to get data from MutableBDBStorage, operation status is not SUCCESS for resource: " + resource.address + " and version: " + versionKey)
     }
-   
-    resource.isMutable = true
-    
   }
   
   
@@ -67,17 +69,14 @@ class MutableBDBStorage(override val id:String, override val path:String) extend
       }
       
       
-    }else
-      throw new StorageException("Failed to get resource, operation status is not SUCCESS, address: " + ra)
+    }else throw new StorageException("Failed to get resource, operation status is not SUCCESS, address: " + ra)
     
   }
   
-  def name = MutableBDBStorage.NAME
-  
-  def storageType:StorageType.Value = StorageType.MUTABLE
+  def name = PureBDBStorage.NAME
   
 }
 
-object MutableBDBStorage{
-  val NAME = classOf[MutableBDBStorage].getSimpleName
+object PureBDBStorage{
+  val NAME = classOf[PureBDBStorage].getSimpleName
 }
