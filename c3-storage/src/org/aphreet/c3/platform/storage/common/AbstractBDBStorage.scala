@@ -45,12 +45,14 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     
     preSave(resource)
     
-    val key = new DatabaseEntry(ra.getBytes)
-    val value = new DatabaseEntry(resource.toByteArray)
-    
     val tx = env.beginTransaction(null, null)
+    
     try{
 	    storeData(resource, tx)
+     
+	    val key = new DatabaseEntry(ra.getBytes)
+        val value = new DatabaseEntry(resource.toByteArray)
+     
 	    database.put(tx, key, value)
      
 	    tx.commit
