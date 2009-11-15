@@ -82,7 +82,7 @@ class StorageManagerImpl extends StorageManager{
         var stId = ""
         
         do{
-          stId = Integer.toHexString(Math.abs(rand.nextInt) % 65535)
+          stId = Integer.toHexString((Math.abs(rand.nextInt) % 0xEFFF) + 0x1000)
         }while(!isIdCorrect(stId))
         
         log info "Creating new storage with id: " + stId
