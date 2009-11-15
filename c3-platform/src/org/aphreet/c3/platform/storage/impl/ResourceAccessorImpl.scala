@@ -22,8 +22,6 @@ class ResourceAccessorImpl extends ResourceAccessor{
       throw new StorageException("Storage is not readable")
     }
     
-    val resource = storage.get(ra)
-    
     storage.get(ra) match {
       case Some(r) => r
       case None => throw new StorageException("Can't find resource for ra: " + ra )

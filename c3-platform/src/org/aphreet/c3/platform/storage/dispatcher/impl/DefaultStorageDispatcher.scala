@@ -57,22 +57,15 @@ class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
     default
   }
   
-  private def selectStorageForName(name:String):Storage = {
-    var storage = storages.get(name) match {
+  private def selectStorageForName(name:String):Storage =
+    storages.get(name) match {
       case Some(sx) => random(sx)
-      case None => null
-    }
-    
-    if(storage == null){
-      storage = storages.get(default) match {
-        case Some(sx) => random(sx)
+      case None => storages.get(default) match{
+        case Some(st) => random(st)
         case None => null
       }
     }
-    
-    storage
-    
-  }
+  
   
   private def random(list:List[Storage]):Storage = {
     val onlineList = list.filter(s => s.mode == RW)
