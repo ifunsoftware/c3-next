@@ -19,7 +19,7 @@ public abstract class Content extends AbstractSecureEntity{
 	
 	protected AbstractGroup group;
 
-	protected Resource resource = new Resource();
+	private Resource resource = new Resource();
 	
 	protected String resourceAddress;
 	
@@ -95,11 +95,11 @@ public abstract class Content extends AbstractSecureEntity{
 	}
 	
 	public Map<String, String> getMetadata(){
-		return resource.getMetadata();
+		return getResource().getMetadata();
 	}
 	
 	public Map<String, String> getSysMetadata(){
-		return resource.getSysMetadata();
+		return getResource().getSysMetadata();
 	}
 	
 	public String getMetadataValue(String key){

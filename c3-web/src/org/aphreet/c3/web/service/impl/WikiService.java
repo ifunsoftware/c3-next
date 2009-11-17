@@ -1,5 +1,6 @@
 package org.aphreet.c3.web.service.impl;
 
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
@@ -21,6 +22,7 @@ import org.aphreet.c3.web.entity.WikiPageVersion;
 import org.aphreet.c3.web.message.MailingTask;
 import org.aphreet.c3.web.service.IMessageService;
 import org.aphreet.c3.web.service.IWikiService;
+import org.aphreet.c3.web.service.impl.wiki.C3HtmlVisitor;
 import org.aphreet.c3.web.util.SpringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -127,13 +129,17 @@ public class WikiService implements IWikiService {
 	
 	public String parseWikiText(String input, final AbstractGroup group){
 		
-		return Parser.toHtml(input, new SmartLinkResolver(){
+		StringWriter writer = new StringWriter();
+		
+		new Parser().withVisitor(input.replaceAll("\r", ""), new C3HtmlVisitor(writer, new SmartLinkResolver(){
 
 			public SmartLink resolve(String arg0) {
 				return WikiService.this.getResourceLink(arg0, group);
 			}
 			
-		});
+		}));
+		
+		return writer.toString();
 		
 	}
 	

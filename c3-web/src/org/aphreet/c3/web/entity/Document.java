@@ -111,9 +111,9 @@ public class Document extends INode{
 		ResourceVersion resVersion = new ResourceVersion();
 		resVersion.setData(data);
 		
-		resource.addVersion(resVersion);
+		getResource().addVersion(resVersion);
 		
-		if(resource.isVersioned()){
+		if(getResource().isVersioned()){
 			versions.add(version);
 			version.setSize(data.length());
 		}else{

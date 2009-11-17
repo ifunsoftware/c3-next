@@ -42,7 +42,7 @@ public class WikiPage extends Content{
 		Map<String, String> metadata = version.getMetadata();
 		metadata.put(Metadata.OWNER.key(), wikiVersion.editor.getName());
 		
-		resource.addVersion(version);
+		getResource().addVersion(version);
 		
 		versions.add(wikiVersion);	
 	}
@@ -50,7 +50,7 @@ public class WikiPage extends Content{
 	public void setResource(Resource resource) {
 		super.setResource(resource);
 		
-		List<ResourceVersion> resourceVersions = resource.getVersions();
+		List<ResourceVersion> resourceVersions = getResource().getVersions();
 		
 		Iterator<WikiPageVersion> wikiIterator = versions.iterator();
 		Iterator<ResourceVersion> resIterator = resourceVersions.iterator();

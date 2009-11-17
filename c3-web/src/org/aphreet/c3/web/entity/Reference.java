@@ -19,7 +19,7 @@ public class Reference extends Content{
 		if(this.id <= 0){
 			ResourceVersion version = new ResourceVersion();
 			version.setData(new DataWrapperFactory().empty());
-			resource.addVersion(version);
+			getResource().addVersion(version);
 		}
 	}
 	

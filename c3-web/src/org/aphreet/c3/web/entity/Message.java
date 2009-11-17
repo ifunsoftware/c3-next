@@ -18,7 +18,7 @@ public class Message extends Content{
 		if(this.id <= 0){
 			ResourceVersion version = new ResourceVersion();
 			version.setData(new DataWrapperFactory().wrap(body));
-			resource.addVersion(version);
+			getResource().addVersion(version);
 		}
 		getMetadata().put(Metadata.CONTENT_TYPE.key(), "application/c3-message");
 		getSysMetadata().put(Metadata.CONTENT_TYPE.key(), "application/c3-message");

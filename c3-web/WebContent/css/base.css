@@ -252,6 +252,26 @@ div.wiki_content {
 	margin-top: 15px;
 }
 
+div.wiki_content p {
+	padding-top: 10px;
+}
+
+div.wiki_content table {
+	border-collapse: collapse;
+}
+
+div.wiki_content h1 {
+	font-size: 1.5em;
+}
+
+div.wiki_content h2 {
+	font-size: 1.3em;
+}
+
+div.wiki_content h3 {
+	font-size: 1.1em;
+}
+
 .wiki_title span {
 	font-size: 0.8em;
 	font-weight: normal;

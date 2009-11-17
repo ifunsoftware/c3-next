@@ -13,7 +13,7 @@ public abstract class ContentVersion implements Entity{
 	
 	protected Date editDate;
 	
-	protected ResourceVersion resourceVersion = new ResourceVersion();
+	private ResourceVersion resourceVersion = new ResourceVersion();
 
 	public User getEditor() {
 		return editor;
@@ -32,7 +32,7 @@ public abstract class ContentVersion implements Entity{
 	}
 	
 	public Map<String, String> getMetadata(){
-		return resourceVersion.getMetadata();
+		return getResourceVersion().getMetadata();
 	}
 	
 	public String getMetadataValue(String key){
@@ -44,7 +44,7 @@ public abstract class ContentVersion implements Entity{
 	}
 	
 	public DataWrapper getData(){
-		return resourceVersion.data();
+		return getResourceVersion().data();
 	}
 
 	public ResourceVersion getResourceVersion() {
