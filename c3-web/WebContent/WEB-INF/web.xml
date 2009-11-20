@@ -46,6 +46,19 @@
 			/WEB-INF/securityContext.xml</param-value>
 	</context-param>
 
+ <filter>
+            <filter-name>UrlRewriteFilter</filter-name>
+            <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+            <init-param>
+                <param-name>logLevel</param-name>
+                <param-value>TRACE</param-value>
+            </init-param>
+        </filter>
+        <filter-mapping>
+            <filter-name>UrlRewriteFilter</filter-name>
+            <url-pattern>/*</url-pattern>
+        </filter-mapping>
+
 	<filter>
 		<filter-name>exFilter</filter-name>
 		<filter-class>org.aphreet.c3.web.servlet.ExceptionFilter</filter-class>
@@ -61,6 +74,8 @@
 	<filter-mapping>
 		<filter-name>springSecurityFilterChain</filter-name>
 		<servlet-name>Faces Servlet</servlet-name>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>springSecurityFilterChain</filter-name>
@@ -77,6 +92,8 @@
 	<filter-mapping>
 		<filter-name>txFilter</filter-name>
 		<servlet-name>Faces Servlet</servlet-name>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>txFilter</filter-name>
@@ -90,10 +107,6 @@
 		<display-name>RichFaces Filter</display-name>
 		<filter-name>richfaces</filter-name>
 		<filter-class>org.ajax4jsf.Filter</filter-class>
-		<init-param>
-			<param-name>maxRequestSize</param-name>
-			<param-value>100000000</param-value>
-		</init-param>
 	</filter>
 	<filter-mapping>
 		<filter-name>richfaces</filter-name>
