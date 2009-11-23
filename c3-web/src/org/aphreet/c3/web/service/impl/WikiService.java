@@ -131,7 +131,7 @@ public class WikiService implements IWikiService {
 		
 		StringWriter writer = new StringWriter();
 		
-		new Parser().withVisitor(input.replaceAll("\r", ""), new C3HtmlVisitor(writer, new SmartLinkResolver(){
+		new Parser().withVisitor(input.replaceAll("[^\r]\n", "\r\n"), new C3HtmlVisitor(writer, new SmartLinkResolver(){
 
 			public SmartLink resolve(String arg0) {
 				return WikiService.this.getResourceLink(arg0, group);

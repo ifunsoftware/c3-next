@@ -3,6 +3,7 @@
     <wb-module deploy-name="c3-web">
         <wb-resource deploy-path="/" source-path="/WebContent"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/test"/>
         <property name="context-root" value="c3"/>
         <property name="java-output-path"/>
     </wb-module>
