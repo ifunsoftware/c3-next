@@ -69,6 +69,7 @@ public class C3HtmlVisitor extends HtmlVisitor{
 						+ "\"");
 			}
 			output.append("/>");
+			inImage = false;
 		} else {
 			
 			if(inHeader){
