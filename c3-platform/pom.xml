@@ -75,10 +75,16 @@
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 					<manifestLocation>META-INF</manifestLocation>
 					<archive>
+						<manifestEntries>
+              				<Build-Time>${now}</Build-Time>
+              				<Bundle-Version>2.0.0</Bundle-Version>
+         				</manifestEntries>
 						<manifestFile>
 							src/META-INF/MANIFEST.MF
                         </manifestFile>
+                        <!-- 
 						<addMavenDescriptor>false</addMavenDescriptor>
+						-->
 					</archive>
 				</configuration>
 			</plugin>

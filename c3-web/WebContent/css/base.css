@@ -248,12 +248,18 @@ li.head_menu_selected {
 	padding: 15px;
 }
 
+div.wiki_preview {
+	background-color: #EEEEEE;
+	padding: 10px;
+	margin-bottom: 20px;
+}
+
 div.wiki_content {
 	margin-top: 15px;
 }
 
 div.wiki_content p {
-	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 div.wiki_content table {
@@ -262,14 +268,20 @@ div.wiki_content table {
 
 div.wiki_content h1 {
 	font-size: 1.5em;
+	margin-bottom: 5px;
+	margin-top: 5px;
 }
 
 div.wiki_content h2 {
 	font-size: 1.3em;
+	margin-bottom: 5px;
+	margin-top: 5px;
 }
 
 div.wiki_content h3 {
 	font-size: 1.1em;
+	margin-bottom: 5px;
+	margin-top: 5px;
 }
 
 .wiki_title span {

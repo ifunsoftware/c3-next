@@ -68,8 +68,13 @@ public class WikiParserTest {
 		System.out.println(parseWiki("''text''\n"));
 	}
 	
+	@Test
+	public void testHeader(){
+		System.out.println(parseWiki("===header===\ntext here\n"));
+	}
+	
 	private String prepareWikiInput(String input){
-		String newInput = input.replaceAll("[^\r]\n", "\r\n");
+		String newInput = input.replaceAll("([^\r])\n", "$1\r\n");
 		System.out.println(newInput);
 		return newInput;
 	}
@@ -87,7 +92,11 @@ public class WikiParserTest {
 			}
 		}));
 		
-		return writer.toString();
+		String result = writer.toString();
+		
+		result = result.replaceAll("\r", "").replaceAll("<p></p>", "");
+		
+		return result;
 	}
 	
 	private SmartLink getResourceLink(String key){

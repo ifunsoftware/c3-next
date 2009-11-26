@@ -28,6 +28,10 @@ public class EditWikiBean extends IdGroupViewBean{
 	
 	private boolean minorEdit = false;
 	
+	private boolean showPreview = false;
+	
+	private String wikiPreview = "";
+	
 	@Override
 	protected void load() {
 		if(!isMember){
@@ -63,6 +67,14 @@ public class EditWikiBean extends IdGroupViewBean{
 			.addParam("id", groupId)
 			.addParam("name", pageName).toString());
 		pageSaved = true;
+		return "success";
+	}
+	
+	public String previewPage(){
+		showPreview = true;
+		
+		wikiPreview = wikiService.parseWikiText(text, group);
+		
 		return "success";
 	}
 	
@@ -118,6 +130,14 @@ public class EditWikiBean extends IdGroupViewBean{
 
 	public boolean isMinorEdit() {
 		return minorEdit;
+	}
+
+	public boolean getShowPreview() {
+		return showPreview;
+	}
+
+	public String getWikiPreview(){
+		return wikiPreview;
 	}
 
 	public void setMinorEdit(boolean minorEdit) {

@@ -25,17 +25,31 @@
 		</ui:define>
 		
 		<ui:define name="resource_content">
-			<h:form>
+			<h:panelGroup id="preview_block">
+				<h:panelGroup rendered="#{groupBean.showPreview}">
+					<div class="wiki_content wiki_preview">
+						<h:outputText value="#{groupBean.wikiPreview}" escape="false"/>
+					</div>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<a4j:form>
 				<h:inputTextarea value="#{groupBean.text}" rows="20" style="width:100%"/><br/>
 				<h:selectBooleanCheckbox value="#{groupBean.minorEdit}"/>#{msgs.wiki_minor_edit}
 				<p>								
-					<span style="display:block; float:left;">
+					<span style="display:block;">
 						<h:commandLink action="#{groupBean.savePage}">
 							<img src="images/icons/dialog-ok.png"/>
 							<h:outputText value="#{msgs.save}"/>
 							<f:param name="id" value="#{groupBean.groupId}"/>
 							<f:param name="name" value="#{groupBean.pageName}"/>
 						</h:commandLink>
+						
+						<a4j:commandLink action="#{groupBean.previewPage}" reRender="preview_block">
+							<h:outputText value="Preview"/>
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.pageName}"/>
+						</a4j:commandLink>
 					</span>
 			
 					<span style="display:block; float:right">
@@ -47,7 +61,7 @@
 						</h:outputLink>
 					</span>
 				</p>
-			</h:form>
+			</a4j:form>
 		</ui:define>
 		
 	</ui:composition>

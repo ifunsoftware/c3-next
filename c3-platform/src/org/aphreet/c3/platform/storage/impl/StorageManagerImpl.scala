@@ -163,7 +163,7 @@ class StorageManagerImpl extends StorageManager{
   private def addStorageToParams(storage:Storage){
     val storageParams = configManager.getStorageParams
     
-    configManager.setStorageParams(storageParams ::: List(storage.params))
+    configManager.setStorageParams(storage.params :: storageParams)
   }
   
   

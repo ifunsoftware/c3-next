@@ -46,12 +46,12 @@
 			/WEB-INF/securityContext.xml</param-value>
 	</context-param>
 
- <filter>
+	<filter>
             <filter-name>UrlRewriteFilter</filter-name>
             <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
             <init-param>
                 <param-name>logLevel</param-name>
-                <param-value>TRACE</param-value>
+                <param-value>WARN</param-value>
             </init-param>
         </filter>
         <filter-mapping>
