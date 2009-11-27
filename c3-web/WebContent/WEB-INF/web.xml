@@ -10,6 +10,11 @@
 	</welcome-file-list>
 
 
+	<error-page>
+		<error-code>500</error-code>
+		<location>/WEB-INF/jsp/error.jsp</location>
+	</error-page>
+
 	<context-param>
 		<param-name>org.richfaces.SKIN</param-name>
 		<param-value>my</param-value>
@@ -163,5 +168,7 @@
 		<servlet-name>MiltonServlet</servlet-name>
 		<url-pattern>/dav</url-pattern>
 	</servlet-mapping>
+
+	
 
 </web-app>

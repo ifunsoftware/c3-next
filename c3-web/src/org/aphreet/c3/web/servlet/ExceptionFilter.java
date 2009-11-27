@@ -44,8 +44,7 @@ public class ExceptionFilter implements Filter {
 				}
 			}
 			logger.error(e);
-			sendRedirect(request, response, "/error/500.xhtml");
-			
+			throw e;
 		}
 		
 	}
@@ -65,16 +64,6 @@ public class ExceptionFilter implements Filter {
 			e.printStackTrace();
 		}
 		
-	}
-	
-	private void sendRedirect(ServletRequest request, ServletResponse response, String target){
-		response.reset();
-		try {
-			((HttpServletResponse) response)
-				.sendRedirect(((HttpServletRequest) request).getContextPath() + target);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 }
