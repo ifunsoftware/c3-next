@@ -2,6 +2,11 @@ package org.aphreet.c3.web.webbeans.wiki;
 
 import java.util.Date;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+
 import org.aphreet.c3.web.entity.WikiPage;
 import org.aphreet.c3.web.service.IWikiService;
 import org.aphreet.c3.web.util.HttpUtil;
@@ -86,6 +91,26 @@ public class EditWikiBean extends IdGroupViewBean{
 		.addParam("id", groupId)
 		.addParam("name", "Main").toString());
 		return "success";
+	}
+	
+	public void validateWiki(FacesContext context, 
+			UIComponent toValidate, Object value) {
+		
+		String text = (String) value;
+		
+		try{
+			wikiService.parseWikiText(text, group);
+		}catch(Throwable e){
+			
+			while(e.getCause() != null){
+				e = e.getCause();
+			}
+			
+			((UIInput)toValidate).setValid(false);
+
+			FacesMessage message = new FacesMessage("Failed to parse wiki text: " + e.getMessage());
+			context.addMessage(toValidate.getClientId(context), message);
+		}
 	}
 
 	public String getPageName() {

@@ -621,3 +621,8 @@ a.comment-reply {
 .wiki_control {
 	float:right;
 }
+
+.rich-message-label {
+	color: #FF0000;
+	font-style: italic;
+}

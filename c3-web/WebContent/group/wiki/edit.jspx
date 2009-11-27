@@ -34,7 +34,11 @@
 			</h:panelGroup>
 			
 			<a4j:form>
-				<h:inputTextarea value="#{groupBean.text}" rows="20" style="width:100%"/><br/>
+				<rich:message for="wiki_input" errorClass="form_field_error"/>
+				<h:inputTextarea id="wiki_input" value="#{groupBean.text}" rows="20" style="width:100%" validator="#{groupBean.validateWiki}">
+					<rich:ajaxValidator event="onsubmit" />
+				</h:inputTextarea>
+				<br/>
 				<h:selectBooleanCheckbox value="#{groupBean.minorEdit}"/>#{msgs.wiki_minor_edit}
 				<p>								
 					<span style="display:block;">
