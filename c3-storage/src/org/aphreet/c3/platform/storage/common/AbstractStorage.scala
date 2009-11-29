@@ -9,9 +9,19 @@ abstract class AbstractStorage(val id:String, val path:String) extends Storage{
   
   var mode:StorageMode = U
   
-  def generateName:String = UUID.randomUUID.toString + "-" + id
+  def generateName:String = {
+    var address = UUID.randomUUID.toString + "-" + id
+    
+    while(isAddressExists(address)){
+      address = UUID.randomUUID.toString + "-" + id
+    }
+    
+    address
+  }
 
   def ids:List[String] = secondaryIds
   
   def params:StorageParams = new StorageParams(id, ids, path, name, mode)
+  
+  def isAddressExists(address:String):Boolean
 }

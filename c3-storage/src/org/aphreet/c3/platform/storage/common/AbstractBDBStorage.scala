@@ -53,7 +53,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
 	    val key = new DatabaseEntry(ra.getBytes)
         val value = new DatabaseEntry(resource.toByteArray)
      
-	    database.put(tx, key, value)
+        if(database.putNoOverwrite(tx, key, value) != OperationStatus.SUCCESS){
+          throw new StorageException("Failed to store resource in database")
+        }
      
 	    tx.commit
      
@@ -95,7 +97,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     	val key = new DatabaseEntry(ra.getBytes)
     	val value = new DatabaseEntry(resource.toByteArray)
     
-    	database.put(tx, key, value)
+    	if(database.put(tx, key, value) != OperationStatus.SUCCESS){
+          throw new StorageException("Failed to store resource in database")
+        }
      
     	tx.commit
     	
@@ -127,6 +131,13 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     }
   }
   
+  def isAddressExists(address:String):Boolean = {
+    
+    val key = new DatabaseEntry(address.getBytes)
+    val value = new DatabaseEntry()
+    
+    database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
+  }
   
   def iterator:StorageIterator = new BDBStorageIterator(this)
   
