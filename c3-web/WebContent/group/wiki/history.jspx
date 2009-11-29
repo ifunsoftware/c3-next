@@ -12,13 +12,15 @@
 	
 		<ui:define name="sub_title">#{msgs.group_wiki}</ui:define>
 		
-		
 		<ui:define name="resource_name">#{msgs.wiki_history}: #{groupBean.wikiPage.title}</ui:define>
 		
 		<ui:define name="resource_controls"></ui:define>
 		
 		<ui:define name="resource_content">
-			<rich:dataTable id="main_groups" width="100%" value="#{groupBean.revisions}" var="rev">
+			<h:panelGroup id="wiki_versions_table">
+			<a4j:form>
+			<rich:message for="wiki_versions_table" infoLabelClass="form_global_message_info"/>
+			<rich:dataTable  width="100%" value="#{groupBean.revisions}" var="rev" style="margin-top:10px;">
 				<rich:column width="10%">
 					<f:facet name="header" >Rev</f:facet>
 					<h:outputLink value="group/wiki.xhtml">
@@ -27,30 +29,45 @@
 						<f:param name="name" value="#{groupBean.wikiPage.title}"/>
 						<f:param name="rev" value="#{rev.revision}"/>
 					</h:outputLink>
-					</rich:column>
-					<rich:column>
+				</rich:column>
+				<rich:column width="10%">
 						<f:facet name="header">Author</f:facet>
 						<h:outputLink value="user.xhtml">
 							#{rev.user.name}
 							<f:param name="id" value="#{rev.user.id}"/>
 						</h:outputLink>
-					</rich:column>
-					<rich:column>
+				</rich:column>
+				<rich:column width="10%">
 						<f:facet name="header">Date</f:facet>
 						<h:outputText value="#{rev.date}">
 							<f:convertDateTime pattern="hh:mm d/M/yy"/>
 						</h:outputText>
-					</rich:column>
-					<rich:column>
+				</rich:column>
+				
+				<rich:column>
+						<f:facet name="header">Comment</f:facet>
+						#{rev.comment}
+				</rich:column>
+				
+				<rich:column width="10%">
 						<h:outputLink value="group/wiki.xhtml">
 							view
 							<f:param name="id" value="#{groupBean.groupId}"/>
 							<f:param name="name" value="#{groupBean.wikiPage.title}"/>
 							<f:param name="rev" value="#{rev.revision}"/>
 						</h:outputLink>
-					</rich:column>
+				</rich:column>
+				<rich:column width="10%">
+						<a4j:commandLink action="#{groupBean.moveToHead}" reRender="wiki_versions_table">
+							move to head
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.wikiPage.title}"/>
+							<f:param name="rev" value="#{rev.revision}"/>
+						</a4j:commandLink>
+				</rich:column>
 			</rich:dataTable>
-		
+			</a4j:form>
+			</h:panelGroup>
 		</ui:define>
 	</ui:composition>
 </jsp:root>

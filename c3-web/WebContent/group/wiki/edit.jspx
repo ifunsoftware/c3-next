@@ -33,38 +33,41 @@
 				</h:panelGroup>
 			</h:panelGroup>
 			
-			<a4j:form>
-				<rich:message for="wiki_input" errorClass="form_field_error"/>
-				<h:inputTextarea id="wiki_input" value="#{groupBean.text}" rows="20" style="width:100%" validator="#{groupBean.validateWiki}">
-					<rich:ajaxValidator event="onsubmit" />
-				</h:inputTextarea>
-				<br/>
-				<h:selectBooleanCheckbox value="#{groupBean.minorEdit}"/>#{msgs.wiki_minor_edit}
-				<p>								
-					<span style="display:block;">
-						<h:commandLink action="#{groupBean.savePage}">
-							<img src="images/icons/dialog-ok.png"/>
-							<h:outputText value="#{msgs.save}"/>
+			<a4j:form styleClass="wiki_form">
+				<div>
+					<rich:message for="wiki_input" errorLabelClass="form_global_message_error"/>
+				</div>
+				<div>
+					<h:inputTextarea id="wiki_input" value="#{groupBean.text}" rows="20" style="width:100%" validator="#{groupBean.validateWiki}">
+						<rich:ajaxValidator event="onsubmit" />
+					</h:inputTextarea>
+				</div>
+				<div>
+					<h:selectBooleanCheckbox value="#{groupBean.minorEdit}"/>#{msgs.wiki_minor_edit}
+				</div>
+				<div>
+				<p class="wiki_edit_buttons">								
+					<span>
+						<a4j:commandButton value="#{msgs.save}" action="#{groupBean.savePage}" reRender="preview_block"  onclick="this.disabled=true" oncomplete="this.disabled=false">
 							<f:param name="id" value="#{groupBean.groupId}"/>
 							<f:param name="name" value="#{groupBean.pageName}"/>
-						</h:commandLink>
-						
-						<a4j:commandLink action="#{groupBean.previewPage}" reRender="preview_block">
-							<h:outputText value="Preview"/>
-							<f:param name="id" value="#{groupBean.groupId}"/>
-							<f:param name="name" value="#{groupBean.pageName}"/>
-						</a4j:commandLink>
+						</a4j:commandButton>
 					</span>
-			
-					<span style="display:block; float:right">
+					<span>	
+						<a4j:commandButton value="Preview" action="#{groupBean.previewPage}" reRender="preview_block"  onclick="this.disabled=true" oncomplete="this.disabled=false">
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.pageName}"/>
+						</a4j:commandButton>
+					</span>	
+					<span>
 						<h:outputLink value="group/wiki.xhtml">
-							<img src="images/icons/edit-redo.png"/>
 							<h:outputText value="#{msgs.cancel}"/>
 							<f:param name="id" value="#{groupBean.groupId}"/>
 							<f:param name="name" value="#{groupBean.pageName}"/>
 						</h:outputLink>
 					</span>
 				</p>
+				</div>
 			</a4j:form>
 		</ui:define>
 		

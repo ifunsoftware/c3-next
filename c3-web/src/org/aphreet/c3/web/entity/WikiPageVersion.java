@@ -10,6 +10,8 @@ public class WikiPageVersion extends ContentVersion{
 	
 	private String htmlBody;
 	
+	private String comment = "";
+	
 	private WikiPage page;
 
 	public String getBody() {
@@ -42,6 +44,14 @@ public class WikiPageVersion extends ContentVersion{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 	
 }

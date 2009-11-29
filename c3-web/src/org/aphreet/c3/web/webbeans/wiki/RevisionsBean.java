@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+
 import org.aphreet.c3.web.entity.User;
 import org.aphreet.c3.web.entity.WikiPage;
 import org.aphreet.c3.web.entity.WikiPageVersion;
@@ -18,12 +21,15 @@ public class RevisionsBean extends IdGroupViewBean{
 	@HttpParam("name")
 	private String pageName;
 	
+	@HttpParam("rev")
+	private Integer revision;
+	
 	@Autowired
 	private IWikiService wikiService;
 	
 	private WikiPage wikiPage;
 	
-	private List<WikiRevisionDto> revisions = new ArrayList<WikiRevisionDto>();
+	private List<WikiRevisionDto> revisions = null;
 	
 	@Override
 	protected void load() {
@@ -34,11 +40,24 @@ public class RevisionsBean extends IdGroupViewBean{
 		
 		List<WikiPageVersion> versions = wikiPage.getVersions();
 		
+		revisions = new ArrayList<WikiRevisionDto>();
+		
 		for(int i=0; i< versions.size(); i++){
-			revisions.add(new WikiRevisionDto(i+1, versions.get(i).getEditDate(), versions.get(i).getEditor()));
+			WikiPageVersion version = versions.get(i);
+			revisions.add(new WikiRevisionDto(i+1, version.getEditDate(), version.getEditor(), version.getComment()));
 		}
 	}
 
+	public String moveToHead(){
+		FacesMessage message = new FacesMessage("Revert complete");
+		message.setSeverity(FacesMessage.SEVERITY_INFO);
+		FacesContext.getCurrentInstance().addMessage("wiki_versions_table", message);
+		
+		wikiService.createHeadFromVersion(revision, wikiPage, requestBean.getCurrentUser());
+		load();
+		return "success";
+	}
+	
 	
 	public String getPageName() {
 		return pageName;
@@ -60,16 +79,27 @@ public class RevisionsBean extends IdGroupViewBean{
 	}
 
 	
+	public Integer getRevision() {
+		return revision;
+	}
+
+	public void setRevision(Integer revision) {
+		this.revision = revision;
+	}
+
+
 	public class WikiRevisionDto{
 		
 		private final Integer revision;
 		private final Date date;
 		private final User user;
+		private final String comment;
 		
-		public WikiRevisionDto(int revision, Date date, User user){
+		public WikiRevisionDto(int revision, Date date, User user, String comment){
 			this.revision = revision;
 			this.date = date;
 			this.user = user;
+			this.comment = comment;
 		}
 
 		public Integer getRevision() {
@@ -82,6 +112,10 @@ public class RevisionsBean extends IdGroupViewBean{
 
 		public User getUser() {
 			return user;
+		}
+		
+		public String getComment(){
+			return comment;
 		}
 		
 	}

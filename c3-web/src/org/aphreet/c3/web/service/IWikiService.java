@@ -42,6 +42,8 @@ public interface IWikiService {
 	public String parseWikiText(String input, final AbstractGroup group);
 	
 	public void deletePage(WikiPage page);
+	
+	public void createHeadFromVersion(int version, WikiPage page, User user);
 
 
 }

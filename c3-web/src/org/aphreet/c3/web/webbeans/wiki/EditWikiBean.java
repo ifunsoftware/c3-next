@@ -109,6 +109,7 @@ public class EditWikiBean extends IdGroupViewBean{
 			((UIInput)toValidate).setValid(false);
 
 			FacesMessage message = new FacesMessage("Failed to parse wiki text: " + e.getMessage());
+			message.setSeverity(FacesMessage.SEVERITY_ERROR);
 			context.addMessage(toValidate.getClientId(context), message);
 		}
 	}

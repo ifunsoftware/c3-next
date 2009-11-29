@@ -127,6 +127,21 @@ public class WikiService implements IWikiService {
 		}
 	}
 	
+
+	public void createHeadFromVersion(int versionNumber, WikiPage wikiPage, User user){
+		if(versionNumber >= 0 && versionNumber < wikiPage.getVersions().size()){
+			WikiPageVersion oldVersion = wikiPage.getVersions().get(versionNumber);
+			WikiPageVersion version = new WikiPageVersion();
+			version.setEditDate(new Date());
+			version.setEditor(user);
+			version.setBody(oldVersion.getBody());
+			version.setHtmlBody(oldVersion.getHtmlBody());
+			version.setComment("Reverting from version " + versionNumber);
+			wikiPage.addVersion(version);
+			wikiPage.setLastEditDate(new Date());
+		}
+	}
+	
 	public String parseWikiText(String input, final AbstractGroup group){
 		
 		StringWriter writer = new StringWriter();

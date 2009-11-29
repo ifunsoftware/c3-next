@@ -259,7 +259,8 @@ div.wiki_content {
 }
 
 div.wiki_content p {
-	padding-bottom: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 div.wiki_content table {
@@ -622,7 +623,31 @@ a.comment-reply {
 	float:right;
 }
 
-.rich-message-label {
+.wiki_edit_buttons span{
+	margin-right: 10px;
+}
+
+.wiki_form div {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.form_global_message_info{
+	color: #228B22;
+	font-style: italic;
+	display: block;
+	border-style: solid;
+	border-width: 1px;
+	padding: 10px;
+	background-color: #98FB98
+}
+
+.form_global_message_error {
 	color: #FF0000;
 	font-style: italic;
+	display: block;
+	border-style: solid;
+	border-width: 1px;
+	padding: 10px;
+	background-color: #FFEEEE
 }

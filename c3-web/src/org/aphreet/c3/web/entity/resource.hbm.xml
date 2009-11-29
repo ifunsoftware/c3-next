@@ -71,6 +71,7 @@
 		<property name="editDate" column="edit_date"/>
 		<property name="body" type="text"/>
 		<property name="htmlBody" type="text" column="html_body"/>
+		<property name="comment" type="text"/>
 		<many-to-one name="editor" class="User" column="editor_id"/>
 		<many-to-one name="page" column="page_id" class="WikiPage"/>
 	</class>

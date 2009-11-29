@@ -41,6 +41,7 @@ public class WikiPage extends Content{
 		version.setData(new DataWrapperFactory().wrap(wikiVersion.getBody()));
 		Map<String, String> metadata = version.getMetadata();
 		metadata.put(Metadata.OWNER.key(), wikiVersion.editor.getName());
+		metadata.put(Metadata.COMMENT.key(), wikiVersion.getComment());
 		
 		getResource().addVersion(version);
 		
