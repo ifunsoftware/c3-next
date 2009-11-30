@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	version="2.0">
+	
+	<ui:composition template="/group/resource-tpl.jspx">
+	
+		<ui:define name="sub_title">#{msgs.group_wiki}</ui:define>
+		
+		<ui:define name="resource_name">#{msgs.wiki_changes}: #{groupBean.wikiPage.title} #{groupBean.revision} vs #{groupBean.revision2}</ui:define>
+		
+		<ui:define name="resource_controls"></ui:define>
+		
+		<ui:define name="resource_content">
+			<div>
+				<pre>
+<h:outputText value="#{groupBean.text}" escape="false"/>				
+				</pre>
+			</div>
+			<h:outputLink value="group/wiki.xhtml">
+				view page
+				<f:param name="id" value="#{groupBean.groupId}"/>
+				<f:param name="name" value="#{groupBean.wikiPage.title}"/>
+			</h:outputLink>
+		</ui:define>
+	</ui:composition>
+</jsp:root>

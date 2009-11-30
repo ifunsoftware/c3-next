@@ -79,6 +79,8 @@
 	
 	<entry key="wiki_editing">Редактирование</entry>
 	<entry key="wiki_history">История изменений</entry>
+	<entry key="wiki_preview">Предпросмотр</entry>
+	<entry key="wiki_changes">Изменения</entry>
 	<entry key="wiki_minor_edit">Второстепенное изменение. Не отправлять уведомления.</entry>
 	
 </properties>

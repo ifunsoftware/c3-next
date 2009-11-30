@@ -54,7 +54,7 @@
 						</a4j:commandButton>
 					</span>
 					<span>	
-						<a4j:commandButton value="Preview" action="#{groupBean.previewPage}" reRender="preview_block"  onclick="this.disabled=true" oncomplete="this.disabled=false">
+						<a4j:commandButton value="#{msgs.wiki_preview}" action="#{groupBean.previewPage}" reRender="preview_block"  onclick="this.disabled=true" oncomplete="this.disabled=false">
 							<f:param name="id" value="#{groupBean.groupId}"/>
 							<f:param name="name" value="#{groupBean.pageName}"/>
 						</a4j:commandButton>

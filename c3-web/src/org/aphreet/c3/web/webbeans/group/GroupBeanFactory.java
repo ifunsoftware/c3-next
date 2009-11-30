@@ -8,6 +8,7 @@ import org.aphreet.c3.web.webbeans.document.DocumentEditBean;
 import org.aphreet.c3.web.webbeans.document.DocumentHistoryBean;
 import org.aphreet.c3.web.webbeans.document.DocumentViewBean;
 import org.aphreet.c3.web.webbeans.message.ViewMessageBean;
+import org.aphreet.c3.web.webbeans.wiki.DifferenceBean;
 import org.aphreet.c3.web.webbeans.wiki.EditWikiBean;
 import org.aphreet.c3.web.webbeans.wiki.RevisionsBean;
 import org.aphreet.c3.web.webbeans.wiki.ViewWikiBean;
@@ -20,6 +21,7 @@ public class GroupBeanFactory {
 		beans.put("/group/wiki.jspx", ViewWikiBean.class);
 		beans.put("/group/wiki/edit.jspx", EditWikiBean.class);
 		beans.put("/group/wiki/history.jspx", RevisionsBean.class);
+		beans.put("/group/wiki/diff.jspx", DifferenceBean.class);
 		
 		beans.put("/message.jspx", ViewMessageBean.class);
 		beans.put("/group/messages.jspx", GroupMessageBean.class);
@@ -32,6 +34,7 @@ public class GroupBeanFactory {
 		beans.put("/group/document.jspx", DocumentViewBean.class);
 		beans.put("/group/document/edit.jspx", DocumentEditBean.class);
 		beans.put("/group/document/history.jspx", DocumentHistoryBean.class);
+		
 	}
 	
 	public AbstractGroupViewBean createGroupBean(){

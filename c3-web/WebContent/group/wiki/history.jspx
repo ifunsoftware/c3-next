@@ -65,6 +65,15 @@
 							<f:param name="rev" value="#{rev.revision}"/>
 						</a4j:commandLink>
 				</rich:column>
+				<rich:column width="10%">
+						<h:outputLink value="group/wiki/diff.xhtml">
+							compare with previous
+							<f:param name="id" value="#{groupBean.groupId}"/>
+							<f:param name="name" value="#{groupBean.wikiPage.title}"/>
+							<f:param name="rev2" value="#{rev.revision}"/>
+							<f:param name="rev" value="#{rev.revision - 1}"/>
+						</h:outputLink>
+				</rich:column>
 			</rich:dataTable>
 			</a4j:form>
 			</h:panelGroup>

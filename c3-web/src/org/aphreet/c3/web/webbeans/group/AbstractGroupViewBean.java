@@ -62,7 +62,7 @@ public abstract class AbstractGroupViewBean {
 	}
 	
 	public String getWikiStyle(){
-		return getStyle("/group/wiki.jspx", "/group/wiki/edit.jspx", "/group/wiki/history.jspx");
+		return getStyle("/group/wiki.jspx", "/group/wiki/edit.jspx", "/group/wiki/history.jspx", "/group/wiki/diff.jspx");
 	}
 	
 	public String getMainStyle(){

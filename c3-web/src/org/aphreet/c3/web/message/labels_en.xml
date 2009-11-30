@@ -82,6 +82,8 @@
 	
 	<entry key="wiki_editing">Editing</entry>
 	<entry key="wiki_history">History</entry>
+	<entry key="wiki_preview">Preview</entry>
+	<entry key="wiki_changes">Changes</entry>
 	<entry key="wiki_minor_edit">Minor edit. Don't send change notifications</entry>
 	
 </properties>

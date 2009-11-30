@@ -651,3 +651,27 @@ a.comment-reply {
 	padding: 10px;
 	background-color: #FFEEEE
 }
+
+span.diff_added{
+	color: #228B22;
+	font-style: italic;
+	display: block;
+	border-style: solid;
+	border-width: 1px;
+	padding: 2px;
+	background-color: #98FB98;
+	margin-top:1px;
+	margin-bottom: 1px;
+}
+
+span.diff_removed{
+	color: #FF0000;
+	font-style: italic;
+	display: block;
+	border-style: solid;
+	border-width: 1px;
+	padding: 2px;
+	background-color: #FFEEEE;
+	margin-top:1px;
+	margin-bottom: 1px;
+}
