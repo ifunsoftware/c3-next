@@ -11,6 +11,7 @@ import dispatcher.StorageDispatcher
 import dispatcher.impl.{DefaultStorageDispatcher}
 
 import org.aphreet.c3.platform.config.PlatformConfigManager;
+import org.aphreet.c3.platform.storage.volume.VolumeManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,8 +33,13 @@ class StorageManagerImpl extends StorageManager{
   
   var configManager : PlatformConfigManager = null
   
+  var volumeManager : VolumeManager = null
+  
   @Autowired
   def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  
+  @Autowired
+  def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
   
   @PostConstruct
   def init{
@@ -56,7 +62,7 @@ class StorageManagerImpl extends StorageManager{
   def unregisterFactory(factory:StorageFactory) ={
     
     storages.synchronized{
-    	factory.storages.foreach(s => storages -- (s.ids ::: List(s.id)))
+    	factory.storages.foreach(s => unregisterStorage(s))
     }
     
     factories.synchronized{
@@ -138,9 +144,16 @@ class StorageManagerImpl extends StorageManager{
     for(id <- storage.ids)
       storages.put(id, storage)
     
+    volumeManager register storage
+    
     updateDispatcher
   }
   
+  private def unregisterStorage(storage:Storage){
+    
+    storages -- (storage.id :: storage.ids)
+    volumeManager unregister storage
+  }
   
   
   private def updateDispatcher{
