@@ -121,7 +121,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
     try{
     	deleteData(ra, tx)
     	database.delete(tx, key)
-    	
+     
     	tx.commit
     }catch{
       case e => {
