@@ -6,6 +6,8 @@ import org.aphreet.c3.platform.resource.Resource
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.util.{List, ArrayList}
+
 import javax.annotation.{PreDestroy, PostConstruct}
 
 @Component
@@ -26,9 +28,9 @@ class SearcherImpl extends Searcher{
     searchManager.registerSearcher(this)
   }
   
-  def search(query:String):List[Resource] = {
+  def search(query:String):List[String] = {
     log info "Search stub"
-    List()
+    new ArrayList
   }
   
   def index(resource:Resource) = {

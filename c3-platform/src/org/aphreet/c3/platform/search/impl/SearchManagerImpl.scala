@@ -11,7 +11,11 @@ class SearchManagerImpl extends SearchManager{
   
   val log = org.apache.commons.logging.LogFactory.getLog(getClass)
   
-  def search(query:String):List[Resource] = searcher.search(query)
+  def search(query:String):List[Resource] = {
+    searcher.search(query)
+    log warn "Implement resource fetching somewhere here"
+    List()
+  }
   
   def index(resource:Resource) = searcher.index(resource)
   
