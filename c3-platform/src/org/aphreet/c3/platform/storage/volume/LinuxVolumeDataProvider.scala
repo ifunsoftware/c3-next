@@ -13,6 +13,8 @@ class LinuxVolumeDataProvider extends VolumeDataProvider{
 
     val process = Runtime.getRuntime.exec("df -B 1")
     
+    process.waitFor
+    
     if(process.exitValue != 0){
       throw new StorageException("Failed to get volume data, exit value " + process.exitValue)
     }
