@@ -3,31 +3,46 @@ package org.aphreet.c3.platform.storage.volume
 import java.io.{File, FileInputStream}
 import java.util.Scanner
 
+import java.io.{BufferedReader, InputStreamReader}
+
 class LinuxVolumeDataProvider extends VolumeDataProvider{
 
   def getVolumeList:List[Volume] = {
 
     var result:List[Volume] = List()
 
-    val scanner = new Scanner(Runtime.getRuntime.exec("df -B 1 | grep '[0-9][0-9]*%'").getInputStream)
-
+    val process = Runtime.getRuntime.exec("df -B 1")
+    
+    if(process.exitValue != 0){
+      throw new StorageException("Failed to get volume data, exit value " + process.exitValue)
+    }
+    
+    val reader = new BufferedReader(new InputStreamReader(process.getInputStream))
+    
+    reader.readLine
+    
     try{
     
-	    while(scanner.hasNext){
-	      val device:String = scanner.next
-	      val size = scanner.nextLong
-	      val used = scanner.nextLong
-	      val avail = scanner.nextLong
-	      val percentage:String = scanner.next
-	      val mounted:String = scanner.next
+    	var line = reader.readLine
+      
+	    while(line != null){
 	      
+	      val array = line.split("\\s+", 6)
+      
+	      val size = array(1).toLong
+	      val avail = array(3).toLong
+	      val mounted:String = array(5)
+	      
+       
 	      result = new Volume(mounted, size, avail) :: result 
+	      
+          line = reader.readLine
 	    }
 	    
 	    result
 
     }finally
-    	scanner.close
+    	reader.close
     
     
   }
