@@ -182,6 +182,14 @@
 			<scope>system</scope>
 			<systemPath>${basedir}/lib/com.springsource.server.web.dm-1.0.2.SR02.jar</systemPath>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.incava.util</groupId>
+			<artifactId>dif</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/WebContent/WEB-INF/lib/diff.jar</systemPath>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.osgi</groupId>
