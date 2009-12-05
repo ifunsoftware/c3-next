@@ -17,7 +17,7 @@ class VolumeManager {
   
   val dataProvider = dataProviderForCurrentPlatform 
  
-  val volumes:List[Volume] = dataProvider.getVolumeList
+  val volumes:List[Volume] = loadVolumeData
   
   val executor = Executors.newSingleThreadScheduledExecutor
   
@@ -70,6 +70,14 @@ class VolumeManager {
   @PreDestroy
   def destroy = {
     executor.shutdown
+  }
+  
+  def loadVolumeData:List[Volume] = {
+    val data = dataProvider.getVolumeList
+    
+    logger info data.toString
+    
+    data
   }
   
   class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Runnable {
