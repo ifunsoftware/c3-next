@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.storage
 
 import java.io.OutputStream
 
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 
@@ -32,7 +33,7 @@ trait Storage {
   def close;
   
  
-  def path:String
+  def path:Path
   
   def name:String
 }

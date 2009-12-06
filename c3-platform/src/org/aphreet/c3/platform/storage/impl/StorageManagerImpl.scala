@@ -10,6 +10,7 @@ import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import dispatcher.StorageDispatcher
 import dispatcher.impl.{DefaultStorageDispatcher}
 
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager;
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 
@@ -80,7 +81,7 @@ class StorageManagerImpl extends StorageManager{
 	}
   }
   
-  def createStorage(storageType:String, storagePath:String){
+  def createStorage(storageType:String, storagePath:Path){
     val storage = factories.get(storageType) match {
       case Some(factory) => {
         

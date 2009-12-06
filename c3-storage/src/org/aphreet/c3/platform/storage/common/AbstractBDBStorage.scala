@@ -1,12 +1,13 @@
 package org.aphreet.c3.platform.storage.common
 
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import java.io.{File, OutputStream}
 
 import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
 
-abstract class AbstractBDBStorage(val storageId:String, override val path:String) extends AbstractStorage(storageId, path){
+abstract class AbstractBDBStorage(val storageId:String, override val path:Path) extends AbstractStorage(storageId, path){
 
   protected var env : Environment = null
   
@@ -14,7 +15,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:String
   
   protected val storageName:String = name + "-" + id
   
-  protected val storagePath:String = path + File.separator + storageName
+  protected val storagePath:String = path.toString + "/" + storageName
   
   
   {

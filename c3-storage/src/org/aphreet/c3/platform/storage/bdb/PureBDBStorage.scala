@@ -1,11 +1,12 @@
 package org.aphreet.c3.platform.storage.bdb
 
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 
 import com.sleepycat.je._
 
-class PureBDBStorage(override val id:String, override val path:String) extends AbstractBDBStorage(id, path) {
+class PureBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
 
   override protected def storeData(resource:Resource, tx:Transaction){
     

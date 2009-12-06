@@ -2,8 +2,8 @@ package org.aphreet.c3.platform.management.impl
 
 import org.apache.commons.logging.LogFactory
 
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager
-
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 
 import org.springframework.stereotype.Component
@@ -35,7 +35,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def listStorageTypes:List[String] = storageManager.listStorageTypes
   
-  def createStorage(storageType:String, path:String) = storageManager.createStorage(storageType, path)
+  def createStorage(storageType:String, path:String) = storageManager.createStorage(storageType, new Path(path))
   
   def setStorageMode(id:String, mode:StorageMode) = storageManager.setStorageMode(id, mode)
  

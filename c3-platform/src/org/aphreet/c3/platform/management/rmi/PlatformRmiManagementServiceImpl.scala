@@ -18,7 +18,7 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   
   def listStorages:List[StorageDescription] = {
      for(s <-managementEndpoint.listStorages)
-       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.path, s.mode.name)
+       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.path.toString, s.mode.name)
   }
    
   def listStorageTypes:List[String] = managementEndpoint.listStorageTypes

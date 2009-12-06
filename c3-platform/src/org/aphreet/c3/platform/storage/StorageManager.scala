@@ -4,6 +4,7 @@ import java.io.OutputStream
 
 import dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
+import org.aphreet.c3.platform.common.Path
 
 trait StorageManager {
 
@@ -13,7 +14,7 @@ trait StorageManager {
   
   def storageForId(id:String):Storage
   
-  def createStorage(storageType:String, storagePath:String)
+  def createStorage(storageType:String, storagePath:Path)
   
   def listStorages:List[Storage]
   

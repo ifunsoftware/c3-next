@@ -6,6 +6,8 @@ import java.util.{List => JList}
 
 import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
+import org.aphreet.c3.platform.exception.ConfigurationException
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage.{StorageParams, StorageMode, StorageModeParser}
 
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
@@ -32,14 +34,18 @@ class PlatformConfigManager {
     configPath = System.getProperty("c3.home")
     
     if(configPath == null){
-      log warn "Config path is not set. Using default path"
-      configPath = "C:/var/c3-data"
+      log info "Config path is not set. Using user home path"
+      configPath = System.getProperty("user.home") + File.separator + ".c3"
+    }
+    
+    if(configPath == null){
+      throw new ConfigurationException("Can't find path to store config")
+    }else{
+      log info "Using " + configPath + " to store C3 configuration"
     }
     
     val configDir = new File(configPath)
     if(!configDir.exists) configDir.mkdirs
-    
-    log info "Configuration path: " + configPath  
   }
   
   def getStorageParams:List[StorageParams] = {
@@ -63,7 +69,7 @@ class PlatformConfigManager {
     	  new StorageParams(
     	    storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
     	    List.fromIterator(idArray.elements),
-    		storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString.replaceAll("\\+", "\\"),
+    		new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
     		storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
     		StorageModeParser.valueOf(storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString)
          ))

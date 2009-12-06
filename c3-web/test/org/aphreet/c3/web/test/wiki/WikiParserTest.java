@@ -2,38 +2,34 @@ package org.aphreet.c3.web.test.wiki;
 
 import java.io.StringWriter;
 
-import org.aphreet.c3.web.service.impl.wiki.C3HtmlVisitor;
-import org.junit.Assert;
-import org.junit.Test;
+import junit.framework.TestCase;
 
+import org.aphreet.c3.web.service.impl.wiki.C3HtmlVisitor;
 
 import be.devijver.wikipedia.Parser;
 import be.devijver.wikipedia.SmartLink;
 import be.devijver.wikipedia.SmartLinkResolver;
 import be.devijver.wikipedia.SmartLink.SmartLinkType;
 
-public class WikiParserTest {
+public class WikiParserTest extends TestCase{
 
-	@Test
 	public void testPlainInternalLink(){
-		Assert.assertTrue(parseWiki("[[SomePage]]").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage]] \n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage]]\r\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("sdfsd [[SomePage]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage]] sfdsf").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage]]sfdfsf\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
-		Assert.assertTrue(parseWiki("sfdfsd[[SomePage]]sfdf\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]]").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]] \n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]]\r\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("sdfsd [[SomePage]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]] sfdsf").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("[[SomePage]]sfdfsf\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
+		assertTrue(parseWiki("sfdfsd[[SomePage]]sfdf\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">SomePage</a>"));
 	}
 	
-	@Test
 	public void testAdwancedInternalLink(){
-		Assert.assertTrue(parseWiki("[[SomePage|Some Another Page]]").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage|Some Another Page]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
-		Assert.assertTrue(parseWiki("[[SomePage|Some Another Page]]\r\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
+		assertTrue(parseWiki("[[SomePage|Some Another Page]]").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
+		assertTrue(parseWiki("[[SomePage|Some Another Page]]\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
+		assertTrue(parseWiki("[[SomePage|Some Another Page]]\r\n").contains("<a href=\"group/wiki.xhtml?id=1&amp;name=SomePage\">Some Another Page</a>"));
 	}
 	
-	@Test
 	public void testList(){
 		String input = "#elem1\n" +
 				"#elem2\n" +
@@ -44,10 +40,9 @@ public class WikiParserTest {
 				"##elem3.2\n\n" +
 				"#elem4";
 		
-		Assert.assertTrue(parseOk(input));
+		assertTrue(parseOk(input));
 	}
 	
-	@Test
 	public void testTable(){
 		String input = "{| border=\"1\" \n" + 
 		"|--------------------\r\n" +
@@ -57,17 +52,15 @@ public class WikiParserTest {
         "| row 1, cell 2\n" +
         "|}\n";
 		
-		Assert.assertTrue(parseOk(input));
+		assertTrue(parseOk(input));
 	}
 	
-	@Test
 	public void testItalic(){
-		Assert.assertTrue(parseOk("''text''\n"));
+		assertTrue(parseOk("''text''\n"));
 	}
 	
-	@Test
 	public void testHeader(){
-		Assert.assertTrue(parseOk("===header===\ntext here\n"));
+		assertTrue(parseOk("===header===\ntext here\n"));
 	}
 	
 	private String prepareWikiInput(String input){

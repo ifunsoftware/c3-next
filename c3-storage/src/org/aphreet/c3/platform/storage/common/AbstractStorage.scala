@@ -1,9 +1,11 @@
 package org.aphreet.c3.platform.storage.common
 
 import java.util.UUID
+
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage.StorageParams
 
-abstract class AbstractStorage(val id:String, val path:String) extends Storage{
+abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
 
   var secondaryIds:List[String] = List()
   

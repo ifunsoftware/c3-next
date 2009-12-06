@@ -30,26 +30,26 @@ class VolumeManager {
   }
   
   def register(storage:Storage) = {
-	val volume = volumeForPath(storage.path)
+	val volume = volumeForPath(storage.path.toString)
 	
 	if(volume != null)
 		volume.storages + storage
 	else
-		throw new StorageException("Can't find volume for path: " + storage.path)
+		throw new StorageException("Can't find volume for path: " + storage.path.toString)
   }
   
   def unregister(storage:Storage) = {
-	val volume = volumeForPath(storage.path)
+	val volume = volumeForPath(storage.path.toString)
 	if(volume != null)
 		volume.storages - storage
 	else
-		throw new StorageException("Can't find volume for path: " + storage.path)
+		throw new StorageException("Can't find volume for path: " + storage.path.toString)
   }
   
   private def volumeForPath(path:String):Volume = {
     
     var foundVolume:Volume = null
-    
+    //TODO use Files, Luke!
     for(volume <- volumes)
       if(path contains volume.mountPoint)
         if(foundVolume == null)
