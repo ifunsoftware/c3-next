@@ -197,6 +197,13 @@
 			<version>1.2.0</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>com.springsource.org.apache.commons.digester</artifactId>
+    <version>1.8.0</version>
+    <scope>provided</scope>
+</dependency>
 
 	</dependencies>
 
@@ -237,6 +244,8 @@
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
+		<testSourceDirectory>test</testSourceDirectory>
+		<testOutputDirectory>bin</testOutputDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
