@@ -44,8 +44,7 @@ public class WikiParserTest {
 				"##elem3.2\n\n" +
 				"#elem4";
 		
-		//at least no exceptions
-		Assert.assertTrue(parseWiki(input) != null);
+		Assert.assertTrue(parseOk(input));
 	}
 	
 	@Test
@@ -58,25 +57,31 @@ public class WikiParserTest {
         "| row 1, cell 2\n" +
         "|}\n";
 		
-		//at least no exceptions
-		System.out.println(parseWiki(input));
-		Assert.assertTrue(parseWiki(input) != null);
+		Assert.assertTrue(parseOk(input));
 	}
 	
 	@Test
 	public void testItalic(){
-		System.out.println(parseWiki("''text''\n"));
+		Assert.assertTrue(parseOk("''text''\n"));
 	}
 	
 	@Test
 	public void testHeader(){
-		System.out.println(parseWiki("===header===\ntext here\n"));
+		Assert.assertTrue(parseOk("===header===\ntext here\n"));
 	}
 	
 	private String prepareWikiInput(String input){
 		String newInput = input.replaceAll("([^\r])\n", "$1\r\n");
-		System.out.println(newInput);
 		return newInput;
+	}
+	
+	private boolean parseOk(String input){
+		try{
+			parseWiki(input);
+			return true;
+		}catch(Exception e){
+			return false;
+		}
 	}
 	
 	private String parseWiki(String input){
