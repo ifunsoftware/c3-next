@@ -31,6 +31,11 @@ class PlatformConfigManager {
   def init = {
     configPath = System.getProperty("c3.home")
     
+    if(configPath == null){
+      log warn "Config path is not set. Using default path"
+      configPath = "C:/var/c3-data"
+    }
+    
     val configDir = new File(configPath)
     if(!configDir.exists) configDir.mkdirs
     
