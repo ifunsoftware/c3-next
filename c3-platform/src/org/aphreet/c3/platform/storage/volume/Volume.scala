@@ -2,13 +2,15 @@ package org.aphreet.c3.platform.storage.volume;
 
 import scala.collection.mutable.{Set, HashSet}
 
+import org.aphreet.c3.platform.exception.PropertyChangeException
+
 import org.apache.commons.logging.LogFactory
 
 class Volume(val mountPoint:String, var size:Long, var available:Long){
   
-  private val LOW_WATERMARK  = 100000000l;
+  private var lowWatermark  = 100000000l;
   
-  private val HIGH_WATERMARK = 500000000l;
+  private var highWatermark = 500000000l;
   
   val storages:Set[Storage] = new HashSet
   
@@ -16,8 +18,8 @@ class Volume(val mountPoint:String, var size:Long, var available:Long){
     size = s;
     available = a;
     
-    val moveToRO = available < LOW_WATERMARK
-    var moveToRW = available > HIGH_WATERMARK
+    val moveToRO = available < lowWatermark
+    var moveToRW = available > highWatermark
     
     for(storage <- storages){
       if(moveToRO)
@@ -35,6 +37,19 @@ class Volume(val mountPoint:String, var size:Long, var available:Long){
     
   }
   
+  def setLowWatermark(value:Long) = {
+    if(value > highWatermark){
+      throw new PropertyChangeException("Low Watermark must be lower than High Watermark")
+    }
+    lowWatermark = value
+  }
+  
+  def setHighWatermark(value:Long) = {
+    if(value < lowWatermark){
+      throw new PropertyChangeException("High Watermark must be higher than Low Watermark" )
+    }
+    highWatermark = value
+  }
   
   override def toString:String = "Volume[" +mountPoint + " " + size + " " + available + "]"
 

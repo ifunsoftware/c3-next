@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import javax.annotation.PostConstruct
 
-import eu.medsea.mimeutil.MimeUtil
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -41,15 +40,6 @@ class StorageManagerImpl extends StorageManager{
   
   @Autowired
   def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
-  
-  @PostConstruct
-  def init{
-	  configManager.getPlatformParam.get("c3.platform.mime.detector") match {
-	    case Some(detectorClass) => MimeUtil.registerMimeDetector(detectorClass)
-	    case None => null
-	  }
-  }
-  
   
   
   def registerFactory(factory:StorageFactory) = {

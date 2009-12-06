@@ -1,5 +1,6 @@
 package org.aphreet.c3.platform.storage.impl
 
+import org.aphreet.c3.platform.management.PlatformPropertyListener
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import java.io.OutputStream
@@ -7,9 +8,13 @@ import java.io.OutputStream
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
-@Component
-class ResourceAccessorImpl extends ResourceAccessor{
+import eu.medsea.mimeutil.MimeUtil
 
+@Component
+class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListener{
+
+  private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
+  
   var storageManager:StorageManager = null
   
   @Autowired
@@ -62,6 +67,18 @@ class ResourceAccessorImpl extends ResourceAccessor{
   
   private def storageIdFromRA(ra:String):String = {
 	ra.substring(ra.length - 4, ra.length)
+  }
+  
+  def listeningForProperties:Array[String] = Array(MIME_DETECTOR_CLASS)
+  
+  def propertyChanged(propName:String, oldClass:String, newClass:String) = {
+    
+    if(oldClass != null){
+      MimeUtil unregisterMimeDetector oldClass
+    }
+    
+    MimeUtil registerMimeDetector newClass
+    
   }
   
 }

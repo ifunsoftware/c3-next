@@ -20,4 +20,9 @@ trait PlatformManagementEndpoint {
   
   def setPlatformProperty(key:String, value:String)
 
+ 
+  def registerPropertyListener(listener:PlatformPropertyListener)
+  
+  def unregisterPropertyListener(listener:PlatformPropertyListener)
+  
 }

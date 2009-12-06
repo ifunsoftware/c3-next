@@ -10,9 +10,14 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 import org.apache.commons.logging.LogFactory
 
-@Component
-class VolumeManager {
+import org.aphreet.c3.platform.management.PlatformPropertyListener
 
+@Component
+class VolumeManager extends PlatformPropertyListener{
+
+  val LOW_WATERMARK = "c3.platform.capacity.lowwatermark"
+  val HIGH_WATERMARK = "c3.platform.capacity.highwatermark"
+  
   val logger = LogFactory getLog getClass
   
   val dataProvider = dataProviderForCurrentPlatform 
@@ -49,7 +54,6 @@ class VolumeManager {
   private def volumeForPath(path:String):Volume = {
     
     var foundVolume:Volume = null
-    //TODO use Files, Luke!
     for(volume <- volumes)
       if(path contains volume.mountPoint)
         if(foundVolume == null)
@@ -78,6 +82,25 @@ class VolumeManager {
     logger info data.toString
     
     data
+  }
+  
+  def listeningForProperties:Array[String] = {
+    Array(LOW_WATERMARK, HIGH_WATERMARK)
+  }
+  
+  def propertyChanged(propName:String, oldValue:String, newValue:String) = {
+    propName match {
+      case LOW_WATERMARK => {
+        logger info "Updating low watermark"
+        for(volume <- volumes)
+          volume.setLowWatermark(newValue.toLong)
+      }
+      case HIGH_WATERMARK => {
+        logger info "Updating high watermark"
+        for(volume <- volumes)
+          volume.setHighWatermark(newValue.toLong)
+      }
+    }
   }
   
   class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Runnable {
