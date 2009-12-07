@@ -28,7 +28,7 @@ public class InstallBean {
 	@Autowired
 	private IPlatformControllService platformControllService;
 	
-	@Length(min=5)
+	@Length(min=5, max=64)
 	private String password;
 
 	@Email

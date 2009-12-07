@@ -11,6 +11,7 @@ import org.aphreet.c3.web.service.IGroupService;
 import org.aphreet.c3.web.service.IUserService;
 import org.aphreet.c3.web.entity.SingleUserGroup;
 import org.aphreet.c3.web.entity.User;
+import org.aphreet.c3.web.util.FacesUtil;
 import org.aphreet.c3.web.util.HashUtil;
 import org.aphreet.c3.web.util.collection.CollectionFactory;
 import org.hibernate.validator.Email;
@@ -35,8 +36,10 @@ public class AddUserBean {
 	private String name;
 	
 	@NotEmpty
-	@Length(min=6)
+	@Length(min=6, max=64)
 	private String password;
+	
+	private String passwordConfirm;
 	
 	@Email
 	private String mail;
@@ -72,10 +75,12 @@ public class AddUserBean {
 		if(userService.getUserByName(name) != null){
 			((UIInput) toValidate).setValid(false);
 			FacesMessage message = new FacesMessage("This name already exist");
+			message.setSeverity(FacesMessage.SEVERITY_ERROR);
 			context.addMessage(toValidate.getClientId(context), message);
 		}else if(groupService.getGroupByName(name) != null){
 			((UIInput) toValidate).setValid(false);
 			FacesMessage message = new FacesMessage("This name already exist");
+			message.setSeverity(FacesMessage.SEVERITY_ERROR);
 			context.addMessage(toValidate.getClientId(context), message);
 		}
 	}
@@ -90,8 +95,29 @@ public class AddUserBean {
 			((UIInput)toValidate).setValid(false);
 
 			FacesMessage message = new FacesMessage("This email already exist");
+			message.setSeverity(FacesMessage.SEVERITY_ERROR);
 			context.addMessage(toValidate.getClientId(context), message);
 		}
+	}
+	
+	public void validatePassword(FacesContext context, 
+			UIComponent toValidate, Object value) {
+		
+		String confirmedPassword = (String) value;
+		
+		UIInput passwordInput = (UIInput) 
+			FacesUtil.findComponent("password");
+		
+		String firstPassword = (String) passwordInput.getValue();
+		
+		if(!firstPassword.equals(confirmedPassword)){
+			((UIInput)toValidate).setValid(false);
+
+			FacesMessage message = new FacesMessage("Passwords do not match");
+			message.setSeverity(FacesMessage.SEVERITY_ERROR);
+			context.addMessage(toValidate.getClientId(context), message);
+		}
+		
 	}
 	
 	
@@ -117,5 +143,13 @@ public class AddUserBean {
 
 	public void setMail(String mail) {
 		this.mail = mail;
+	}
+
+	public String getPasswordConfirm() {
+		return passwordConfirm;
+	}
+
+	public void setPasswordConfirm(String passwordConfirm) {
+		this.passwordConfirm = passwordConfirm;
 	}
 }

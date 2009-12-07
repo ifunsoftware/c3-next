@@ -18,6 +18,7 @@
 	<entry key="signin">Sign in</entry>
 	<entry key="signout">Sign out</entry>
 	<entry key="signin_button">Sign in</entry>
+	<entry key="remember_me">Remember me</entry>
 	<entry key="signin_title">Sign in to C3</entry>
 	<entry key="register">Register</entry>
 	<entry key="word_or"> or </entry>
@@ -27,6 +28,7 @@
 	<entry key="signup_title">Create your account</entry>
 	<entry key="username_field">User name</entry>
 	<entry key="password_field">Password</entry>
+	<entry key="password_confirm_field">Confirm password</entry>
 	<entry key="email_field">E-Mail</entry>
 	<entry key="signup_button">Create account</entry>
 	<!-- File tree -->

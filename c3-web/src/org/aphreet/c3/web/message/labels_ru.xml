@@ -17,6 +17,7 @@
 	<!-- Sign up and register -->
 	<entry key="signin">Вход</entry>
 	<entry key="signout">Выход</entry>
+	<entry key="remember_me">Запомнить меня</entry>
 	<entry key="signin_button">Войти</entry>
 	<entry key="signin_title">Вход на сайт</entry>
 	<entry key="register">Регистрация</entry>
@@ -27,6 +28,7 @@
 	<entry key="signup_title">Регистрация</entry>
 	<entry key="username_field">Имя пользователя</entry>
 	<entry key="password_field">Пароль</entry>
+	<entry key="password_confirm_field">Подтверждение</entry>
 	<entry key="email_field">E-Mail</entry>
 	<entry key="signup_button">Зарегистрироваться</entry>
 	<!-- File tree -->

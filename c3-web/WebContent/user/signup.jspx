@@ -15,33 +15,57 @@
 
 		<ui:define name="body">
 			<h:form>
-				<h:panelGrid columns="3">
-
-					<h:outputLabel for="username" value="#{msgs.username_field}" />
-					<h:inputText id="username" value="#{addUserBean.name}"
-						validator="#{addUserBean.validateName}">
-						<rich:ajaxValidator event="onblur" />
-					</h:inputText>
-					<rich:message for="username" />
-
-
-					<h:outputLabel for="password" value="#{msgs.password_field}" />
-					<h:inputSecret id="password" value="#{addUserBean.password}" >
-						<rich:ajaxValidator event="onblur"/>
-					</h:inputSecret>
-					<rich:message for="password" />
-
-					<h:outputLabel for="mail" value="#{msgs.email_field}" />
-					<h:inputText id="mail" value="#{addUserBean.mail}"
-						validator="#{addUserBean.validateEmail}">
-						<rich:ajaxValidator event="onblur" />
-					</h:inputText>
-					<rich:message for="mail" />
-
-					<h:commandButton value="#{msgs.signup_button}"
-						action="#{addUserBean.createAccount}" />
-
-				</h:panelGrid>
+				<table class="form">
+					<tr>
+						<td class="form_label"><label for="username">#{msgs.username_field}</label></td>
+						<td class="form_input">
+							<h:inputText id="username" value="#{addUserBean.name}"
+								validator="#{addUserBean.validateName}">
+								<rich:ajaxValidator event="onblur" />
+							</h:inputText>
+						</td>
+						<td><rich:message for="username" errorLabelClass="form_inline_error"/></td>
+					</tr>
+					<rich:graphValidator>
+					<tr>
+						<td class="form_label"><label for="password">#{msgs.password_field}</label></td>
+						<td class="form_input">
+							<h:inputSecret id="password" value="#{addUserBean.password}" >
+								<rich:ajaxValidator event="onblur"/>
+							</h:inputSecret>
+						</td>
+						<td><rich:message for="password" errorLabelClass="form_inline_error"/></td>
+					</tr>
+					<tr>
+						<td class="form_label"><label for="password_confirm">#{msgs.password_confirm_field}</label></td>
+						<td class="form_input">
+							<h:inputSecret id="password_confirm" value="#{addUserBean.passwordConfirm}" validator="#{addUserBean.validatePassword}" >
+								<rich:beanValidator/>
+							</h:inputSecret>
+						</td>
+						<td><rich:message for="password_confirm" errorLabelClass="form_inline_error"/></td>
+					</tr>
+					</rich:graphValidator>
+					<tr>
+						<td class="form_label"><label for="mail">#{msgs.email_field}</label></td>
+						<td class="form_input">
+							<h:inputText id="mail" value="#{addUserBean.mail}"
+								validator="#{addUserBean.validateEmail}">
+								<rich:ajaxValidator event="onblur" />
+							</h:inputText>
+						</td>
+						<td><rich:message for="mail" errorLabelClass="form_inline_error"/></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td>
+							<h:commandButton value="#{msgs.signup_button}"
+								action="#{addUserBean.createAccount}" />
+						</td>
+						<td></td>
+					</tr>
+				</table>
+				
 			</h:form>
 		</ui:define>
 	</ui:composition>

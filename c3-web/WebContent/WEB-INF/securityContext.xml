@@ -20,9 +20,10 @@
 		<intercept-url pattern="/css/**" filters="none" />
 
 		<form-login login-page="/user/signin.xhtml"
-			default-target-url="/index.xhtml" />
+			default-target-url="/index.xhtml" authentication-failure-url="/user/signin.xhtml?signinfailure=1"/>
 		<logout invalidate-session="true" logout-success-url="/index.xhtml"
 			logout-url="/user/signout" />
+		<remember-me key="sskey"/>
 	</http>
 
 	<authentication-provider>

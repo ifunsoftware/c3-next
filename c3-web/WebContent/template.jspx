@@ -36,77 +36,12 @@
 			<h:panelGroup rendered="#{requestBean.anonymous}" >
 				<div class="head_control">
 					<ul>
-						<li class="list_menu"><a href="javascript:{Richfaces.showModalPanel('signin_panel')}">#{msgs.signin}</a></li>
-						<li class="list_menu"><a href="javascript:{Richfaces.showModalPanel('signup_panel')}">#{msgs.register}</a></li>
+						<li class="list_menu"><a href="user/signin.xhtml">#{msgs.signin}</a></li>
+						<li class="list_menu"><a href="user/signup.xhtml">#{msgs.register}</a></li>
 						<li class="list_menu"><a href="javascript:Richfaces.showModalPanel('select_language_panel');">#{msgs.language}</a></li>
 					</ul>
 				</div>
 			</h:panelGroup> 
-			
-			<rich:modalPanel id="signin_panel" height="330" width="422"
-						shadowDepth="0" >
-					<f:facet name="header">
-						<h:outputText value="#{msgs.signin}"/>
-					</f:facet>
-					<form method="post" action="j_spring_security_check">
-			<table id="center">
-				<tbody>
-					<tr>
-						<td><label for="j_username"><h:outputText value="#{msgs.username_field}"/></label></td>
-						<td><input id="j_username" type="text" name="j_username" /></td>
-					</tr>
-					<tr>
-						<td><label for="j_password"><h:outputText value="#{msgs.password_field}"/></label></td>
-						<td><input id="j_password" type="password" name="j_password"
-							value="" /></td>
-					</tr>
-					<tr>
-						<td></td><td><input type="submit" value="#{msgs.signin_button}" /></td>
-					</tr>
-				</tbody>
-			</table>
-			</form>
-					<a href="javascript:{Richfaces.hideModalPanel('signin_panel')}"><h:outputText value="#{msgs.cancel}"/></a>
-			</rich:modalPanel> 
-			
-			
-			<rich:modalPanel id="signup_panel" height="330" width="422"
-						shadowDepth="0" >
-					<f:facet name="header">
-						<h:outputText value="#{msgs.signin}"/>
-					</f:facet>
-					<h:form id="center_2">
-				<h:panelGrid columns="3">
-
-					<h:outputLabel for="username" value="#{msgs.username_field}" />
-					<h:inputText id="username" value="#{addUserBean.name}"
-						validator="#{addUserBean.validateName}">
-						<rich:ajaxValidator event="onblur" />
-					</h:inputText>
-					<rich:message for="username" />
-
-
-					<h:outputLabel for="password" value="#{msgs.password_field}" />
-					<h:inputSecret id="password" value="#{addUserBean.password}" >
-						<rich:ajaxValidator event="onblur"/>
-					</h:inputSecret>
-					<rich:message for="password" />
-
-					<h:outputLabel for="mail" value="#{msgs.email_field}" />
-					<h:inputText id="mail" value="#{addUserBean.mail}"
-						validator="#{addUserBean.validateEmail}">
-						<rich:ajaxValidator event="onblur" />
-					</h:inputText>
-					<rich:message for="mail" />
-					</h:panelGrid>
-					<p id="center_button"><h:commandButton id="button" value="#{msgs.signup_button}"
-						action="#{addUserBean.createAccount}" /></p>
-
-				
-			</h:form>
-					<a href="javascript:{Richfaces.hideModalPanel('signup_panel')}"><h:outputText value="#{msgs.cancel}"/></a>
-			</rich:modalPanel> 
-			
 			
 			<h:panelGroup rendered="#{!requestBean.anonymous}">
 				<div class="head_control">

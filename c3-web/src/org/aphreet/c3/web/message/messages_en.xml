@@ -28,5 +28,6 @@ You can see it here: http://dev.aphreet.org/c3/group/wiki.xhtml?id={2}&amp;name=
 -------
   
 You received this message because you checked to notify you about new messages in C3 service. 
-You can change it at your profile page: http://dev.aphreet.org/c3/user.xhtml .</entry>	
+You can change it at your profile page: http://dev.aphreet.org/c3/user.xhtml .</entry>
+	<entry key="login_error">Incorrect user name and/or password</entry>	
 </properties>
