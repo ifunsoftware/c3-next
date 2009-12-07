@@ -1,5 +1,6 @@
 package org.aphreet.c3.platform.search.impl
 
+import java.util.List
 import org.aphreet.c3.platform.resource.Resource
 
 import org.springframework.stereotype.Component
@@ -11,10 +12,8 @@ class SearchManagerImpl extends SearchManager{
   
   val log = org.apache.commons.logging.LogFactory.getLog(getClass)
   
-  def search(query:String):List[Resource] = {
+  def search(query:String):List[String] = {
     searcher.search(query)
-    log warn "Implement resource fetching somewhere here"
-    List()
   }
   
   def index(resource:Resource) = searcher.index(resource)

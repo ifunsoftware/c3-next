@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.access
 
 import java.io.OutputStream
+import java.util.List
 
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
@@ -14,7 +15,7 @@ trait PlatformAccessEndpoint {
   
   def delete(ra:String)
   
-  def search(query:String):List[Resource]
+  def search(query:String):List[String]
   
-  def query(query:String):List[Resource]
+  def query(query:String):List[String]
 }

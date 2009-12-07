@@ -2,6 +2,8 @@ package org.aphreet.c3.platform.access.impl
 
 import java.io.OutputStream
 
+import java.util.{List, Collections}
+
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import org.aphreet.c3.platform.storage.ResourceAccessor
 import org.aphreet.c3.platform.search.SearchManager
@@ -34,17 +36,17 @@ class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
   
   def delete(ra:String) = resourceAccessor.delete(ra)
   
-  def search(query:String):List[Resource] = {
+  def search(query:String):List[String] = {
     if(searchManager.isSearchAvaliable){
       searchManager.search(query)
     }else{
       log warn "Resource search is not avaliable"
-      List()
+      Collections.emptyList[String];
     }
   }
   
-  def query(query:String):List[Resource] = {
-    null
+  def query(query:String):List[String] = {
+    Collections.emptyList[String];
   }
   
 }
