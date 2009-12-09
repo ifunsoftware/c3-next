@@ -117,6 +117,12 @@
 			<name>Scala-tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
 		</repository>
+		
+		<repository>
+			<id>c3</id>
+			<name>C3 External Dependencies</name>
+			<url>http://c3-system.googlecode.com/svn/maven</url>
+		</repository>
 
 	</repositories>
 

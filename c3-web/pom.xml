@@ -126,6 +126,13 @@
 			<version>2.5.0</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>be.devijver</groupId>
+			<artifactId>wikiparser</artifactId>
+			<version>1.0.1</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.jboss</groupId>
@@ -149,14 +156,6 @@
 			<version>3.3.2.SR1</version>
 			<scope>system</scope>
 			<systemPath>${basedir}/WebContent/WEB-INF/lib/richfaces-ui-3.3.2.SR1.jar</systemPath>
-		</dependency>
-
-		<dependency>
-			<groupId>be.devijver</groupId>
-			<artifactId>wikiparser</artifactId>
-			<version>0.1.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/WebContent/WEB-INF/lib/wikiparser.jar</systemPath>
 		</dependency>
 
 		<dependency>
