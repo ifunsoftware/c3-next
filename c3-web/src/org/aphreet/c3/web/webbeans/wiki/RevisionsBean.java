@@ -36,15 +36,17 @@ public class RevisionsBean extends IdGroupViewBean{
 		wikiPage = wikiService.getPage(group, pageName);
 		if(wikiPage == null){
 			HttpUtil.sendNotFound();
-		}
+		} else {
 		
-		List<WikiPageVersion> versions = wikiPage.getVersions();
+			List<WikiPageVersion> versions = wikiPage.getVersions();
 		
-		revisions = new ArrayList<WikiRevisionDto>();
-		
-		for(int i=0; i< versions.size(); i++){
-			WikiPageVersion version = versions.get(i);
-			revisions.add(new WikiRevisionDto(i+1, version.getEditDate(), version.getEditor(), version.getComment()));
+			revisions = new ArrayList<WikiRevisionDto>();
+
+			for (int i = 0; i < versions.size(); i++) {
+				WikiPageVersion version = versions.get(i);
+				revisions.add(new WikiRevisionDto(i + 1, version.getEditDate(),
+						version.getEditor(), version.getComment()));
+			}
 		}
 	}
 
