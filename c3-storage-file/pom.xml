@@ -32,6 +32,13 @@
 			<scope>provided</scope>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>org.aphreet.org.apache.commons.transaction</artifactId>
+			<version>1.2.0</version>
+			<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 	
 	<build>
