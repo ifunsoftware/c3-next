@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 
-import org.aphreet.c3.platform.task.TaskDescription
+import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 
 import java.util.{Map => JMap}
 
@@ -23,8 +23,9 @@ trait PlatformManagementEndpoint {
   def setPlatformProperty(key:String, value:String)
 
   def listTasks:List[TaskDescription]
-  
  
+  def setTaskMode(taskId:String, state:TaskState)
+  
   def registerPropertyListener(listener:PlatformPropertyListener)
   
   def unregisterPropertyListener(listener:PlatformPropertyListener)

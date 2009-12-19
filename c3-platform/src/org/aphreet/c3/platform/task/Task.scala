@@ -28,7 +28,7 @@ abstract class Task extends Runnable{
   
   def name:String
   
-  def progress:Int = 0
+  def progress:Int
 
   def description:TaskDescription = new TaskDescription(id, name, state, progress)
   

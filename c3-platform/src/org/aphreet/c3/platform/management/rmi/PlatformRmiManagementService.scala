@@ -16,4 +16,9 @@ trait PlatformRmiManagementService {
   
   def platformProperties:HashMap[String, String]
   
+  def listTasks:List[RmiTaskDescr]
+  
+  def setTaskMode(taskId:String, mode:String)
+  
+  
 }

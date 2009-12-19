@@ -1,8 +1,5 @@
 package org.aphreet.c3.platform.storage.volume
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -10,6 +7,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 import org.apache.commons.logging.LogFactory
 
+import org.aphreet.c3.platform.task._
 import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
 
 @Component
@@ -24,7 +22,15 @@ class VolumeManager extends PlatformPropertyListener{
  
   val volumes:List[Volume] = loadVolumeData
   
-  val executor = Executors.newSingleThreadScheduledExecutor
+  var taskExecutor:TaskExecutor = null
+  
+  @Autowired
+  def setTaskExecutor(executor:TaskExecutor) = {taskExecutor = executor}
+  
+  @PostConstruct
+  def init{
+    taskExecutor.submitTask(new VolumeUpdater(volumes, dataProvider))
+  }
   
   def dataProviderForCurrentPlatform:VolumeDataProvider = {
     if(System.getProperty("os.name").startsWith("Windows")){
@@ -66,16 +72,6 @@ class VolumeManager extends PlatformPropertyListener{
     
   }
   
-  @PostConstruct
-  def init = {
-	executor.scheduleAtFixedRate(new VolumeUpdater(volumes, dataProvider), 10, 10, TimeUnit.SECONDS)
-  }
-  
-  @PreDestroy
-  def destroy = {
-    executor.shutdown
-  }
-  
   def loadVolumeData:List[Volume] = {
     val data = dataProvider.getVolumeList
     
@@ -103,22 +99,33 @@ class VolumeManager extends PlatformPropertyListener{
     }
   }
   
-  class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Runnable {
+  class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Task {
     
-    def run = {
+    def runExecution = {
+      while(!Thread.currentThread.isInterrupted){
+        if(!isPaused){
+          logger.debug("updating volume state")
       
-      logger.debug("updating volume state")
+          val newVolumeList = dataProvider.getVolumeList
       
-      val newVolumeList = dataProvider.getVolumeList
+          for(newVolume <- newVolumeList)
+            for(volume <- volumes)
+              if(volume.mountPoint == newVolume.mountPoint){
+                volume.updateState(newVolume.size, newVolume.available)
+              }
       
-      for(newVolume <- newVolumeList)
-        for(volume <- volumes)
-          if(volume.mountPoint == newVolume.mountPoint){
-            volume.updateState(newVolume.size, newVolume.available)
-          }
+          logger.debug(volumes.toString)
+          Thread.sleep(10000)
+        }
+      }
+      logger info (name + " ended")
       
-      logger.debug(volumes.toString)
     }
+    
+    def name = "VolumeCapacityMonitor"
+    
+    def progress = 0
+    
   }
   
 }

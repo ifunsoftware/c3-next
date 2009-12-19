@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.aphreet.c3.platform.task._
+import org.aphreet.c3.platform.task.impl.DummyTask
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -56,6 +57,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         this.registerPropertyListener(listener)
       }
     }
+    
+    //remove this
+    taskExecutor.submitTask(new DummyTask)
   }
   
   def listStorages:List[Storage] = storageManager.listStorages
@@ -110,6 +114,13 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
   
   def listTasks:List[TaskDescription] = taskExecutor.taskList
+  
+  def setTaskMode(taskId:String, state:TaskState) ={
+    state match {
+      case PAUSED => taskExecutor.pauseTask(taskId)
+      case RUNNING => taskExecutor.resumeTask(taskId)
+    }
+  }
   
   def registerPropertyListener(listener:PlatformPropertyListener) = {
     log info "Registering property listener: " + listener.getClass.getSimpleName
