@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
+import org.aphreet.c3.platform.task._
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +24,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   var configManager:PlatformConfigManager = null
   
+  var taskExecutor:TaskExecutor = null
+  
+  
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
   
   private var currentConfig:JMap[String, String] = null;
@@ -40,6 +44,10 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     foundListeners = new JHashSet()
     foundListeners.addAll(listeners)
   }
+  
+  @Autowired
+  def setTaskExecutor(executor:TaskExecutor) = {taskExecutor = executor}
+  
   
   @PostConstruct
   def init{
@@ -100,6 +108,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
       }
 	}
   }
+  
+  def listTasks:List[TaskDescription] = taskExecutor.taskList
   
   def registerPropertyListener(listener:PlatformPropertyListener) = {
     log info "Registering property listener: " + listener.getClass.getSimpleName
