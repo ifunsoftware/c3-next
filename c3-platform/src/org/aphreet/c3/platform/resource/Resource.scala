@@ -131,7 +131,6 @@ object Resource {
   val STOP_SEQ : Long = 107533894376158093L
   
   val MD_CONTENT_TYPE = "content.type"
-  val MD_EMBEDDED_CONTENT = "c3.embedded.content"
   val MD_DATA_ADDRESS = "c3.data.address"
   
   def fromByteArray(bytes:Array[Byte]):Resource = {
