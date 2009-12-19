@@ -82,7 +82,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
       try{
 		propertyListeners.get(key) match {
 		  case Some(lx) => for(l <- lx)
-		  	  				 l.propertyChanged(key, oldValue, value)
+		  	  				 l.propertyChanged(new PropertyChangeEvent(key, oldValue, value, this))
 		  case None => null
 		}
     
@@ -114,7 +114,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         val currentParamValue = getPlatformProperties.get(paramName)
         
         if(currentParamValue != null){
-          listener.propertyChanged(paramName, null, currentParamValue)
+          listener.propertyChanged(new PropertyChangeEvent(paramName, null, currentParamValue, this))
         }
       }
     }

@@ -2,9 +2,16 @@ package org.aphreet.c3.platform.task
 
 abstract class Task extends Runnable{
 
-  private var taskState:TaskState = PENDING
+  val id = generateId
   
+  private def generateId:String = name + "-" + System.currentTimeMillis
+  
+  
+  private var taskState:TaskState = PENDING
+
   def state:TaskState = taskState
+
+  
   
   override def run = {
     taskState = RUNNING
@@ -18,6 +25,12 @@ abstract class Task extends Runnable{
   }
   
   protected def runExecution;
+  
+  def name:String
+  
+  def progress:Int = 0
+
+  def description:TaskDescription = new TaskDescription(id, name, state, progress)
   
   protected def isPaused:Boolean = {taskState == PAUSED}
   

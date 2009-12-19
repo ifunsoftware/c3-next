@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.storage.impl
 
-import org.aphreet.c3.platform.management.PlatformPropertyListener
+import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import java.io.OutputStream
@@ -71,13 +71,13 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
   
   def listeningForProperties:Array[String] = Array(MIME_DETECTOR_CLASS)
   
-  def propertyChanged(propName:String, oldClass:String, newClass:String) = {
+  def propertyChanged(event:PropertyChangeEvent) = {
     
-    if(oldClass != null){
-      MimeUtil unregisterMimeDetector oldClass
+    if(event.oldValue != null){
+      MimeUtil unregisterMimeDetector event.oldValue
     }
     
-    MimeUtil registerMimeDetector newClass
+    MimeUtil registerMimeDetector event.newValue
     
   }
   

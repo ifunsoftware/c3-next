@@ -4,5 +4,5 @@ trait PlatformPropertyListener {
 
   def listeningForProperties:Array[String]
   
-  def propertyChanged(propName:String, oldValue:String, newValue:String)
+  def propertyChanged(event:PropertyChangeEvent)
 }

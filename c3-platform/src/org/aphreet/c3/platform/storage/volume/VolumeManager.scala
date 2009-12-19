@@ -10,7 +10,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 import org.apache.commons.logging.LogFactory
 
-import org.aphreet.c3.platform.management.PlatformPropertyListener
+import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
 
 @Component
 class VolumeManager extends PlatformPropertyListener{
@@ -88,17 +88,17 @@ class VolumeManager extends PlatformPropertyListener{
     Array(LOW_WATERMARK, HIGH_WATERMARK)
   }
   
-  def propertyChanged(propName:String, oldValue:String, newValue:String) = {
-    propName match {
+  def propertyChanged(event:PropertyChangeEvent) = {
+    event.name match {
       case LOW_WATERMARK => {
         logger info "Updating low watermark"
         for(volume <- volumes)
-          volume.setLowWatermark(newValue.toLong)
+          volume.setLowWatermark(event.newValue.toLong)
       }
       case HIGH_WATERMARK => {
         logger info "Updating high watermark"
         for(volume <- volumes)
-          volume.setHighWatermark(newValue.toLong)
+          volume.setHighWatermark(event.newValue.toLong)
       }
     }
   }
