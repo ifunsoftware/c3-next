@@ -37,12 +37,7 @@ class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
   def delete(ra:String) = resourceAccessor.delete(ra)
   
   def search(query:String):List[String] = {
-    if(searchManager.isSearchAvaliable){
-      searchManager.search(query)
-    }else{
-      log warn "Resource search is not avaliable"
-      Collections.emptyList[String];
-    }
+    searchManager.search(query)
   }
   
   def query(query:String):List[String] = {

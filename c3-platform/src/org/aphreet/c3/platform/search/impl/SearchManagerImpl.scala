@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.search.impl
 
-import java.util.List
+import java.util.{List, Collections} 
 import org.aphreet.c3.platform.resource.Resource
 
 import org.springframework.stereotype.Component
@@ -13,10 +13,20 @@ class SearchManagerImpl extends SearchManager{
   val log = org.apache.commons.logging.LogFactory.getLog(getClass)
   
   def search(query:String):List[String] = {
-    searcher.search(query)
+    if(isSearchAvaliable)
+      searcher.search(query)
+    else{
+      log warn "No searcher registered"
+      Collections.emptyList[String]
+    }
   }
   
-  def index(resource:Resource) = searcher.index(resource)
+  def index(resource:Resource) = {
+    if(isSearchAvaliable)
+      searcher.index(resource)
+    else
+      log warn "No searcher registered"
+  }
   
   def registerSearcher(_searcher:Searcher) = {
     log info "registering searcher: " + _searcher.getClass.getSimpleName

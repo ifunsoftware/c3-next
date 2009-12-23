@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.storage.impl
 
 import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
+import org.aphreet.c3.platform.search.SearchManager
 
 import java.io.OutputStream
 
@@ -17,9 +18,12 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
   
   var storageManager:StorageManager = null
   
+  var searchManager:SearchManager = null
+  
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
   
+  def setSearchManager(manager:SearchManager) = {searchManager = manager}
   
   def get(ra:String):Resource = {
     val storage = storageManager.storageForId(storageIdFromRA(ra))
@@ -43,7 +47,9 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
     val storage = storageManager.dispatcher.selectStorageForResource(resource)
     
     if(storage != null){
-    	storage.add(resource)
+    	val ra = storage.add(resource)
+    	searchManager index resource
+    	ra
     }else{
       throw new StorageException("Failed to find storage for resource")
     }
