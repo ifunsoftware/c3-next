@@ -23,6 +23,7 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
   
+  @Autowired
   def setSearchManager(manager:SearchManager) = {searchManager = manager}
   
   def get(ra:String):Resource = {
