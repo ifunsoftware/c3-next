@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+
+	<context:annotation-config />
+
+    <context:component-scan base-package="org.aphreet.c3.search" />
+    
+    <bean id="textExtractorProvider" class="org.aphreet.c3.search.index.server.TextExtractorProvider">
+        <property name="serviceUrl" value="rmi://localhost:1199/SearchProvider"/>
+        <property name="serviceInterfaceName" value="org.aphreet.c3.search.index.server.SearchProvider"/>
+        <property name="searchConfig" ref="searchConfig"/>
+    </bean>
+    
+    <bean id="resourceHandler" class="org.aphreet.c3.search.index.ResourceHandler">
+        <property name="resourceFilterList">
+            <list>
+                <bean id="textExtractorFilter" class="org.aphreet.c3.search.index.filter.TextExtractorFilter"/>
+                <bean id="languageGuesserFilter" class="org.aphreet.c3.search.index.filter.LanguageGuesserFilter"/>
+            </list>
+        </property>
+    </bean>
+
+</beans>
