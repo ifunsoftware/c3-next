@@ -25,7 +25,7 @@ class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
   def setResourceAccessor(accessor:ResourceAccessor) = {resourceAccessor = accessor}
   
   @Autowired
-  def setSearchManagaer(manager:SearchManager) = {searchManager = manager}
+  def setSearchManager(manager:SearchManager) = {searchManager = manager}
   
   
   def get(ra:String):Resource = resourceAccessor.get(ra)

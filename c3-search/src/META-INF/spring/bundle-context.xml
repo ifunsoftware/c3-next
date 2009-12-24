@@ -10,6 +10,21 @@
 
 	<context:annotation-config />
 
-    <context:component-scan base-package="org.aphreet.c3.platform.search" />
+    <context:component-scan base-package="org.aphreet.c3.search" />
+    
+    <bean id="textExtractorProvider" class="org.aphreet.c3.search.index.server.TextExtractorProvider">
+        <property name="serviceUrl" value="rmi://localhost:1199/SearchProvider"/>
+        <property name="serviceInterfaceName" value="org.aphreet.c3.search.index.server.SearchProvider"/>
+        <property name="searchConfig" ref="searchConfig"/>
+    </bean>
+    
+    <bean id="resourceHandler" class="org.aphreet.c3.search.index.ResourceHandler">
+        <property name="resourceFilterList">
+            <list>
+                <bean id="textExtractorFilter" class="org.aphreet.c3.search.index.filter.TextExtractorFilter"/>
+                <bean id="languageGuesserFilter" class="org.aphreet.c3.search.index.filter.LanguageGuesserFilter"/>
+            </list>
+        </property>
+    </bean>
 
 </beans>

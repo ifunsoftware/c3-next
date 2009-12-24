@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faceted-project>
-  <runtime name="Spring DM Server"/>
+  <runtime name="SpringSource dm Server (Runtime) v1.0"/>
+  <secondary-runtime name="Spring DM Server"/>
   <fixed facet="jst.java"/>
   <fixed facet="jst.web"/>
   <installed facet="jst.java" version="6.0"/>
