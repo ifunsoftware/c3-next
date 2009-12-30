@@ -33,5 +33,20 @@ class Path (var path:String){
   
   def file:File = new File(correctPath)
   
+  override def equals(that:Any):Boolean = {
+    if(that == null) return false
+    
+    if(!that.isInstanceOf[Path]) return false
+    
+    val thatPath = that.asInstanceOf[Path]
+    
+    if(thatPath.correctPath != this.correctPath) return false
+    
+    true
+  }
+  
+  override def hashCode:Int = 
+    this.correctPath.hashCode
+  
   
 }

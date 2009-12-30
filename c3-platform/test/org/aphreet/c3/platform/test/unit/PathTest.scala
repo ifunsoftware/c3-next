@@ -1,10 +1,11 @@
-package org.aphreet.c3.platform.test
+package org.aphreet.c3.platform.test.unit
+
+import org.aphreet.c3.platform.common.Path
 
 import java.io.File
+import junit.framework.Assert
+import junit.framework.TestCase
 
-import junit.framework.{TestCase, Assert}
-
-import org.aphreet.c3.platform.common._
 
 class PathTest extends TestCase{
 
@@ -12,6 +13,7 @@ class PathTest extends TestCase{
     assertEquals(path("/usr/bin/test").toString, "/usr/bin/test")
 	assertEquals(path("/uSr/bin/teSt").toString, "/uSr/bin/teSt")
 	assertEquals(path("/usr/bin/test/").toString, "/usr/bin/test")
+	assertEquals(true, true)
   }
   
   def testWinPaths{

@@ -1,11 +1,11 @@
 package org.aphreet.c3.platform.config.accessor
 
-import java.io.{File, FileWriter}
+import java.io.{File, StringWriter}
 import java.util.{List => JList}
 
 import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{Path, JSONFormatter}
 import org.aphreet.c3.platform.storage.{StorageParams, StorageMode, StorageModeParser}
 
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
@@ -51,9 +51,9 @@ class StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
   
   def storeConfig(params:List[StorageParams], configDir:File) = {
     this.synchronized{
-    	val file = new File(configDir, STORAGE_CONFIG)
+    	
       
-	    val swriter = new FileWriter(file)
+	    val swriter = new StringWriter()
 	    try{
 		    val writer = new JSONWriterImpl(swriter)
 		    
@@ -77,6 +77,11 @@ class StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
 		    writer.endObject
 		    
 		    swriter.flush
+      
+		    val result = JSONFormatter.format(swriter.toString)
+		    
+		    writeToFile(result, new File(configDir, STORAGE_CONFIG))
+      
 	    }finally{
 	    	swriter.close
 	    }

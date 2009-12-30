@@ -1,6 +1,8 @@
 package org.aphreet.c3.platform.config.accessor
 
-import java.io.{File, FileWriter}
+import org.aphreet.c3.platform.common.JSONFormatter
+
+import java.io.{File, FileWriter, StringWriter}
 
 import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
@@ -30,9 +32,9 @@ class PlatformConfigAccessor extends ConfigAccessor[HashMap[String,String]]{
   
   def storeConfig(map:HashMap[String, String], configDir:File) = {
     this.synchronized{
-      val file = new File(configDir, PLATFORM_CONFIG)
+      val swriter = new StringWriter()
       
-      val swriter = new FileWriter(file)
+      var fileWriter:FileWriter = null
       
       try{
         val writer = new JSONWriterImpl(swriter)
@@ -45,9 +47,16 @@ class PlatformConfigAccessor extends ConfigAccessor[HashMap[String,String]]{
         
         swriter.flush
         
+        val result = JSONFormatter.format(swriter.toString)
+        
+        val file = new File(configDir, PLATFORM_CONFIG)
+        
+        writeToFile(result, file)
+        
       }finally{
         swriter.close
       }
     }
   }
+  
 }
