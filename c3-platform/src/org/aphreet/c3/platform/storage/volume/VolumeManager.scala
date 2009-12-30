@@ -124,7 +124,7 @@ class VolumeManager extends PlatformPropertyListener{
     
     def name = "VolumeCapacityMonitor"
     
-    def progress = 0
+    def progress = -1
     
   }
   

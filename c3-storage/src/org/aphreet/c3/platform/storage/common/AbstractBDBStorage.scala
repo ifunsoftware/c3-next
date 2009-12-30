@@ -37,6 +37,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
     database = env.openDatabase(null, storageName, dbConfig)
   }
   
+  def count:Long = {
+    database.count
+  }
   
   def add(resource:Resource):String = {
     

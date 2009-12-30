@@ -28,6 +28,8 @@ trait Storage {
   
   def mode_=(mode:StorageMode)
   
+  def count:Long
+  
   def iterator:StorageIterator
   
   def close;
