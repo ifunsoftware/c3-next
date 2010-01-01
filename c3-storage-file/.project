@@ -22,8 +22,14 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.maven.ide.eclipse.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.maven.ide.eclipse.maven2Nature</nature>
 		<nature>ch.epfl.lamp.sdt.core.scalanature</nature>
 		<nature>com.springsource.server.ide.facet.core.bundlenature</nature>
 		<nature>org.springframework.ide.eclipse.core.springnature</nature>
