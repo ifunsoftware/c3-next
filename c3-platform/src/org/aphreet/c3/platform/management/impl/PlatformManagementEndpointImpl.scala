@@ -119,6 +119,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     state match {
       case PAUSED => taskExecutor.pauseTask(taskId)
       case RUNNING => taskExecutor.resumeTask(taskId)
+      case _ => null
     }
   }
   
