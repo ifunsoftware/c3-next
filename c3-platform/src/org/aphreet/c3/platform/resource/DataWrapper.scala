@@ -5,6 +5,8 @@ import java.nio.channels.{FileChannel, WritableByteChannel}
 import java.nio.ByteBuffer
 import java.lang.StringBuilder
 
+import org.apache.commons.logging.LogFactory
+
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 
 object DataWrapper{
@@ -21,6 +23,8 @@ object DataWrapper{
 
 abstract class DataWrapper {
 
+  val logger = LogFactory.getLog(DataWrapper.getClass)
+  
   def inputStream:InputStream
   
   def writeTo(channel:WritableByteChannel)
@@ -42,6 +46,7 @@ abstract class DataWrapper {
   protected def top(types:java.util.Collection[_]):String = {
     types.iterator.next.asInstanceOf[MimeType].toString
   }
+  
 }
 
 

@@ -39,12 +39,22 @@
 			<scope>provided</scope>
 		</dependency>
 		
+		<dependency>
+			<groupId>eu.medsea.mimeutil</groupId>
+			<artifactId>mime-util</artifactId>
+			<version>2.1.2</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 	
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<sourceDirectory>src</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
+		
+		<testSourceDirectory>src-test</testSourceDirectory>
+		<testOutputDirectory>bin-test</testOutputDirectory>
 
 		<resources>
 			<resource>

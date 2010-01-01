@@ -8,23 +8,12 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 
   val RESOURCE_ADDRESS_LENGTH = 41
   
-  val cursor:Cursor = storage.database.openCursor(null, null)
+  var cursor:Cursor = storage.database.openCursor(null, null)
   
   private var resource:Resource = null
   
   {
-    val databaseKey = new DatabaseEntry
-    val databaseValue = new DatabaseEntry
-    
-    if(cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS){
-      
-      val key = new String(databaseKey.getData)
-      if(key.length == RESOURCE_ADDRESS_LENGTH){
-    	  resource = Resource.fromByteArray(databaseValue.getData)
-      }
-    }else{
-      resource = null
-    } 
+    resource = findNextResource
   }
   
   
@@ -34,23 +23,46 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
     
     val previousResource = resource
     
-    val databaseKey = new DatabaseEntry
-    val databaseValue = new DatabaseEntry
-    
-    if(cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS){
-      resource = Resource.fromByteArray(databaseValue.getData)
-    }else{
-      resource = null
-    }
+    resource = findNextResource
     
     previousResource
   }
+  
+  protected def findNextResource:Resource = {
+  
+    var resource:Resource = null
+    
+    var resultFound = false
+    
+    
+    while(!resultFound){
+      val databaseKey = new DatabaseEntry
+      val databaseValue = new DatabaseEntry
+      
+      if(cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+        val key = new String(databaseKey.getData)
+      
+        if(key.length == RESOURCE_ADDRESS_LENGTH){
+    	  resource = Resource.fromByteArray(databaseValue.getData)
+    	  loadData(resource)
+    	  resultFound = true
+        }
+      }else{
+        resource = null
+        resultFound = true
+      }
+    }
+    
+    resource
+  }
+  
   
   protected def loadData(resource:Resource) = storage.loadData(resource)
   
   def close = {
     try{
       cursor.close
+      cursor = null
     }catch{
       case e:DatabaseException => e.printStackTrace
     }

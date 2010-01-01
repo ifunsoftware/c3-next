@@ -41,7 +41,7 @@
 		<defaultGoal>package</defaultGoal>
 		<sourceDirectory>src</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
+		<testSourceDirectory>src-test</testSourceDirectory>
 		<testOutputDirectory>bin-test</testOutputDirectory>
 
 		<resources>
