@@ -44,7 +44,7 @@ abstract class AbstractStorageFactory extends StorageFactory{
   def destroy = {
     log info "Stopping " + this.name + " storage factory"
     
-    createdStorages.foreach(s => s.mode = U)
+    createdStorages.foreach(s => s.mode = new U())
     
     storageManager.unregisterFactory(this)
     

@@ -19,13 +19,13 @@ class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
   @Autowired
   def setAccessEndpoint(endpoint:PlatformAccessEndpoint) = {accessEndpoint= endpoint}
  
-  def add(metadata:HashMap[String, String], file:String):String = {
+  def add(metadata:HashMap[String, String], data:Array[Byte]):String = {
     
     val resource = new Resource
     resource.metadata ++ new JMap(metadata)
     
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap(new File(file))
+    version.data = DataWrapper.wrap(data)
     resource addVersion version
     
     accessEndpoint.add(resource)

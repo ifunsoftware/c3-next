@@ -9,6 +9,8 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
   val RESOURCE_ADDRESS_LENGTH = 41
   
   var cursor:Cursor = storage.database.openCursor(null, null)
+ 
+  private var bdbEntriesProcessed = 0
   
   private var resource:Resource = null
   
@@ -47,6 +49,7 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
     	  loadData(resource)
     	  resultFound = true
         }
+        bdbEntriesProcessed = bdbEntriesProcessed + 1;
       }else{
         resource = null
         resultFound = true
@@ -58,6 +61,8 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
   
   
   protected def loadData(resource:Resource) = storage.loadData(resource)
+  
+  override def objectsProcessed:Int = bdbEntriesProcessed
   
   def close = {
     try{

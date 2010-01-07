@@ -180,6 +180,44 @@ abstract class AbstractStorageTest extends AbstractTestWithFileSystem{
     }finally storage.close
   }
   
+  def testSize = {
+    val storage = createStorage("1005")
+    
+    try{
+      storage.add(createResource)
+      println(storage.size)
+    }finally storage.close
+  }
+  
+  def testPut = {
+    val storage0 = createStorage("1006")
+    val storage1 = createStorage("1007")
+    
+    val resource = createResource
+    try{   
+      val ra = storage0.add(resource)
+    
+      val readResource = storage0.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+    
+      storage1.put(readResource)
+      
+      val readFrom1 = storage1.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+      
+      compareResources(readResource, readFrom1)
+      
+    }finally{
+      storage0.close
+      storage1.close
+    }
+    
+  }
+  
   private def compareResources(res0:Resource, res1:Resource) = {
     assertFalse("Resource can't be null", res0 == null || res1 == null)
     

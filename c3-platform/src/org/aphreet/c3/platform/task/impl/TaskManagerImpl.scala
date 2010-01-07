@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import org.apache.commons.logging.LogFactory
 
-@Component("taskExecutor")
-class TaskExecutorImpl extends TaskExecutor{
+@Component("taskManager")
+class TaskManagerImpl extends TaskManager{
 
   val log = LogFactory getLog getClass
   
@@ -22,7 +22,7 @@ class TaskExecutorImpl extends TaskExecutor{
   
   @PostConstruct
   def init{
-    log info "Starting task executor"
+    log info "Starting task manager"
   }
   
   def taskList:List[TaskDescription] ={
@@ -62,6 +62,6 @@ class TaskExecutorImpl extends TaskExecutor{
   def destroy{
     executor.shutdown
     
-    log info "Stopping task executor"
+    log info "Stopping task manager"
   }
 }

@@ -11,9 +11,11 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
   def testConfigPersistence = {
     
     val config  = List(
-      StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW),
-      StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO)
+      StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration")),
+      StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""))
     )
+    
+    
     
     val accessor = new StorageConfigAccessor
     

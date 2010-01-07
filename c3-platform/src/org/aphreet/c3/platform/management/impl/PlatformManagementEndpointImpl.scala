@@ -5,8 +5,8 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
+import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.task._
-import org.aphreet.c3.platform.task.impl.DummyTask
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +25,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   var configManager:PlatformConfigManager = null
   
-  var taskExecutor:TaskExecutor = null
+  var taskManager:TaskManager = null
+  
+  var migrationManager:MigrationManager = null
   
   
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
@@ -40,6 +42,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   @Autowired
   def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
   
+  @Autowired
+  def setMigrationManager(manager:MigrationManager) = {migrationManager = manager}
+  
   @Autowired{val required=false}
   def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
     foundListeners = new JHashSet()
@@ -47,7 +52,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
   
   @Autowired
-  def setTaskExecutor(executor:TaskExecutor) = {taskExecutor = executor}
+  def setTaskExecutor(manager:TaskManager) = {taskManager = manager}
   
   
   @PostConstruct
@@ -57,9 +62,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         this.registerPropertyListener(listener)
       }
     }
-    
-    //remove this
-    taskExecutor.submitTask(new DummyTask)
   }
   
   def listStorages:List[Storage] = storageManager.listStorages
@@ -70,6 +72,10 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def setStorageMode(id:String, mode:StorageMode) = storageManager.setStorageMode(id, mode)
  
+  def migrateFromStorageToStorage(sourceId:String, targetId:String) = {
+    migrationManager.migrateStorageToStorage(sourceId, targetId)
+  }
+  
   def getPlatformProperties:JMap[String, String] = {
     
     if(currentConfig == null){
@@ -113,12 +119,12 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 	}
   }
   
-  def listTasks:List[TaskDescription] = taskExecutor.taskList
+  def listTasks:List[TaskDescription] = taskManager.taskList
   
   def setTaskMode(taskId:String, state:TaskState) ={
     state match {
-      case PAUSED => taskExecutor.pauseTask(taskId)
-      case RUNNING => taskExecutor.resumeTask(taskId)
+      case PAUSED => taskManager.pauseTask(taskId)
+      case RUNNING => taskManager.resumeTask(taskId)
       case _ => null
     }
   }
@@ -135,8 +141,12 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         
         val currentParamValue = getPlatformProperties.get(paramName)
         
-        if(currentParamValue != null){
+        if(currentParamValue != null)
           listener.propertyChanged(new PropertyChangeEvent(paramName, null, currentParamValue, this))
+        else{
+          val defaultParamValue = listener.defaultPropertyValues.get(paramName)
+          if(defaultParamValue != null)
+            setPlatformProperty(paramName, defaultParamValue)
         }
       }
     }

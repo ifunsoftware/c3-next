@@ -1,7 +1,8 @@
 package org.aphreet.c3.platform.management.rmi
 
+import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.exception.PlatformException
-import org.aphreet.c3.platform.storage.{StorageMode, RW, USER_RO, USER_U, StorageException}
+import org.aphreet.c3.platform.storage.{StorageMode, RW, RO, U, StorageException}
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState, RUNNING, PAUSED}
 
 import org.springframework.stereotype.Component
@@ -20,19 +21,22 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   
   def listStorages:List[StorageDescription] = {
      for(s <-managementEndpoint.listStorages)
-       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.path.toString, s.mode.name)
+       yield new StorageDescription(s.id, s.getClass.getSimpleName, s.path.toString, s.mode.name + "(" + s.mode.message + ")", s.count)
   }
    
   def listStorageTypes:List[String] = managementEndpoint.listStorageTypes
   
   def createStorage(stType:String, path:String) = managementEndpoint.createStorage(stType, path)
   
+  def migrate(source:String, target:String) = {
+    managementEndpoint.migrateFromStorageToStorage(source, target)
+  }
   
   def setStorageMode(id:String, mode:String) = {
     val storageMode = mode match {
-      case "RW" => RW
-      case "RO" => USER_RO
-      case "U" => USER_U
+      case "RW" => RW(STORAGE_MODE_USER)
+      case "RO" => RO(STORAGE_MODE_USER)
+      case "U" => U(STORAGE_MODE_USER)
       case _ => throw new StorageException("No mode named " + mode)
     }
     managementEndpoint.setStorageMode(id, storageMode)
@@ -54,7 +58,7 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
     managementEndpoint.listTasks.map(fromLocalDescription(_))
   
   def fromLocalDescription(descr:TaskDescription):RmiTaskDescr = {
-    new RmiTaskDescr(descr.id, descr.name, descr.state.name, descr.progress)
+    new RmiTaskDescr(descr.id, descr.name, descr.state.name, descr.progress.toString)
   }
   
   def setTaskMode(taskId:String, mode:String){

@@ -9,4 +9,6 @@ trait StorageIterator extends java.util.Iterator[Resource]{
   def remove = {
     throw new UnsupportedOperationException
   }
+  
+  def objectsProcessed:Int
 }

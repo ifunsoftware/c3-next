@@ -10,7 +10,7 @@ import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import dispatcher.StorageDispatcher
 import dispatcher.impl.{DefaultStorageDispatcher}
 
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{Path, Constants}
 import org.aphreet.c3.platform.config.PlatformConfigManager;
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 
@@ -84,7 +84,7 @@ class StorageManagerImpl extends StorageManager{
         
         log info "Creating new storage with id: " + stId
         
-        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW))
+        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE)))
         
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
@@ -99,8 +99,25 @@ class StorageManagerImpl extends StorageManager{
   
   
   
-  def removeStorage(id:String) = {
-    log warn "Storage remove is not implemented yet"
+  def removeStorage(storage:Storage) = {
+    
+    if(storage.count == 0 
+       || storage.mode == U(Constants.STORAGE_MODE_MIGRATION)){
+      
+      for((id, st) <- storages if st eq storage) {
+        storages - id
+      }
+      
+      val storageParams = configManager.getStorageParams
+    
+      configManager.setStorageParams(storageParams.filter(_.id != storage.id))
+      
+      updateDispatcher
+      
+      log info "Storage with id " + storage.id + " removed"
+    }else{
+      throw new StorageException("Failed to remove non-empty storage")
+    }
   }
   
   
@@ -116,18 +133,24 @@ class StorageManagerImpl extends StorageManager{
   def setStorageMode(id:String, mode:StorageMode) {
     storages.get(id) match {
       case Some(s) => {
-        val currentMode = s.mode
-        if(currentMode == U || currentMode == RO){
-          throw new StorageException("User can't change current mode")
-        }else{
-          s.mode = mode
-        }
+        s.mode = mode
+        updateStorageParams(s)
       }
       case None => throw new StorageException("No storage with id " + id)
     }
   }
   
-  
+  def updateStorageParams(storage:Storage) {
+    val storageParams = configManager.getStorageParams
+    
+    configManager.setStorageParams(
+      storage.params :: storageParams.filter(_.id != storage.id)
+    )
+    
+    for(id <- storage.id :: storage.ids){
+      storages.put(id, storage)
+    }
+  }
   
   private def registerStorage(storage:Storage){
     storages.put(storage.id, storage)
@@ -185,9 +208,7 @@ class StorageManagerImpl extends StorageManager{
     	log info "Restoring existent storage: " + param.toString  
         registerStorage(factory.createStorage(param))
       }
-      
     }
-    
   }
 
 }

@@ -19,14 +19,14 @@ object PlatformClient {
   
   {
     val rmiBean = new RmiProxyFactoryBean
-    rmiBean.setServiceUrl("rmi://localhost:1299/PlatformRmiManagementEndPoint")
+    rmiBean.setServiceUrl("rmi://127.0.0.1:1299/PlatformRmiManagementEndPoint")
     rmiBean.setServiceInterface(classOf[PlatformRmiManagementService])
     rmiBean.afterPropertiesSet
     
     managementService = rmiBean.getObject.asInstanceOf[PlatformRmiManagementService]
     
     val rmiAccess = new RmiProxyFactoryBean
-    rmiAccess.setServiceUrl("rmi://localhost:1299/PlatformRmiAccessEndPoint")
+    rmiAccess.setServiceUrl("rmi://127.0.0.1:1299/PlatformRmiAccessEndPoint")
     rmiAccess.setServiceInterface(classOf[PlatformRmiAccessService])
     rmiAccess.afterPropertiesSet
     
@@ -56,7 +56,7 @@ object PlatformClient {
         
         case _ => {
           commandFactory.getCommand(line) match {
-          case Some(command) => {
+            case Some(command) => {
         	  try{
         	    println(command.execute)
         	  }catch{

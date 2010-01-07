@@ -21,40 +21,27 @@ class FileBDBStorage(override val id:String, override val path:Path) extends Abs
   
   override protected def storeData(resource:Resource){
     
-    def storeVersionData(name:String, version:ResourceVersion){
-      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, name)
-	  
-      val targetFile : File = createFile(name)
-      //val targetTmpFile : File = createFile(name + ".tmp")
-      
-      val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
-    
-      try{
-    	
-    	version.data writeTo channel
-    	//channel.close
-    	//if(!(targetTmpFile renameTo targetFile)){
-    	//  throw new StorageException("Failed to move created file from " + targetTmpFile.getAbsolutePath + " to " + targetFile.getAbsolutePath)
-    	//}
-     
-      }catch{
-        case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
-      }finally{
-        if(channel != null && channel.isOpen)
-    	    channel.close
-      }
-    }
-    
     if(resource.isVersioned){
       for(version <- resource.versions if (version.persisted == false)){
 	    val fileName = resource.address + ":" + String.valueOf(System.currentTimeMillis)
-	    storeVersionData(fileName, version)
+	    version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+        storeVersionData(fileName, version)
 	  }
     }else{
       val fileName = resource.address
+      resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
       storeVersionData(fileName, resource.versions(0))
     }
-   
+  }
+  
+  override protected def putData(resource:Resource){
+    for(version <- resource.versions){
+      val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+        case Some(name) => name
+        case None => throw new StorageException("Can't find data address for version")
+      }
+      storeVersionData(fileName, version)
+    }
   }
   
   def loadData(resource:Resource) = {
@@ -124,6 +111,21 @@ class FileBDBStorage(override val id:String, override val path:Path) extends Abs
     }
     file
   }
+  
+  private def storeVersionData(name:String, version:ResourceVersion){
+      val targetFile : File = createFile(name)
+      
+      val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
+    
+      try{
+    	version.data writeTo channel
+      }catch{
+        case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
+      }finally{
+        if(channel != null && channel.isOpen)
+    	    channel.close
+      }
+    }
 }
 
 object FileBDBStorage{

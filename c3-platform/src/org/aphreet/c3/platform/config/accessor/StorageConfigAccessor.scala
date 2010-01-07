@@ -31,14 +31,28 @@ class StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
     	  
         val idArray = for(node <- ids)
         	  yield node.getValue.toString  	                                                                              
-       
+        
+        val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
+        
+        var storageModeMessage = ""
+        
+        val storageModeMessageNode = storage.getNode("modemsg")
+        
+        
+        if(storageModeMessageNode != null){
+          storageModeMessage = storageModeMessageNode.asInstanceOf[ScalarNode].getValue.toString
+        }
+        
+        val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
+        
+        
     	list = list ::: List( 
     	  new StorageParams(
     	    storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
     	    List.fromIterator(idArray.elements),
     		new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
     		storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
-    		StorageModeParser.valueOf(storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString)
+    		storageMode
          ))
       }
       
@@ -66,6 +80,7 @@ class StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
 		        .key("path").value(storage.path)
 		        .key("type").value(storage.storageType)
 		        .key("mode").value(storage.mode.name)
+		        .key("modemsg").value(storage.mode.message)
 		        .key("ids").array
 		        for(id <- storage.secIds)
 		          writer.value(id)

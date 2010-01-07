@@ -1,17 +1,18 @@
-package org.aphreet.c3.platform.storage.volume
+package org.aphreet.c3.platform.storage.volume.dataprovider
 
 import java.io.{File, FileInputStream}
 import java.util.Scanner
 
 import java.io.{BufferedReader, InputStreamReader}
 
-class LinuxVolumeDataProvider extends VolumeDataProvider{
+abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeDataProvider{
 
   def getVolumeList:List[Volume] = {
 
     var result:List[Volume] = List()
 
-    val process = Runtime.getRuntime.exec("df -B 1")
+    //"df -B 1"
+    val process = Runtime.getRuntime.exec(dfCommand)
     
     process.waitFor
     
@@ -31,8 +32,8 @@ class LinuxVolumeDataProvider extends VolumeDataProvider{
 	      
 	      val array = line.split("\\s+", 6)
       
-	      val size = array(1).toLong
-	      val avail = array(3).toLong
+	      val size = toBytes(array(1).toLong)
+	      val avail = toBytes(array(3).toLong)
 	      val mounted:String = array(5)
 	      
        
@@ -43,9 +44,8 @@ class LinuxVolumeDataProvider extends VolumeDataProvider{
 	    
 	    result
 
-    }finally
-    	reader.close
-    
-    
+    }finally reader.close 
   }
+  
+  def toBytes(size:Long):Long = size
 }

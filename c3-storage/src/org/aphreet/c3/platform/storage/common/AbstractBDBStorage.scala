@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.storage.common
 
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{Path, Constants}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import java.io.{File, OutputStream}
@@ -39,6 +39,22 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
   
   def count:Long = {
     database.count
+  }
+  
+  def size:Long = calculateSize(new File(storagePath))
+  
+  private def calculateSize(dir:File):Long = {
+    var size:Long = 0
+    
+    for(child <- dir.listFiles){
+      if(!child.isDirectory){ 
+        size = size + child.length
+      }else{
+        size = size + calculateSize(child) 
+      }
+    }
+    
+    size
   }
   
   def add(resource:Resource):String = {
@@ -135,6 +151,29 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
     }
   }
   
+  def put(resource:Resource) = {
+    
+    val tx = env.beginTransaction(null, null)
+    
+    try{
+      putData(resource, tx)
+      
+      val key = new DatabaseEntry(resource.address.getBytes)
+      val value = new DatabaseEntry(resource.toByteArray)
+      
+      if(database.put(tx, key, value) != OperationStatus.SUCCESS){
+        throw new StorageException("Failed to store resource in database")
+      }
+      
+      tx.commit
+    }catch{
+      case e=> {
+        tx.abort
+        throw e
+      }
+    }
+  }
+  
   def isAddressExists(address:String):Boolean = {
     
     val key = new DatabaseEntry(address.getBytes)
@@ -147,7 +186,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
   
   
   def close = {
-    mode = U
+    mode = U(Constants.STORAGE_MODE_NONE)
     
     if(database != null){
       database.close
@@ -173,6 +212,13 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
   }
   
   protected def deleteData(ra:String){}
+  
+  
+  protected def putData(resource:Resource){}
+
+  protected def putData(resource:Resource, tx:Transaction){
+    putData(resource)
+  }
   
   def loadData(resource:Resource)
   

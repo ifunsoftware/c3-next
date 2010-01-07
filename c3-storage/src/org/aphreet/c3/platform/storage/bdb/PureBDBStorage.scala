@@ -10,27 +10,32 @@ class PureBDBStorage(override val id:String, override val path:Path) extends Abs
 
   override protected def storeData(resource:Resource, tx:Transaction){
     
-    def storeVersionData(key:String, version:ResourceVersion){
-      
-      val dbKey = new DatabaseEntry(key.getBytes)
-	  val dbValue = new DatabaseEntry(version.data.getBytes)
-	   
-	  database.put(tx, dbKey, dbValue)
-    }
-    
     if(resource.isVersioned){
 	  for(version <- resource.versions){
 	    if(version.persisted == false){
 	      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis)
 	      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-          storeVersionData(versionKey, version)
+          storeVersionData(versionKey, version, tx)
 	    }
 	  }
     }else{
       val versionKey = resource.address + "-data"
       resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-      storeVersionData(versionKey, resource.versions(0))
+      storeVersionData(versionKey, resource.versions(0),tx)
     }
+  }
+  
+  override protected def putData(resource:Resource, tx:Transaction){
+    
+    for(version <- resource.versions){
+	  val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match{
+	    case Some(vk) => vk
+        case None => throw new StorageException("Can't find address for data in version")
+	  }
+      
+      storeVersionData(versionKey, version, tx)
+	    
+	}
   }
   
   def loadData(resource:Resource) = {
@@ -72,6 +77,14 @@ class PureBDBStorage(override val id:String, override val path:Path) extends Abs
       
     }else throw new StorageException("Failed to get resource, operation status is not SUCCESS, address: " + ra)
     
+  }
+  
+  private def storeVersionData(key:String, version:ResourceVersion, tx:Transaction){
+      
+      val dbKey = new DatabaseEntry(key.getBytes)
+	  val dbValue = new DatabaseEntry(version.data.getBytes)
+	   
+	  database.put(tx, dbKey, dbValue)
   }
   
   def name = PureBDBStorage.NAME

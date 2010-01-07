@@ -1,24 +1,54 @@
 package org.aphreet.c3.platform.storage
 
+import org.aphreet.c3.platform.common.Constants._
 
-object RW extends StorageMode("RW")
-object RO extends StorageMode("RO")
-object U  extends StorageMode("U")
-object USER_RO extends StorageMode("USER_RO")
-object USER_U extends StorageMode("USER_U")
+abstract sealed class StorageMode(val name:String, val message:String){
+  
+  def allowWrite:Boolean
+  
+  def allowRead:Boolean
+  
+}
 
+case class RW(val msg:String) extends StorageMode("RW", msg){
+  
+  def this() = this(STORAGE_MODE_NONE)
+  
+  def allowWrite = true
+  
+  def allowRead = true
+  
+}
 
-sealed class StorageMode(val name:String);
+case class RO(val msg:String) extends StorageMode("RO", msg){
+  
+  def this() = this(STORAGE_MODE_NONE)
+  
+  def allowWrite = false
+  
+  def allowRead = true
+  
+}
+
+case class U(val msg:String) extends StorageMode("U", msg){
+  
+  def this() = this(STORAGE_MODE_NONE)
+  
+  def allowWrite = false
+  
+  def allowRead = false
+}
+
 
 object StorageModeParser{
 	
-  def valueOf(name:String):StorageMode = {
+  def valueOf(name:String):StorageMode = valueOf(name, "")
+  
+  def valueOf(name:String, message:String):StorageMode = {
     name match {
-      case "RW" => RW
-      case "RO" => RO
-      case "U" => U
-      case "USER_RO" => USER_RO
-      case "USER_U" => USER_U
+      case "RW" => RW(message)
+      case "RO" => RO(message)
+      case "U" => U(message)
       case _ => throw new StorageException("No such mode " + name)
     }
   }

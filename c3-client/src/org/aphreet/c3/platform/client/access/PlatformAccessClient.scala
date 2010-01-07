@@ -9,6 +9,8 @@ import java.io.File
 
 import java.util.HashMap
 
+import java.util.Random
+
 object PlatformAccessClient {
   
   var accessService:PlatformRmiAccessService = null
@@ -25,23 +27,27 @@ object PlatformAccessClient {
   
   def main(args : Array[String]) : Unit = {
     
-    var path:String = ""
+    val objectCount = 100000;
+    val objectSize = 512;
     
-    if(args.length > 0){
-      path = args(0)
-    }else{
-      path = "d:/music"
-    }
-    
-    val dir = new File(path)
-    
-    for(file <- dir.listFiles){
-      if(file.isFile){
-    	val ra = accessService.add(new HashMap[String, String], file.getAbsolutePath)
-    	println("file " + file.getName + " saved with address " + ra)
-      }else{
-        println("file " + file.getName + " not exitst")
+    for(i <- 1 to objectCount){
+      val ra = accessService.add(new HashMap[String, String], generateDataOfSize(objectSize))
+      if(i % 1000 == 0){
+        println("Saved " + i + " objects")
       }
+      //println("Saved data with ra: " + ra )
+      
     }
+  }
+  
+  def generateDataOfSize(size:Int):Array[Byte] = {
+    
+    val result = new Array[Byte](size)
+    
+    val random = new Random(System.currentTimeMillis)
+    
+    random.nextBytes(result)
+    
+    result
   }
 }

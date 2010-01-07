@@ -4,7 +4,7 @@ import java.util.HashMap
 
 trait PlatformRmiAccessService {
 
-  def add(metadata:HashMap[String, String], file:String):String
+  def add(metadata:HashMap[String, String], data:Array[Byte]):String
   
   def get(ra:String):Array[Byte]
   

@@ -1,34 +1,54 @@
 package org.aphreet.c3.platform.task
 
+import org.apache.commons.logging.LogFactory
+
 abstract class Task extends Runnable{
 
-  val id = generateId
+  val log = LogFactory getLog getClass
   
-  private def generateId:String = name + "-" + System.currentTimeMillis
+  val id = name + "-" + System.currentTimeMillis
   
+  
+  private val SLEEP_ON_PAUSE_INTERVAL = 5000
   
   private var taskState:TaskState = PENDING
 
   def state:TaskState = taskState
 
-  
-  
   override def run = {
     taskState = RUNNING
     
     try{
-      runExecution
+      preStart
+      while(!shouldStop && !Thread.currentThread.isInterrupted){
+        if(!isPaused){
+          step
+        }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+      }
+      postComplete
       taskState = FINISHED
     }catch{
-      case e => taskState = CRASHED
+      case e => {
+        taskState = CRASHED
+        log error e
+        postFailure
+      }
     }
   }
   
-  protected def runExecution;
+  protected def step;
   
-  def name:String
+  protected def preStart = {};
   
-  def progress:Int
+  protected def postComplete = {};
+  
+  protected def postFailure = {}
+  
+  def shouldStop:Boolean = false
+  
+  def name:String = getClass.getSimpleName
+  
+  def progress:Int = -1
 
   def description:TaskDescription = new TaskDescription(id, name, state, progress)
   

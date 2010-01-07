@@ -68,7 +68,7 @@ class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
   
   
   private def random(list:List[Storage]):Storage = {
-    val onlineList = list.filter(s => s.mode == RW)
+    val onlineList = list.filter(s => s.mode.allowWrite)
     
     if(onlineList.isEmpty){
       null

@@ -18,11 +18,14 @@ trait StorageManager {
   
   def listStorages:List[Storage]
   
-  def removeStorage(id:String)
+  def removeStorage(storage:Storage)
   
   def listStorageTypes:List[String]
   
   def dispatcher:StorageDispatcher
   
   def setStorageMode(id:String, mode:StorageMode)
+  
+  def updateStorageParams(storage:Storage)
+  
 }

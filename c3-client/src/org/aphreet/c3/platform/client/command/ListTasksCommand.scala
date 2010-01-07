@@ -12,7 +12,12 @@ class ListTasksCommand extends Command {
     
     for(t:RmiTaskDescr <- tasks){
       
-      builder.append(String.format("%-50s %-30s %-10s %d%%\n", t.id, t.name, t.status, t.progress))
+      val progress = t.progress match {
+        case "-1" => "N/A"
+        case _ => t.progress
+      }
+      
+      builder.append(String.format("%-50s %-30s %-10s %s\n", t.id, t.name, t.status, progress))
     }
     
     builder.toString

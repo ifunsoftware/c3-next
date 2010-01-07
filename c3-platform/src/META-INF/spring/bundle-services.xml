@@ -15,8 +15,8 @@
     <service id="searchService" ref="searchManager"
        interface="org.aphreet.c3.platform.search.SearchManager"/>
        
-    <service id="taskService" ref="taskExecutor"
-       interface="org.aphreet.c3.platform.task.TaskExecutor"/>
+    <service id="taskService" ref="taskManager"
+       interface="org.aphreet.c3.platform.task.TaskManager"/>
        
     <service id="accessService" ref="platformAccessEndpoint"
        interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>

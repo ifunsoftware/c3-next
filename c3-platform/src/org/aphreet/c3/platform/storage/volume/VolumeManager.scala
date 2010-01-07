@@ -8,44 +8,38 @@ import javax.annotation.{PostConstruct, PreDestroy}
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.task._
-import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
+import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
+
+import dataprovider.VolumeDataProvider
 
 @Component
-class VolumeManager extends PlatformPropertyListener{
+class VolumeManager extends SPlatformPropertyListener{
 
-  val LOW_WATERMARK = "c3.platform.capacity.lowwatermark"
-  val HIGH_WATERMARK = "c3.platform.capacity.highwatermark"
+  val WATERMARKS = "c3.platform.capacity.watermarks"
   
   val logger = LogFactory getLog getClass
   
-  val dataProvider = dataProviderForCurrentPlatform 
+  val dataProvider = VolumeDataProvider.getProvider
  
   val volumes:List[Volume] = loadVolumeData
   
-  var taskExecutor:TaskExecutor = null
+  var taskManager:TaskManager = null
   
   @Autowired
-  def setTaskExecutor(executor:TaskExecutor) = {taskExecutor = executor}
+  def setTaskManager(manager:TaskManager) = {taskManager = manager}
   
   @PostConstruct
   def init{
-    taskExecutor.submitTask(new VolumeUpdater(volumes, dataProvider))
-  }
-  
-  def dataProviderForCurrentPlatform:VolumeDataProvider = {
-    if(System.getProperty("os.name").startsWith("Windows")){
-      new WinVolumeDataProvider
-    }else{
-      new LinuxVolumeDataProvider
-    }
+    taskManager.submitTask(new VolumeUpdater(volumes, dataProvider))
   }
   
   def register(storage:Storage) = {
 	val volume = volumeForPath(storage.path.toString)
 	
-	if(volume != null)
+	if(volume != null){
 		volume.storages + storage
-	else
+		storage.volume = volume
+	}else
 		throw new StorageException("Can't find volume for path: " + storage.path.toString)
   }
   
@@ -80,52 +74,50 @@ class VolumeManager extends PlatformPropertyListener{
     data
   }
   
-  def listeningForProperties:Array[String] = {
-    Array(LOW_WATERMARK, HIGH_WATERMARK)
-  }
+  def listeningForProperties:Array[String] =
+    Array(WATERMARKS)
+  
+  def defaultValues:Map[String,String] = 
+    Map(WATERMARKS -> "50000000,100000000")
   
   def propertyChanged(event:PropertyChangeEvent) = {
-    event.name match {
-      case LOW_WATERMARK => {
-        logger info "Updating low watermark"
-        for(volume <- volumes)
-          volume.setLowWatermark(event.newValue.toLong)
+    
+    val newWatermarks:Array[Long] = event.newValue.split(",").map(_.toLong)
+    
+    val lowWatermark = newWatermarks(0)
+    val highWatermark = newWatermarks(1)
+    
+    if(lowWatermark >= 0 && highWatermark>= 0 && lowWatermark <= highWatermark){
+      
+      logger info "Updating volume watermark"
+      
+      for(volume <- volumes){
+        volume.setLowWatermark(lowWatermark)
+        volume.setHighWatermark(highWatermark)
       }
-      case HIGH_WATERMARK => {
-        logger info "Updating high watermark"
-        for(volume <- volumes)
-          volume.setHighWatermark(event.newValue.toLong)
-      }
-    }
+      
+    }else throw new StorageException("Failed to update volume watermarks, wrong values")
+    
   }
   
   class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Task {
     
-    def runExecution = {
-      while(!Thread.currentThread.isInterrupted){
-        if(!isPaused){
-          logger.debug("updating volume state")
+    override def step{
+      log.debug("updating volume state")
       
-          val newVolumeList = dataProvider.getVolumeList
+      val newVolumeList = dataProvider.getVolumeList
       
-          for(newVolume <- newVolumeList)
-            for(volume <- volumes)
-              if(volume.mountPoint == newVolume.mountPoint){
-                volume.updateState(newVolume.size, newVolume.available)
-              }
+      for(newVolume <- newVolumeList)
+        for(volume <- volumes)
+          if(volume.mountPoint == newVolume.mountPoint)
+            volume.updateState(newVolume.size, newVolume.available)
+          
       
-          logger.debug(volumes.toString)
-          Thread.sleep(10000)
-        }
-      }
-      logger info (name + " ended")
-      
+      log.debug(volumes.toString)
+      Thread.sleep(10000)
     }
     
-    def name = "VolumeCapacityMonitor"
-    
-    def progress = -1
-    
+    override def name = "VolumeCapacityMonitor"
   }
   
 }

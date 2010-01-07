@@ -1,10 +1,11 @@
 package org.aphreet.c3.platform.storage.impl
 
-import org.aphreet.c3.platform.management.{PlatformPropertyListener, PropertyChangeEvent}
+import java.io.OutputStream
+import java.util.{Map => JMap}
+
+import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import org.aphreet.c3.platform.search.SearchManager
-
-import java.io.OutputStream
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import eu.medsea.mimeutil.MimeUtil
 
 @Component
-class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListener{
+class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListener{
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
   
@@ -28,7 +29,8 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
   
   def get(ra:String):Resource = {
     val storage = storageManager.storageForId(storageIdFromRA(ra))
-    if(storage.mode == U || storage.mode == USER_U){
+    
+    if(!storage.mode.allowRead){
       throw new StorageException("Storage is not readable")
     }
     
@@ -60,7 +62,7 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
   
   def update(resource:Resource):String = {
     val storage = storageManager.storageForId(storageIdFromRA(resource.address))
-    if(storage.mode == RW){
+    if(storage.mode.allowWrite){
     	storage.update(resource)
     }else{
       throw new StorageException("Storage is not writtable")
@@ -85,7 +87,9 @@ class ResourceAccessorImpl extends ResourceAccessor with PlatformPropertyListene
     }
     
     MimeUtil registerMimeDetector event.newValue
-    
   }
+  
+  def defaultValues:Map[String,String] =
+    Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
   
 }
