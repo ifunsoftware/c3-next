@@ -126,7 +126,7 @@
 			<version>2.5.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>be.devijver</groupId>
 			<artifactId>wikiparser</artifactId>
@@ -181,7 +181,7 @@
 			<scope>system</scope>
 			<systemPath>${basedir}/lib/com.springsource.server.web.dm-1.0.2.SR02.jar</systemPath>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.incava.util</groupId>
 			<artifactId>dif</artifactId>
@@ -196,16 +196,16 @@
 			<version>1.2.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>com.springsource.org.apache.commons.digester</artifactId>
-    <version>1.8.0</version>
-    <scope>provided</scope>
-</dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.digester</artifactId>
+			<version>1.8.0</version>
+			<scope>provided</scope>
+		</dependency>
 
 	</dependencies>
-		
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
@@ -243,6 +243,64 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>sql-maven-plugin</artifactId>
+				<version>1.2</version>
+
+				<dependencies>
+					<dependency>
+						<groupId>com.mysql.jdbc</groupId>
+						<artifactId>com.springsource.com.mysql.jdbc</artifactId>
+						<version>5.1.6</version>
+					</dependency>
+				</dependencies>
+
+				<configuration>
+					<driver>com.mysql.jdbc.Driver</driver>
+					<url>jdbc:mysql://localhost/</url>
+					<settingsKey>mysql-db</settingsKey>
+				</configuration>
+
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<!-- need another database to drop the targeted one -->
+							<autocommit>true</autocommit>
+							<sqlCommand>create database if not exists c3_next character set
+								UTF8 collate utf8_general_ci;
+								grant all privileges on c3_next.* to c3owner@localhost identified by
+								'some_password'</sqlCommand>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<configuration>
+							<tasks>
+								<echo message="Deploying to Spring DM Server" />
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.war"
+									toDir="${serverHome}/pickup" overwrite="true" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
