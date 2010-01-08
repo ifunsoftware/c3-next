@@ -16,6 +16,8 @@ trait PlatformManagementEndpoint {
   
   def createStorage(storageType:String, path:String)
   
+  def removeStorage(is:String)
+  
   def migrateFromStorageToStorage(sourceId:String, targetId:String)
   
   def setStorageMode(id:String, mode:StorageMode)

@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
+import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode, StorageException}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.task._
 
@@ -69,6 +69,15 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def listStorageTypes:List[String] = storageManager.listStorageTypes
   
   def createStorage(storageType:String, path:String) = storageManager.createStorage(storageType, new Path(path))
+  
+  def removeStorage(id:String) = {
+    val storage = storageManager.storageForId(id)
+    if(storage != null){
+      storageManager.removeStorage(storage)
+    }else{
+      throw new StorageException("Can't find storage for id")
+    }
+  }
   
   def setStorageMode(id:String, mode:StorageMode) = storageManager.setStorageMode(id, mode)
  

@@ -81,6 +81,8 @@ class StorageStub extends Storage{
  
   def path:Path = null
   
+  def fullPath:Path = null
+  
   def name:String = ""
   
   def allowMoveFromModeToModes(initial:StorageMode, targetModes:List[StorageMode]){

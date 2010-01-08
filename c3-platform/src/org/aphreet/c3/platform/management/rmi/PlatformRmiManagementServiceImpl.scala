@@ -28,6 +28,8 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   
   def createStorage(stType:String, path:String) = managementEndpoint.createStorage(stType, path)
   
+  def removeStorage(id:String) = managementEndpoint.removeStorage(id)
+  
   def migrate(source:String, target:String) = {
     managementEndpoint.migrateFromStorageToStorage(source, target)
   }

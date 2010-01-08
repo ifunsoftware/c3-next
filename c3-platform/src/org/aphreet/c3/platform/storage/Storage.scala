@@ -122,5 +122,7 @@ abstract class Storage {
  
   def path:Path
   
+  def fullPath:Path
+  
   def name:String
 }

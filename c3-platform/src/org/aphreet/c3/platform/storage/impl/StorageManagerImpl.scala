@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory;
 
 import scala.collection.mutable.HashMap
 
-import java.io.OutputStream
+import java.io.{File, OutputStream}
 
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 import dispatcher.StorageDispatcher
@@ -95,9 +95,8 @@ class StorageManagerImpl extends StorageManager{
   }
 
   
-  def listStorages:List[Storage] = List.fromIterator((for((key, s) <- storages) yield s).elements)
-  
-  
+  def listStorages:List[Storage] = 
+	List.fromIterator(storages.map(_._2).elements).removeDuplicates
   
   def removeStorage(storage:Storage) = {
     
@@ -108,11 +107,16 @@ class StorageManagerImpl extends StorageManager{
         storages - id
       }
       
+      factories.values.foreach(_.storages - storage)
+      
       val storageParams = configManager.getStorageParams
     
       configManager.setStorageParams(storageParams.filter(_.id != storage.id))
       
       updateDispatcher
+      storage.close
+      
+      removeStorageData(storage)
       
       log info "Storage with id " + storage.id + " removed"
     }else{
@@ -209,6 +213,15 @@ class StorageManagerImpl extends StorageManager{
         registerStorage(factory.createStorage(param))
       }
     }
+  }
+  
+  private def removeStorageData(storage:Storage) = {
+    def removeDir(file:File){
+      if(file.isDirectory)
+        file.listFiles.foreach(removeDir(_))
+      file.delete
+    }
+    removeDir(storage.fullPath.file)
   }
 
 }

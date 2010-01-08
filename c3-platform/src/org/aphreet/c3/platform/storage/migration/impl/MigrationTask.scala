@@ -24,7 +24,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
     iterator.close
     iterator = null
     
-    target.ids = source.id :: target.ids
+    target.ids = source.id :: source.ids ::: target.ids
     target.mode = new RW
     manager updateStorageParams target
     
@@ -50,25 +50,22 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   override def shouldStop:Boolean = !iterator.hasNext
   
   override def progress:Int = {
-    if(this.state == FINISHED)
-      100
-    else{
+    if(iterator != null){
       val toProcess:Float = iterator.objectsProcessed
       val total:Float = totalObjectsToProcess
     
       val overalProgress = toProcess * 100 /total
     
       overalProgress.intValue
-    }
+    }else -1
   }
   
-  override def finalize{
-    if(iterator != null){
+  override def finalize = {
+    if(iterator != null)
       try{
         iterator.close
       }catch{
         case e => e.printStackTrace
       }
-    }
   }
 }

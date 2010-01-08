@@ -1,7 +1,6 @@
 package org.aphreet.c3.platform.storage.common
 
-import scala.collection.mutable.HashSet
-import scala.collection.Set
+import scala.collection.mutable.{Set, HashSet}
 
 import org.apache.commons.logging.LogFactory
 

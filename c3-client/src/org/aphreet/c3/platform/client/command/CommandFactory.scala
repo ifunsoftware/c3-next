@@ -19,6 +19,7 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
     register(new ListStorageTypesCommand)
     register(new ListTasksCommand)
     register(new PauseTaskCommand)
+    register(new RemoveStorageCommand)
     register(new ResumeTaskCommand)
     register(new SetPlatformPropertyCommand)
     register(new SetStorageModeCommand)

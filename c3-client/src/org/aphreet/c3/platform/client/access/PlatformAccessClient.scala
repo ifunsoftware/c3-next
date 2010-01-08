@@ -27,7 +27,7 @@ object PlatformAccessClient {
   
   def main(args : Array[String]) : Unit = {
     
-    val objectCount = 100000;
+    val objectCount = 50000;
     val objectSize = 512;
     
     for(i <- 1 to objectCount){

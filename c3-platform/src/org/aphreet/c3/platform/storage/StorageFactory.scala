@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.storage
 
-import scala.collection.Set
+import scala.collection.mutable.Set
 
 trait StorageFactory {
   

@@ -10,6 +10,8 @@ trait PlatformRmiManagementService {
   
   def createStorage(stType:String, path:String)
   
+  def removeStorage(id:String)
+  
   def migrate(source:String, target:String)
   
   def setStorageMode(id:String, mode:String)

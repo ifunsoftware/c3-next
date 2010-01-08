@@ -43,6 +43,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
   
   def size:Long = calculateSize(new File(storagePath))
   
+  def fullPath:Path = new Path(storagePath)
+  
+  
   private def calculateSize(dir:File):Long = {
     var size:Long = 0
     
@@ -186,7 +189,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
   
   
   def close = {
-    mode = U(Constants.STORAGE_MODE_NONE)
+    if(this.mode.allowRead)
+      mode = U(Constants.STORAGE_MODE_NONE)
+    
     
     if(database != null){
       database.close
