@@ -38,21 +38,21 @@
 	</dependencyManagement>
 
 	<dependencies>
-		
+
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-compiler</artifactId>
 			<version>2.7.6</version>
 			<scope>provided</scope>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.scala-lang-osgi</groupId>
 			<artifactId>scala-compiler</artifactId>
 			<version>2.7.6</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.scala-lang-osgi</groupId>
 			<artifactId>scala-library</artifactId>
@@ -67,13 +67,13 @@
 			<version>2.5.6.SEC01</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-      </dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -117,7 +117,7 @@
 			<name>Scala-tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
 		</repository>
-		
+
 		<repository>
 			<id>c3</id>
 			<name>C3 External Dependencies</name>
@@ -133,25 +133,25 @@
 			<url>http://scala-tools.org/repo-releases</url>
 		</pluginRepository>
 	</pluginRepositories>
-	
+
 	<build>
-	<plugins>
-  <plugin>
-    <artifactId>maven-clean-plugin</artifactId>
-    <version>2.2</version>
-    <configuration>
-      <filesets>
-        <fileset>
-          <directory>${basedir}</directory>
-          <includes>
-            <include>*/bin.timestamp</include>
-          </includes>
-          <followSymlinks>false</followSymlinks>
-        </fileset>
-      </filesets>
-    </configuration>
-  </plugin>
-  </plugins>
-</build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>*.timestamp</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
