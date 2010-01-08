@@ -245,11 +245,11 @@ abstract class AbstractStorageTest extends AbstractTestWithFileSystem{
       
       assertEquals("Version persisted flag do not match", v0.persisted, v1.persisted)
       
-      assertTrue("Version datum do not match", isDatumEquals(v0.data, v1.data))
+      assertTrue("Version datum do not match", isDatumEqual(v0.data, v1.data))
     }
   }
   
-  private def isDatumEquals(d0:DataWrapper, d1:DataWrapper):Boolean = {
+  private def isDatumEqual(d0:DataWrapper, d1:DataWrapper):Boolean = {
     
     if(d0.length != d1.length) return false
     

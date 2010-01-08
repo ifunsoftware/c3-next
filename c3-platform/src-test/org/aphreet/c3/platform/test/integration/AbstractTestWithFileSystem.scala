@@ -14,16 +14,11 @@ class AbstractTestWithFileSystem extends TestCase{
   }
   
   override def tearDown{
+    def delDir(directory:File) {
+      if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
+      directory.delete
+    }
     delDir(testDir)
   }
-  
-  private def delDir(directory:File) {
-    if(directory.isDirectory){
-      for(child <- directory.listFiles())
-        delDir(child)
-    }
-    directory.delete
-  }
-  
   
 }
