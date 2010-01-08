@@ -67,7 +67,7 @@ import java.util.TreeSet;
 /**
  * TrigramLanguageGuesser implements language guessing based on trigrams
  * 
- * @author Jean-François Halleux
+ * @author Jean-Francois Halleux
  * @version $version$
  * 
  */

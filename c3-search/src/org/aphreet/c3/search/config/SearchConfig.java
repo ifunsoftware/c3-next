@@ -1,5 +1,10 @@
 package org.aphreet.c3.search.config;
 
+import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -55,6 +60,10 @@ public class SearchConfig implements PlatformPropertyListener {
 			//tikaServerPath = event.newValue();
 			// TODO process tika server change
 		}
+	}
+	
+	public Map<String, String> defaultPropertyValues(){
+		return Collections.emptyMap();
 	}
 
 	@PostConstruct
