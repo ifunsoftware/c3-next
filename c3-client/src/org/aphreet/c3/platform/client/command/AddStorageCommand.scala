@@ -4,12 +4,12 @@ class AddStorageCommand extends Command{
 
   def execute:String = {
     if(params.size < 2){
-      "Not enought params.\nUsage: add storage <type> <path>"
+      "Not enought params.\nUsage: create storage <type> <path>"
     }else{
       management.createStorage(params.first, params.tail.first)
       "Storage created"
     }
   }
   
-  def name = List("add", "storage")
+  def name = List("create", "storage")
 }

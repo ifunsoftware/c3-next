@@ -7,7 +7,6 @@ class HelpCommand extends Command{
     HelpCommand.commandList
       .map(c => c.name.foldRight("")(_ + " " + _)).foldRight("")(_ + "\n" + _)
     
-   // ""
   }
   
   def name:List[String] = List("help")
