@@ -74,7 +74,7 @@ import java.util.zip.GZIPOutputStream;
  * collection of trigrams. Allow the collection to be save/retrieved
  * from a file as well
  * 
- * @author Jean-FranÁois Halleux
+ * @author Jean-Fran—Åois Halleux
  * @version $version$
  */
 class Trigrams implements TrigramListener {
