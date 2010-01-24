@@ -3,7 +3,7 @@ package org.aphreet.c3.platform.management.impl
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode, StorageException}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.task._
@@ -23,7 +23,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   var storageManager:StorageManager = null
 
-  var configManager:PlatformConfigManager = null
+  var configAccessor:PlatformConfigAccessor = null
   
   var taskManager:TaskManager = null
   
@@ -40,7 +40,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
   
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setPlatformConfigAccessor(accessor:PlatformConfigAccessor) = {configAccessor = accessor}
   
   @Autowired
   def setMigrationManager(manager:MigrationManager) = {migrationManager = manager}
@@ -88,7 +88,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def getPlatformProperties:JMap[String, String] = {
     
     if(currentConfig == null){
-      currentConfig = configManager.getPlatformParam.underlying
+      currentConfig = configAccessor.load.underlying
     }
     Collections.unmodifiableMap[String, String](currentConfig)
   }
@@ -99,7 +99,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
 	  log info "Setting platform property: " + key
 	    
-	  val config = configManager.getPlatformParam
+	  val config = configAccessor.load
 
 	  val oldValue:String = config.get(key) match {
 	    case Some(v) => v
@@ -118,7 +118,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 		if(currentConfig != null)
 		  currentConfig.put(key,value)
 
-        configManager.setPlatformParam(config)
+        configAccessor store config
       }catch{
         case e => {
           log.warn("Failed to set property " + key, e)

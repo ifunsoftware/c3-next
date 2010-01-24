@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aphreet.c3</groupId>
 	<artifactId>c3-search</artifactId>
-	<version>1.0.0</version>
+	<version>${bundleVersion}</version>
 	<packaging>jar</packaging>
 	<name>C3 Search</name>
 
 	<parent>
 		<groupId>org.aphreet.c3</groupId>
 		<artifactId>main</artifactId>
-		<version>1.0.0</version>
+		<version>${bundleVersion}</version>
 	</parent>
 
 	<dependencies>
@@ -60,9 +60,7 @@
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 					<manifestLocation>META-INF</manifestLocation>
 					<archive>
-						<manifestFile>
-							src/META-INF/MANIFEST.MF
-                        </manifestFile>
+						<manifestFile>${bundleManifestPath}</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
@@ -71,11 +69,28 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>manifest</id>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<echo message="Updating manifest file with current build number" />
+								<copy file="src/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
+								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy</id>
 						<phase>install</phase>
 						<configuration>
 							<tasks>
 								<echo message="Deploying to Spring DM Server"/>
+								<!-- 
 								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+								-->
 							</tasks>
 						</configuration>
 						<goals>

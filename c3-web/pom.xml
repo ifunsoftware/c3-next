@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aphreet.c3</groupId>
 	<artifactId>c3-web</artifactId>
-	<version>1.0.0</version>
+	<version>${bundleVersion}</version>
 	<packaging>war</packaging>
 	<name>C3 Web</name>
 
 	<parent>
 		<groupId>org.aphreet.c3</groupId>
 		<artifactId>main</artifactId>
-		<version>1.0.0</version>
+		<version>${bundleVersion}</version>
 	</parent>
 
 	<dependencies>
@@ -228,9 +228,7 @@
 						</resource>
 					</webResources>
 					<archive>
-						<manifestFile>
-							WebContent/META-INF/MANIFEST.MF
-						</manifestFile>
+						<manifestFile>${warManifestPath}</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
@@ -287,6 +285,21 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>manifest</id>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<echo message="Updating manifest file with current build number" />
+								<copy file="WebContent/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
+								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy</id>
 						<phase>install</phase>
 						<configuration>
 							<tasks>

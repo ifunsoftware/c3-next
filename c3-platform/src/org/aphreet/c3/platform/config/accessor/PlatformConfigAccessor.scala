@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.config.accessor
 
-import org.aphreet.c3.platform.common.JSONFormatter
+import org.aphreet.c3.platform.common.{JSONFormatter, Constants}
 
 import java.io.{File, FileWriter, StringWriter}
 
@@ -9,10 +9,20 @@ import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl;
 
+import org.springframework.stereotype.Component
+import javax.annotation.PostConstruct
 
+@Component
 class PlatformConfigAccessor extends ConfigAccessor[HashMap[String,String]]{
 
   val PLATFORM_CONFIG = "c3-platform-config.json"
+  
+  @PostConstruct
+  def init = {
+    val props = load
+    props.put(Constants.C3_PLATFORM_HOME, configManager.configPath)
+    store(props)
+  }
   
   def loadConfig(configDir:File):HashMap[String, String] = {
     val map = new HashMap[String, String]

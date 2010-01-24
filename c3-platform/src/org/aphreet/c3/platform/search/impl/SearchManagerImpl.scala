@@ -24,8 +24,8 @@ class SearchManagerImpl extends SearchManager{
   def index(resource:Resource) = {
     if(isSearchAvaliable)
       searcher.index(resource)
-    else
-      log warn "No searcher registered"
+    //else
+    //  log warn "No searcher registered"
   }
   
   def registerSearcher(_searcher:Searcher) = {

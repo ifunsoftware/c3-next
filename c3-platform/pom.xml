@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.aphreet.c3</groupId>
 	<artifactId>c3-platform</artifactId>
-	<version>1.0.0</version>
+	<version>${bundleVersion}</version>
 	<packaging>jar</packaging>
 	<name>C3 Platform</name>
 
 	<parent>
 		<groupId>org.aphreet.c3</groupId>
 		<artifactId>main</artifactId>
-		<version>1.0.0</version>
+		<version>${bundleVersion}</version>
 	</parent>
 
 	<dependencies>
@@ -84,13 +84,7 @@
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 					<manifestLocation>META-INF</manifestLocation>
 					<archive>
-						<manifestEntries>
-							<Build-Time>${now}</Build-Time>
-							<Bundle-Version>2.0.0</Bundle-Version>
-						</manifestEntries>
-						<manifestFile>
-							src/META-INF/MANIFEST.MF
-                        </manifestFile>
+						<manifestFile>${bundleManifestPath}</manifestFile>
 					</archive>
 				</configuration>
 			</plugin>
@@ -98,11 +92,28 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>manifest</id>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<echo message="Updating manifest file with current build number" />
+								<copy file="src/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
+								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy</id>
 						<phase>install</phase>
 						<configuration>
 							<tasks>
-								<echo message="Deploying to Spring DM Server"/>
-								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+								<echo message="Deploying to Spring DM Server" />
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.jar"
+									toDir="${serverHome}/pickup" overwrite="true" />
 							</tasks>
 						</configuration>
 						<goals>
@@ -113,5 +124,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

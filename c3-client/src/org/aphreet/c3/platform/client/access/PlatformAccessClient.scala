@@ -68,11 +68,15 @@ object PlatformAccessClient {
     println("Writing " + count + " objects of size " + size)
     
     val startTime = System.currentTimeMillis
+    var time = startTime;
     
     for(i <- 1 to count){
       val ra = accessService.add(new HashMap[String, String], generateDataOfSize(size))
       if(i % 1000 == 0){
-        println("Saved " + i + " objects")
+        val wtime = System.currentTimeMillis
+        val rate = 1000f/((wtime - time)/1000f)
+        println("Saved " + i + " objects with average rate " + rate + "(obj/s)")
+        time = System.currentTimeMillis
       }
     }
     

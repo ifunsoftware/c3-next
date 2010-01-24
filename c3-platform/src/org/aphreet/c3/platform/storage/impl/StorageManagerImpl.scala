@@ -31,12 +31,12 @@ class StorageManagerImpl extends StorageManager{
   
   private val factories = new HashMap[String, StorageFactory]
   
-  var configManager : PlatformConfigManager = null
+  var configAccessor : StorageConfigAccessor = null
   
   var volumeManager : VolumeManager = null
   
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}
   
   @Autowired
   def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
@@ -109,9 +109,7 @@ class StorageManagerImpl extends StorageManager{
       
       factories.values.foreach(_.storages - storage)
       
-      val storageParams = configManager.getStorageParams
-    
-      configManager.setStorageParams(storageParams.filter(_.id != storage.id))
+      configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
       
       updateDispatcher
       storage.close
@@ -129,8 +127,6 @@ class StorageManagerImpl extends StorageManager{
   def listStorageTypes:List[String] = 
     List.fromIterator((for((key, factory) <- factories) yield factory.name).elements)
   
-  
-  
   def dispatcher:StorageDispatcher = storageDispatcher
   
   
@@ -145,11 +141,8 @@ class StorageManagerImpl extends StorageManager{
   }
   
   def updateStorageParams(storage:Storage) {
-    val storageParams = configManager.getStorageParams
     
-    configManager.setStorageParams(
-      storage.params :: storageParams.filter(_.id != storage.id)
-    )
+    configAccessor.update(config => storage.params :: config.filter(_.id != storage.id))
     
     for(id <- storage.id :: storage.ids){
       storages.put(id, storage)
@@ -184,23 +177,19 @@ class StorageManagerImpl extends StorageManager{
     
     log info "Checking id '" + newId + "' for existence in platform params"
     
-    val storageParams = configManager.getStorageParams
+    val storageParams = configAccessor.load
     
     !storageParams.exists(param => param.containsId(newId))
   }
   
-
-  
   private def addStorageToParams(storage:Storage){
-    val storageParams = configManager.getStorageParams
-    
-    configManager.setStorageParams(storage.params :: storageParams)
+    configAccessor.update(storageParams => storage.params :: storageParams)
   }
   
   
   
   private def createExitentStoragesForFactory(factory:StorageFactory){
-    val storageParams = configManager.getStorageParams
+    val storageParams = configAccessor.load
     
     log info "Exitent storages: " + storageParams
     

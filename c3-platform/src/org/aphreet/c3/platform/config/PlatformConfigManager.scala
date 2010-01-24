@@ -2,7 +2,10 @@ package org.aphreet.c3.platform.config
 
 import java.io.File
 
+import scala.collection.Map
 import scala.collection.jcl.HashMap
+
+import accessor.ConfigAccessor
 
 import org.aphreet.c3.platform.common.{Path, Constants}
 import org.aphreet.c3.platform.exception.ConfigurationException
@@ -22,9 +25,6 @@ class PlatformConfigManager {
   
   var configPath:String = "";
   var configDir:File = null;
-  
-  val platformAccessor = new PlatformConfigAccessor
-  val storageAccessor = new StorageConfigAccessor
   
   @PostConstruct 
   def init = {
@@ -46,28 +46,6 @@ class PlatformConfigManager {
     configPath = path.toString
     configDir = path.file
     if(!configDir.exists) configDir.mkdirs
-    
-    log info "Updating c3.platform.home"
-    updatePlatformHome
   }
   
-  
-  def getStorageParams:List[StorageParams] = 
-    storageAccessor.loadConfig(configDir)
-  
-  def setStorageParams(params :List[StorageParams]) = 
-    storageAccessor.storeConfig(params, configDir)
-    
-  
-  def getPlatformParam:HashMap[String, String] = 
-    platformAccessor.loadConfig(configDir)
-  
-  def setPlatformParam(map:HashMap[String, String]) = 
-    platformAccessor.storeConfig(map, configDir)
-  
-  private def updatePlatformHome = {
-    val props = getPlatformParam
-    props.put(Constants.C3_PLATFORM_HOME, configPath.toString)
-    setPlatformParam(props)
-  }
 }

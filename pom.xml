@@ -5,7 +5,7 @@
 	<groupId>org.aphreet.c3</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.0</version>
+	<version>${bundleVersion}</version>
 	<name>C3 Main project</name>
 	<url>http://dev.aphreet.org</url>
 	<modules>
