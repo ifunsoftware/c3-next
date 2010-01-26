@@ -4,7 +4,7 @@ Bundle-Name: C3 Web
 Bundle-Version: 1.0.0
 Bundle-SymbolicName: org.aphreet.c3.web
 Web-ContextPath: /c3
-Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
+Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  com.springsource.com.sun.faces;version="[1.2.0.09,1.2.0.09]",
  com.springsource.javax.servlet.jsp.jstl;version="[1.2.0,1.2.0]",
