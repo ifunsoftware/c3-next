@@ -3,8 +3,8 @@ package org.aphreet.c3.platform.client.access
 import org.springframework.remoting.RemoteLookupFailureException
 import org.springframework.remoting.rmi.RmiProxyFactoryBean
 
-import org.aphreet.c3.platform.management.rmi.PlatformRmiManagementService
-import org.aphreet.c3.platform.access.rmi.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
+import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
 import java.io.File
 import java.util.HashMap

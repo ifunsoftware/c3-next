@@ -6,6 +6,8 @@ import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeConfigEntry
+
 import java.util.{Map => JMap}
 
 trait PlatformManagementEndpoint {
@@ -29,6 +31,12 @@ trait PlatformManagementEndpoint {
   def listTasks:List[TaskDescription]
  
   def setTaskMode(taskId:String, state:TaskState)
+  
+  def listTypeMappings:List[MimeConfigEntry]
+  
+  def addTypeMapping(mapping:MimeConfigEntry)
+  
+  def removeTypeMapping(mimeType:String)
   
   def registerPropertyListener(listener:PlatformPropertyListener)
   

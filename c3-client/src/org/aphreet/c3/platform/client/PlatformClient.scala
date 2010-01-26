@@ -5,9 +5,8 @@ import java.io.{BufferedReader, InputStreamReader}
 import org.springframework.remoting.rmi.RmiProxyFactoryBean
 import org.springframework.remoting.{RemoteConnectFailureException, RemoteLookupFailureException}
 
-
-import org.aphreet.c3.platform.management.rmi.PlatformRmiManagementService
-import org.aphreet.c3.platform.access.rmi.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
+import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
 import command.CommandFactory
 
@@ -27,7 +26,7 @@ object PlatformClient {
     
     
     while(true){
-      val line = reader.readLine.toLowerCase.trim
+      val line = reader.readLine.trim
       
       var success = false
       
@@ -45,7 +44,7 @@ object PlatformClient {
         	      false
         	    }
         	    case e =>{
-        	      println("Failed to execute command: " + e.getMessage)
+        	      println("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage)
         	      true
                 }
         	  }

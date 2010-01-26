@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.management.rmi
+package org.aphreet.c3.platform.remote.rmi.management
 
 import java.util.HashMap
 
@@ -19,8 +19,15 @@ trait PlatformRmiManagementService {
   def setPlatformProperty(key:String, value:String)
   
   def platformProperties:HashMap[String, String]
- 
+  
   def listTasks:List[RmiTaskDescr]
- 
+  
   def setTaskMode(taskId:String, mode:String)
+  
+  def listTypeMappigs:List[RmiMimeTypeMapping]
+  
+  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short)
+  
+  def removeTypeMapping(mimeType:String)
+
 }

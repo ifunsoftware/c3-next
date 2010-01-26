@@ -10,6 +10,7 @@
 	<url>http://dev.aphreet.org</url>
 	<modules>
 		<module>c3-platform</module>
+		<module>c3-remote</module>
 		<module>c3-storage</module>
 		<module>c3-storage-file</module>
 		<module>c3-search</module>

@@ -4,83 +4,54 @@ import scala.collection.mutable.{HashMap, ArrayBuffer}
 
 import eu.medsea.mimeutil.MimeType
 
+import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
+
+import javax.annotation.PostConstruct
+
+@Component
 class MimeTypeStorageSelector {
 
-  private var typeMap = new HashMap[String, TypeMapping]
+  private var typeMap = new HashMap[String, MimeConfigEntry]
   
   var configAccessor:MimeTypeConfigAccessor = null
-  
+
+  @Autowired
   def setConfigAccessor(accessor:MimeTypeConfigAccessor) = {configAccessor = accessor}
   
+  @PostConstruct
+  def init{
+    for(entry <- configAccessor.load)
+      typeMap.put(entry.mimeType, entry)
+  }
   
-  def defaultStorageType:(String,Boolean) = null
-  
-  def storageForType(mime:MimeType):(String, Boolean) = {
+  def storageForType(mime:MimeType):MimeConfigEntry = {
     
-    typeMap.get(mime.getMediaType) match {
-      case Some(subtypes) => subtypes storageForSubtype mime.getSubType match {
-        case Some(st) => st
-        case None => defaultStorageType
+    val mediaType = mime.getMediaType
+    val subType = mime.getSubType
+    
+    typeMap.get(mediaType + "/" + subType) match {
+      case Some(entry) => entry
+      case None => typeMap.get(mediaType + "/*") match {
+        case Some(entry) => entry
+        case None => typeMap.get("*/*") match {
+          case Some(entry) => entry
+          case None => null
+        }
       }
-      case None => defaultStorageType
     }
   }
   
   def addConfigEntry(entry:MimeConfigEntry) = {
+    typeMap.put(entry.mimeType, entry)
     configAccessor.update(entries => entry :: configEntries.filter(_.mimeType != entry.mimeType))
   }
   
   def removeConfigEntry(mimeType:String) = {
+    typeMap - mimeType
     configAccessor.update(entries => configEntries.filter(_.mimeType != mimeType))
   }
   
-  def configEntries:List[MimeConfigEntry] = {
-    
-    val entries = new ArrayBuffer[MimeConfigEntry]
-    
-    for((mimeType, mapping) <- typeMap)
-      entries ++ mapping.configuration(mimeType)
-    
-    if(defaultStorageType != null)
-      entries + MimeConfigEntry("*/*", defaultStorageType._1, defaultStorageType._2)
-    
-    entries.toList
-  }
-}
-
-private class TypeMapping{
+  def configEntries:List[MimeConfigEntry] = typeMap.values.toList
   
-  private var subTypeMap = new HashMap[String, (String, Boolean)]
- 
-  var defaultStorageType:(String, Boolean) = null
-
-  def storageForSubtype(subtype:String):Option[(String,Boolean)] = 
-    subTypeMap.get(subtype) match {
-      case Some(s) => Some(s)
-      case None => {
-        if(defaultStorageType != null)
-          Some(defaultStorageType)
-        else
-          None
-      }
-    }
-  
-  def configuration(mainType:String):List[MimeConfigEntry] = {
-    
-    val buffer = new ArrayBuffer[MimeConfigEntry]
-    
-    for((subType, (storage, versioned)) <- subTypeMap){
-      
-      val mimeType = mainType + "/" + subType
-      
-      buffer + MimeConfigEntry(mimeType, storage, versioned)
-    }
-    
-    if(defaultStorageType != null){
-      buffer + MimeConfigEntry(mainType + "/*", defaultStorageType._1, defaultStorageType._2)
-    }
-    
-    buffer.toList
-    
-  }
 }

@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode, StorageException}
 import org.aphreet.c3.platform.storage.migration._
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.task._
 
 import org.springframework.stereotype.Component
@@ -29,6 +30,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   var migrationManager:MigrationManager = null
   
+  var mimeSelector:MimeTypeStorageSelector = null
+  
   
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
   
@@ -44,6 +47,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   @Autowired
   def setMigrationManager(manager:MigrationManager) = {migrationManager = manager}
+  
+  @Autowired
+  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) = {mimeSelector = selector}
   
   @Autowired{val required=false}
   def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
@@ -136,6 +142,18 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
       case RUNNING => taskManager.resumeTask(taskId)
       case _ => null
     }
+  }
+  
+  def listTypeMappings:List[MimeConfigEntry] = {
+    mimeSelector.configEntries
+  }
+  
+  def addTypeMapping(mapping:MimeConfigEntry) = {
+    mimeSelector.addConfigEntry(mapping)
+  }
+  
+  def removeTypeMapping(mimeType:String) = {
+    mimeSelector.removeConfigEntry(mimeType)
   }
   
   def registerPropertyListener(listener:PlatformPropertyListener) = {

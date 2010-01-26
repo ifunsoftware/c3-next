@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.access.rmi
+package org.aphreet.c3.platform.remote.rmi.access
 
 import java.util.HashMap
 

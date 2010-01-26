@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.client.command
 
-import org.aphreet.c3.platform.management.rmi.RmiTaskDescr
+import org.aphreet.c3.platform.remote.rmi.management.RmiTaskDescr
 
 class ListTasksCommand extends Command {
 

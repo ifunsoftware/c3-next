@@ -11,19 +11,5 @@
 	<context:annotation-config />
 
     <context:component-scan base-package="org.aphreet.c3.platform" />
- 
-	<bean class="org.aphreet.c3.platform.management.rmi.MacRmiServiceExporter">
-		<property name="serviceName" value="PlatformRmiManagementEndPoint" />
-		<property name="service" ref="platformRmiManagementService" />
-		<property name="serviceInterface" value="org.aphreet.c3.platform.management.rmi.PlatformRmiManagementService" />
-		<property name="registryPort" value="1299" />
-	</bean>
-
-	<bean class="org.aphreet.c3.platform.management.rmi.MacRmiServiceExporter">
-		<property name="serviceName" value="PlatformRmiAccessEndPoint" />
-		<property name="service" ref="platformRmiAccessService" />
-		<property name="serviceInterface" value="org.aphreet.c3.platform.access.rmi.PlatformRmiAccessService" />
-		<property name="registryPort" value="1299" />
-	</bean>
-
+    
 </beans>
