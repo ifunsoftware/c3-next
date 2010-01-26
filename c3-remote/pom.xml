@@ -1,0 +1,120 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.aphreet.c3</groupId>
+	<artifactId>c3-remote</artifactId>
+	<version>${bundleVersion}</version>
+	<packaging>jar</packaging>
+	<name>C3 Remote</name>
+
+	<parent>
+   		<groupId>org.aphreet.c3</groupId>
+    	<artifactId>main</artifactId>
+    	<version>${bundleVersion}</version>
+    </parent> 
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>eu.medsea.mimeutil</groupId>
+			<artifactId>mime-util</artifactId>
+			<version>2.1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.aphreet.c3</groupId>
+			<artifactId>c3-platform</artifactId>
+		</dependency>
+		
+	</dependencies>
+	
+	<build>
+		<defaultGoal>package</defaultGoal>
+		<sourceDirectory>src</sourceDirectory>
+		<outputDirectory>bin</outputDirectory>
+		
+		<testSourceDirectory>src-test</testSourceDirectory>
+		<testOutputDirectory>bin-test</testOutputDirectory>
+
+		<resources>
+			<resource>
+				<directory>src/</directory>
+				<includes>
+					<include>META-INF/spring/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<jvmArgs>
+						<jvmArg>-Xms64m</jvmArg>
+						<jvmArg>-Xmx1024m</jvmArg>
+					</jvmArgs>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+					</execution>
+				</executions>
+				<configuration>
+					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
+					<manifestLocation>META-INF</manifestLocation>
+					<archive>
+						<manifestFile>${bundleManifestPath}</manifestFile>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>manifest</id>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<echo message="Updating manifest file with current build number" />
+								<copy file="src/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
+								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy</id>
+						<phase>install</phase>
+						<configuration>
+							<tasks>
+								<echo message="Deploying to Spring DM Server"/>
+								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
