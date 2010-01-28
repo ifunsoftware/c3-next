@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 @Component
 class MimeTypeConfigAccessor extends ConfigAccessor[List[MimeConfigEntry]]{
 
-  private val MIME_CONFIG = "mime-types.json"
+  private val MIME_CONFIG = "c3-mime-types.json"
   
   def loadConfig(configDir:File):List[MimeConfigEntry] = {
     val file = new File(configDir, MIME_CONFIG)
