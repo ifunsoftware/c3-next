@@ -4,7 +4,7 @@ import junit.framework.Assert._
 
 class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
 
-  def testMe {
+  def testConfigPersistence {
     
   }
   

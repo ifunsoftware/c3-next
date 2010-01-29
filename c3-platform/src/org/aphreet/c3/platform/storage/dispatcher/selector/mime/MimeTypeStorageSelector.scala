@@ -1,5 +1,7 @@
 package org.aphreet.c3.platform.storage.dispatcher.selector.mime
 
+import org.aphreet.c3.platform.resource.Resource
+
 import scala.collection.mutable.{HashMap, ArrayBuffer}
 
 import eu.medsea.mimeutil.MimeType
@@ -10,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.PostConstruct
 
 @Component
-class MimeTypeStorageSelector {
+class MimeTypeStorageSelector extends StorageSelector{
 
   private var typeMap = new HashMap[String, MimeConfigEntry]
   
@@ -25,8 +27,20 @@ class MimeTypeStorageSelector {
       typeMap.put(entry.mimeType, entry)
   }
   
-  def storageForType(mime:MimeType):MimeConfigEntry = {
+  def storageTypeForResource(resource:Resource):String = {
     
+    val mime = new MimeType(resource.versions(0).data.mimeType)
+
+    val mimeEntry = storageTypeForMimeType(mime)
+    
+    if(mimeEntry != null)
+      mimeEntry.storage
+    else
+      null
+    
+  }
+  
+  def storageTypeForMimeType(mime:MimeType):MimeConfigEntry = {
     val mediaType = mime.getMediaType
     val subType = mime.getSubType
     

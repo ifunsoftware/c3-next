@@ -9,13 +9,16 @@ import org.aphreet.c3.platform.config.accessor.ConfigAccessor
 import scala.collection.jcl.Set
 
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl;
+import com.springsource.json.writer.JSONWriterImpl
 
-class SizeSelectorConfigAccessor extends ConfigAccessor[Map[Int,String]]{
+import org.springframework.stereotype.Component
+
+@Component
+class SizeSelectorConfigAccessor extends ConfigAccessor[Map[Long,String]]{
 
   private val SIZE_CONFIG = "c3-size-types.json"
   
-  def loadConfig(configDir:File):Map[Int,String] = {
+  def loadConfig(configDir:File):Map[Long,String] = {
      val file = new File(configDir, SIZE_CONFIG)
     
     if(file.exists){
@@ -25,19 +28,19 @@ class SizeSelectorConfigAccessor extends ConfigAccessor[Map[Int,String]]{
       
       val entries = 
         for(key <- keys)
-          yield (key.toInt, node.getNode(key).asInstanceOf[ScalarNode].getValue[String])
+          yield (key.toLong, node.getNode(key).asInstanceOf[ScalarNode].getValue[String])
       
       
-      Map[Int, String]()
+      Map[Long, String]() ++ entries
     }else{
-      Map[Int, String]()
+      Map[Long, String]()
     }
     
     
   }
   
   
-  def storeConfig(data:Map[Int,String], configDir:File) = {
+  def storeConfig(data:Map[Long,String], configDir:File) = {
     this.synchronized{
     	
       

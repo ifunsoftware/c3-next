@@ -30,9 +30,9 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
     selector.setConfigAccessor(configAccessor)
     selector.init
     
-    assertEquals(MimeConfigEntry("image/png", "PureBDBStorage", true),selector.storageForType(new MimeType("image/png")))
-    assertEquals(MimeConfigEntry("image/*", "FileBDBStorage", true),selector.storageForType(new MimeType("image/jpeg")))
-    assertEquals(MimeConfigEntry("*/*", "PureBDBStorage", false),selector.storageForType(new MimeType("application/pdf")))
+    assertEquals(MimeConfigEntry("image/png", "PureBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/png")))
+    assertEquals(MimeConfigEntry("image/*", "FileBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/jpeg")))
+    assertEquals(MimeConfigEntry("*/*", "PureBDBStorage", false),selector.storageTypeForMimeType(new MimeType("application/pdf")))
     
   }
 }
