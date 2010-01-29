@@ -269,16 +269,24 @@ class PureBDBStorageTest extends TestCase{
   
   private def isDatumEqual(d0:DataWrapper, d1:DataWrapper):Boolean = {
     
-    if(d0.length != d1.length) return false
+    if(d0.length != d1.length){
+      println("datum lengths are not equal " + d0.length + " " + d1.length )
+      return false
+    }
     
-    if(d0.mimeType != d1.mimeType) return false
+    if(d0.mimeType != d1.mimeType){
+      println("datum mime types are not equal " + d0.mimeType + " " + d1.mimeType)
+      return false
+    }
         
     val thisBytes = d0.getBytes
     val thatBytes = d1.getBytes
     
     for(i <- 0 to thatBytes.size - 1){
-      if(thisBytes(i) != thatBytes(i))
+      if(thisBytes(i) != thatBytes(i)){
+        println("Byte streams are not equal")
         return false
+      }
     }
     
     true

@@ -240,6 +240,7 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 
@@ -273,7 +274,8 @@
 							<autocommit>true</autocommit>
 							<sqlCommand>create database if not exists c3_next character set
 								UTF8 collate utf8_general_ci;
-								grant all privileges on c3_next.* to c3owner@localhost identified by
+								grant all privileges on c3_next.*
+								to c3owner@localhost identified by
 								'some_password'</sqlCommand>
 						</configuration>
 					</execution>
@@ -284,20 +286,6 @@
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
-					<execution>
-						<id>manifest</id>
-						<phase>prepare-package</phase>
-						<configuration>
-							<tasks>
-								<echo message="Updating manifest file with current build number" />
-								<copy file="WebContent/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
-								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
 					<execution>
 						<id>deploy</id>
 						<phase>install</phase>
@@ -317,4 +305,48 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>manifest</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<tasks>
+										<echo message="Updating manifest file with current build number" />
+										<copy file="WebContent/META-INF/MANIFEST.MF" toDir="target"
+											overwrite="true" />
+										<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
+											value="Bundle-Version: ${bundleVersion}" />
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${dependencyPath}</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

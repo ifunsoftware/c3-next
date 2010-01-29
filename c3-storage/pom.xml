@@ -8,10 +8,10 @@
 	<name>C3 Storage</name>
 
 	<parent>
-   		<groupId>org.aphreet.c3</groupId>
-    	<artifactId>main</artifactId>
-    	<version>${bundleVersion}</version>
-    </parent> 
+		<groupId>org.aphreet.c3</groupId>
+		<artifactId>main</artifactId>
+		<version>${bundleVersion}</version>
+	</parent>
 
 	<dependencies>
 		<dependency>
@@ -20,26 +20,26 @@
 			<version>3.3.87</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>eu.medsea.mimeutil</groupId>
 			<artifactId>mime-util</artifactId>
 			<version>2.1.2</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.aphreet.c3</groupId>
 			<artifactId>c3-platform</artifactId>
 		</dependency>
-		
+
 	</dependencies>
-	
+
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<sourceDirectory>src</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
-		
+
 		<testSourceDirectory>src-test</testSourceDirectory>
 		<testOutputDirectory>bin-test</testOutputDirectory>
 
@@ -92,26 +92,14 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>manifest</id>
-						<phase>prepare-package</phase>
-						<configuration>
-							<tasks>
-								<echo message="Updating manifest file with current build number" />
-								<copy file="src/META-INF/MANIFEST.MF" toDir="target" overwrite="true"/>
-								<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0" value="Bundle-Version: ${bundleVersion}"/>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-					<execution>
 						<id>deploy</id>
 						<phase>install</phase>
 						<configuration>
 							<tasks>
-								<echo message="Deploying to Spring DM Server"/>
-								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+								<echo message="Deploying to Spring DM Server" />
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.jar"
+									toDir="${serverHome}/pickup" overwrite="true" />
 							</tasks>
 						</configuration>
 						<goals>
@@ -123,4 +111,48 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>manifest</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<tasks>
+										<echo message="Updating manifest file with current build number" />
+										<copy file="src/META-INF/MANIFEST.MF" toDir="target"
+											overwrite="true" />
+										<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
+											value="Bundle-Version: ${bundleVersion}" />
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${dependencyPath}</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
