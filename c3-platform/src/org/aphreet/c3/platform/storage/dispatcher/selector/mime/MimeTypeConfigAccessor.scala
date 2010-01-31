@@ -16,63 +16,12 @@ import com.springsource.json.writer.JSONWriterImpl;
 import org.springframework.stereotype.Component
 
 @Component
-class MimeTypeConfigAccessor extends ConfigAccessor[List[MimeConfigEntry]]{
+class MimeTypeConfigAccessor extends SelectorConfigAccessor[String]{
 
-  private val MIME_CONFIG = "c3-mime-types.json"
+  override def filename = "c3-mime-types.json"
   
-  def loadConfig(configDir:File):List[MimeConfigEntry] = {
-    val file = new File(configDir, MIME_CONFIG)
-    
-    if(file.exists){
-      val node = new AntlrJSONParser().parse(file).asInstanceOf[MapNode]
-      
-      val entries = 
-        for(key <- Set.apply(node.getKeys))
-          yield MimeConfigEntry(
-        	key,
-        	getArrayValue[String](node, key, 0),
-        	getArrayValue[Boolean](node, key, 1)
-          )
-      List.fromIterator(entries.elements)
-    }else{
-      List()
-    }
-  }
-
-  private def getArrayValue[T](node:MapNode, key:String, num:Int):T = {
-    node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[T]
-  }
-
-  def storeConfig(data:List[MimeConfigEntry], configDir:File) = {
-    this.synchronized{
-    	
-      
-	    val swriter = new StringWriter()
-	    try{
-		    val writer = new JSONWriterImpl(swriter)
-		    
-		    writer.`object`
-	
-		    for(entry <- data){
-		    	writer.key(entry.mimeType)
-		    	writer.array
-		    	writer.value(entry.storage)
-		    	writer.value(entry.versioned)
-		    	writer.endArray
-		    }
-		   
-		    writer.endObject
-		    
-		    swriter.flush
-      
-		    val result = JSONFormatter.format(swriter.toString)
-		    
-		    writeToFile(result, new File(configDir, MIME_CONFIG))
-      
-	    }finally{
-	    	swriter.close
-	    }
-    }
-  }
+  override def keyFromString(string:String):String = string
+  
+  override def keyToString(key:String):String = key
   
 }
