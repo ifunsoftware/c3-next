@@ -10,9 +10,9 @@ class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
     
     val configAccessor = new SizeSelectorConfigAccessor
     
-    val config = Map[Long, String](
-    	0l -> "PureBDBStorage",
-    	250000l -> "FileBDBStorage"
+    val config = Map[Long, (String, Boolean)](
+    	0l -> ("PureBDBStorage", true),
+    	250000l -> ("FileBDBStorage", true)
     )
      
     configAccessor.storeConfig(config, testDir)

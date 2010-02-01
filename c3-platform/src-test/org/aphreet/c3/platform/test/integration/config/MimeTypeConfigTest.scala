@@ -12,14 +12,13 @@ class MimeTypeConfigTest extends AbstractTestWithFileSystem{
     
     val configAccessor = new MimeTypeConfigAccessor
     
-    val config = List(
-    	MimeConfigEntry("*/*", "PureBDBStorage", false),
-    	MimeConfigEntry("image/*", "FileBDBStorage", true),
-    	MimeConfigEntry("image/png", "PureBDBStorage", true)
+    val config = Map(
+    	"*/*" -> ("PureBDBStorage", false),
+    	"image/*" -> ("FileBDBStorage", true),
+    	"image/png" -> ("PureBDBStorage", true)
     )
      
     configAccessor.storeConfig(config, testDir)
-    
     
     val readConfig = configAccessor.loadConfig(testDir)
     

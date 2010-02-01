@@ -12,35 +12,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.PostConstruct
 
 @Component
-class MimeTypeStorageSelector extends StorageSelector{
+class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
 
-  private var typeMap = new HashMap[String, MimeConfigEntry]
+  private var typeMap = new HashMap[String, (String, Boolean)]
   
-  var configAccessor:MimeTypeConfigAccessor = null
-
   @Autowired
   def setConfigAccessor(accessor:MimeTypeConfigAccessor) = {configAccessor = accessor}
   
-  @PostConstruct
-  def init{
-    for(entry <- configAccessor.load)
-      typeMap.put(entry.mimeType, entry)
-  }
-  
-  def storageTypeForResource(resource:Resource):String = {
+  override def storageTypeForResource(resource:Resource):(String,Boolean) = {
     
     val mime = new MimeType(resource.versions(0).data.mimeType)
 
-    val mimeEntry = storageTypeForMimeType(mime)
-    
-    if(mimeEntry != null)
-      mimeEntry.storage
-    else
-      null
-    
+    storageTypeForMimeType(mime) 
   }
   
-  def storageTypeForMimeType(mime:MimeType):MimeConfigEntry = {
+  def storageTypeForMimeType(mime:MimeType):(String,Boolean) = {
     val mediaType = mime.getMediaType
     val subType = mime.getSubType
     
@@ -56,16 +42,16 @@ class MimeTypeStorageSelector extends StorageSelector{
     }
   }
   
-  def addConfigEntry(entry:MimeConfigEntry) = {
-    typeMap.put(entry.mimeType, entry)
-    configAccessor.update(entries => entry :: configEntries.filter(_.mimeType != entry.mimeType))
-  }
+  override def configEntries:List[(String, String, Boolean)] = 
+    typeMap.map(entry => (entry._1, entry._2._1, entry._2._2)).toList
   
-  def removeConfigEntry(mimeType:String) = {
-    typeMap - mimeType
-    configAccessor.update(entries => configEntries.filter(_.mimeType != mimeType))
-  }
   
-  def configEntries:List[MimeConfigEntry] = typeMap.values.toList
+  override def updateConfig(config:Map[String, (String,Boolean)]) = {
+    val map = new HashMap[String, (String,Boolean)]
+    for(entry <- config)
+      map + entry
+    
+    typeMap = map
+  }
   
 }

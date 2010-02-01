@@ -11,9 +11,9 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     
     val configAccessor = new SizeSelectorConfigAccessor
     
-    val config = Map[Long, String](
-    	0l -> "PureBDBStorage",
-    	250000l -> "FileBDBStorage"
+    val config = Map[Long, (String, Boolean)](
+    	0l -> ("PureBDBStorage", true),
+    	250000l -> ("FileBDBStorage", false)
     )
     
     val configManager = new PlatformConfigManager
@@ -26,11 +26,8 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     selector.setSizeSelectorConfigAccessor(configAccessor)
     selector.init
     
-    assertEquals("PureBDBStorage", selector.storageTypeForSize(1024l))
-    assertEquals("FileBDBStorage", selector.storageTypeForSize(500000l))
-    
-    selector.addEntry(())
-    
+    assertEquals(("PureBDBStorage", true), selector.storageTypeForSize(1024l))
+    assertEquals(("FileBDBStorage", false), selector.storageTypeForSize(500000l))
     
   }
 

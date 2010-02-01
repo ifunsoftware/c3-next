@@ -144,16 +144,16 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     }
   }
   
-  def listTypeMappings:List[MimeConfigEntry] = {
+  def listTypeMappings:List[(String,String,Boolean)] = {
     mimeSelector.configEntries
   }
   
-  def addTypeMapping(mapping:MimeConfigEntry) = {
-    mimeSelector.addConfigEntry(mapping)
+  def addTypeMapping(mapping:(String, String, Boolean)) = {
+    mimeSelector.addEntry(mapping)
   }
   
   def removeTypeMapping(mimeType:String) = {
-    mimeSelector.removeConfigEntry(mimeType)
+    mimeSelector.removeEntry(mimeType)
   }
   
   def registerPropertyListener(listener:PlatformPropertyListener) = {

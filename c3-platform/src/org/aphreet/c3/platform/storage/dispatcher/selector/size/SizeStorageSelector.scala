@@ -7,28 +7,20 @@ import scala.collection.immutable.{SortedMap, TreeMap}
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation.PostConstruct
-
 @Component
-class SizeStorageSelector extends StorageSelector{
+class SizeStorageSelector extends AbstractStorageSelector[Long]{
 
-  private var sizeRanges:SortedMap[Long, String] = null
-  
-  private var configAccessor:SizeSelectorConfigAccessor = null
+  private var sizeRanges:SortedMap[Long, (String, Boolean)] = null
   
   @Autowired
   def setSizeSelectorConfigAccessor(accessor:SizeSelectorConfigAccessor) = {configAccessor = accessor}
   
-  @PostConstruct
-  def init = updateCachedConfig
-  
-  def storageTypeForResource(resource:Resource):String = {
-    
+  override def storageTypeForResource(resource:Resource):(String,Boolean) = {
     val size = resource.versions(0).data.length
     storageTypeForSize(size)
   }
   
-  def storageTypeForSize(size:Long):String = {
+  def storageTypeForSize(size:Long):(String,Boolean) = {
     for(sizeRange <- sizeRanges){
       if(size > sizeRange._1)
         return sizeRange._2
@@ -36,21 +28,13 @@ class SizeStorageSelector extends StorageSelector{
     null
   }
   
-  def addEntry(entry:(Long, String)) = {
-    configAccessor.update(_ + entry)
-    updateCachedConfig
+  override def updateConfig(config:Map[Long, (String,Boolean)]) = {
+    sizeRanges = new TreeMap[Long, (String,Boolean)]()(new ReverceOrdered(_)) ++ config
   }
   
-  def removeEntry(size:Long) = {
-    configAccessor.update(_.filter(_._1 != size))
-    updateCachedConfig
-  }
+  override def configEntries:List[(Long, String, Boolean)] = 
+    sizeRanges.map(entry => (entry._1, entry._2._1, entry._2._2)).toList
   
-  def entries:List[(Long, String)] = sizeRanges.toList
-  
-  private def updateCachedConfig = {
-    sizeRanges = new TreeMap[Long, String]()(new ReverceOrdered(_)) ++ configAccessor.load
-  }
   
 }
 

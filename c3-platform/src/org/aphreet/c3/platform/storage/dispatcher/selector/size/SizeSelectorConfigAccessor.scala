@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class SizeSelectorConfigAccessor extends SelectorConfigAccessor[Long]{
 
-  override def filename = ""
+  override def filename = "c3-size-types.json"
   
   override def keyFromString(string:String):Long = string.toLong
   

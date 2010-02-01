@@ -32,9 +32,9 @@ trait PlatformManagementEndpoint {
  
   def setTaskMode(taskId:String, state:TaskState)
   
-  def listTypeMappings:List[MimeConfigEntry]
+  def listTypeMappings:List[(String, String, Boolean)]
   
-  def addTypeMapping(mapping:MimeConfigEntry)
+  def addTypeMapping(mapping:(String, String, Boolean))
   
   def removeTypeMapping(mimeType:String)
   
