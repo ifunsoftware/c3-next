@@ -29,5 +29,11 @@ trait PlatformRmiManagementService {
   def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short)
   
   def removeTypeMapping(mimeType:String)
+  
+  def listSizeMappings:List[RmiSizeMapping]
+  
+  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer)
+  
+  def removeSizeMapping(size:java.lang.Long)
 
 }

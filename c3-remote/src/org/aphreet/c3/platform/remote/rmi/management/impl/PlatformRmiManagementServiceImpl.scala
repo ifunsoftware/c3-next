@@ -5,7 +5,6 @@ import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.exception.PlatformException
 import org.aphreet.c3.platform.storage.{StorageMode, RW, RO, U, StorageException}
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState, RUNNING, PAUSED}
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeConfigEntry
 
 import org.apache.commons.logging.LogFactory
 
@@ -82,16 +81,31 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   
   def listTypeMappigs:List[RmiMimeTypeMapping] = 
     for(entry <- managementEndpoint.listTypeMappings)
-      yield new RmiMimeTypeMapping(entry.mimeType, entry.storage, entry.isVersioned)
+      yield new RmiMimeTypeMapping(entry._1, entry._2, if(entry._3) 1.shortValue else 0.shortValue )
   
   def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short) = {
     val vers = versioned == 1
-    log info storage
-    managementEndpoint.addTypeMapping(new MimeConfigEntry(mimeType, storage, vers))
+    managementEndpoint.addTypeMapping((mimeType, storage, vers))
   }
   
   def removeTypeMapping(mimeType:String) = 
     managementEndpoint.removeTypeMapping(mimeType)
+  
+  def listSizeMappings:List[RmiSizeMapping] = {
+    for(entry <- managementEndpoint.listSizeMappings)
+      yield new RmiSizeMapping(entry._1, entry._2, if(entry._3) 1 else 0)
+  }
+  
+  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer) = {
+    val vers = versioned == 1
+    managementEndpoint.addSizeMapping((size.longValue, storage, vers))
+  }
+  
+  def removeSizeMapping(size:java.lang.Long) = {
+    managementEndpoint.removeSizeMaping(size.longValue)
+    
+    
+  }
   
 }
 
