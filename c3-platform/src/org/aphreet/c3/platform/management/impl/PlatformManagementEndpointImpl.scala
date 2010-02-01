@@ -7,6 +7,7 @@ import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode, StorageException}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
+import org.aphreet.c3.platform.storage.dispatcher.selector.size._
 import org.aphreet.c3.platform.task._
 
 import org.springframework.stereotype.Component
@@ -32,6 +33,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   var mimeSelector:MimeTypeStorageSelector = null
   
+  var sizeSelector:SizeStorageSelector = null
+  
   
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
   
@@ -50,6 +53,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   @Autowired
   def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) = {mimeSelector = selector}
+  
+  @Autowired
+  def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
   
   @Autowired{val required=false}
   def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
@@ -155,6 +161,13 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def removeTypeMapping(mimeType:String) = {
     mimeSelector.removeEntry(mimeType)
   }
+  
+  def listSizeMappings:List[(Long, String, Boolean)] = sizeSelector.configEntries
+  
+  def addSizeMapping(mapping:(Long, String, Boolean)) = sizeSelector.addEntry(mapping)
+  
+  def removeSizeMaping(size:Long) = sizeSelector.removeEntry(size)
+  
   
   def registerPropertyListener(listener:PlatformPropertyListener) = {
     log info "Registering property listener: " + listener.getClass.getSimpleName

@@ -26,6 +26,12 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     selector.setSizeSelectorConfigAccessor(configAccessor)
     selector.init
     
+    val entries = selector.configEntries
+    
+    println(entries)
+    
+    println(selector)
+    
     assertEquals(("PureBDBStorage", true), selector.storageTypeForSize(1024l))
     assertEquals(("FileBDBStorage", false), selector.storageTypeForSize(500000l))
     

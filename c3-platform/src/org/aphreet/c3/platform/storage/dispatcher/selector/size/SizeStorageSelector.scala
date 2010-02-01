@@ -32,9 +32,16 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
     sizeRanges = new TreeMap[Long, (String,Boolean)]()(new ReverceOrdered(_)) ++ config
   }
   
-  override def configEntries:List[(Long, String, Boolean)] = 
-    sizeRanges.map(entry => (entry._1, entry._2._1, entry._2._2)).toList
+  override def configEntries:List[(Long, String, Boolean)] = {
+    
+    println(sizeRanges)
+    
+    val it = sizeRanges.map(entry => (entry._1, entry._2._1, entry._2._2))
   
+    println(it)
+    
+    List.fromIterator(it.elements)
+  }
   
 }
 

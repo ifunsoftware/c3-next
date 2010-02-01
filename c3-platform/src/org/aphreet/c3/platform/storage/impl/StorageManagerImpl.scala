@@ -25,7 +25,7 @@ class StorageManagerImpl extends StorageManager{
 
   val log = LogFactory.getLog(getClass)
   
-  private var storageDispatcher:StorageDispatcher = new DefaultStorageDispatcher(List())
+  private var storageDispatcher:StorageDispatcher = null
   
   private val storages = new HashMap[String, Storage]
   
@@ -41,6 +41,8 @@ class StorageManagerImpl extends StorageManager{
   @Autowired
   def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
   
+  @Autowired
+  def setStorageDispatcher(dispatcher:StorageDispatcher) = {storageDispatcher = dispatcher}
   
   def registerFactory(factory:StorageFactory) = {
     factories.synchronized{
@@ -168,7 +170,7 @@ class StorageManagerImpl extends StorageManager{
   
   
   private def updateDispatcher{
-    storageDispatcher = new DefaultStorageDispatcher(List.fromIterator((for((id, s) <- storages) yield s).elements))
+    storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).elements.toList)
   }
   
   

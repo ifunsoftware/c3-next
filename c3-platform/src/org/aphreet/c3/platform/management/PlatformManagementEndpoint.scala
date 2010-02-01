@@ -32,11 +32,20 @@ trait PlatformManagementEndpoint {
  
   def setTaskMode(taskId:String, state:TaskState)
   
+  
+  
   def listTypeMappings:List[(String, String, Boolean)]
   
   def addTypeMapping(mapping:(String, String, Boolean))
   
   def removeTypeMapping(mimeType:String)
+  
+  def listSizeMappings:List[(Long, String, Boolean)]
+  
+  def addSizeMapping(mapping:(Long, String, Boolean))
+  
+  def removeSizeMaping(size:Long)
+  
   
   def registerPropertyListener(listener:PlatformPropertyListener)
   

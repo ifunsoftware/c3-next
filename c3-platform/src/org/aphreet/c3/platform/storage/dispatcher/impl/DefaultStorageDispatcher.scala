@@ -7,54 +7,58 @@ import scala.collection.immutable.TreeSet
 
 import scala.util.matching.Regex
 
-class DefaultStorageDispatcher(sts:List[Storage]) extends StorageDispatcher {
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
+import org.aphreet.c3.platform.storage.dispatcher.selector.size._
 
-  val storages = new HashMap[String, List[Storage]]
-  
-  val typeMapping = new HashMap[String, Boolean]
-  
-  val sizeRanges = List((500000, "FileBDBStorage"))
+import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
+
+@Component
+class DefaultStorageDispatcher extends StorageDispatcher {
+
+  var storages = new HashMap[String, List[Storage]]
   
   val default = "PureBDBStorage"
   
-  { 
-    
-    typeMapping.put("application/c3-wiki", true)
-    typeMapping.put("application/c3-message", false)
+  var mimeSelector:MimeTypeStorageSelector = null
+  
+  var sizeSelector:SizeStorageSelector = null
+  
+  @Autowired
+  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) = {mimeSelector = selector}
+  
+  @Autowired
+  def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
+  
+  def setStorages(sts:List[Storage]) = {
+    val newStorages = new HashMap[String, List[Storage]]
     
     for(s <- sts){
-      storages.get(s.name) match {
-        case Some(xs) => storages.put(s.name, xs ::: List(s))
-        case None => storages.put(s.name, List(s))
+      newStorages.get(s.name) match {
+        case Some(xs) => newStorages.put(s.name, xs ::: List(s))
+        case None => newStorages.put(s.name, List(s))
       } 
     }
+    
+    storages = newStorages
   }
   
   def selectStorageForResource(resource:Resource):Storage = {
     
-    resource.isVersioned = resource.systemMetadata.get(Resource.MD_CONTENT_TYPE) match {
-      case Some(contentType) => {
-        typeMapping.get(contentType) match{
-          case Some(vers) => vers
-          case None => false
-        }
-        
-      }
-      case None => false
+    var storageType = mimeSelector.storageTypeForResource(resource)
+    
+    if(storageType == null){
+    	storageType = sizeSelector.storageTypeForResource(resource)
     }
     
-    val storageName = selectStorageForSize(resource.versions(0).data.length)
-    
-    selectStorageForName(storageName)
-
-  }
-  
-  private def selectStorageForSize(size:Long):String = {
-    for(sizeRange <- sizeRanges){
-      if(size > sizeRange._1)
-        return sizeRange._2
+    if(storageType == null){
+      storageType = (default, false)
     }
-    default
+    
+    
+    resource.isVersioned = storageType._2
+    
+    selectStorageForName(storageType._1)
   }
   
   private def selectStorageForName(name:String):Storage =
