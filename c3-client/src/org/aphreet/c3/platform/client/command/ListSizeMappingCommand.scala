@@ -8,7 +8,7 @@ class ListSizeMappingCommand extends Command{
     val builder = new StringBuilder
     
     for(mapping:RmiSizeMapping <- management.listSizeMappings)
-      builder.append(String.format("%10d %20s %d", mapping.size, mapping.storage, mapping.versioned))
+      builder.append(String.format("%10d %20s %d\n", mapping.size, mapping.storage, mapping.versioned))
     
     
     builder.toString  
