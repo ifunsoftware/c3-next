@@ -30,8 +30,6 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     
     println(entries)
     
-    println(selector)
-    
     assertEquals(("PureBDBStorage", true), selector.storageTypeForSize(1024l))
     assertEquals(("FileBDBStorage", false), selector.storageTypeForSize(500000l))
     
