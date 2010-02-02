@@ -14,7 +14,8 @@ abstract class AbstractStorageSelector[T] extends StorageSelector{
   def addEntry(entry:(T, String, Boolean)) = {
     configAccessor.update(entries => entries.filter(_._1 != entry._1) + 
     		((entry._1, (entry._2, entry._3)))
-    )                       
+    )
+    updateConfig(configAccessor.load)
   }
   
   def removeEntry(key:T) = {
