@@ -6,14 +6,24 @@ import org.springframework.remoting.rmi.RmiProxyFactoryBean
 import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
 import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
+import org.aphreet.c3.platform.client.common.CLI
+import org.aphreet.c3.platform.client.common.ArgumentType._
+
 import java.io.File
 import java.util.HashMap
 import java.util.Random
 
 import org.apache.commons.cli._
 
-object PlatformAccessClient {
+class PlatformAccessClient(override val args:Array[String]) extends CLI(args){
   
+  def cliDescription = cl_with_parameters(
+    "size" has optional argument "num" described "Size of object to write",
+    "count" has mandatory argument "num" described "Count of objects to write",
+    "theads" has optional argument "num" described "Thead count",
+    "help" described "Prints this message"
+  )
+   
   def getAccessService:PlatformRmiAccessService = {
     val rmiAccess = new RmiProxyFactoryBean
     rmiAccess.setServiceUrl("rmi://localhost:1299/PlatformRmiAccessEndPoint")
@@ -24,26 +34,13 @@ object PlatformAccessClient {
   }
   
   
-  def main(args : Array[String]) : Unit = {
+  def main{
+    if(cli.getOptions.length == 0) helpAndExit("Writer")
+
+    if(cli.hasOption("help")) helpAndExit("Writer" )
     
-    var objectCount = -1;
-    var objectSize = 512;
-    
-    val cli = commandLine(args)
-    
-    if(cli.getOptions.length == 0){
-      new HelpFormatter().printHelp("Writer", options)
-      System.exit(0)
-    }
-    
-    if(cli.hasOption("help")){
-      new HelpFormatter().printHelp("Writer", options)
-      System.exit(0)
-    }
-    
-    if(cli.hasOption("size")) objectSize = Integer.parseInt(cli.getOptionValue("size"))
-    
-    if(cli.hasOption("count")) objectCount = Integer.parseInt(cli.getOptionValue("count"))
+    val objectSize = cliValue("size", "512").toInt
+    val objectCount = cliValue("count", "-1").toInt
     
     if(objectCount < 0)
       throw new IllegalArgumentException("Object count is not set")
@@ -88,60 +85,9 @@ object PlatformAccessClient {
   def generateDataOfSize(size:Int):Array[Byte] = {
     
     val result = new Array[Byte](size)
-    
     val random = new Random(System.currentTimeMillis)
-    
     random.nextBytes(result)
     
     result
-  }
-  
-  def objectCountOption:Option = {
-    val option = OptionBuilder.create("count" );
-    option.setArgName("num")
-    option.setDescription("Count of objects to write")
-    option.setArgs(1)
-    option.setOptionalArg(false)
-    
-    option
-  }
-  
-  def objectSizeOption:Option = {
-    val option = OptionBuilder.create("size")
-    option.setArgName("num")
-    option.setDescription("Size of object")
-    option.setArgs(1)
-    option.setOptionalArg(true)
-    
-    option
-  }
-  
-  def helpOption:Option = {
-    new Option("help", "prints this message")
-  }
-  
-  def threadsOption:Option = {
-    val option = OptionBuilder.create("threads")
-    option.setArgName("num")
-    option.setDescription("Number of threads")
-    option.setArgs(1)
-    option.setOptionalArg(true)
-    
-    option
-  }
-  
-  def options:Options = {
-    val options = new Options
-    
-    options addOption helpOption
-    options addOption objectCountOption
-    options addOption objectSizeOption
-    options addOption threadsOption
-  }
-  
-  def commandLine(args:Array[String]):CommandLine = {
-    val parser = new PosixParser
-    
-    parser.parse(options, args)
   }
 }
