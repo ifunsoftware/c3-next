@@ -6,8 +6,6 @@ import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeConfigEntry
-
 import java.util.{Map => JMap}
 
 trait PlatformManagementEndpoint {

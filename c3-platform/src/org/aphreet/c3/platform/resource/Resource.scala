@@ -23,6 +23,22 @@ class Resource {
   var isVersioned = false;
   
   
+  def mimeType:String = {
+    if(metadata != null){
+      metadata.get(Resource.MD_CONTENT_TYPE) match{
+        case Some(t) => return t
+        case None => null
+      }
+    }
+    
+    if(versions.size > 0){
+      val data = versions(0).data
+      if(data != null) return data.mimeType
+    }
+    
+    return Resource.MD_CONTENT_TYPE_DEFAULT
+  }
+  
   def getMetadata:JMap[String, String] = metadata.underlying
   
   def getSysMetadata:JMap[String, String] = systemMetadata.underlying
@@ -132,6 +148,7 @@ object Resource {
   
   val MD_CONTENT_TYPE = "content.type"
   val MD_DATA_ADDRESS = "c3.data.address"
+  val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
   
   def fromByteArray(bytes:Array[Byte]):Resource = {
     

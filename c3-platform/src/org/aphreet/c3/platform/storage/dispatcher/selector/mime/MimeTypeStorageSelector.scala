@@ -21,7 +21,7 @@ class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
   
   override def storageTypeForResource(resource:Resource):(String,Boolean) = {
     
-    val mime = new MimeType(resource.versions(0).data.mimeType)
+    val mime = new MimeType(resource.mimeType)
 
     storageTypeForMimeType(mime) 
   }

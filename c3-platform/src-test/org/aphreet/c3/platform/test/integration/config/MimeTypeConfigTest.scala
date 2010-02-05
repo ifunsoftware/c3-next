@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.test.integration.config
 
 import scala.collection.mutable.HashMap
 
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime.{MimeTypeConfigAccessor, MimeConfigEntry}
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeConfigAccessor
 
 import junit.framework.Assert._
 
