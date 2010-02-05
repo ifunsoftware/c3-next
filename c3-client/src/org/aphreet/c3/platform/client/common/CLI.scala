@@ -24,9 +24,7 @@ abstract class CLI(val args:Array[String]) {
     System.exit(0)
   }
   
-  def cl_with_parameters(params:Parameter*):Options = {
-    
-    
+  def parameters(params:Parameter*):Options = {
     val options = new Options
     
     for(param <- params){

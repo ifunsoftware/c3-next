@@ -6,32 +6,29 @@ import org.springframework.remoting.rmi.RmiProxyFactoryBean
 import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
 import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
-import org.aphreet.c3.platform.client.common.CLI
+import org.aphreet.c3.platform.client.common._
 import org.aphreet.c3.platform.client.common.ArgumentType._
 
 import java.io.File
-import java.util.HashMap
+import scala.collection.jcl.HashMap
 import java.util.Random
 
 import org.apache.commons.cli._
 
-class PlatformAccessClient(override val args:Array[String]) extends CLI(args){
+class PlatformAccessClient(override val args:Array[String]) extends CLI(args) with SpringRmiAccessor{
   
-  def cliDescription = cl_with_parameters(
-    "size" has optional argument "num" described "Size of object to write",
+  def cliDescription = parameters(
+    "size" has mandatory argument "num" described "Size of object to write",
     "count" has mandatory argument "num" described "Count of objects to write",
-    "theads" has optional argument "num" described "Thead count",
+    "theads" has mandatory argument "num" described "Thead count",
+    "type" has mandatory argument "mime" described "Mime type of content",
+    "pool" has mandatory argument "name" described "Target pool",
     "help" described "Prints this message"
   )
    
-  def getAccessService:PlatformRmiAccessService = {
-    val rmiAccess = new RmiProxyFactoryBean
-    rmiAccess.setServiceUrl("rmi://localhost:1299/PlatformRmiAccessEndPoint")
-    rmiAccess.setServiceInterface(classOf[PlatformRmiAccessService])
-    rmiAccess.afterPropertiesSet
-    
-    rmiAccess.getObject.asInstanceOf[PlatformRmiAccessService]
-  }
+  def getAccessService:PlatformRmiAccessService =
+    obtainRmiService("rmi://localhost:1299/PlatformRmiAccessEndPoint", 
+                     classOf[PlatformRmiAccessService])
   
   
   def main{
@@ -41,14 +38,19 @@ class PlatformAccessClient(override val args:Array[String]) extends CLI(args){
     
     val objectSize = cliValue("size", "512").toInt
     val objectCount = cliValue("count", "-1").toInt
+    val threadCount = cliValue("threads", "1").toInt
+    val objectType = cliValue("type", "application/octet-stream")
+    val pool = cliValue("pool", "")
+    
+    
     
     if(objectCount < 0)
       throw new IllegalArgumentException("Object count is not set")
     
-    writeObjects(objectCount, objectSize, 1, "")
+    writeObjects(objectCount, objectSize, 1, Map("pool" -> pool, "content.type" -> objectType))
   }
   
-  def writeObjects(count:Int, size:Int, threads:Int, pool:String){
+  def writeObjects(count:Int, size:Int, threads:Int, metadata:Map[String, String]){
     
     var accessService:PlatformRmiAccessService = null
     
@@ -56,7 +58,7 @@ class PlatformAccessClient(override val args:Array[String]) extends CLI(args){
       accessService = getAccessService
     }catch{
       case e:RemoteLookupFailureException => {
-        println("Failed to connect to C3 Platform")
+        println("Failed to connect to C3")
         println("Error is: " + e.getMessage)
         System.exit(1)
       }
@@ -66,9 +68,11 @@ class PlatformAccessClient(override val args:Array[String]) extends CLI(args){
     
     val startTime = System.currentTimeMillis
     var time = startTime;
+   
+    val md = (new HashMap[String, String]() ++ metadata).asInstanceOf[HashMap[String, String]].underlying
     
     for(i <- 1 to count){
-      val ra = accessService.add(new HashMap[String, String], generateDataOfSize(size))
+      val ra = accessService.add(md, generateDataOfSize(size))
       if(i % 1000 == 0){
         val wtime = System.currentTimeMillis
         val rate = 1000f/((wtime - time)/1000f)

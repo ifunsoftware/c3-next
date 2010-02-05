@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.client.command
+package org.aphreet.c3.platform.client.management.command
 
 import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
 import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService

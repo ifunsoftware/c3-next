@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.client.command
+package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.remote.rmi.management.RmiSizeMapping
 

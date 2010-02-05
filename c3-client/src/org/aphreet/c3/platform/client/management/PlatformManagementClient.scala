@@ -1,16 +1,17 @@
-package org.aphreet.c3.platform.client
+package org.aphreet.c3.platform.client.management
 
 import java.io.{BufferedReader, InputStreamReader}
 
-import org.springframework.remoting.rmi.RmiProxyFactoryBean
-import org.springframework.remoting.{RemoteConnectFailureException, RemoteLookupFailureException}
+import command._
+import org.springframework.remoting.RemoteConnectFailureException
+import org.springframework.remoting.RemoteLookupFailureException
 
-import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
 import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
 
-import command.CommandFactory
+import org.aphreet.c3.platform.client.common.SpringRmiAccessor
 
-object PlatformClient {
+object PlatformManagementClient extends SpringRmiAccessor{
 
   def main(args : Array[String]) : Unit = {
     
@@ -65,21 +66,14 @@ object PlatformClient {
   }
   
   def createCommandFactory:CommandFactory = {
-    val rmiBean = new RmiProxyFactoryBean
-    rmiBean.setServiceUrl("rmi://127.0.0.1:1299/PlatformRmiManagementEndPoint")
-    rmiBean.setServiceInterface(classOf[PlatformRmiManagementService])
-    rmiBean.afterPropertiesSet
     
-    val managementService = rmiBean.getObject.asInstanceOf[PlatformRmiManagementService]
+    val management = obtainRmiService("rmi://127.0.0.1:1299/PlatformRmiManagementEndPoint", 
+                                      classOf[PlatformRmiManagementService])
     
-    val rmiAccess = new RmiProxyFactoryBean
-    rmiAccess.setServiceUrl("rmi://127.0.0.1:1299/PlatformRmiAccessEndPoint")
-    rmiAccess.setServiceInterface(classOf[PlatformRmiAccessService])
-    rmiAccess.afterPropertiesSet
+    val access = obtainRmiService("rmi://127.0.0.1:1299/PlatformRmiAccessEndPoint", 
+                                  classOf[PlatformRmiAccessService])
     
-    val accessService = rmiAccess.getObject.asInstanceOf[PlatformRmiAccessService]
-    
-    new CommandFactory(accessService, managementService)
+    new CommandFactory(access, management)
   }
   
   def connect:CommandFactory = {

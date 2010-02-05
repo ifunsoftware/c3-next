@@ -1,9 +1,11 @@
-package org.aphreet.c3.platform.client.command
+package org.aphreet.c3.platform.client.management.command
+
+import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
+
+import impl._
 
 import scala.collection.mutable.HashMap
-
-import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
-import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
 class CommandFactory(val accessService:PlatformRmiAccessService, val managementService:PlatformRmiManagementService) {
 
@@ -12,9 +14,9 @@ class CommandFactory(val accessService:PlatformRmiAccessService, val managementS
   var commandList:List[Command] = List()
   
   { 
-    register(new AddStorageCommand)
     register(new AddSizeMappingCommand)
     register(new AddTypeMappingCommand)
+    register(new AddStorageCommand)
     register(new HelpCommand)
     register(new GetPlatformPropertiesCommand)
     register(new ListSizeMappingCommand)

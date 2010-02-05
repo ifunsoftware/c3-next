@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.client.command
+package org.aphreet.c3.platform.client.management.command.impl
 
 class ListTypeMappingCommand extends Command{
   
