@@ -13,8 +13,9 @@
 		<module>c3-remote</module>
 		<module>c3-storage</module>
 		<module>c3-storage-file</module>
-		<module>c3-search</module>
+<!--		<module>c3-search</module>
 		<module>c3-web</module>
+-->
 	</modules>
 
 	<properties>
