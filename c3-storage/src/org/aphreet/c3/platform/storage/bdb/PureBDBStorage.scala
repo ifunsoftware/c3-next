@@ -85,6 +85,8 @@ class PureBDBStorage(override val id:String, override val path:Path) extends Abs
 	  val dbValue = new DatabaseEntry(version.data.getBytes)
 	   
 	  database.put(tx, dbKey, dbValue)
+    version.data = DataWrapper.wrap(version.data.getBytes)
+
   }
   
   def name = PureBDBStorage.NAME
