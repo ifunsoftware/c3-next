@@ -119,6 +119,8 @@ class FileBDBStorage(override val id:String, override val path:Path) extends Abs
     
       try{
     	version.data writeTo channel
+    	version.data = DataWrapper.wrap(targetFile)
+     
       }catch{
         case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
       }finally{
