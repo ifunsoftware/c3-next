@@ -5,6 +5,8 @@ import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.exception.PlatformException
 import org.aphreet.c3.platform.storage.{StorageMode, RW, RO, U, StorageException}
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState, RUNNING, PAUSED}
+import org.aphreet.c3.platform.remote.api.rmi.management._
+
 
 import org.apache.commons.logging.LogFactory
 

@@ -82,7 +82,9 @@
 				</executions>
 				<configuration>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-					<manifestLocation>META-INF</manifestLocation>
+					<!--
+                    <manifestLocation>META-INF</manifestLocation>
+                    -->
 					<archive>
 						<manifestFile>${bundleManifestPath}</manifestFile>
 					</archive>

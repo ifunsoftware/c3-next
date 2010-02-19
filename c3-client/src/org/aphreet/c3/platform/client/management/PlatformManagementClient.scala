@@ -6,10 +6,9 @@ import command._
 import org.springframework.remoting.RemoteConnectFailureException
 import org.springframework.remoting.RemoteLookupFailureException
 
-import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
-import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
-
 import org.aphreet.c3.platform.client.common.SpringRmiAccessor
+import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService
 
 object PlatformManagementClient extends SpringRmiAccessor{
 

@@ -1,5 +1,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
+import org.aphreet.c3.platform.client.management.command.Command
+
 class ListStorageTypesCommand extends Command{
 
   def execute:String = {

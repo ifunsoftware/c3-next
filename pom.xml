@@ -15,7 +15,9 @@
 		<module>c3-storage-file</module>
 		<module>c3-search</module>
 		<module>c3-web</module>
-	</modules>
+        <module>c3-client</module>
+        <module>c3-remote-api</module>
+    </modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,6 +37,12 @@
 				<version>${project.version}</version>
 			</dependency>
 
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-remote-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -47,18 +55,11 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.scala-lang-osgi</groupId>
-			<artifactId>scala-compiler</artifactId>
-			<version>2.7.6</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
+    	<dependency>
 			<groupId>org.scala-lang-osgi</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>2.7.6</version>
-			<scope>provided</scope>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>

@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
-import org.aphreet.c3.platform.remote.rmi.management.RmiTaskDescr
+import org.aphreet.c3.platform.client.management.command.Command
 
 class ListTasksCommand extends Command {
 
@@ -10,7 +10,7 @@ class ListTasksCommand extends Command {
     
     val builder = new StringBuilder
     
-    for(t:RmiTaskDescr <- tasks){
+    for(t <- tasks){
       
       val progress = t.progress match {
         case "-1" => "N/A"

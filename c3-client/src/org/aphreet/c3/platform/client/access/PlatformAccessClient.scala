@@ -1,19 +1,14 @@
 package org.aphreet.c3.platform.client.access
 
 import org.springframework.remoting.RemoteLookupFailureException
-import org.springframework.remoting.rmi.RmiProxyFactoryBean
-
-import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
-import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
 
 import org.aphreet.c3.platform.client.common._
 import org.aphreet.c3.platform.client.common.ArgumentType._
 
-import java.io.File
 import scala.collection.jcl.HashMap
 import java.util.Random
 
-import org.apache.commons.cli._
+import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
 
 class PlatformAccessClient(override val args:Array[String]) extends CLI(args) with SpringRmiAccessor{
   

@@ -8,6 +8,7 @@ import scala.collection.jcl.{HashMap => JMap}
 
 import org.aphreet.c3.platform.access.PlatformAccessEndpoint
 import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
+import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired

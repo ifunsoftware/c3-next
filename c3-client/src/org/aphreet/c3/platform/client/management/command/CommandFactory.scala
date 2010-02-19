@@ -1,11 +1,10 @@
 package org.aphreet.c3.platform.client.management.command
 
-import org.aphreet.c3.platform.remote.rmi.access.PlatformRmiAccessService
-import org.aphreet.c3.platform.remote.rmi.management.PlatformRmiManagementService
-
 import impl._
 
 import scala.collection.mutable.HashMap
+import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
+import org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService
 
 class CommandFactory(val accessService:PlatformRmiAccessService, val managementService:PlatformRmiManagementService) {
 
