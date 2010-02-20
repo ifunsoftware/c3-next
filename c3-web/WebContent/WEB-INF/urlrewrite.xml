@@ -19,12 +19,13 @@
     	<from>^/group/([0-9]+)/wiki/([\w]+)/?$</from>
     	<to>/group/wiki.xhtml?id=$1&amp;name=$2</to>
     </rule>
-    
+
+    <!--
     <rule>
     	<from>^/([a-z]+)/?$</from>
     	<to>/$1.xhtml</to>
     </rule>
-
+    -->
 
 
     <!--
