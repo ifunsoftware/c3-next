@@ -1,10 +1,12 @@
 package org.aphreet.c3.web.webbeans;
 
 import org.aphreet.c3.web.util.HttpUtil;
+import org.springframework.osgi.context.BundleContextAware;
 import org.springframework.stereotype.Component;
+import org.osgi.framework.BundleContext;
 
 @Component
-public class AppBean {
+public class AppBean implements BundleContextAware{
 
 	private String version;
 	
@@ -19,4 +21,9 @@ public class AppBean {
 	public String getVersion(){
 		return version;
 	}
+
+    @Override
+    public void setBundleContext(BundleContext bundleContext) {
+        version = (String) bundleContext.getBundle().getHeaders().get("Bundle-Version");
+    }
 }

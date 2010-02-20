@@ -84,7 +84,7 @@
 		</div>
 		<div class="footer_wrap">
 			<div class="footer_version">
-				<p>#{appBean.version}</p>
+				<p>C3-Web version: #{appBean.version}</p>
 			</div>
 			<div class="footer_menu">
 				<ul>

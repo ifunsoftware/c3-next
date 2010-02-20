@@ -30,6 +30,7 @@ Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  org.springframework.transaction;version="[2.5.6.SEC01,2.5.6.SEC01]",
  org.springframework.web;version="[2.5.6.SEC01,2.5.6.SEC01]",
  org.springframework.web.servlet;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.osgi.core,
  com.springsource.javax.el;version="[1.0.0,1.0.0]",
  com.springsource.javax.validation;version="[1.0.0.GA,1.0.0.GA]",
  com.springsource.org.apache.commons.lang;version="[2.4.0,2.4.0]",
@@ -52,4 +53,5 @@ Import-Package: com.springsource.server.deployer.app.spring;version="[1.0.0,1.0.
  javax.faces.model,
  javax.faces.render,
  javax.faces.validator,
- javax.faces.webapp
+ javax.faces.webapp,
+ org.osgi.framework
