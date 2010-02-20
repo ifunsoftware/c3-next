@@ -13,7 +13,7 @@
     <parent>
         <artifactId>main</artifactId>
         <groupId>org.aphreet.c3</groupId>
-        <version>1.0.0</version>
+        <version>${bundleVersion}</version>
     </parent>
 
     <build>
