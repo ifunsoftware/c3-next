@@ -1,35 +1,38 @@
 package org.aphreet.c3.platform.client.management
 
-import java.io.{BufferedReader, InputStreamReader}
+import command.CommandFactory
+import connection.ConnectionProvider
+import java.io.{InputStreamReader, BufferedReader}
+import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
 
-import command._
-import org.springframework.remoting.RemoteConnectFailureException
-import org.springframework.remoting.RemoteLookupFailureException
+/**
+ * Created by IntelliJ IDEA.
+ * User: Aphreet
+ * Date: Feb 23, 2010
+ * Time: 1:48:53 AM
+ * To change this template use File | Settings | File Templates.
+ */
 
-import org.aphreet.c3.platform.client.common.SpringRmiAccessor
-import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
-import org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService
+class ManagementClient(val connectionProvider:ConnectionProvider) {
 
-object PlatformManagementClient extends SpringRmiAccessor{
+  def run = {
 
-  def main(args : Array[String]) : Unit = {
-    
     var shouldExit = false
-    
+
     val reader = new BufferedReader(new InputStreamReader(System.in))
-    
+
     var commandFactory = connect
-    
+
     println("Welcome to C3 shell")
-    
+
     print("C3>")
-    
-    
+
+
     while(true){
       val line = reader.readLine.trim
-      
+
       var success = false
-      
+
       for(i <- 1 to 5 if !success){
         success = commandFactory.getCommand(line) match {
           case Some(command) => {
@@ -39,13 +42,14 @@ object PlatformManagementClient extends SpringRmiAccessor{
         	  }catch{
         	    case e:RemoteConnectFailureException=> {
         	      println("Connection to server lost. Trying to reconnect...")
-        	      
+
         	      commandFactory = connect
         	      false
         	    }
         	    case e =>{
         	      println("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage)
-        	      true
+        	      e.printStackTrace
+                true
                 }
         	  }
           	}
@@ -55,7 +59,7 @@ object PlatformManagementClient extends SpringRmiAccessor{
            }
         }
       }
-      
+
       if(!success){
         println("Failed to establish connection to server")
         System.exit(0)
@@ -63,18 +67,11 @@ object PlatformManagementClient extends SpringRmiAccessor{
       print("C3>")
     }
   }
-  
+
   def createCommandFactory:CommandFactory = {
-    
-    val management = obtainRmiService("rmi://127.0.0.1:1299/PlatformRmiManagementEndPoint", 
-                                      classOf[PlatformRmiManagementService])
-    
-    val access = obtainRmiService("rmi://127.0.0.1:1299/PlatformRmiAccessEndPoint", 
-                                  classOf[PlatformRmiAccessService])
-    
-    new CommandFactory(access, management)
+    new CommandFactory(connectionProvider.access, connectionProvider.management)
   }
-  
+
   def connect:CommandFactory = {
     for(i <- 1 to 5){
       try{
@@ -93,4 +90,5 @@ object PlatformManagementClient extends SpringRmiAccessor{
     }
     null
   }
+
 }

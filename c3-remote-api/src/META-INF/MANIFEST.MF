@@ -4,6 +4,10 @@ Bundle-Name: C3 Remote API
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.remote.api
 Import-Bundle: org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]"
-Import-Package: javax.annotation;version="[1.0.0,1.0.0]"
+Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
+ javax.jws
 Export-Package: org.aphreet.c3.platform.remote.api.rmi.access,
-    org.aphreet.c3.platform.remote.api.rmi.management
+    org.aphreet.c3.platform.remote.api.rmi.management,
+    org.aphreet.c3.platform.remote.api.management,
+    org.aphreet.c3.platform.remote.api.access,
+    org.aphreet.c3.platform.remote.api.ws

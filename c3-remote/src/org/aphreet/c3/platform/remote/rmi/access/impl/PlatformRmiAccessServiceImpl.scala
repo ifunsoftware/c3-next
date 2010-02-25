@@ -2,8 +2,6 @@ package org.aphreet.c3.platform.remote.rmi.access
 
 import java.util.HashMap
 
-import java.io.File
-
 import scala.collection.jcl.{HashMap => JMap}
 
 import org.aphreet.c3.platform.access.PlatformAccessEndpoint
@@ -12,14 +10,20 @@ import org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.remote.api.access.PlatformAccessAdapter
 
 @Component("platformRmiAccessService")
 class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
 
   var accessEndpoint:PlatformAccessEndpoint = null
+
+  var accessAdapter:PlatformAccessAdapter = null
   
   @Autowired
-  def setAccessEndpoint(endpoint:PlatformAccessEndpoint) = {accessEndpoint= endpoint}
+  def setAccessEndpoint(endpoint:PlatformAccessEndpoint) = {accessEndpoint = endpoint}
+
+  @Autowired
+  def setAccessAdapter(adapter:PlatformAccessAdapter) = {accessAdapter = adapter}
  
   def add(metadata:HashMap[String, String], data:Array[Byte]):String = {
     
@@ -33,35 +37,8 @@ class PlatformRmiAccessServiceImpl extends PlatformRmiAccessService{
     accessEndpoint.add(resource)
   }
   
-  def getResourceAsString(ra:String):String = {
-    
-    val resource = accessEndpoint get ra;
-    
-    if(resource != null){
-      val result = resource.toString
-      result
-    }else{
-      null
-    }
-  }
+  def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
   
-  def get(ra:String):Array[Byte] = {
-    null
-  }
-  
-  def getMetadata(ra:String):HashMap[String, String] = {
-    
-    val resource = accessEndpoint get ra
-    
-    if(resource != null){
-    	val map = new JMap[String, String]
-    
-    	map ++ resource.metadata
-    
-    	map.underlying
-    }else{
-      null
-    }
-  }
+  def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
   
 }

@@ -74,7 +74,9 @@
 						<configuration>
 							<tasks>
 								<echo message="Deploying to Spring DM Server"/>
-								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+								<delete file="${serverHome}/pickup/${project.build.finalName}.jar"/>
+                                <sleep seconds="2"/>
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
 							</tasks>
 						</configuration>
 						<goals>

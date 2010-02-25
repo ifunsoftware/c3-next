@@ -7,23 +7,29 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
+    <context:annotation-config />
 
-	<context:annotation-config />
 
     <context:component-scan base-package="org.aphreet.c3.platform.remote" />
- 
-	<bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
-		<property name="serviceName" value="PlatformRmiManagementEndPoint" />
-		<property name="service" ref="platformRmiManagementService" />
-		<property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService" />
-		<property name="registryPort" value="1299" />
-	</bean>
 
-	<bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
-		<property name="serviceName" value="PlatformRmiAccessEndPoint" />
-		<property name="service" ref="platformRmiAccessService" />
-		<property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
-		<property name="registryPort" value="1299" />
-	</bean>
+    <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
+        <property name="serviceName" value="PlatformRmiManagementEndPoint" />
+        <property name="service" ref="platformRmiManagementService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService" />
+        <property name="registryPort" value="1299" />
+    </bean>
+
+    <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
+        <property name="serviceName" value="PlatformRmiAccessEndPoint" />
+        <property name="service" ref="platformRmiAccessService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
+        <property name="registryPort" value="1299" />
+    </bean>
+
+    <bean class="org.springframework.remoting.jaxws.SimpleHttpServerJaxWsServiceExporter">
+        <!--
+        <property name="authenticator" ref="platformWSAuthenticator"/>
+        -->
+    </bean>
 
 </beans>

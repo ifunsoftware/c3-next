@@ -1,52 +1,86 @@
-package org.aphreet.c3.platform.remote.rmi.management.impl
+package org.aphreet.c3.platform.remote.api.ws.impl
 
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-
-import org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService
 import org.aphreet.c3.platform.remote.api.management._
+import javax.jws.{WebMethod, WebService}
+import javax.annotation.PostConstruct
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import javax.xml.bind.annotation.XmlTransient
+import org.aphreet.c3.platform.remote.api.ws.PlatformWSManagementEndpoint
 
-@Component("platformRmiManagementService")
-class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
+/**
+ * Created by IntelliJ IDEA.
+ * User: Aphreet
+ * Date: Feb 23, 2010
+ * Time: 1:31:55 PM
+ * To change this template use File | Settings | File Templates.
+ */
 
-  var managementAdapter:PlatformManagementAdapter = null
+@Component
+@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
+class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
+
+
+  private var managementAdapter:PlatformManagementAdapter = null
 
   @Autowired
-  def setManagementAdapter(adapter:PlatformManagementAdapter) = {managementAdapter = adapter}
+  @XmlTransient
+  private def setManagementAdapter(adapter:PlatformManagementAdapter) = {managementAdapter = adapter; println("setter invoked")}
 
+  @PostConstruct
+  private def init{
+    println("Starting management service: " + managementAdapter)
+  }
+
+
+  @WebMethod
   def listStorages:Array[StorageDescription] = managementAdapter.listStorages
 
+  @WebMethod
   def listStorageTypes:Array[String] = managementAdapter.listStorageTypes
 
+  @WebMethod
   def createStorage(stType:String, path:String) = managementAdapter.createStorage(stType, path)
 
+  @WebMethod
   def removeStorage(id:String) = managementAdapter.removeStorage(id)
 
+  @WebMethod
   def migrate(source:String, target:String) = managementAdapter.migrate(source, target)
 
+  @WebMethod
   def setStorageMode(id:String, mode:String) = managementAdapter.setStorageMode(id, mode)
 
+  @WebMethod
   def setPlatformProperty(key:String, value:String) = managementAdapter.setPlatformProperty(key, value)
 
+  @WebMethod
   def platformProperties:Array[Pair] = managementAdapter.platformProperties
 
+  @WebMethod
   def listTasks:Array[TaskDescription] = managementAdapter.listTasks
 
+  @WebMethod
   def setTaskMode(taskId:String, mode:String) = managementAdapter.setTaskMode(taskId, mode)
 
+  @WebMethod
   def listTypeMappigs:Array[TypeMapping] = managementAdapter.listTypeMappigs
 
+  @WebMethod
   def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short)
     = managementAdapter.addTypeMapping(mimeType, storage, versioned)
 
+  @WebMethod
   def removeTypeMapping(mimeType:String) = managementAdapter.removeTypeMapping(mimeType)
 
+  @WebMethod
   def listSizeMappings:Array[SizeMapping] = managementAdapter.listSizeMappings
 
+  @WebMethod
   def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer)
     = managementAdapter.addSizeMapping(size, storage, versioned)
 
+  @WebMethod
   def removeSizeMapping(size:java.lang.Long) = managementAdapter.removeSizeMapping(size)
-  
-}
 
+}
