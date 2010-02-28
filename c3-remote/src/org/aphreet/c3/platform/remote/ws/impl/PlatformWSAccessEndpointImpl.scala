@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
+import org.springframework.web.context.support.SpringBeanAutowiringSupport
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,7 +19,7 @@ import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
 
 @Component
 @WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
-class PlatformWSAccessEndpointImpl extends PlatformWSAccessEndpoint{
+class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with PlatformWSAccessEndpoint{
 
   private var accessAdapter:PlatformAccessAdapter = null
 

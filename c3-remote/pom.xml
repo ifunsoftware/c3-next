@@ -4,7 +4,7 @@
     <groupId>org.aphreet.c3</groupId>
     <artifactId>c3-remote</artifactId>
     <version>${bundleVersion}</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>C3 Remote</name>
 
     <parent>
@@ -25,13 +25,21 @@
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-platform</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-remote-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>com.springsource.javax.servlet</artifactId>
+            <version>2.5.0</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -73,19 +81,26 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                    </execution>
-                </executions>
+                <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <webXml>WebContent/WEB-INF/web.xml</webXml>
+                    <warSourceDirectory>WebContent</warSourceDirectory>
+                    <webResources>
+                        <resource>
+                            <directory>src</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                            <includes>
+                                <include>**/*.xml</include>
+                            </includes>
+                        </resource>
+                    </webResources>
                     <archive>
-                        <manifestFile>${bundleManifestPath}</manifestFile>
+                        <manifestFile>${warManifestPath}</manifestFile>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
             </plugin>
+
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -95,9 +110,9 @@
                         <configuration>
                             <tasks>
                                 <echo message="Deploying to Spring DM Server"/>
-                                <delete file="${serverHome}/pickup/${project.build.finalName}.jar"/>
+                                <delete file="${serverHome}/pickup/${project.build.finalName}.war"/>
                                 <sleep seconds="2"/>
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+                                <copy file="${project.build.directory}/${project.build.finalName}.war" toDir="${serverHome}/pickup" overwrite="true" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -121,11 +136,11 @@
                                 <phase>prepare-package</phase>
                                 <configuration>
                                     <tasks>
-                                        <echo message="Updating manifest file with current build number" />
-                                        <copy file="src/META-INF/MANIFEST.MF" toDir="target"
-                                              overwrite="true" />
+                                        <echo message="Updating manifest file with current build number"/>
+                                        <copy file="WebContent/META-INF/MANIFEST.MF" toDir="target"
+                                              overwrite="true"/>
                                         <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
-                                                 value="Bundle-Version: ${bundleVersion}" />
+                                                 value="Bundle-Version: ${bundleVersion}"/>
                                     </tasks>
                                 </configuration>
                                 <goals>
