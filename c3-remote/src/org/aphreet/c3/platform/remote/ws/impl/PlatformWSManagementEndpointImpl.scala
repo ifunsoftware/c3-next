@@ -5,7 +5,6 @@ import javax.jws.{WebMethod, WebService}
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import javax.xml.bind.annotation.XmlTransient
 import org.aphreet.c3.platform.remote.api.ws.PlatformWSManagementEndpoint
 
 /**
@@ -24,7 +23,6 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   private var managementAdapter:PlatformManagementAdapter = null
 
   @Autowired
-  @XmlTransient
   private def setManagementAdapter(adapter:PlatformManagementAdapter) = {managementAdapter = adapter; println("setter invoked")}
 
   @PostConstruct
