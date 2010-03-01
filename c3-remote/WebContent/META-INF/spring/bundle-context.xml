@@ -26,9 +26,7 @@
         <property name="registryPort" value="1299" />
     </bean>
 
-    <!--
     <bean class="org.springframework.remoting.jaxws.SimpleHttpServerJaxWsServiceExporter">
         <property name="authenticator" ref="platformWSAuthenticator"/>
     </bean>
-    -->
 </beans>
