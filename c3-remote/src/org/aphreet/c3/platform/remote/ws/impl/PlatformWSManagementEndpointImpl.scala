@@ -2,7 +2,6 @@ package org.aphreet.c3.platform.remote.api.ws.impl
 
 import org.aphreet.c3.platform.remote.api.management._
 import javax.jws.{WebMethod, WebService}
-import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.api.ws.PlatformWSManagementEndpoint
@@ -24,12 +23,6 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
 
   @Autowired
   private def setManagementAdapter(adapter:PlatformManagementAdapter) = {managementAdapter = adapter; println("setter invoked")}
-
-  @PostConstruct
-  private def init{
-    println("Starting management service: " + managementAdapter)
-  }
-
 
   @WebMethod
   def listStorages:Array[StorageDescription] = managementAdapter.listStorages

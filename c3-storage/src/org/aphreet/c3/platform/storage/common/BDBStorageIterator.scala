@@ -3,6 +3,7 @@ package org.aphreet.c3.platform.storage.common
 import com.sleepycat.je._
 
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.storage.StorageIterator
 
 class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 

@@ -13,7 +13,8 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 class RestServlet extends HttpServlet {
 
   override def doGet(request:HttpServletRequest, response:HttpServletResponse) = {
-     response.getWriter.println(request.getRequestURI)
+    println("Do get invoked") 
+    response.getWriter.println(request.getRequestURI)
   }
 
   override def doPost(request:HttpServletRequest, response:HttpServletResponse) = {

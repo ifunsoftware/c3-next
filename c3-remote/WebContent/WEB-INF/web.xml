@@ -8,10 +8,11 @@
         <description></description>
         <servlet-name>RestServlet</servlet-name>
         <servlet-class>org.aphreet.c3.platform.remote.rest.RestServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/rest</url-pattern>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

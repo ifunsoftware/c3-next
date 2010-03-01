@@ -3,13 +3,9 @@ package org.aphreet.c3.platform.storage.migration.impl
 import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.task.Task
-import org.aphreet.c3.platform.task.FINISHED
-
 class MigrationTask(val source:Storage, val target:Storage, val manager:StorageManager) extends Task{
 
   var iterator:StorageIterator = _
-  
-  val totalObjectsToProcess = source.count
   
   override def preStart = {
     iterator = source.iterator
@@ -52,12 +48,15 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   override def progress:Int = {
     if(iterator != null){
       val toProcess:Float = iterator.objectsProcessed
-      val total:Float = totalObjectsToProcess
-    
-      val overalProgress = toProcess * 100 /total
-    
-      overalProgress.intValue
-    }else -1
+      val total:Float = source.count
+
+      if(total > 0){
+        val overalProgress = toProcess * 100 /total
+        overalProgress.intValue
+      }else{
+        0
+      }
+     }else -1
   }
   
   override def finalize = {
