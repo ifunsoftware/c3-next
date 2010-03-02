@@ -1,10 +1,9 @@
 package org.aphreet.c3.platform.storage.common
 
-import java.util.UUID
-
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.resource.AddressGenerator
 
 abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
 
@@ -19,10 +18,10 @@ abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
   }
 
   def generateName:String = {
-    var address = UUID.randomUUID.toString + "-" + id
+    var address = AddressGenerator.addressForStorage(id)
     
     while(isAddressExists(address)){
-      address = UUID.randomUUID.toString + "-" + id
+      address = AddressGenerator.addressForStorage(id)
     }
     
     address

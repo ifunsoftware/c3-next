@@ -2,53 +2,53 @@ package org.aphreet.c3.platform.storage.common
 
 import com.sleepycat.je._
 
-import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.StorageIterator
+import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 
 class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 
   val RESOURCE_ADDRESS_LENGTH = 41
-  
+
   var cursor:Cursor = storage.database.openCursor(null, null)
- 
+
   private var bdbEntriesProcessed = 0
-  
+
   private var resource:Resource = null
-  
+
   {
     resource = findNextResource
   }
-  
-  
+
+
   def hasNext:Boolean = resource != null
-  
+
   def next:Resource = {
-    
+
     val previousResource = resource
-    
+
     resource = findNextResource
-    
+
     previousResource
   }
-  
+
   protected def findNextResource:Resource = {
-  
+
     var resource:Resource = null
-    
+
     var resultFound = false
-    
-    
+
+
     while(!resultFound){
       val databaseKey = new DatabaseEntry
       val databaseValue = new DatabaseEntry
-      
+
       if(cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS){
         val key = new String(databaseKey.getData)
-      
-        if(key.length == RESOURCE_ADDRESS_LENGTH){
-    	  resource = Resource.fromByteArray(databaseValue.getData)
-    	  loadData(resource)
-    	  resultFound = true
+
+        if(AddressGenerator.isValidAddress(key)){
+          resource = Resource.fromByteArray(databaseValue.getData)
+          loadData(resource)
+          resultFound = true
         }
         bdbEntriesProcessed = bdbEntriesProcessed + 1;
       }else{
@@ -56,15 +56,15 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
         resultFound = true
       }
     }
-    
+
     resource
   }
-  
-  
+
+
   protected def loadData(resource:Resource) = storage.loadData(resource)
-  
+
   override def objectsProcessed:Int = bdbEntriesProcessed
-  
+
   def close = {
     try{
       cursor.close
@@ -73,7 +73,7 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
       case e:DatabaseException => e.printStackTrace
     }
   }
-  
+
   override def finalize = {
     try{
       if(cursor != null) cursor.close
