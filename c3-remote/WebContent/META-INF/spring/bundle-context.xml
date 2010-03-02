@@ -25,7 +25,7 @@
         <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
         <property name="registryPort" value="1299" />
     </bean>
-    <bean class="org.springframework.remoting.jaxws.SimpleHttpServerJaxWsServiceExporter">
+    <bean class="org.aphreet.c3.platform.remote.ws.C3JaxWSExporter">
         <property name="authenticator" ref="platformWSAuthenticator"/>
     </bean>
 </beans>

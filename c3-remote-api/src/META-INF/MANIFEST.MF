@@ -10,4 +10,6 @@ Export-Package: org.aphreet.c3.platform.remote.api.rmi.access,
     org.aphreet.c3.platform.remote.api.rmi.management,
     org.aphreet.c3.platform.remote.api.management,
     org.aphreet.c3.platform.remote.api.access,
-    org.aphreet.c3.platform.remote.api.ws
+    org.aphreet.c3.platform.remote.api.ws,
+    org.aphreet.c3.platform.remote.api
+    
