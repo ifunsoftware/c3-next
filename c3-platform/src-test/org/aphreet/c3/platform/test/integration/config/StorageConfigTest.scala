@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.storage.impl.StorageConfigAccessor
 import org.aphreet.c3.platform.storage._
 
-import junit.framework.Assert._
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class StorageConfigTest extends AbstractTestWithFileSystem{
 

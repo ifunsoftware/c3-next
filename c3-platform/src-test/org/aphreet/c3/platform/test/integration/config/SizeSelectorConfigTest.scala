@@ -1,8 +1,7 @@
 package org.aphreet.c3.platform.test.integration.config
 
-import junit.framework.Assert._
-
 import org.aphreet.c3.platform.storage.dispatcher.selector.size.SizeSelectorConfigAccessor
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
 
