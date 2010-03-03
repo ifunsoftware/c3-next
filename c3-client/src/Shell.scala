@@ -8,8 +8,8 @@ object Shell {
 
     var connectionProvider:ConnectionProvider = null
 
-    if(args.length > 0 && args(0) == "ws")
-      connectionProvider = new WSConnectionProvider
+    if(args.length > 1 && args(0) == "ws")
+      connectionProvider = new WSConnectionProvider(args(1))
     else
       connectionProvider = new RmiConnectionProvider
 
