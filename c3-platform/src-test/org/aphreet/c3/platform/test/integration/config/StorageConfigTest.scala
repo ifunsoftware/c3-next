@@ -7,7 +7,9 @@ import org.aphreet.c3.platform.storage._
 
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
+import junit.framework.Assert._
 class StorageConfigTest extends AbstractTestWithFileSystem{
+
 
   def testConfigPersistence = {
     
