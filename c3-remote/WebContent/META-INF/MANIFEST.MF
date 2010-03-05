@@ -3,7 +3,6 @@ Bundle-Version: 1.0.0
 Bundle-Name: C3 Remote
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.remote
-Spring-Context: *
 Web-ContextPath: /c3-remote
 Import-Bundle: org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",

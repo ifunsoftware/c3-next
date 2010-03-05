@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.remote.rest
 
+import command.GetCommand
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
-
 /**
  * Created by IntelliJ IDEA.
  * User: Aphreet
@@ -13,8 +13,7 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 class RestServlet extends HttpServlet {
 
   override def doGet(request:HttpServletRequest, response:HttpServletResponse) = {
-    println("Do get invoked") 
-    response.getWriter.println(request.getRequestURI)
+    new GetCommand(request, response).execute
   }
 
   override def doPost(request:HttpServletRequest, response:HttpServletResponse) = {
@@ -28,5 +27,5 @@ class RestServlet extends HttpServlet {
   override def doDelete(request:HttpServletRequest, response:HttpServletResponse) = {
 
   }
-
 }
+
