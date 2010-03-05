@@ -14,16 +14,16 @@ import org.aphreet.c3.platform.remote.api.ws.{PlatformWSManagementEndpoint, Plat
  * To change this template use File | Settings | File Templates.
  */
 
-class WSConnectionProvider(val host:String) extends ConnectionProvider with SpringWsAccessor{
+class WSConnectionProvider(val host:String, val user:String, val password:String) extends ConnectionProvider with SpringWsAccessor{
 
   def management:PlatformManagementService =
-    obtainWebService("http://" + host, "ManagementService", "remote.c3.aphreet.org",
+    obtainWebService("http://" + host, user, password, "ManagementService", "remote.c3.aphreet.org",
                                       "PlatformWSManagementEndpointImplPort", classOf[PlatformWSManagementEndpoint])
 
 
 
 
   def access:PlatformAccessService =
-    obtainWebService("http://" + host, "AccessService", "remote.c3.aphreet.org",
+    obtainWebService("http://" + host, user, password, "AccessService", "remote.c3.aphreet.org",
                                   "PlatformWSAccessEndpointImplPort", classOf[PlatformWSAccessEndpoint])
 }

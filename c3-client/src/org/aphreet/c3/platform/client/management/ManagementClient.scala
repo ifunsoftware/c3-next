@@ -2,8 +2,11 @@ package org.aphreet.c3.platform.client.management
 
 import command.CommandFactory
 import connection.ConnectionProvider
+import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
 import java.io.{InputStreamReader, BufferedReader}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
+import org.aphreet.c3.platform.client.common.CLI
+import org.aphreet.c3.platform.client.common.ArgumentType._
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,7 +16,41 @@ import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnect
  * To change this template use File | Settings | File Templates.
  */
 
-class ManagementClient(val connectionProvider:ConnectionProvider) {
+class ManagementClient(override val args:Array[String]) extends CLI(args) {
+
+  var connectionProvider:ConnectionProvider = null
+
+  {
+    if(cli.getOptions.length == 0) helpAndExit("Shell")
+
+    if(cli.hasOption("help")) helpAndExit("Shell" )
+
+    val connectionType = cliValue("t", "rmi").toLowerCase
+
+    connectionProvider = connectionType match {
+      case "rmi" => new RmiConnectionProvider
+      case "ws" => {
+        val host = cliValue("h", "localhost:8080")
+        val user = cliValue("u", "")
+        val password = cliValue("p", "")
+        new WSConnectionProvider(host, user, password)
+      }
+      case _ => throw new IllegalArgumentException("Unknown connection type")
+
+    }
+  }
+
+
+  def cliDescription = parameters(
+    "t" has mandatory argument "type" described "Connection type WS|RMI. Default is RMI",
+    "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is localhost:8080",
+    "u" has mandatory argument "username" described "Only for WS",
+    "p" has mandatory argument "password" described "Only fir WS",
+    "help" described "Prints this message"
+  )
+
+
+
 
   def run = {
 

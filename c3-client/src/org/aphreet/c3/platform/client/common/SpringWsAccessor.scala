@@ -13,15 +13,15 @@ import java.net.URL
 
 trait SpringWsAccessor{
 
-  def obtainWebService[T](url:String, service:String, namespace:String, port:String, clazz:Class[T]):T = {
+  def obtainWebService[T](url:String, user:String, password:String, service:String, namespace:String, port:String, clazz:Class[T]):T = {
 
     val factory:JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
     factory.setServiceInterface(clazz)
     factory.setWsdlDocumentUrl(new URL(url + "/" + service + "?WSDL"))
     factory.setNamespaceUri(namespace)
     factory.setServiceName(service)
-    factory.setUsername("admin")
-    factory.setPassword("password")
+    factory.setUsername(user)
+    factory.setPassword(password)
     factory.setPortName(port)
     factory.setMaintainSession(true)
     factory.afterPropertiesSet
