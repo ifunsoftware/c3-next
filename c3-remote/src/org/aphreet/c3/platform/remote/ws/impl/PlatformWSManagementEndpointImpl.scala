@@ -74,4 +74,7 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   @WebMethod
   def removeSizeMapping(size:java.lang.Long) = managementAdapter.removeSizeMapping(size)
 
+  @WebMethod{val exclude=true}
+  override def $tag:Int = super.$tag
+
 }

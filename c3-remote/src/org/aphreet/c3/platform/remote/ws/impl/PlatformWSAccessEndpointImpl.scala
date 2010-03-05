@@ -32,5 +32,7 @@ class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with Plat
   @WebMethod
   override def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
 
-  
+  @WebMethod{val exclude=true}
+  override def $tag:Int = super.$tag
+
 }
