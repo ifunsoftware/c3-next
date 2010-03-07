@@ -48,6 +48,24 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+  def fakeRead(address:String):Int = {
+    val getMethod = new GetMethod(url + address)
+
+    try{
+      return httpClient.executeMethod(getMethod) match {
+        case HttpStatus.SC_OK => {
+          val stream = getMethod.getResponseBodyAsStream
+          var read = 0
+          while(stream.read != -1){read = read + 1}
+          read
+        }
+        case _ => throw new Exception(("Failed to get file, code " + _).asInstanceOf[String])
+      }
+    }finally{
+      getMethod.releaseConnection();
+    }
+  }
+
 }
 
 class ByteArrayPartSource(val data:Array[Byte]) extends PartSource {
