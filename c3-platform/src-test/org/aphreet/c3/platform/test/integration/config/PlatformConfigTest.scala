@@ -4,6 +4,7 @@ import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
 import scala.collection.jcl.HashMap
 
 import junit.framework.Assert._
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class PlatformConfigTest extends AbstractTestWithFileSystem{
 

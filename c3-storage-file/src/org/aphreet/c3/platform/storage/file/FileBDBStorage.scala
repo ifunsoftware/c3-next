@@ -3,12 +3,12 @@ package org.aphreet.c3.platform.storage.file
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
-import org.aphreet.c3.platform.storage._
 
 import java.io._
 import java.nio.channels.WritableByteChannel
 
 import com.sleepycat.je._
+import org.aphreet.c3.platform.exception.StorageException
 
 class FileBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
   

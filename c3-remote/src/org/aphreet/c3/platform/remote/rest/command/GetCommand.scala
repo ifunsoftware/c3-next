@@ -3,6 +3,7 @@ package org.aphreet.c3.platform.remote.rest.command
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.remote.rest.{URIParseException, Command}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,6 +39,7 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
       }else badRequest
     }catch{
       case e:URIParseException => badRequest
+      case e:ResourceNotFoundException => notFound
     }
   }
 

@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.common.Constants._
+import org.aphreet.c3.platform.exception.StorageException
 
 abstract sealed class StorageMode(val name:String, val message:String){
   

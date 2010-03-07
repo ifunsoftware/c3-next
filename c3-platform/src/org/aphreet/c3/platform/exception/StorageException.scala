@@ -1,6 +1,4 @@
-package org.aphreet.c3.platform.storage
-
-import org.aphreet.c3.platform.exception.PlatformException
+package org.aphreet.c3.platform.exception
 
 class StorageException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
 

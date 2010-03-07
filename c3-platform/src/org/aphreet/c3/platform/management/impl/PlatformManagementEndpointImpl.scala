@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
-import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode, StorageException}
+import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.storage.dispatcher.selector.size._
@@ -17,6 +17,8 @@ import scala.collection.jcl.{HashMap, HashSet}
 
 import javax.annotation.PostConstruct
 import java.util.{Map => JMap, Collections, Set => JSet, HashSet => JHashSet}
+import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.management.{PropertyChangeEvent, PlatformPropertyListener, PlatformManagementEndpoint}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{

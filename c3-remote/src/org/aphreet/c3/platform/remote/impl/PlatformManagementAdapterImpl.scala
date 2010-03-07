@@ -2,15 +2,15 @@ package org.aphreet.c3.platform.remote.impl
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.remote.api.management.{Pair, SizeMapping, TypeMapping, StorageDescription, PlatformManagementAdapter, TaskDescription => RemoteTaskDescription}
-import org.aphreet.c3.platform.exception.PlatformException
 import org.aphreet.c3.platform.task.{RUNNING, PAUSED, TaskState, TaskDescription}
-import org.aphreet.c3.platform.storage.{StorageException, U, RO, RW}
+import org.aphreet.c3.platform.storage.{U, RO, RW}
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.remote.api.RemoteException
 import scala.collection.jcl.Map
+import org.aphreet.c3.platform.exception.{StorageException, PlatformException}
 
 /**
  * Created by IntelliJ IDEA.

@@ -6,8 +6,6 @@ import org.aphreet.c3.platform.storage._
 
 import scala.collection.mutable.HashMap
 
-import java.io.File
-
 import dispatcher.StorageDispatcher
 
 import org.aphreet.c3.platform.common.{Path, Constants}
@@ -15,8 +13,8 @@ import org.aphreet.c3.platform.storage.volume.VolumeManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.exception.StorageNotFoundException
-
+import org.aphreet.c3.platform.exception.{StorageException, StorageNotFoundException}
+import java.io.File
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -67,7 +65,7 @@ class StorageManagerImpl extends StorageManager{
   def storageForId(id:String):Storage = {
     storages.get(id) match {
       case Some(storage) => storage
-      case None => throw new StorageException("Can't find storage for id: " + id)
+      case None => throw new StorageNotFoundException(id)
     }
   }
 

@@ -4,6 +4,8 @@ import java.io.{File, FileInputStream}
 import java.util.Scanner
 
 import java.io.{BufferedReader, InputStreamReader}
+import org.aphreet.c3.platform.storage.volume.Volume
+import org.aphreet.c3.platform.exception.StorageException
 
 abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeDataProvider{
 

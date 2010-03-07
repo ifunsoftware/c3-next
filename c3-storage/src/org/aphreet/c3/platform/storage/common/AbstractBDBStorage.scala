@@ -6,7 +6,8 @@ import org.aphreet.c3.platform.resource.{Resource}
 import java.io.{File}
 
 import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
-import org.aphreet.c3.platform.storage.{StorageException, U, StorageIterator}
+import org.aphreet.c3.platform.storage.{U, StorageIterator}
+import org.aphreet.c3.platform.exception.StorageException
 
 abstract class AbstractBDBStorage(val storageId:String, override val path:Path) extends AbstractStorage(storageId, path){
 

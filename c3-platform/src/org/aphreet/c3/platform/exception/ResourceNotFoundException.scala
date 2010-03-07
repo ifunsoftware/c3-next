@@ -1,7 +1,5 @@
 package org.aphreet.c3.platform.exception
 
-import org.aphreet.c3.platform.storage.StorageException
-
 /**
  * Created by IntelliJ IDEA.
  * User: Aphreet
@@ -10,7 +8,7 @@ import org.aphreet.c3.platform.storage.StorageException
  * To change this template use File | Settings | File Templates.
  */
 
-class ResourceNotFoundException(override val message:String, override val cause:Throwable) extends StorageException(message, cause){
+class ResourceNotFoundException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
 
   def this(message:String) = this(message, null)
 

@@ -7,6 +7,7 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
 
 import volume.Volume
+import org.aphreet.c3.platform.exception.StorageException
 
 abstract class Storage {
   

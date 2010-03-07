@@ -5,6 +5,7 @@ import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 
 import com.sleepycat.je._
+import org.aphreet.c3.platform.exception.StorageException
 
 class PureBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
 

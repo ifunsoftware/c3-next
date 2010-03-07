@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
 import eu.medsea.mimeutil.MimeUtil
-import org.aphreet.c3.platform.storage.{StorageException, StorageManager, ResourceAccessor}
+import org.aphreet.c3.platform.storage.{StorageManager, ResourceAccessor}
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
-import org.aphreet.c3.platform.exception.{StorageNotFoundException, ResourceNotFoundException}
+import org.aphreet.c3.platform.exception.{StorageException, StorageNotFoundException, ResourceNotFoundException}
 
 @Component
 class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListener{

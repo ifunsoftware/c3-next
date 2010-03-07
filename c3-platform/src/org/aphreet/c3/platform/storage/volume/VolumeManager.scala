@@ -11,6 +11,8 @@ import org.aphreet.c3.platform.task._
 import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
 
 import dataprovider.VolumeDataProvider
+import org.aphreet.c3.platform.storage.Storage
+import org.aphreet.c3.platform.exception.StorageException
 
 @Component
 class VolumeManager extends SPlatformPropertyListener{

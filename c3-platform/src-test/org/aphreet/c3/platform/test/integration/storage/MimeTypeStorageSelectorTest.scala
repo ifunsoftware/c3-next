@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.config.PlatformConfigManager
 
 import junit.framework.Assert._
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
