@@ -68,6 +68,7 @@ class PlatformAccessClient(override val args:Array[String]) extends CLI(args) wi
     
     for(i <- 1 to count){
       val ra = accessService.add(md, generateDataOfSize(size))
+      println(ra)
       if(i % 1000 == 0){
         val wtime = System.currentTimeMillis
         val rate = 1000f/((wtime - time)/1000f)

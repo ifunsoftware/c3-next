@@ -18,7 +18,7 @@
     <context-param>
         <param-name>contextClass</param-name>
         <param-value>
-            com.springsource.server.web.dm.ServerOsgiBundleXmlWebApplicationContext 
+            com.springsource.server.web.dm.ServerOsgiBundleXmlWebApplicationContext
         </param-value>
     </context-param>
 
@@ -32,6 +32,12 @@
     <listener>
         <listener-class>
             org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>
+            org.apache.commons.fileupload.servlet.FileCleanerCleanup
         </listener-class>
     </listener>
 

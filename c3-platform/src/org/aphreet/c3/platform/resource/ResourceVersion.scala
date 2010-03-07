@@ -19,7 +19,7 @@ class ResourceVersion{
   var persisted = false;
   
   override def toString:String = {
-    date + " " + revision + " " + systemMetadata 
+    date + " " + data.length + " " + revision + " " + systemMetadata 
   }
   
   def getMetadata:JMap[String, String] = systemMetadata.underlying

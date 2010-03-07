@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.remote.rest
 
-import command.GetCommand
+import command.{PostCommand, GetCommand}
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +17,7 @@ class RestServlet extends HttpServlet {
   }
 
   override def doPost(request:HttpServletRequest, response:HttpServletResponse) = {
-
+    new PostCommand(request, response, getServletContext).execute
   }
 
   override def doPut(request:HttpServletRequest, response:HttpServletResponse) = {

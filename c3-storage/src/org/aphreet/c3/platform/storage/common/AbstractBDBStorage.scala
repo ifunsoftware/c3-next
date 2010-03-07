@@ -25,6 +25,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
     envConfig setAllowCreate true
     envConfig setSharedCache true
     envConfig setTransactional true
+    envConfig setCachePercent 20
 
     val storagePathFile = new File(storagePath, "metadata")
     if(!storagePathFile.exists){
