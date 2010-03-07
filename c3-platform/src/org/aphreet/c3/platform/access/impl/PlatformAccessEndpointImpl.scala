@@ -11,6 +11,7 @@ import org.aphreet.c3.platform.search.SearchManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.access.PlatformAccessEndpoint
 
 @Component("platformAccessEndpoint")
 class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import eu.medsea.mimeutil.MimeUtil
 import org.aphreet.c3.platform.storage.{StorageException, StorageManager, ResourceAccessor}
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.exception.{StorageNotFoundException, ResourceNotFoundException}
 
 @Component
 class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListener{
@@ -26,16 +27,21 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
   def setSearchManager(manager:SearchManager) = {searchManager = manager}
 
   def get(ra:String):Resource = {
-    val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+    try{
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+  
+      if(!storage.mode.allowRead){
+        throw new StorageException("Storage is not readable")
+      }
 
-    if(!storage.mode.allowRead){
-      throw new StorageException("Storage is not readable")
+      storage.get(ra) match {
+        case Some(r) => r
+        case None => throw new ResourceNotFoundException(ra)
+      }
+    }catch{
+      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
     }
-
-    storage.get(ra) match {
-      case Some(r) => r
-      case None => throw new StorageException("Can't find resource for ra: " + ra )
-    }
+    
   }
 
   def add(resource:Resource):String = {
