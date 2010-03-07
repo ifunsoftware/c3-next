@@ -1,11 +1,9 @@
 package org.aphreet.c3.platform.client.access
 
-import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import org.aphreet.c3.platform.client.common.CLI
 import org.aphreet.c3.platform.client.common.ArgumentType._
-import java.util.Random
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
-import java.io.{BufferedOutputStream, File, FileOutputStream}
+import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,6 +22,7 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     "threads" has mandatory argument "num" described "Thread count",
     "type" has mandatory argument "mime" described "Mime type of content",
     "pool" has mandatory argument "name" described "Target pool",
+    "out" has mandatory argument "file" described "File to write resource addressed",
     "help" described "Prints this message"
   )
 
@@ -38,16 +37,17 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     val objectType = cliValue("type", "application/octet-stream")
     val pool = cliValue("pool", "")
     val host = cliValue("host", "http://localhost:8088/c3-remote/")
+    val file = cliValue("out", null)
 
 
 
     if(objectCount < 0)
       throw new IllegalArgumentException("Object count is not set")
 
-    writeObjects(host, objectCount, objectSize, threadCount, Map("pool" -> pool, "content.type" -> objectType))
+    writeObjects(host, objectCount, objectSize, threadCount, Map("pool" -> pool, "content.type" -> objectType), file)
   }
 
-  def writeObjects(host:String, count:Int, size:Int, threads:Int, metadata:Map[String, String]){
+  def writeObjects(host:String, count:Int, size:Int, threads:Int, metadata:Map[String, String], file:String){
 
     println("Writing " + count + " objects of size " + size)
 
@@ -72,56 +72,44 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
 
     val startTime = System.currentTimeMillis
     var time = startTime;
+    var totalWritten = 0
 
     writers.foreach(executor.submit(_))
 
-    val fos = new BufferedOutputStream(new FileOutputStream(new File("/Users/Aphreet/resources.out")))
+    var fos:OutputStream = null
+
+    if(file != null){
+      fos = new BufferedOutputStream(new FileOutputStream(new File(file)))
+    }
 
     while(isRunning(writers)){
       var ra = queue.poll
       while(ra != null){
-        fos.write((ra + "\n").getBytes)
+        if(fos != null) fos.write((ra + "\n").getBytes)
         ra = queue.poll
       }
+
       val currentTime = System.currentTimeMillis
-      if(currentTime - time > 10000){
+      val dif = (currentTime - time)/1000
+      if(dif >= 10){
         time = currentTime
-        println("Written " + written(writers) + " objects")
+        val writtenResources = written(writers)
+
+        val rate = (writtenResources - totalWritten).asInstanceOf[Float] / (dif)
+        val avgRate = (writtenResources).asInstanceOf[Float] / ((time - startTime)/1000)
+
+        totalWritten = writtenResources
+
+        println("Written " + writtenResources + " resources (" + rate + ", " + avgRate +")")
       }
     }
 
     val endTime = System.currentTimeMillis
     println(count + " objects written in " + (endTime - startTime)/1000)
 
-    fos.close
+    if(fos != null) fos.close
     executor.shutdown
-    
 
-//    val client = new C3HttpAccessor(host)
-//
-//
-//    println("Writing " + count + " objects of size " + size)
-//
-//    val startTime = System.currentTimeMillis
-//    var time = startTime;
-//
-//    for(i <- 1 to count){
-//
-//      val ra = client.write(generateDataOfSize(size), metadata)
-//
-//      println(ra)
-//
-//      if(i % 1000 == 0){
-//        val wtime = System.currentTimeMillis
-//        val rate = 1000f/((wtime - time)/1000f)
-//        println("Saved " + i + " objects with average rate " + rate + "(obj/s)")
-//        time = System.currentTimeMillis
-//      }
-//    }
-//
-//    val endTime = System.currentTimeMillis
-//
-//    println(count + " objects written in " + (endTime - startTime)/1000)
   }
 
   def isRunning(writers:List[ResourceWriter]):Boolean = writers.exists(!_.done)
