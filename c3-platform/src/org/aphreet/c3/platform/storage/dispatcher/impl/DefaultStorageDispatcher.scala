@@ -1,20 +1,21 @@
 package org.aphreet.c3.platform.storage.dispatcher.impl
 
-import org.aphreet.c3.platform.resource.{Resource, DataWrapper}
+import org.aphreet.c3.platform.resource.Resource
 
 import scala.collection.mutable.HashMap
-import scala.collection.immutable.TreeSet
-
-import scala.util.matching.Regex
 
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.storage.dispatcher.selector.size._
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
+import org.aphreet.c3.platform.storage.Storage
 
 @Component
 class DefaultStorageDispatcher extends StorageDispatcher {
+
+  val random = new java.util.Random(System.currentTimeMillis)
 
   var storages = new HashMap[String, List[Storage]]
   
@@ -77,7 +78,7 @@ class DefaultStorageDispatcher extends StorageDispatcher {
     if(onlineList.isEmpty){
       null
     }else{
-      val num = (new scala.util.Random).nextInt % (onlineList.size)
+      val num = random.nextInt % (onlineList.size)
       onlineList.drop(num).first
     }
   }
