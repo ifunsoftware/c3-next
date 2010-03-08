@@ -3,7 +3,7 @@ package org.aphreet.c3.platform.client.access.http
 import java.io.{ByteArrayInputStream, InputStream}
 import org.apache.commons.httpclient.methods.multipart._
 import org.apache.commons.httpclient.{HttpStatus, HttpClient}
-import org.apache.commons.httpclient.methods.{GetMethod, PostMethod}
+import org.apache.commons.httpclient.methods.{DeleteMethod, GetMethod, PostMethod}
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,9 +26,10 @@ class C3HttpAccessor(val url:String){
     postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams()));
 
     try{
-      httpClient.executeMethod(postMethod) match {
+      val status = httpClient.executeMethod(postMethod)
+      status match {
         case HttpStatus.SC_OK => postMethod.getResponseBodyAsString().replaceAll("\n", "")
-        case _ => throw new Exception(("Failed to get file, code " + _).asInstanceOf[String])
+        case _ => throw new Exception(("Failed to post resource, code " + status).asInstanceOf[String])
       }
     }finally{
       postMethod.releaseConnection()
@@ -39,12 +40,25 @@ class C3HttpAccessor(val url:String){
     val getMethod = new GetMethod(url + address)
 
     try{
-      return httpClient.executeMethod(getMethod) match {
+      val status = httpClient.executeMethod(getMethod)
+      return status match {
         case HttpStatus.SC_OK => getMethod.getResponseBody
-        case _ => throw new Exception(("Failed to get file, code " + _).asInstanceOf[String])
+        case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
       }
     }finally{
       getMethod.releaseConnection();
+    }
+  }
+
+  def delete(address:String) = {
+    val deleteMethod = new DeleteMethod(url + address)
+
+    try{
+      val status = httpClient.executeMethod(deleteMethod)
+      status match{
+        case HttpStatus.SC_OK => null
+        case _ => throw new Exception(("Failed to delete resource, code " + status).asInstanceOf[String])
+      }
     }
   }
 
@@ -52,14 +66,15 @@ class C3HttpAccessor(val url:String){
     val getMethod = new GetMethod(url + address)
 
     try{
-      return httpClient.executeMethod(getMethod) match {
+      val status = httpClient.executeMethod(getMethod)
+      return status match {
         case HttpStatus.SC_OK => {
           val stream = getMethod.getResponseBodyAsStream
           var read = 0
           while(stream.read != -1){read = read + 1}
           read
         }
-        case _ => throw new Exception(("Failed to get file, code " + _).asInstanceOf[String])
+        case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
       }
     }finally{
       getMethod.releaseConnection();

@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
 
 import com.sleepycat.je._
-import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 
 class PureBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
 
@@ -62,8 +62,10 @@ class PureBDBStorage(override val id:String, override val path:Path) extends Abs
     
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
-    
-    if(database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+
+    val status = database.get(null, key, value, LockMode.DEFAULT)
+
+    if(status == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
       
       for(version <- resource.versions){
@@ -76,7 +78,7 @@ class PureBDBStorage(override val id:String, override val path:Path) extends Abs
       }
       
       
-    }else throw new StorageException("Failed to get resource, operation status is not SUCCESS, address: " + ra)
+    }else throw new ResourceNotFoundException(ra)
     
   }
   

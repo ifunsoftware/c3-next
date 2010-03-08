@@ -48,6 +48,10 @@ abstract class Command(val req:HttpServletRequest, val resp:HttpServletResponse)
   protected def badRequest = resp.setStatus(HttpServletResponse.SC_BAD_REQUEST)
 
   protected def notFound = resp.setStatus(HttpServletResponse.SC_NOT_FOUND)
+
+  protected def forbidden = resp.setStatus(HttpServletResponse.SC_FORBIDDEN)
+
+  protected def ok = resp.setStatus(HttpServletResponse.SC_OK)
 }
 
 class URIParseException extends Exception

@@ -8,7 +8,7 @@ import java.io._
 import java.nio.channels.WritableByteChannel
 
 import com.sleepycat.je._
-import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 
 class FileBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
   
@@ -61,8 +61,10 @@ class FileBDBStorage(override val id:String, override val path:Path) extends Abs
     
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
+
+    val status = database.get(null, key, value, LockMode.DEFAULT)
     
-    if(database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+    if(status == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
       
       for(version <- resource.versions){
@@ -78,7 +80,7 @@ class FileBDBStorage(override val id:String, override val path:Path) extends Abs
         } 
       }
       
-    }else throw new StorageException("Failed to get resource, operation status is not SUCCESS, address: " + ra)
+    }else throw new ResourceNotFoundException(ra)
   }
  
   

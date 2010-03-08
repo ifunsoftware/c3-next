@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import eu.medsea.mimeutil.MimeUtil
 import org.aphreet.c3.platform.storage.{StorageManager, ResourceAccessor}
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
-import org.aphreet.c3.platform.exception.{StorageException, StorageNotFoundException, ResourceNotFoundException}
+import org.aphreet.c3.platform.exception.{StorageIsNotWritableException, StorageException, StorageNotFoundException, ResourceNotFoundException}
 
 @Component
 class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListener{
@@ -58,24 +58,36 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
       searchManager index resource
       ra
     }else{
-      throw new StorageException("Failed to find storage for resource")
+      throw new StorageNotFoundException("Failed to find storage for resource")
     }
 
 
   }
 
   def update(resource:Resource):String = {
-    val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
-    if(storage.mode.allowWrite){
-      storage.update(resource)
-    }else{
-      throw new StorageException("Storage is not writtable")
+    try{
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
+      if(storage.mode.allowWrite){
+        storage.update(resource)
+      }else{
+        throw new StorageIsNotWritableException(storage.id)
+      }
+    }catch{
+      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
     }
   }
 
   def delete(ra:String) = {
-    val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
-    storage delete ra
+    try{
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+
+      if(storage.mode.allowWrite)
+        storage delete ra
+      else
+        throw new StorageIsNotWritableException(storage.id)
+    }catch{
+      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
+    }
   }
   
   def listeningForProperties:Array[String] = Array(MIME_DETECTOR_CLASS)

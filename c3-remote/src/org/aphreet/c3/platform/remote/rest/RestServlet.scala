@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.remote.rest
 
-import command.{PostCommand, GetCommand}
+import command.{DeleteCommand, PostCommand, GetCommand}
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 /**
  * Created by IntelliJ IDEA.
@@ -25,7 +25,7 @@ class RestServlet extends HttpServlet {
   }
 
   override def doDelete(request:HttpServletRequest, response:HttpServletResponse) = {
-
+    new DeleteCommand(request, response).execute
   }
 }
 
