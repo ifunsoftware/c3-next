@@ -16,6 +16,7 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
     register(new AddSizeMappingCommand)
     register(new AddTypeMappingCommand)
     register(new AddStorageCommand)
+    register(new BuildResourceListCommand)
     register(new HelpCommand)
     register(new GetPlatformPropertiesCommand)
     register(new ListSizeMappingCommand)

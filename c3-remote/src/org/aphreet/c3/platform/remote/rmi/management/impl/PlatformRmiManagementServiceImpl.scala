@@ -47,6 +47,7 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
     = managementAdapter.addSizeMapping(size, storage, versioned)
 
   def removeSizeMapping(size:java.lang.Long) = managementAdapter.removeSizeMapping(size)
-  
+
+  def buildResourceList(targetDir:String) = managementAdapter.buildResourceList(targetDir)
 }
 

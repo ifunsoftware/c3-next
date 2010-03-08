@@ -138,6 +138,11 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
       managementEndpoint.removeSizeMaping(size.longValue)
     })
 
+  def buildResourceList(targetDir:String) =
+    catchAll(() => {
+      managementEndpoint.buildResourceList(targetDir)
+    })
+
   private def catchAll[T](function:Function0[T]) : T = {
     try{
       function.apply

@@ -48,5 +48,8 @@ trait PlatformManagementEndpoint {
   def registerPropertyListener(listener:PlatformPropertyListener)
   
   def unregisterPropertyListener(listener:PlatformPropertyListener)
-  
+
+
+  def buildResourceList(targetDir:String)
+
 }

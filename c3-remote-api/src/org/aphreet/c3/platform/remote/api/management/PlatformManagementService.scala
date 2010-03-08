@@ -44,4 +44,6 @@ trait PlatformManagementService {
 
   def removeSizeMapping(size:java.lang.Long)
 
+  def buildResourceList(target:String)
+
 }

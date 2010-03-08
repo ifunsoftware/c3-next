@@ -41,4 +41,6 @@ trait PlatformManagementAdapter {
   def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer)
 
   def removeSizeMapping(size:java.lang.Long)
+
+  def buildResourceList(target:String)
 }

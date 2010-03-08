@@ -19,6 +19,8 @@ import javax.annotation.PostConstruct
 import java.util.{Map => JMap, Collections, Set => JSet, HashSet => JHashSet}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, PlatformPropertyListener, PlatformManagementEndpoint}
+import org.aphreet.c3.platform.storage.query.QueryManager
+import java.io.File
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -36,6 +38,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   var mimeSelector:MimeTypeStorageSelector = null
   
   var sizeSelector:SizeStorageSelector = null
+
+  var queryManager:QueryManager = null
   
   
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
@@ -58,7 +62,10 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   @Autowired
   def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
-  
+
+  @Autowired
+  def setQueryManager(manager:QueryManager) = {queryManager = manager}
+
   @Autowired{val required=false}
   def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
     foundListeners = new JHashSet()
@@ -201,5 +208,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         listeners - listener 
       }
     }
+  }
+
+  def buildResourceList(targetDir:String){
+    queryManager.buildResourceList(new File(targetDir))
   }
 }

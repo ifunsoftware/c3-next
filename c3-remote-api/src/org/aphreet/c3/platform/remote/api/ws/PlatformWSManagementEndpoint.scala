@@ -62,5 +62,8 @@ trait PlatformWSManagementEndpoint extends PlatformManagementService{
   @WebMethod
   def removeSizeMapping(size:java.lang.Long)
 
+  @WebMethod
+  def buildResourceList(targetDir:String)
+
 
 }
