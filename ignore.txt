@@ -1,0 +1,14 @@
+bin.timestamp
+bin-test.timestamp
+target
+bin
+bin-test
+.manager
+.externalToolBuilders
+.settings
+.project
+.classpath
+.springBeans
+*.iml
+
+
