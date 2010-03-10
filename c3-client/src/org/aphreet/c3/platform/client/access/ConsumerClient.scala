@@ -17,7 +17,7 @@ import worker.ConsumerWorker
 abstract class ConsumerClient(override val args:Array[String]) extends CLI(args){
 
   def cliDescription = parameters(
-    "h" has mandatory argument "host" described "Host to connect to",
+    "host" has mandatory argument "host" described "Host to connect to",
     "threads" has mandatory argument "num" described "Thread count",
     "in" has mandatory argument "file" described "File with resource addresses",
     "help" described "Prints this message"
@@ -29,7 +29,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
     if(cli.hasOption("help")) helpAndExit(clientName)
 
     val threadCount = cliValue("threads", "1").toInt
-    val host = cliValue("host", "http://localhost:8088/c3-remote/")
+    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/"
     val file = cliValue("in", null)
 
     if(file == null){
@@ -41,7 +41,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
   def consumeResources(host:String, threads:Int, file:String){
 
-    println("Reading resources")
+    println("Starting " + clientName + "...")
 
     val queue = new ArrayBlockingQueue[String](threads * 5)
 
@@ -81,12 +81,13 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
         totalProcessed = processedResources
 
-        println(actionName + " " + processedResources + " resources (" + rate + ", " + avgRate +")")
+        println(actionName + " " + processedResources + " resources (" + rate + ", " + avgRate +") errors: "+ errors(consumers))
       }
     }
 
     val endTime = System.currentTimeMillis
     println(processed(consumers) + " resources " + actionName + " in " + (endTime - startTime)/1000)
+    println("Done")
 
     addressReader.close
     executor.shutdown
@@ -97,6 +98,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
   def processed(consumers:List[ConsumerWorker]):Int = consumers.map(e => e.processed).foldLeft(0)(_ + _)
 
+  def errors(consumers:List[ConsumerWorker]):Int = consumers.map(e => e.errors).foldLeft(0)(_ + _)
 
 
   def clientName:String

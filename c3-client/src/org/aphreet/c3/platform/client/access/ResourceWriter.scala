@@ -18,6 +18,7 @@ class ResourceWriter(val host:String, val count:Int) extends Runnable {
   var _md:Map[String, String] = Map()
   var _queue:LinkedBlockingQueue[String] = null
   var written:Int = 0
+  var errors:Int = 0
   var done:Boolean = false
 
   def size(s:Int):ResourceWriter = {_size = s; this}
@@ -38,7 +39,7 @@ class ResourceWriter(val host:String, val count:Int) extends Runnable {
         }
         written = written + 1
       }catch{
-        case e => {println(e.getMessage)}
+        case e => {errors = errors + 1; System.err.println(e.getMessage)}
       }
     }
 

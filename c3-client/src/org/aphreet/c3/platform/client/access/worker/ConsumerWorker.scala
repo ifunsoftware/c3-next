@@ -15,22 +15,26 @@ class ConsumerWorker(val host:String, val queue:ArrayBlockingQueue[String]) exte
 
   var done:Boolean = false
   var processed:Int = 0
+  var errors:Int = 0
   var bytesRead:Long = 0l
   val client = new C3HttpAccessor(host)
 
   override def run{
 
-    var address = queue.poll(10, TimeUnit.SECONDS)
+    var address = queue.poll(5, TimeUnit.SECONDS)
 
     while(address != null){
       try{
         val bytes = execute(address)
-         bytesRead = bytesRead + execute(address)
-         processed = processed + 1
+        bytesRead = bytesRead + bytes
+        processed = processed + 1
       }catch{
-        case e => println("Error: " + e.getMessage)
+        case e => {
+          errors = errors + 1
+          System.err.println("Error: " + e.getMessage)
+        }
       }
-      address = queue.poll(10, TimeUnit.SECONDS)
+      address = queue.poll(5, TimeUnit.SECONDS)
     }
 
     done = true

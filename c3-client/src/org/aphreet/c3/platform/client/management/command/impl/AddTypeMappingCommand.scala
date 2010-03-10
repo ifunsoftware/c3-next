@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.client.management.command.Command
 class AddTypeMappingCommand extends Command{
   
   def execute:String = {
-    if(params.size < 2)
+    if(params.size < 3)
       "Not enough params.\nUsage: add type mapping <mimetype> <storagetype> <versioned>"
     else{
       

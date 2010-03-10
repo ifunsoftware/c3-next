@@ -16,7 +16,7 @@ import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
 class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
 
   def cliDescription = parameters(
-    "h" has mandatory argument "host" described "Host to connect to",
+    "host" has mandatory argument "host" described "Host to connect to",
     "size" has mandatory argument "num" described "Size of object to write",
     "count" has mandatory argument "num" described "Count of objects to write",
     "threads" has mandatory argument "num" described "Thread count",
@@ -36,7 +36,7 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     val threadCount = cliValue("threads", "1").toInt
     val objectType = cliValue("type", "application/octet-stream")
     val pool = cliValue("pool", "")
-    val host = cliValue("host", "http://localhost:8088/c3-remote/")
+    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/"
     val file = cliValue("out", null)
 
 
@@ -79,6 +79,10 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     var fos:OutputStream = null
 
     if(file != null){
+
+      val fileHandle = new File(file)
+      if(fileHandle.exists) fileHandle.delete
+
       fos = new BufferedOutputStream(new FileOutputStream(new File(file)))
     }
 
@@ -100,7 +104,7 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
 
         totalWritten = writtenResources
 
-        println("Written " + writtenResources + " resources (" + rate + ", " + avgRate +")")
+        println("Written " + writtenResources + " resources (" + rate + ", " + avgRate +") errors: " + errors(writers))
       }
     }
 
@@ -115,4 +119,6 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
   def isRunning(writers:List[ResourceWriter]):Boolean = writers.exists(!_.done)
 
   def written(writers:List[ResourceWriter]):Int = writers.map(e => e.written).foldLeft(0)(_ + _)
+
+  def errors(writers:List[ResourceWriter]):Int = writers.map(e => e.errors).foldLeft(0)(_ + _)
 }
