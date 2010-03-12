@@ -16,10 +16,10 @@
     <dependencies>
 
         <dependency>
-			<groupId>org.scala-lang-osgi</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.7.6</version>
-		</dependency>
+            <groupId>org.scala-lang-osgi</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.7.6</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-cli</groupId>
@@ -64,6 +64,16 @@
         <outputDirectory>bin</outputDirectory>
         <testSourceDirectory>src-test</testSourceDirectory>
         <testOutputDirectory>bin-test</testOutputDirectory>
+
+        <resources>
+            <resource>
+                <directory>src/</directory>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
 
         <plugins>
             <plugin>
