@@ -9,10 +9,10 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 class CommandFactory(val accessService:PlatformAccessService, val managementService:PlatformManagementService) {
 
   val root : CommandTreeNode = new CommandTreeNode(null)
-  
+
   var commandList:List[Command] = List()
-  
-  { 
+
+  {
     register(new AddSizeMappingCommand)
     register(new AddTypeMappingCommand)
     register(new AddStorageCommand)
@@ -35,16 +35,16 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
     register(new StartMigrationCommand)
     register(new QuitCommand)
     register(new EmptyCommand)
-    
+
     HelpCommand.commandList = commandList
   }
-  
+
   def getCommand(query:String):Option[Command] = {
-    
+
     val input = List.fromArray(query.trim.split("\\s+"))
-    
+
     val classAndParams = root.classForInput(input)
-    
+
     if(classAndParams._1 != null){
       val command = classAndParams._1.newInstance.asInstanceOf[Command]
       command.params = classAndParams._2
@@ -55,29 +55,57 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
       Some(new ErrorCommand("Command not found. Type help to get list of all commands"))
     }
   }
-  
+
   def register(command:Command) = {
     commandList = commandList ::: List(command)
     root.addCommand(command.name, command.getClass)
   }
-  
-  
-  
-  class CommandTreeNode(val commandClass:Class[_]) {
+
+}
+
+class CommandTreeNode(val commandClass:Class[_]) {
     val map = new HashMap[String, CommandTreeNode]
-    
+
     def classForInput(input:List[String]):(Class[_], List[String]) = {
-      
+
       if(input.size > 0){
-    	map.get(input.first) match {
-      	  case Some(node) => node.classForInput(input.tail)
-          case None => (commandClass, input)
-      	}
+        map.get(input.first) match {
+          case Some(node) => node.classForInput(input.tail)
+          case None => {
+            if(commandClass != null)
+              (commandClass, input)
+            else{
+              val nonStrictNode = foundCommandAsSubstring(input.first)
+              if(nonStrictNode != null){
+                nonStrictNode.classForInput(input.tail)
+              }else{
+                (commandClass, input)
+              }
+            }
+          }
+        }
       }else{
         (commandClass, List())
       }
     }
-    
+
+    private def foundCommandAsSubstring(token:String):CommandTreeNode = {
+
+      var foundNode:CommandTreeNode = null
+
+      for((command, node) <- map){
+        if(command.matches("^" + token + ".*")){
+          if(foundNode == null){
+            foundNode = node
+          }else{
+            return null
+          }
+        }
+      }
+
+      foundNode
+    }
+
     def addCommand(input:List[String], commandClass:Class[_]):Unit = {
       if(input.size == 1){
         map.put(input.first, new CommandTreeNode(commandClass))
@@ -92,7 +120,5 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
         }
       }
     }
-    
+
   }
-  
-}

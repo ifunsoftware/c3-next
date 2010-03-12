@@ -62,6 +62,8 @@
         <defaultGoal>package</defaultGoal>
         <sourceDirectory>src</sourceDirectory>
         <outputDirectory>bin</outputDirectory>
+        <testSourceDirectory>src-test</testSourceDirectory>
+        <testOutputDirectory>bin-test</testOutputDirectory>
 
         <plugins>
             <plugin>
@@ -71,6 +73,7 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
+                            <goal>testCompile</goal>
                         </goals>
                     </execution>
                 </executions>
