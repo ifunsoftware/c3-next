@@ -2,12 +2,11 @@ package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource._
-import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
-
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
+import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
 
-class PureBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
+class PureBDBStorage(override val id:String, override val path:Path, override val config:BDBConfig) extends AbstractBDBStorage(id, path, config) {
 
   override protected def storeData(resource:Resource, tx:Transaction){
     

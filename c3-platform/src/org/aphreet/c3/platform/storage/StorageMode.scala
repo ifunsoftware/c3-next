@@ -8,6 +8,8 @@ abstract sealed class StorageMode(val name:String, val message:String){
   def allowWrite:Boolean
   
   def allowRead:Boolean
+
+  override def toString = name + "(" + message + ")"
   
 }
 

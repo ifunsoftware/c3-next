@@ -14,11 +14,11 @@ class StorageModeSwitchTest extends TestCase{
     
     val storage = new StorageStub
     
-    storage.allowMoveFromModeToModes(RW(""), allUserModes)
+    storage.allowMoveFromModeToModes(RW(""), allUserModes ::: allMaintainModes)
     
-    storage.allowMoveFromModeToModes(RW(""), allCapacityModes)
+    storage.allowMoveFromModeToModes(RW(""), allCapacityModes ::: allMaintainModes)
     
-    storage.allowMoveFromModeToModes(RW(""), allMigrationModes)
+    storage.allowMoveFromModeToModes(RW(""), allMigrationModes ::: allMaintainModes)
 
     storage.denyMoveFromModeToModes(U(""), allUserModes ::: allMigrationModes ::: allCapacityModes)
     
@@ -30,10 +30,17 @@ class StorageModeSwitchTest extends TestCase{
     
     storage.denyMoveFromModeToModes(U(STORAGE_MODE_MIGRATION), RO(STORAGE_MODE_MIGRATION) :: allUserModes ::: allTargetMigrationModes ::: allCapacityModes)
     
-    storage.allowMoveFromModeToModes(RW(STORAGE_MODE_MIGRATION), List(RW(STORAGE_MODE_NONE)))
+    storage.allowMoveFromModeToModes(RW(STORAGE_MODE_MIGRATION), List(RW(STORAGE_MODE_NONE)) ::: allMaintainModes)
     
-    storage.allowMoveFromModeToModes(RO(STORAGE_MODE_CAPACITY), List(RW(STORAGE_MODE_CAPACITY)))
-    
+    storage.allowMoveFromModeToModes(RO(STORAGE_MODE_CAPACITY), List(RW(STORAGE_MODE_CAPACITY)) ::: allMaintainModes)
+
+    storage.allowMoveFromModeToModes(U(STORAGE_MODE_MAINTAIN), allUserModes ::: allMigrationModes ::: allCapacityModes)
+
+    storage.allowMoveFromModeToModes(RO(STORAGE_MODE_MAINTAIN), allUserModes ::: allMigrationModes ::: allCapacityModes)
+
+    storage.allowMoveFromModeToModes(RW(STORAGE_MODE_MAINTAIN), allUserModes ::: allMigrationModes ::: allCapacityModes)
+
+
   }
   
   def allUserModes:List[StorageMode] =
@@ -51,6 +58,11 @@ class StorageModeSwitchTest extends TestCase{
   def allTargetMigrationModes:List[StorageMode] = List(RW(STORAGE_MODE_MIGRATION))
   
   def allMigrationModes:List[StorageMode] = allTargetMigrationModes ::: allSourceMigrationModes
+
+  def allMaintainModes:List[StorageMode] =
+    List(
+      U(STORAGE_MODE_MAINTAIN), RW(STORAGE_MODE_MAINTAIN), RO(STORAGE_MODE_MAINTAIN)
+      )
 }
 
 class StorageStub extends Storage{

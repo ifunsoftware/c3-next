@@ -4,6 +4,7 @@ import com.sleepycat.je._
 
 import org.aphreet.c3.platform.storage.StorageIterator
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.exception.StorageException
 
 class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 
@@ -39,6 +40,12 @@ class BDBStorageIterator(storage:AbstractBDBStorage) extends StorageIterator{
 
 
     while(!resultFound){
+
+      if(!storage.mode.allowRead){
+        this.close
+        throw new StorageException("Storage " + storage.id + " is not readable")
+      }
+
       val databaseKey = new DatabaseEntry
       val databaseValue = new DatabaseEntry
 

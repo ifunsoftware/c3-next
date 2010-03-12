@@ -199,15 +199,18 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
         }
       }
     }
+    log debug propertyListeners.toString
   }
   
   def unregisterPropertyListener(listener:PlatformPropertyListener) = {
     log info "Unregistering property listener: " + listener.getClass.getSimpleName
     propertyListeners.synchronized{
-      for(listeners <- propertyListeners.valueSet){
-        listeners - listener 
+
+      for((prop, listeners) <- propertyListeners if listeners.contains(listener)){
+        propertyListeners.put(prop, listeners - listener)
       }
     }
+    log debug propertyListeners.toString
   }
 
   def buildResourceList(targetDir:String){

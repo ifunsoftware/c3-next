@@ -8,4 +8,6 @@ object Constants {
   val STORAGE_MODE_USER = "user"
   val STORAGE_MODE_MIGRATION = "migration"
   val STORAGE_MODE_CAPACITY = "capacity"
+  val STORAGE_MODE_MAINTAIN = "MAINTAIN"
+  
 }

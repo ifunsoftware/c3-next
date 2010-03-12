@@ -2,15 +2,14 @@ package org.aphreet.c3.platform.storage.file
 
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
-import org.aphreet.c3.platform.storage.common.AbstractBDBStorage
-
 import java.io._
 import java.nio.channels.WritableByteChannel
 
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
+import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
 
-class FileBDBStorage(override val id:String, override val path:Path) extends AbstractBDBStorage(id, path) {
+class FileBDBStorage(override val id:String, override val path:Path, override val config:BDBConfig) extends AbstractBDBStorage(id, path, config) {
   
   var dataPath : File = null  
   

@@ -6,6 +6,7 @@ import junit.framework.Assert._
 import scala.collection.mutable.HashMap
 
 import org.aphreet.c3.platform.storage._
+import common.BDBConfig
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
 
@@ -20,7 +21,7 @@ class FileBDBStorageTest extends TestCase{
   var storagePath:Path = null
   
   def createStorage(id:String):Storage = 
-    new FileBDBStorage(id, storagePath)
+    new FileBDBStorage(id, storagePath, new BDBConfig(true, true, 20))
   
   override def setUp{
 	testDir = new File(System.getProperty("user.home"), "c3_int_test")

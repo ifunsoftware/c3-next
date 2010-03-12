@@ -1,15 +1,15 @@
 package org.aphreet.c3.platform.storage.common
 
 import org.aphreet.c3.platform.common.{Path, Constants}
-import org.aphreet.c3.platform.resource.{Resource}
+import org.aphreet.c3.platform.resource.Resource
 
-import java.io.{File}
+import java.io.File
 
 import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
 import org.aphreet.c3.platform.storage.{U, StorageIterator}
 import org.aphreet.c3.platform.exception.StorageException
 
-abstract class AbstractBDBStorage(val storageId:String, override val path:Path) extends AbstractStorage(storageId, path){
+abstract class AbstractBDBStorage(val storageId:String, override val path:Path, val config:BDBConfig) extends AbstractStorage(storageId, path){
 
   protected var env : Environment = null
 
@@ -21,12 +21,23 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
 
   protected val storagePath:String = path.toString + "/" + storageName
 
+  //Please, remove this in future!
+  private var isIteratorsUsed = false
+
   {
+   open(config)
+  }
+
+  def open(bdbConfig:BDBConfig) {
+    log info "Opening storage " + storageId + " with config " + config
+
     val envConfig = new EnvironmentConfig
     envConfig setAllowCreate true
     envConfig setSharedCache true
     envConfig setTransactional true
-    envConfig setCachePercent 20
+    envConfig setCachePercent bdbConfig.cachePercent
+    envConfig setTxnNoSync bdbConfig.txNoSync
+    envConfig setTxnWriteNoSync bdbConfig.txWriteNoSync
 
     val storagePathFile = new File(storagePath, "metadata")
     if(!storagePathFile.exists){
@@ -39,11 +50,41 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
     dbConfig setAllowCreate true
     dbConfig setTransactional true
     database = env.openDatabase(null, storageName, dbConfig)
+
+    log info "Storage " + storageId + " opened"
+
+    startObjectCounter
   }
+
+  override def close = {
+    log info "Closing storage " + storageId
+    super.close
+    if(this.mode.allowRead)
+      mode = U(Constants.STORAGE_MODE_NONE)
+
+    //waiting for iterators to die
+    if(isIteratorsUsed) Thread.sleep(5000)
+
+
+    if(database != null){
+      database.close
+      database = null
+    }
+
+    if(env != null){
+      env.cleanLog;
+      env.close
+      env = null
+    }
+
+    log info "Storage " + storageId + " closed"
+  }
+
 
   def count:Long = objectCount;
 
   override protected def updateObjectCount = {
+    log debug "Updating object count" 
     val cnt = database.count
     this.synchronized{
       objectCount = cnt  
@@ -195,25 +236,9 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path) 
     database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
-  def iterator:StorageIterator = new BDBStorageIterator(this)
-
-
-  override def close = {
-    super.close
-    if(this.mode.allowRead)
-      mode = U(Constants.STORAGE_MODE_NONE)
-
-
-    if(database != null){
-      database.close
-      database = null
-    }
-
-    if(env != null){
-      env.cleanLog;
-      env.close
-      env = null
-    }
+  def iterator:StorageIterator = {
+    isIteratorsUsed = true
+    new BDBStorageIterator(this)
   }
 
   protected def storeData(resource:Resource, tx:Transaction){

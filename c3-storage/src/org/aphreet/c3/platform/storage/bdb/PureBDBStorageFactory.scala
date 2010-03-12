@@ -1,14 +1,15 @@
 package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.storage.common.AbstractStorageFactory
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.storage.{Storage, StorageParams}
+import org.aphreet.c3.platform.storage.common.AbstractBDBStorageFactory
 
 @Component
-class PureBDBStorageFactory extends AbstractStorageFactory{
+class PureBDBStorageFactory extends AbstractBDBStorageFactory{
 
   protected def createNewStorage(params:StorageParams):Storage = {
     
-    val storage = new PureBDBStorage(params.id, params.path)
+    val storage = new PureBDBStorage(params.id, params.path, bdbConfig)
     storage.ids = params.secIds
     storage
     

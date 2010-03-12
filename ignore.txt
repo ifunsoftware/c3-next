@@ -10,5 +10,6 @@ bin-test
 .classpath
 .springBeans
 *.iml
-
+*.out
+*.log
 
