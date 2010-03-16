@@ -7,6 +7,7 @@ import java.io.{InputStreamReader, BufferedReader}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
 import org.aphreet.c3.platform.client.common.CLI
 import org.aphreet.c3.platform.client.common.ArgumentType._
+import java.util.logging.LogManager
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,6 +22,9 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
   var connectionProvider:ConnectionProvider = null
 
   {
+    LogManager.getLogManager.readConfiguration(getClass.getClassLoader.getResourceAsStream("log.properties"))
+
+
     if(cli.getOptions.length == 0) helpAndExit("Shell")
 
     if(cli.hasOption("help")) helpAndExit("Shell" )
