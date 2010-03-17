@@ -1,13 +1,12 @@
 package org.aphreet.c3.platform.resource
 
-import java.io.{InputStream, OutputStream, File, FileInputStream, ByteArrayInputStream, ByteArrayOutputStream, BufferedInputStream, BufferedOutputStream}
-import java.nio.channels.{FileChannel, WritableByteChannel}
+import java.nio.channels.{WritableByteChannel}
 import java.nio.ByteBuffer
-import java.lang.StringBuilder
 
 import org.apache.commons.logging.LogFactory
 
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
+import java.io._
 
 object DataWrapper{
   
@@ -26,10 +25,20 @@ abstract class DataWrapper {
   val logger = LogFactory.getLog(DataWrapper.getClass)
   
   def inputStream:InputStream
+
+  def writeTo(targetFile:File):Unit = {
+    val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
+
+    try{
+      this writeTo channel
+    }finally{
+      channel.close
+    }
+  }
   
-  def writeTo(channel:WritableByteChannel)
+  def writeTo(channel:WritableByteChannel):Unit
   
-  def writeTo(out:OutputStream)
+  def writeTo(out:OutputStream):Unit
   
   def getBytes:Array[Byte] = {
     val stream = new ByteArrayOutputStream;
@@ -61,6 +70,15 @@ class FileDataWrapper(val file:File) extends DataWrapper{
       fileChannel.transferTo(0, file.length, channel)
     }finally{
       fileChannel.close
+    }
+  }
+
+  override def writeTo(targetFile:File) = {
+
+    if(file.getCanonicalFile != targetFile.getCanonicalFile)
+       super.writeTo(targetFile)
+    else{
+      logger.info("Trying to write file to itself, skipping")
     }
   }
   

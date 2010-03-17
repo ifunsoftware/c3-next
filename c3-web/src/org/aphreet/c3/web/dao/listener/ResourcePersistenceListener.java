@@ -3,6 +3,7 @@ package org.aphreet.c3.web.dao.listener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aphreet.c3.platform.access.*;
+import org.aphreet.c3.platform.exception.ResourceNotFoundException;
 import org.aphreet.c3.platform.resource.*;
 import org.aphreet.c3.web.entity.Content;
 import org.aphreet.c3.web.entity.Document;
@@ -36,9 +37,15 @@ public class ResourcePersistenceListener implements PostLoadEventListener, PreUp
 			Content content = (Content) entity;
 			
 			content.getResourceAddress();
-			
-			Resource resource = platformAccessEndpoint.get(content.getResourceAddress());
-			content.setResource(resource);
+
+            try{
+                Resource resource = platformAccessEndpoint.get(content.getResourceAddress());
+                content.setResource(resource);
+            }catch(ResourceNotFoundException e){
+                content.setResource(new MissingResource(content.getResourceAddress()));
+            }
+
+
 		}
 	}
 
@@ -49,9 +56,15 @@ public class ResourcePersistenceListener implements PostLoadEventListener, PreUp
 		if(isContent(entity)){
 			Content content = (Content) entity;
 			content.syncMetadata();
-			
-			String address = platformAccessEndpoint.update(content.getResource());
-			content.setResourceAddress(address);
+
+            if(!(content.getResource() instanceof MissingResource)){
+                String address = platformAccessEndpoint.update(content.getResource());
+			    content.setResourceAddress(address);
+            }else{
+                logger.warn("Trying to update missing resource: " + content.getResourceAddress());
+            }
+
+
 			
 		}
 		
