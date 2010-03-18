@@ -17,7 +17,7 @@ class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
   override def authenticate(exchange:HttpExchange):Authenticator.Result = {
     val uri:String = exchange.getRequestURI.toString
 
-    if(uri.matches("/[A-Za-z]+\\?WSDL")){
+    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
       new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
     }else super.authenticate(exchange)
   }

@@ -124,7 +124,31 @@ class FileBDBStorageTest extends TestCase{
       
     }finally storage.close
   }
-  
+
+  def testUnversionedUpdate2 {
+    var storage = createStorage("1002a")
+
+    try{
+
+      val resource = createResource
+      resource.isVersioned = false
+
+      val ra = storage.add(resource)
+
+      //updating resource without change
+      storage.update(resource)
+
+      val readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      compareResources(resource, readResource)
+      assertFalse("Data is zero", readResource.versions(0).data.length == 0)
+
+    }finally storage.close
+  }
+
   def testDelete{
     
     val storage = createStorage("1003")
@@ -269,16 +293,25 @@ class FileBDBStorageTest extends TestCase{
   
   private def isDatumEqual(d0:DataWrapper, d1:DataWrapper):Boolean = {
     
-    if(d0.length != d1.length) return false
+    if(d0.length != d1.length){
+      println("Error: Data length mismatch")
+      return false
+    }
     
-    if(d0.mimeType != d1.mimeType) return false
+    if(d0.mimeType != d1.mimeType){
+      println("Error: Mime type mismatch")
+      return false
+    }
         
     val thisBytes = d0.getBytes
     val thatBytes = d1.getBytes
     
     for(i <- 0 to thatBytes.size - 1){
-      if(thisBytes(i) != thatBytes(i))
+      if(thisBytes(i) != thatBytes(i)){
+        printf("Error: Datum mismatch in %d byte, expected %d actual %d\n", i, thisBytes(i), thatBytes(i))
         return false
+      }
+
     }
     
     true
