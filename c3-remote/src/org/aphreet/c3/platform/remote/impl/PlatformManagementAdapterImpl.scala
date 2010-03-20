@@ -88,6 +88,11 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
       managementEndpoint.listTasks.map(fromLocalDescription(_)).toArray
     )
 
+  def listFinishedTasks:Array[RemoteTaskDescription] =
+    catchAll(() =>
+      managementEndpoint.listFinishedTasks.map(fromLocalDescription(_)).toArray
+    )
+
   private def fromLocalDescription(descr:TaskDescription):RemoteTaskDescription = {
     new RemoteTaskDescription(descr.id, descr.name, descr.state.name, descr.progress.toString)
   }

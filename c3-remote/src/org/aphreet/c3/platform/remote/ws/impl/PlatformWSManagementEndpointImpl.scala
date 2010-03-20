@@ -52,6 +52,9 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   def listTasks:Array[TaskDescription] = managementAdapter.listTasks
 
   @WebMethod
+  def listFinishedTasks:Array[TaskDescription] = managementAdapter.listFinishedTasks
+
+  @WebMethod
   def setTaskMode(taskId:String, mode:String) = managementAdapter.setTaskMode(taskId, mode)
 
   @WebMethod

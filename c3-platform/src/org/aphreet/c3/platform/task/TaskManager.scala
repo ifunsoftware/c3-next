@@ -3,6 +3,8 @@ package org.aphreet.c3.platform.task
 trait TaskManager {
 
   def taskList:List[TaskDescription]
+
+  def finishedTaskList:List[TaskDescription]
   
   def stopTask(id:String)
   

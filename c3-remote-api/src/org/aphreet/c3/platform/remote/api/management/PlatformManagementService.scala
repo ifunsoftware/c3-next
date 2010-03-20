@@ -30,6 +30,8 @@ trait PlatformManagementService {
 
   def listTasks:Array[TaskDescription]
 
+  def listFinishedTasks:Array[TaskDescription]
+
   def setTaskMode(taskId:String, mode:String)
 
   def listTypeMappigs:Array[TypeMapping]

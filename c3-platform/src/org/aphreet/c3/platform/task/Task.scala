@@ -16,8 +16,14 @@ abstract class Task extends Runnable{
   def state:TaskState = taskState
 
   override def run = {
+
+    while(!canStart){
+      taskState = PENDING
+      Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+    }
+
     taskState = RUNNING
-    
+
     try{
       preStart
       while(!shouldStop && !Thread.currentThread.isInterrupted){
@@ -44,6 +50,8 @@ abstract class Task extends Runnable{
   protected def postComplete = {};
   
   protected def postFailure = {}
+
+  protected def canStart:Boolean = true
   
   def shouldStop:Boolean = false
   
@@ -73,11 +81,11 @@ abstract class Task extends Runnable{
 }
 
 
-sealed class TaskState(val name:String);
+sealed class TaskState(val name:String, val isFinalState:Boolean);
 
-object RUNNING extends TaskState("Running")
-object PENDING extends TaskState("Pending")
-object PAUSED  extends TaskState("Paused")
-object INTERRUPTED extends TaskState("Interrupted")
-object FINISHED extends TaskState("Finished")
-object CRASHED  extends TaskState("Crashed")
+object RUNNING extends TaskState("Running", false)
+object PENDING extends TaskState("Pending", false)
+object PAUSED  extends TaskState("Paused", false)
+object INTERRUPTED extends TaskState("Interrupted", false)
+object FINISHED extends TaskState("Finished", true)
+object CRASHED  extends TaskState("Crashed", true)

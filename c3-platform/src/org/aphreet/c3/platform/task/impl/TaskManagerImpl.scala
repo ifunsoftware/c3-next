@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
 
 @Component("taskManager")
 class TaskManagerImpl extends TaskManager{
@@ -25,13 +26,14 @@ class TaskManagerImpl extends TaskManager{
     log info "Starting task manager"
   }
   
-  def taskList:List[TaskDescription] ={
-    val taskDescriptions = 
-      for((taskId, task) <- tasks)
-        yield task.description
-    
-    List.fromIterator(taskDescriptions.elements)
+  def taskList:List[TaskDescription] = {
+    (for((taskId, task) <- tasks if !task.state.isFinalState)
+      yield task.description).elements.toList
   }
+
+  def finishedTaskList:List[TaskDescription] = 
+    (for((taskId, task) <- tasks if task.state.isFinalState)
+      yield task.description).elements.toList
   
   def stopTask(id:String)  = 
     tasks.get(id) match {

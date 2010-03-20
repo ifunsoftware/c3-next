@@ -42,6 +42,9 @@ trait PlatformWSManagementEndpoint extends PlatformManagementService{
   def listTasks:Array[TaskDescription]
 
   @WebMethod
+  def listFinishedTasks:Array[TaskDescription]
+
+  @WebMethod
   def setTaskMode(taskId:String, mode:String)
 
   @WebMethod

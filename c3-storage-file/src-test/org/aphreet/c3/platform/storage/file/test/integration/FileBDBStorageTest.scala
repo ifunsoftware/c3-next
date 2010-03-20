@@ -6,7 +6,7 @@ import junit.framework.Assert._
 import scala.collection.mutable.HashMap
 
 import org.aphreet.c3.platform.storage._
-import common.BDBConfig
+import org.aphreet.c3.platform.storage.common.BDBConfig
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
 

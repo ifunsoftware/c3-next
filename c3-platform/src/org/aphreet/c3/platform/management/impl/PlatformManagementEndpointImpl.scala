@@ -150,6 +150,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
   
   def listTasks:List[TaskDescription] = taskManager.taskList
+
+  def listFinishedTasks:List[TaskDescription] = taskManager.finishedTaskList
   
   def setTaskMode(taskId:String, state:TaskState) ={
     state match {

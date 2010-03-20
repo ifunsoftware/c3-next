@@ -32,6 +32,8 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
 
   def listTasks:Array[TaskDescription] = managementAdapter.listTasks
 
+  def listFinishedTasks:Array[TaskDescription] = managementAdapter.listFinishedTasks
+
   def setTaskMode(taskId:String, mode:String) = managementAdapter.setTaskMode(taskId, mode)
 
   def listTypeMappigs:Array[TypeMapping] = managementAdapter.listTypeMappigs

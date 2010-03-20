@@ -17,6 +17,7 @@
 		<module>c3-web</module>
         <module>c3-client</module>
         <module>c3-remote-api</module>
+        <module>c3-semantic</module>
     </modules>
 
 	<properties>

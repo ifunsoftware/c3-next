@@ -27,6 +27,8 @@ trait PlatformManagementEndpoint {
   def setPlatformProperty(key:String, value:String)
 
   def listTasks:List[TaskDescription]
+
+  def listFinishedTasks:List[TaskDescription]
  
   def setTaskMode(taskId:String, state:TaskState)
   
