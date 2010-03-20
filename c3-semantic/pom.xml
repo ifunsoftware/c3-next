@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.aphreet.c3</groupId>    
+    <artifactId>c3-semantic</artifactId>
+    <version>${bundleVersion}</version>
+	<packaging>jar</packaging>
+	<name>C3 Semantic</name>
+
+
+    <parent>
+		<groupId>org.aphreet.c3</groupId>
+		<artifactId>main</artifactId>
+		<version>${bundleVersion}</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.sleepycat.je</groupId>
+			<artifactId>com.springsource.com.sleepycat.je</artifactId>
+			<version>3.3.87</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aphreet.c3</groupId>
+			<artifactId>c3-platform</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<defaultGoal>package</defaultGoal>
+		<sourceDirectory>src</sourceDirectory>
+		<outputDirectory>bin</outputDirectory>
+
+		<testSourceDirectory>src-test</testSourceDirectory>
+		<testOutputDirectory>bin-test</testOutputDirectory>
+
+		<resources>
+			<resource>
+				<directory>src/</directory>
+				<includes>
+					<include>META-INF/spring/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<jvmArgs>
+						<jvmArg>-Xms64m</jvmArg>
+						<jvmArg>-Xmx1024m</jvmArg>
+					</jvmArgs>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+					</execution>
+				</executions>
+				<configuration>
+					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
+					<archive>
+						<manifestFile>${bundleManifestPath}</manifestFile>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>deploy</id>
+						<phase>install</phase>
+						<configuration>
+                            <tasks>
+								<echo message="Deploying to Spring DM Server" />
+								<!--
+                                <copy
+									file="${project.build.directory}/${project.build.finalName}.jar"
+									toDir="${serverHome}/pickup" overwrite="true" />
+							    -->
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>manifest</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<tasks>
+										<echo message="Updating manifest file with current build number" />
+										<copy file="src/META-INF/MANIFEST.MF" toDir="target"
+											overwrite="true" />
+										<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
+											value="Bundle-Version: ${bundleVersion}" />
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${dependencyPath}</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>
