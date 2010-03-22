@@ -7,6 +7,7 @@ import java.util.{Map => JMap, List => JList}
 import java.util.Date
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
+import com.twmacinta.util.{MD5, MD5InputStream}
 
 class Resource {
 
@@ -36,6 +37,14 @@ class Resource {
     }
 
     return Resource.MD_CONTENT_TYPE_DEFAULT
+  }
+
+  def calculateCheckSums = {
+    if(!this.isVersioned){
+      versions(0).calculateHash
+    }else{
+      versions.filter(!_.persisted).foreach(_.calculateHash)
+    }
   }
 
   def getMetadata:JMap[String, String] = metadata.underlying
@@ -121,7 +130,7 @@ class Resource {
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    dataOs.writeInt(0) //resource class version, for future
+    dataOs.writeInt(1) //resource class version, for future
 
     dataOs.writeBoolean(isVersioned)
 
@@ -134,7 +143,12 @@ class Resource {
 
     writeVersions(versions, dataOs)
 
-    dataOs.writeLong(Resource.STOP_SEQ)
+    //dataOs.writeLong(Resource.STOP_SEQ)
+
+    val md5 = new MD5
+    md5.Update(byteOs.toByteArray)
+
+    byteOs.write(md5.Final)
 
     byteOs.toByteArray
   }
@@ -199,9 +213,12 @@ object Resource {
     val resource = new Resource
 
     val byteIn = new ByteArrayInputStream(bytes)
-    val dataIn = new DataInputStream(byteIn)
 
-    dataIn.readInt //resource class version
+    val md5Is = new MD5InputStream(byteIn)
+
+    val dataIn = new DataInputStream(md5Is)
+
+    val serializeVersion = dataIn.readInt //resource class version
 
     resource.isVersioned = dataIn.readBoolean
 
@@ -213,10 +230,26 @@ object Resource {
 
     resource.versions ++= readVersions(dataIn)
 
-    val stopSeq = dataIn.readLong
-    if(stopSeq != STOP_SEQ){
-      throw new ResourceException("Failed to deserialize resource")
+    serializeVersion match{
+      case 0 => {
+        val stopSeq = dataIn.readLong
+        if(stopSeq != STOP_SEQ){
+          throw new ResourceException("Failed to deserialize resource, wrong stop sequince")
+        }
+      }
+      case 1 => {
+        val currentSumm = md5Is.getMD5.Final
+        val savedSumm = new Array[Byte](16)
+
+        dataIn.read(savedSumm)
+
+        if(currentSumm.equals(savedSumm)){
+          throw new ResourceException("Failed to deserialize resource, md5 hashes do not match")
+        }
+      }
     }
+
+
 
     dataIn.close
 

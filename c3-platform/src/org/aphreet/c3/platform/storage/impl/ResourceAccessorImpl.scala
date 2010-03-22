@@ -54,6 +54,7 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
     val storage = storageManager.dispatcher.selectStorageForResource(resource)
 
     if(storage != null){
+      resource.calculateCheckSums
       val ra = storage.add(resource)
       searchManager index resource
       ra
@@ -68,6 +69,7 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
     try{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
       if(storage.mode.allowWrite){
+        resource.calculateCheckSums
         storage.update(resource)
       }else{
         throw new StorageIsNotWritableException(storage.id)

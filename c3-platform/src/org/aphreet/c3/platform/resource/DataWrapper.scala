@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory
 
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
+import com.twmacinta.util.MD5
 
 object DataWrapper{
   
@@ -51,6 +52,8 @@ abstract class DataWrapper {
   def length:Long
   
   def mimeType:String
+
+  def hash:String
   
   protected def top(types:java.util.Collection[_]):String = {
     types.iterator.next.asInstanceOf[MimeType].toString
@@ -78,7 +81,7 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     if(file.getCanonicalFile != targetFile.getCanonicalFile)
        super.writeTo(targetFile)
     else{
-      logger.info("Trying to write file to itself, skipping")
+      logger.warn("Trying to write file to itself, skipping")
     }
   }
   
@@ -108,7 +111,9 @@ class FileDataWrapper(val file:File) extends DataWrapper{
 
     new String(out.toByteArray)
   }
-  
+
+  def hash:String = MD5.asHex(MD5.getHash(file))
+
   def length:Long = file.length
 
   def mimeType:String = top(MimeUtil.getMimeTypes(file))
@@ -126,7 +131,13 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
   }
   
   override def getBytes:Array[Byte] = bytes
-  
+
+  def hash:String = MD5.asHex({
+    val md5 = new MD5
+    md5.Update(bytes)
+    md5.Final
+  })
+
   def stringValue:String = new String(bytes)
   
   def length:Long = bytes.length
@@ -149,6 +160,12 @@ class StringDataWrapper(val value:String) extends DataWrapper {
   def stringValue:String = value
   
   def length:Long = value.getBytes.length
+
+  def hash:String = MD5.asHex({
+    val md5 = new MD5
+    md5.Update(value.getBytes())
+    md5.Final
+  })
   
   def mimeType:String = top(MimeUtil.getMimeTypes(value))
 }
@@ -163,6 +180,12 @@ class EmptyDataWrapper extends DataWrapper {
   def stringValue:String = ""
   
   def length:Long = 0
-  
+
+  def hash:String = MD5.asHex({
+    val md5 = new MD5
+    md5.Update("".getBytes())
+    md5.Final
+  })
+
   def mimeType:String = ""
 }

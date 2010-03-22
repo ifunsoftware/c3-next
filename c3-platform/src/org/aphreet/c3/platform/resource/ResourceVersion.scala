@@ -8,6 +8,8 @@ import java.util.{Map => JMap}
 
 class ResourceVersion{
 
+  val RESOURCE_VERSION_HASH = "c3.data.md5"
+
   var date:Date = new Date
   
   var revision:Int = 0
@@ -25,4 +27,9 @@ class ResourceVersion{
   def getMetadata:JMap[String, String] = systemMetadata.underlying
 
   def setData(_data:DataWrapper) = {data = _data}
+
+  def calculateHash = {
+    systemMetadata.put(RESOURCE_VERSION_HASH, data.hash)
+  }
+
 }

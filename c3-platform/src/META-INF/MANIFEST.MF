@@ -4,6 +4,7 @@ Bundle-Name: C3 Platform
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform
 Spring-Context: *
+Bundle-ClassPath: ., lib/md5.jar
 Import-Bundle: com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",

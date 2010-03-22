@@ -35,6 +35,14 @@
 			<scope>test</scope>
 		</dependency>
 
+        <dependency>
+            <groupId>com.twmacinta.util</groupId>
+            <artifactId>md5</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/md5.jar</systemPath>
+        </dependency>
+
 	</dependencies>
 
 	<build>
@@ -51,6 +59,12 @@
 					<include>META-INF/spring/*.xml</include>
 				</includes>
 			</resource>
+            <resource>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>lib/*.jar</include>
+                </includes>
+            </resource>
 		</resources>
 
 		<plugins>
@@ -82,9 +96,6 @@
 				</executions>
 				<configuration>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-					<!--
-                    <manifestLocation>META-INF</manifestLocation>
-                    -->
 					<archive>
 						<manifestFile>${bundleManifestPath}</manifestFile>
 					</archive>
