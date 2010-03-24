@@ -127,8 +127,10 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
       val key = new DatabaseEntry(ra.getBytes)
       val value = new DatabaseEntry(resource.toByteArray)
 
-      if(database.putNoOverwrite(tx, key, value) != OperationStatus.SUCCESS){
-        throw new StorageException("Failed to store resource in database")
+      val status = database.putNoOverwrite(tx, key, value)
+
+      if(status != OperationStatus.SUCCESS){
+        throw new StorageException("Failed to store resource in database, operation status is: " + status.toString)
       }
 
       tx.commit
@@ -194,7 +196,10 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
     val tx = env.beginTransaction(null, null)
     try{
       deleteData(ra, tx)
-      database.delete(tx, key)
+      val status = database.delete(tx, key)
+
+      if(status != OperationStatus.SUCCESS)
+        throw new StorageException("Failed to delete data from DB, op status: " + status.toString)
 
       tx.commit
     }catch{
@@ -215,8 +220,10 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
       val key = new DatabaseEntry(resource.address.getBytes)
       val value = new DatabaseEntry(resource.toByteArray)
 
-      if(database.put(tx, key, value) != OperationStatus.SUCCESS){
-        throw new StorageException("Failed to store resource in database")
+      val status = database.put(tx, key, value)
+
+      if(status != OperationStatus.SUCCESS){
+        throw new StorageException("Failed to store resource in database, operation status: " + status.toString)
       }
 
       tx.commit
@@ -232,7 +239,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
     val key = new DatabaseEntry(address.getBytes)
     val value = new DatabaseEntry()
-
+    
     database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
@@ -241,27 +248,21 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
     new BDBStorageIterator(this)
   }
 
-  protected def storeData(resource:Resource, tx:Transaction){
-    storeData(resource)
-  }
-
-  protected def storeData(resource:Resource){}
-
-
-  protected def deleteData(ra:String, tx:Transaction){
-    deleteData(ra)
-  }
-
-  protected def deleteData(ra:String){}
-
-
-  protected def putData(resource:Resource){}
-
-  protected def putData(resource:Resource, tx:Transaction){
-    putData(resource)
-  }
-
   def loadData(resource:Resource)
+
+  
+  protected def storeData(resource:Resource, tx:Transaction):Unit = storeData(resource)
+
+  protected def storeData(resource:Resource):Unit = {}
+
+  protected def deleteData(ra:String, tx:Transaction):Unit = deleteData(ra)
+  
+  protected def deleteData(ra:String):Unit = {}
+
+  protected def putData(resource:Resource):Unit = {}
+
+  protected def putData(resource:Resource, tx:Transaction):Unit = putData(resource)
+
 
   protected def preSave(resource:Resource){}
 

@@ -15,27 +15,27 @@ class PureBDBStorage(override val id:String, override val path:Path, override va
 	    if(version.persisted == false){
 	      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis)
 	      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-          storeVersionData(versionKey, version, tx)
+          storeVersionData(versionKey, version, tx, false)
 	    }
 	  }
     }else{
       val versionKey = resource.address + "-data"
       resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-      storeVersionData(versionKey, resource.versions(0),tx)
+      storeVersionData(versionKey, resource.versions(0),tx, true)
     }
   }
-  
+
   override protected def putData(resource:Resource, tx:Transaction){
-    
+
     for(version <- resource.versions){
-	  val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match{
-	    case Some(vk) => vk
+      val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match{
+        case Some(vk) => vk
         case None => throw new StorageException("Can't find address for data in version")
-	  }
-      
-      storeVersionData(versionKey, version, tx)
-	    
-	}
+      }
+
+      storeVersionData(versionKey, version, tx, false)
+
+    }
   }
   
   def loadData(resource:Resource) = {
@@ -81,12 +81,22 @@ class PureBDBStorage(override val id:String, override val path:Path, override va
     
   }
   
-  private def storeVersionData(key:String, version:ResourceVersion, tx:Transaction){
+  private def storeVersionData(key:String, version:ResourceVersion, tx:Transaction, allowOverwrite:Boolean){
       
-      val dbKey = new DatabaseEntry(key.getBytes)
+    val dbKey = new DatabaseEntry(key.getBytes)
 	  val dbValue = new DatabaseEntry(version.data.getBytes)
-	   
-	  database.put(tx, dbKey, dbValue)
+
+    var status:OperationStatus = null
+    if(allowOverwrite){
+      status = database.put(tx, dbKey, dbValue)
+    }else{
+      status = database.putNoOverwrite(tx, dbKey, dbValue)
+    }
+
+    if(status != OperationStatus.SUCCESS){
+      throw new StorageException("Failed to write version data, operation status is " + status.toString)  
+    }
+
     version.data = DataWrapper.wrap(version.data.getBytes)
 
   }
