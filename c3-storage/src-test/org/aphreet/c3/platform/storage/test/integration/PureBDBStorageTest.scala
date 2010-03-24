@@ -78,7 +78,7 @@ class PureBDBStorageTest extends TestCase{
       resource.isVersioned = true
 
       val ra = storage.add(resource)
-      Thread.sleep(1000) //TODO Please, remove this!
+      //Thread.sleep(1000) //TODO Please, remove this!
 
       resource.metadata.put("new_key", "new_value")
       resource.systemMetadata.put("new_md_key", "new_md_value")

@@ -21,7 +21,16 @@ class ResourceVersion{
   var persisted = false;
   
   override def toString:String = {
-    date + " " + data.length + " " + revision + " " + systemMetadata 
+    val builder = new StringBuilder
+
+    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
+    builder.append("\n\tMetadata:")
+
+    for((key, value) <- systemMetadata){
+      builder.append("\n\t\t").append(key).append(" => ").append(value)
+    }
+
+    builder.toString
   }
   
   def getMetadata:JMap[String, String] = systemMetadata.underlying

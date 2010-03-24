@@ -24,7 +24,9 @@ object DataWrapper{
 abstract class DataWrapper {
 
   val logger = LogFactory.getLog(DataWrapper.getClass)
-  
+
+  lazy val hash:String  = calculateHash
+
   def inputStream:InputStream
 
   def writeTo(targetFile:File):Unit = {
@@ -53,7 +55,7 @@ abstract class DataWrapper {
   
   def mimeType:String
 
-  def hash:String
+  def calculateHash:String
   
   protected def top(types:java.util.Collection[_]):String = {
     types.iterator.next.asInstanceOf[MimeType].toString
@@ -63,7 +65,7 @@ abstract class DataWrapper {
 
 
 class FileDataWrapper(val file:File) extends DataWrapper{
-  
+
   def inputStream = new FileInputStream(file)
   
   def writeTo(channel:WritableByteChannel) = {
@@ -112,7 +114,7 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     new String(out.toByteArray)
   }
 
-  def hash:String = MD5.asHex(MD5.getHash(file))
+  def calculateHash:String = MD5.asHex(MD5.getHash(file))
 
   def length:Long = file.length
 
@@ -132,7 +134,7 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
   
   override def getBytes:Array[Byte] = bytes
 
-  def hash:String = MD5.asHex({
+  def calculateHash:String = MD5.asHex({
     val md5 = new MD5
     md5.Update(bytes)
     md5.Final
@@ -161,7 +163,7 @@ class StringDataWrapper(val value:String) extends DataWrapper {
   
   def length:Long = value.getBytes.length
 
-  def hash:String = MD5.asHex({
+  def calculateHash:String = MD5.asHex({
     val md5 = new MD5
     md5.Update(value.getBytes())
     md5.Final
@@ -181,7 +183,7 @@ class EmptyDataWrapper extends DataWrapper {
   
   def length:Long = 0
 
-  def hash:String = MD5.asHex({
+  def calculateHash:String = MD5.asHex({
     val md5 = new MD5
     md5.Update("".getBytes())
     md5.Final

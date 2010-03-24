@@ -69,13 +69,13 @@ class Resource {
             .append("\n\nMetadata: ")
 
     for((key, value) <- metadata){
-      builder.append("\n").append(key).append(" -> ").append(value)
+      builder.append("\n\t").append(key).append(" => ").append(value)
     }
 
     builder.append("\n\nSystem metadata:" )
 
     for((key, value) <- systemMetadata){
-      builder.append("\n").append(key).append(" -> ").append(value)
+      builder.append("\n\t").append(key).append(" => ").append(value)
     }
 
     builder.append("\n\nVersions:")

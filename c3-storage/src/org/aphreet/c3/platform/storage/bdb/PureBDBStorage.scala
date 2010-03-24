@@ -13,7 +13,7 @@ class PureBDBStorage(override val id:String, override val path:Path, override va
     if(resource.isVersioned){
 	  for(version <- resource.versions){
 	    if(version.persisted == false){
-	      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis)
+	      val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
 	      version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
           storeVersionData(versionKey, version, tx, false)
 	    }
