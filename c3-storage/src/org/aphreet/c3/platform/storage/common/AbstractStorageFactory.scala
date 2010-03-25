@@ -44,10 +44,9 @@ abstract class AbstractStorageFactory extends StorageFactory{
     log info "Stopping " + this.name + " storage factory"
     
     createdStorages.foreach(s => s.close)
-    createdStorages.clear
-
     storageManager.unregisterFactory(this)
     
+    createdStorages.clear
   }
 
   override def finalize{

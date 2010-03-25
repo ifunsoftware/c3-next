@@ -45,7 +45,7 @@ class StorageManagerImpl extends StorageManager{
       factories.put(factory.name, factory)
     }
 
-    createExitentStoragesForFactory(factory)
+    createExistentStoragesForFactory(factory)
   }
 
   def unregisterFactory(factory:StorageFactory) ={
@@ -186,7 +186,7 @@ class StorageManagerImpl extends StorageManager{
 
 
 
-  private def createExitentStoragesForFactory(factory:StorageFactory){
+  private def createExistentStoragesForFactory(factory:StorageFactory){
     val storageParams = configAccessor.load
 
     log info "Exitent storages: " + storageParams
