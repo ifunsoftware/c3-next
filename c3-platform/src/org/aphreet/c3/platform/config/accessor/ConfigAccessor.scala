@@ -1,25 +1,22 @@
 package org.aphreet.c3.platform.config.accessor
 
-import java.io.{File, FileWriter} 
+import java.io.{File, FileWriter}
+import org.aphreet.c3.platform.config.PlatformConfigManager
 
-import org.springframework.beans.factory.annotation.Autowired
 
-abstract class ConfigAccessor[T] {
-
-  var configManager:PlatformConfigManager = null
+trait ConfigAccessor[T] {
   
-  @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def load:T = loadConfig(getConfigManager.configDir)
   
-  def load:T = loadConfig(configManager.configDir)
-  
-  def store(data:T) = storeConfig(data, configManager.configDir)
+  def store(data:T) = storeConfig(data, getConfigManager.configDir)
   
   def update(f:Function1[T, T]) = store(f.apply(load))
   
   def loadConfig(configDir:File):T
   
   def storeConfig(data:T, configDir:File)
+
+  def getConfigManager:PlatformConfigManager
 
   protected def writeToFile(text:String, configFile:File) = {
     

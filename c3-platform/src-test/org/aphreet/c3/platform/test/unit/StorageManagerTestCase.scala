@@ -1,13 +1,14 @@
 package org.aphreet.c3.platform.test.unit
 
 import junit.framework.TestCase
-import org.easymock.classextension.EasyMock._
-import org.easymock.classextension.EasyMock
-import org.aphreet.c3.platform.storage.impl.{StorageManagerImpl, StorageConfigAccessor}
+import junit.framework.Assert._
+import org.easymock.EasyMock._
+import org.aphreet.c3.platform.storage.impl.{StorageManagerImpl, StorageConfigAccessorImpl}
 import org.aphreet.c3.platform.storage.volume.VolumeManager
-import org.aphreet.c3.platform.mock.StorageMock
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
-import org.aphreet.c3.platform.storage.{StorageFactory, RW, StorageParams}
+import org.aphreet.c3.platform.mock.StorageMock
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageFactory, RW, StorageParams}
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,43 +24,48 @@ class StorageManagerTestCase extends TestCase{
   val storageId = "1234"
   val storageName = "StorageMock"
 
-  def testStorageManager = {
-//    val storageManager = new StorageManagerImpl
-//
-//    val configAccessor = createMock(classOf[StorageConfigAccessor])
-//    EasyMock.expect(configAccessor.load).andReturn(
-//      List(StorageParams(id, List(), Path(storagePath), storageName, RW))
-//    ).atLeastOnce
-//    replay(configAccessor)
-//
-//    val volumeManager = createMock(classOf[VolumeManager])
-//    EasyMock.expect(volumeManager.register(StorageMock(storageId, storagePath)))
-//    replay(volumeManager)
-//
-//    val storageDispatcher = createMock(classOf[StorageDispatcher])
-//    EasyMock.expect(storageDispatcher.setStorages(List(StorageMock(storageId, storagePath))))
-//    replay(storageDispatcher)
-//
-//    storageManager.setConfigAccessor(configAccessor)
-//    storageManager.setVolumeManager(volumeManager)
-//    storageManager.setStorageDispatcher(storageDispatcher)
-//
-//    val storageFactory = createMock(classOf[StorageFactory])
-//    EasyMock.expect(storageFactory.name).andReturn("StorageMock").anyTimes
-//    EasyMock.expect(storageFactory.createStorage(
-//      StorageParams(id, List(), Path(storagePath), storageName, RW))
-//    ).andReturn(StorageMock(storageId, storagePath))
-//
-//    replay(storageFactory)
-//
-//    storageManager.registerFactory(storageFactory)
-//
-//    verify(storageFactory)
-//    verify(configAccessor)
-//    verify(volumeManager)
-//    verify(storageDispatcher)
-//
+  def testRegisterFactory = {
 
+    val volumeManager = createMock(classOf[VolumeManager])
+    expect(volumeManager.register(StorageMock(storageId, storagePath)))
+    replay(volumeManager)
+
+    val storageDispatcher = createMock(classOf[StorageDispatcher])
+    expect(storageDispatcher.setStorages(List(StorageMock(storageId, storagePath))))
+    replay(storageDispatcher)
+
+
+    val storageFactory = createMock(classOf[StorageFactory])
+    expect(storageFactory.name).andReturn("StorageMock").anyTimes
+    expect(storageFactory.createStorage(
+      StorageParams(storageId, List(), new Path(storagePath), storageName, RW("")))
+    ).andReturn(StorageMock(storageId, storagePath))
+    replay(storageFactory)
+
+    val configAccessor = createMock(classOf[StorageConfigAccessor])
+    expect(configAccessor.load).andReturn(
+      List(StorageParams(storageId, List(), new Path(storagePath), storageName, RW("")))
+    ).atLeastOnce
+    replay(configAccessor)
+
+
+    val storageManager = new StorageManagerImpl
+    
+    storageManager.setConfigAccessor(configAccessor)
+    storageManager.setVolumeManager(volumeManager)
+    storageManager.setStorageDispatcher(storageDispatcher)
+
+
+    storageManager.registerFactory(storageFactory)
+
+    assertEquals(storageManager.storageForId(storageId), StorageMock(storageId, storagePath))
+
+    verify(storageFactory)
+    verify(configAccessor)
+    verify(volumeManager)
+    verify(storageDispatcher)
   }
+
+  
 
 }

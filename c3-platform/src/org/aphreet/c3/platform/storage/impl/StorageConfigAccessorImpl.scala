@@ -7,18 +7,26 @@ import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
 import org.aphreet.c3.platform.common.{Path, JSONFormatter}
 import org.aphreet.c3.platform.config.accessor._
-import org.aphreet.c3.platform.storage.{StorageParams, StorageMode, StorageModeParser}
-
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl;
+import com.springsource.json.writer.JSONWriterImpl
 
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageParams, StorageMode, StorageModeParser}
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.config.PlatformConfigManager
 
 @Component
-class StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
+class StorageConfigAccessorImpl extends StorageConfigAccessor{
 
   val STORAGE_CONFIG = "c3-storage-config.json"
-  
+
+  var configManager:PlatformConfigManager = null
+
+  @Autowired
+  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+
+  def getConfigManager:PlatformConfigManager = configManager
+
   def loadConfig(configDir:File):List[StorageParams] = {
     val configFile = new File(configDir, STORAGE_CONFIG)
     

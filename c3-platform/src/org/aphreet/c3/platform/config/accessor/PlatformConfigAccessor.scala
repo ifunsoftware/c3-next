@@ -7,7 +7,9 @@ import java.io.{File, FileWriter, StringWriter}
 import scala.collection.jcl.{LinkedList, Conversions, Set, HashMap}
 
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl;
+import com.springsource.json.writer.JSONWriterImpl
+import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -16,7 +18,14 @@ import javax.annotation.PostConstruct
 class PlatformConfigAccessor extends ConfigAccessor[HashMap[String,String]]{
 
   val PLATFORM_CONFIG = "c3-platform-config.json"
-  
+
+  var configManager:PlatformConfigManager = null
+
+  def getConfigManager:PlatformConfigManager = configManager
+
+  @Autowired
+  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+
   @PostConstruct
   def init = {
     val props = load

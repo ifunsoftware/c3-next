@@ -9,9 +9,18 @@ import org.aphreet.c3.platform.common.{Path, JSONFormatter}
 import org.aphreet.c3.platform.config.accessor.ConfigAccessor
 
 import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl;
+import com.springsource.json.writer.JSONWriterImpl
+import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.springframework.beans.factory.annotation.Autowired;
 
 abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, Boolean)]]{
+
+  var configManager:PlatformConfigManager = null
+
+  @Autowired
+  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+
+  def getConfigManager:PlatformConfigManager = configManager
 
    def loadConfig(configDir:File):Map[T, (String, Boolean)] = {
     val file = new File(configDir, filename)
