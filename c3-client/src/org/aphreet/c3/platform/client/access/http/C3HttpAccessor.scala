@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.client.access.http
 
-import java.io.{ByteArrayInputStream, InputStream}
 import org.apache.commons.httpclient.methods.multipart._
 import org.apache.commons.httpclient.{HttpStatus, HttpClient}
 import org.apache.commons.httpclient.methods.{DeleteMethod, GetMethod, PostMethod}
+import java.io.{File, ByteArrayInputStream, InputStream}
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,22 +17,28 @@ class C3HttpAccessor(val url:String){
 
   val httpClient = new HttpClient
 
-  def write(data:Array[Byte], metadata:Map[String, String]):String =  {
+  def write(data:Array[Byte], metadata:Map[String, String]):String =
+    writeData(new FilePart("data", new ByteArrayPartSource(data)), metadata)
+
+  def upload(file:File, metadata:Map[String, String]):String =
+    writeData(new FilePart("data", new FilePartSource(file)), metadata)
+
+  private def writeData(filePart:FilePart, metadata:Map[String, String]):String = {
     val postMethod = new PostMethod(url)
 
-    val parts:Array[Part] = (new FilePart("data", new ByteArrayPartSource(data)) ::
+    val parts:Array[Part] = (filePart ::
             metadata.map(e => new StringPart(e._1, e._2)).toList).toArray
 
-    postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams()));
+    postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
 
     try{
       val status = httpClient.executeMethod(postMethod)
       status match {
         case HttpStatus.SC_OK => postMethod.getResponseBodyAsString().replaceAll("\n", "")
-        case _ => throw new Exception(("Failed to post resource, code " + status).asInstanceOf[String])
+        case _ => throw new Exception(("Filed to post resource, code" + status).asInstanceOf[String])
       }
-    }finally{
-      postMethod.releaseConnection()
+    }finally {
+      postMethod.releaseConnection
     }
   }
 
