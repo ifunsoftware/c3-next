@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.client.access
 
-import http.C3HttpAccessor
+import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import org.aphreet.c3.platform.client.common.CLI
 import org.aphreet.c3.platform.client.common.ArgumentType._
-import java.io.File
+import java.io.{OutputStream, BufferedOutputStream, FileOutputStream, File}
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,9 +41,20 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     if(!file.exists){
       throw new IllegalArgumentException("Specified file does not exit")
     }
+    upload(host, pool, file, out)
   }
 
   def upload(host:String, pool:String, path:File, out:String){
+
+    var fos:OutputStream = null
+
+    if(out != null){
+
+      val fileHandle = new File(out)
+      if(fileHandle.exists) fileHandle.delete
+
+      fos = new BufferedOutputStream(new FileOutputStream(fileHandle))
+    }
 
     println("Starting  upload...")
 
@@ -60,9 +71,12 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
       fileList = List(path)
     }
 
-    fileList.foreach(
-      uploadFile(client, _, pool)
-    )
+    for(file <- fileList){
+      val ra = uploadFile(client, file, pool)
+      if(fos != null) fos.write((ra + "\n").getBytes)
+    }
+
+    if(fos != null) fos.close
 
     println("Upload complete")
   }
@@ -78,8 +92,10 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
       println("Done")
       ra
     }catch{
-      case e=> println("Error")
-      null
+      case e=> {
+        println("Error")
+        null
+      }
     }
     
   }
