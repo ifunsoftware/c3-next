@@ -26,24 +26,7 @@ abstract class Command(val req:HttpServletRequest, val resp:HttpServletResponse)
 
   def execute
 
-  protected def parseURI:(String, Int) = {
-
-    val parts = req.getRequestURI.split("/+");
-
-    parts.length match {
-      case 2 => (null, -1)
-      case 3 => (parts(2), -1)
-      case 4 => {
-        try{
-          (parts(2), Integer.parseInt(parts(3)))
-        }catch{
-          case e => throw new URIParseException
-        }
-      }
-      case _ => throw new URIParseException
-    }
-
-  }
+  protected def parseURI:(String, ResourcePart, Int) = Command.parseURI(req.getRequestURI)
 
   protected def badRequest = resp.setStatus(HttpServletResponse.SC_BAD_REQUEST)
 
@@ -52,6 +35,46 @@ abstract class Command(val req:HttpServletRequest, val resp:HttpServletResponse)
   protected def forbidden = resp.setStatus(HttpServletResponse.SC_FORBIDDEN)
 
   protected def ok = resp.setStatus(HttpServletResponse.SC_OK)
+
+
+}
+
+object Command{
+
+ def parseURI(uri:String):(String, ResourcePart, Int) = {
+
+    val parts = uri.split("/+");
+
+    parts.length match {
+      case 2 => (null, ResourceMetadata, -1)
+      case 3 => (parts(2), ResourceMetadata, -1)
+      case 4 => {
+        try{
+          (parts(2), partFromString(parts(3)), -1)
+        }catch{
+          case e => throw new URIParseException
+        }
+      }
+      case 5 => {
+        try{
+          (parts(2), partFromString(parts(3)), Integer.parseInt(parts(4)))
+        }
+      }
+      case _ => throw new URIParseException
+    }
+
+  }
+
+  private def partFromString(part:String):ResourcePart = part match {
+    case "data" => ResourceData
+    case "metadata" => ResourceMetadata
+    case _ => throw new URIParseException
+  }
+
 }
 
 class URIParseException extends Exception
+
+sealed class ResourcePart
+object ResourceData extends ResourcePart
+object ResourceMetadata extends ResourcePart

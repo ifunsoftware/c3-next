@@ -43,7 +43,7 @@ class C3HttpAccessor(val url:String){
   }
 
   def read(address:String):Array[Byte] = {
-    val getMethod = new GetMethod(url + address)
+    val getMethod = new GetMethod(url + address + "/data")
 
     try{
       val status = httpClient.executeMethod(getMethod)
@@ -69,7 +69,7 @@ class C3HttpAccessor(val url:String){
   }
 
   def fakeRead(address:String):Int = {
-    val getMethod = new GetMethod(url + address)
+    val getMethod = new GetMethod(url + address + "/data")
 
     try{
       val status = httpClient.executeMethod(getMethod)

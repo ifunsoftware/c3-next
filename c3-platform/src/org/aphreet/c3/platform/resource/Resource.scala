@@ -6,8 +6,10 @@ import java.util.{Map => JMap, List => JList}
 
 import java.util.Date
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
 import com.twmacinta.util.{MD5, MD5InputStream}
+import java.io._
+import org.aphreet.c3.platform.common.JSONFormatter
+import com.springsource.json.writer.JSONWriterImpl
 
 class Resource {
 
@@ -60,32 +62,7 @@ class Resource {
     versions add version
   }
 
-  override def toString:String = {
-
-    val builder = new StringBuilder
-
-    builder.append("Resource:\n").append("Address: ").append(address)
-            .append("\nCreate date: ").append(createDate)
-            .append("\n\nMetadata: ")
-
-    for((key, value) <- metadata){
-      builder.append("\n\t").append(key).append(" => ").append(value)
-    }
-
-    builder.append("\n\nSystem metadata:" )
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t").append(key).append(" => ").append(value)
-    }
-
-    builder.append("\n\nVersions:")
-
-    for(i <- 1 to versions.size){
-      builder.append("\nVer ").append(i).append(": ").append(versions(i-1).toString)
-    }
-
-    builder.toString
-  }
+  override def toString:String = toJSON(true)
 
   def toByteArray:Array[Byte] = {
 
@@ -153,6 +130,77 @@ class Resource {
     byteOs.toByteArray
   }
 
+  def toJSON(full:Boolean):String = {
+
+    val swriter = new StringWriter()
+
+
+    try{
+      val writer = new JSONWriterImpl(swriter)
+
+      writer.`object`
+
+      writer.key("address").value(this.address)
+
+      writer.key("createDate").value(this.createDate.getTime)
+
+
+      writer.key("metadata")
+
+      writer.`object`
+
+      metadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+
+      writer.endObject
+
+      if(full){
+        writer.key("systemMetadata")
+
+        writer.`object`
+
+        systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+
+        writer.endObject
+      }
+
+      writer.key("versions")
+
+      writer.array
+
+      versions.foreach(v => {
+        writer.`object`
+
+        writer.key("createDate").value(v.date.getTime)
+        writer.key("dataLength").value(v.data.length)
+
+
+        if(full){
+          writer.key("revision").value(v.revision)
+
+          writer.key("systemMetadata")
+
+          writer.`object`
+
+          v.systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+          
+          writer.endObject
+        }
+        writer.endObject
+      })
+
+      writer.endArray
+
+
+      writer.endObject
+      swriter.flush
+
+      JSONFormatter.format(swriter.toString)
+
+    }finally{
+      swriter.close
+    }
+  }
+
 }
 
 object Resource {
@@ -162,7 +210,9 @@ object Resource {
   val MD_CONTENT_TYPE = "content.type"
   val MD_DATA_ADDRESS = "c3.data.address"
   val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
-
+  val MD_POOL = "c3.pool"
+  val MD_TAGS = "c3.tags"
+  
   def fromByteArray(bytes:Array[Byte]):Resource = {
 
     def readString(dataIs:DataInputStream):String = {

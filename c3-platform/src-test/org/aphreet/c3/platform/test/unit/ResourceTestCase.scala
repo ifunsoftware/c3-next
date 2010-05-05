@@ -129,4 +129,121 @@ class ResourceTestCase extends TestCase {
   }
 
 
+  def testJSON = {
+    val resource = new Resource
+
+    resource.address = "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47"
+    resource.createDate = new Date(1273087676152l)
+
+    resource.metadata.put("ke\"1", "value1")
+    resource.metadata.put("key2", "value2")
+
+    resource.systemMetadata.put("skey1", "svalue1")
+    resource.systemMetadata.put("skey2", "svalue2")
+
+    resource.isVersioned = true
+
+    val version = new ResourceVersion
+    version.data = DataWrapper.wrap("my data here")
+    version.systemMetadata.put("rkey1", "rvalue1")
+    version.date = new Date(1273087676152l)
+
+    resource.addVersion(version)
+
+    val version2 = new ResourceVersion
+    version2.data = DataWrapper.wrap("my data here")
+    version2.systemMetadata.put("rkey331", "rvalu3e1")
+    version2.date = new Date(1273087676195l)
+
+    resource.addVersion(version2)
+
+    val json = resource.toJSON(false)
+
+    val expected =
+"""{
+	"address": "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47",
+	"createDate": 1273087676152,
+	"metadata": {
+		"key2": "value2",
+		"ke\"1": "value1"
+	},
+	"versions": [
+		{
+			"createDate": 1273087676152,
+			"dataLength": 12
+		},
+		{
+			"createDate": 1273087676195,
+			"dataLength": 12
+		}
+	]
+}"""
+    assertEquals(expected, json)
+  }
+
+  def testJSONFull = {
+    val resource = new Resource
+
+    resource.address = "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47"
+    resource.createDate = new Date(1273087676152l)
+
+    resource.metadata.put("ke\"1", "value1")
+    resource.metadata.put("key2", "value2")
+
+    resource.systemMetadata.put("skey1", "svalue1")
+    resource.systemMetadata.put("skey2", "svalue2")
+
+    resource.isVersioned = true
+
+    val version = new ResourceVersion
+    version.data = DataWrapper.wrap("my data here")
+    version.systemMetadata.put("rkey1", "rvalue1")
+    version.date = new Date(1273087676152l)
+
+    resource.addVersion(version)
+
+    val version2 = new ResourceVersion
+    version2.data = DataWrapper.wrap("my data here")
+    version2.systemMetadata.put("rkey331", "rvalu3e1")
+    version2.date = new Date(1273087676195l)
+
+    resource.addVersion(version2)
+
+    val json = resource.toJSON(true)
+
+    val expected =
+"""{
+	"address": "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47",
+	"createDate": 1273087676152,
+	"metadata": {
+		"key2": "value2",
+		"ke\"1": "value1"
+	},
+	"systemMetadata": {
+		"skey1": "svalue1",
+		"skey2": "svalue2"
+	},
+	"versions": [
+		{
+			"createDate": 1273087676152,
+			"dataLength": 12,
+			"revision": 0,
+			"systemMetadata": {
+				"rkey1": "rvalue1"
+			}
+		},
+		{
+			"createDate": 1273087676195,
+			"dataLength": 12,
+			"revision": 0,
+			"systemMetadata": {
+				"rkey331": "rvalu3e1"
+			}
+		}
+	]
+}"""
+    assertEquals(expected, json)
+  }
+
+
 }

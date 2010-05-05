@@ -5,6 +5,7 @@ object JSONFormatter {
   def format(text:String):String = {
     var tabCount = 0
     var inQuotes = false
+    var prevCharIsEscape = false
     
     val builder = new StringBuilder
     
@@ -41,7 +42,7 @@ object JSONFormatter {
         
         case "\"" => {
           builder append c
-          inQuotes = !inQuotes
+          if(!prevCharIsEscape) inQuotes = !inQuotes
         }
         
         case ":" => {
@@ -68,9 +69,16 @@ object JSONFormatter {
           }
           builder append c
         }
+
+        case "\\" => {
+          prevCharIsEscape = !prevCharIsEscape
+          builder append c
+        }
         
         case _ => builder append c
       }
+
+      if(prevCharIsEscape && c != "\\") prevCharIsEscape = false
       
     }
       

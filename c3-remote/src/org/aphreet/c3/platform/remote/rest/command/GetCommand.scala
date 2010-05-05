@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.remote.rest.command
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.aphreet.c3.platform.remote.rest.{URIParseException, Command}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.aphreet.c3.platform.remote.rest.{ResourceMetadata, URIParseException, Command}
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,15 +25,18 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
         val resource = accessEndpoint.get(req._1)
 
         if(resource != null){
-          var vers = 0
-
-          if(req._2 >= 0){
-            vers = req._2
+          if(req._2 == ResourceMetadata){
+            sendResourceMetadata(resource)
+          }else{
+            var vers = 0
+            if(req._3 >= 0) vers = req._3
+            
+            if(resource.versions.size > vers){
+              sendResource(resource, resource.versions(vers))
+            }else notFound
           }
 
-          if(resource.versions.size > vers){
-            sendResource(resource, resource.versions(vers))
-          }else notFound
+
         }else notFound
 
       }else badRequest
@@ -57,6 +60,14 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
       resp.flushBuffer
     }
 
+  }
+
+  def sendResourceMetadata(resource:Resource){
+    resp.reset
+    resp.setStatus(HttpServletResponse.SC_OK)
+    resp.setContentType("text/json")
+    resp.getWriter.write(resource.toJSON(false))
+    resp.flushBuffer
   }
 
 }
