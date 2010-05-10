@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.remote.test.rest.command
 
 import junit.framework.TestCase
 import junit.framework.Assert._
-import org.aphreet.c3.platform.remote.rest.{ResourceData, ResourceMetadata, Command}
+import org.aphreet.c3.platform.remote.rest._
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,45 +14,103 @@ import org.aphreet.c3.platform.remote.rest.{ResourceData, ResourceMetadata, Comm
 
 class RequestParserTestCase extends TestCase {
 
-  def testSimpleUri{
+  def testWrongUri{
 
-    val result = Command.parseURI("/c3-remote/")
+    checkFailedParams("/c3-remote/", "/c3-remote")
+    checkFailedParams("/c3-remote/", "/c3-remote/")
+    checkFailedParams("/c3-remote/resource", "/c3-remote")
+    checkFailedParams("/c3-remote/resource/", "/c3-remote")
+    checkFailedParams("/c3-remote/search", "/c3-remote")
+    checkFailedParams("/c3-remote/search/", "/c3-remote")
 
-    assertEquals(null, result._1)
-    assertEquals(ResourceMetadata, result._2)
-    assertEquals(-1, result._3)
+    checkFailedParams("/", "/")
+    checkFailedParams("/resource", "/")
+    checkFailedParams("/resource/", "/")
+    checkFailedParams("/search", "/")
+    checkFailedParams("/search/", "/")
+    
+  }
+
+  def testEmptyUri{
+    checkOkParams("/c3-remote/resource", "/c3-remote")
+    checkOkParams("/c3-remote/resource/", "/c3-remote")
+    checkOkParams("/c3-remote/search", "/c3-remote")
+    checkOkParams("/c3-remote/search/", "/c3-remote")
+
+    checkOkParams("/resource", "/")
+    checkOkParams("/resource/", "/")
+    checkOkParams("/search", "/")
+    checkOkParams("/search/", "/")
   }
 
   def testUri1{
-    val result = Command.parseURI("/c3-remote/0000-0000-0000-0000")
 
-    assertEquals("0000-0000-0000-0000", result._1)
-    assertEquals(ResourceMetadata, result._2)
-    assertEquals(-1, result._3)
+    val command = new Command("/c3-remote/resource/0000-0000-0000-0000", "/c3-remote")
+
+
+    assertEquals(ResourceRequest, command.requestType)
+    assertEquals("0000-0000-0000-0000", command.query)
+    assertEquals(ResourceMetadata, command.resourcePart)
+    assertEquals(-1, command.version)
   }
 
   def testUri2{
-    val result = Command.parseURI("/c3-remote/0000-0000-0000-0000/data")
 
-    assertEquals("0000-0000-0000-0000", result._1)
-    assertEquals(ResourceData, result._2)
-    assertEquals(-1, result._3)
+    val command = new Command("/c3-remote/resource/0000-0000-0000-0000/data", "/c3-remote")
+
+
+    assertEquals(ResourceRequest, command.requestType)
+    assertEquals("0000-0000-0000-0000", command.query)
+    assertEquals(ResourceData, command.resourcePart)
+    assertEquals(-1, command.version)
   }
 
   def testUri3{
-    val result = Command.parseURI("/c3-remote/0000-0000-0000-0000/metadata")
+    val command = new Command("/c3-remote/resource/0000-0000-0000-0000/metadata", "/c3-remote")
 
-    assertEquals("0000-0000-0000-0000", result._1)
-    assertEquals(ResourceMetadata, result._2)
-    assertEquals(-1, result._3)
+
+    assertEquals(ResourceRequest, command.requestType)
+    assertEquals("0000-0000-0000-0000", command.query)
+    assertEquals(ResourceMetadata, command.resourcePart)
+    assertEquals(-1, command.version)
   }
 
   def testUri4{
-    val result = Command.parseURI("/c3-remote/0000-0000-0000-0000/data/23")
+     val command = new Command("/c3-remote/resource/0000-0000-0000-0000/data/23", "/c3-remote")
 
-    assertEquals("0000-0000-0000-0000", result._1)
-    assertEquals(ResourceData, result._2)
-    assertEquals(23, result._3)
+
+    assertEquals(ResourceRequest, command.requestType)
+    assertEquals("0000-0000-0000-0000", command.query)
+    assertEquals(ResourceData, command.resourcePart)
+    assertEquals(23, command.version)
+  }
+
+  def testUri5{
+     val command = new Command("/c3-remote/search/some_request_here", "/c3-remote")
+
+
+    assertEquals(SearchRequest, command.requestType)
+    assertEquals("some_request_here", command.query)
+  }
+
+
+  def checkFailedParams(uri:String, context:String) = {
+     try{
+      val command = new Command(uri, context)
+      assertFalse(false)
+    }catch{
+      case e:URIParseException => assertTrue(true)
+      case e => assertFalse(false)
+    }
+  }
+
+  def checkOkParams(uri:String, context:String) = {
+     try{
+      val command = new Command(uri, context)
+      assertTrue(true)
+    }catch{
+      case e => assertFalse(false)
+    }
   }
 
 }

@@ -12,6 +12,14 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
 class RestServlet extends HttpServlet {
 
+  override def service(request:HttpServletRequest, response:HttpServletResponse) = {
+    try{
+      super.service(request, response)
+    }catch {
+      case e:URIParseException => response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    }
+  }
+
   override def doGet(request:HttpServletRequest, response:HttpServletResponse) = {
     new GetCommand(request, response).execute
   }

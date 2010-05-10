@@ -1,8 +1,8 @@
 package org.aphreet.c3.platform.remote.rest.command
 
-import org.aphreet.c3.platform.remote.rest.Command
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.exception.{StorageIsNotWritableException, ResourceNotFoundException}
+import org.aphreet.c3.platform.remote.rest.{ResourceRequest, Command}
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,14 +13,13 @@ import org.aphreet.c3.platform.exception.{StorageIsNotWritableException, Resourc
  */
 
 class DeleteCommand(override val req:HttpServletRequest, override val resp:HttpServletResponse)
-  extends Command(req, resp){
+  extends HttpCommand(req, resp){
 
   override def execute{
     try{
-      val ra = parseURI._1
 
-      if(ra != null){
-        accessEndpoint.delete(ra)
+      if(query != null && requestType == ResourceRequest){
+        accessEndpoint.delete(query)
         ok
       }else badRequest
       

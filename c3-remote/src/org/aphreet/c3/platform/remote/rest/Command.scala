@@ -1,9 +1,6 @@
 package org.aphreet.c3.platform.remote.rest
 
-import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.access.PlatformAccessEndpoint
-import org.springframework.context.support.AbstractApplicationContext
-import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -15,7 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Command(val req:HttpServletRequest, val resp:HttpServletResponse) extends SpringBeanAutowiringSupport {
+class Command(val url:String, val contextPath:String) extends SpringBeanAutowiringSupport {
+
+  var requestType:RequestType = null
+  var query:String = null
+  var version:Int = -1
+  var resourcePart:ResourcePart = ResourceMetadata
+
 
   var accessEndpoint:PlatformAccessEndpoint = null
 
@@ -24,48 +27,49 @@ abstract class Command(val req:HttpServletRequest, val resp:HttpServletResponse)
     accessEndpoint = endpoint
   }
 
-  def execute
+  {
+    val cleanUrl = url.replaceFirst(contextPath, "").replaceFirst("^/+", "").replaceFirst("/+$", "")
 
-  protected def parseURI:(String, ResourcePart, Int) = Command.parseURI(req.getRequestURI)
+    //"resource/1231-1234-1234-1234/data/27
 
-  protected def badRequest = resp.setStatus(HttpServletResponse.SC_BAD_REQUEST)
 
-  protected def notFound = resp.setStatus(HttpServletResponse.SC_NOT_FOUND)
+    val parts = cleanUrl.split("/+")
 
-  protected def forbidden = resp.setStatus(HttpServletResponse.SC_FORBIDDEN)
+    if(parts.length > 0 ){
+      requestType = RequestType.typeFromString(parts(0))
 
-  protected def ok = resp.setStatus(HttpServletResponse.SC_OK)
+      if(parts.length > 1){
+        query = parts(1)
+      }
+
+      if(parts.length > 2){
+        resourcePart = ResourcePart.partFromString(parts(2))
+      }
+
+      if(parts.length > 3){
+        try{
+          version = Integer.parseInt(parts(3))
+        }catch{
+          case e:NumberFormatException => throw new URIParseException
+        }
+      }
+    }else throw new URIParseException
+
+  }
+
+
+  def execute = {}
 
 
 }
 
-object Command{
+class URIParseException extends Exception
 
- def parseURI(uri:String):(String, ResourcePart, Int) = {
+sealed class ResourcePart
 
-    val parts = uri.split("/+");
+object ResourcePart{
 
-    parts.length match {
-      case 2 => (null, ResourceMetadata, -1)
-      case 3 => (parts(2), ResourceMetadata, -1)
-      case 4 => {
-        try{
-          (parts(2), partFromString(parts(3)), -1)
-        }catch{
-          case e => throw new URIParseException
-        }
-      }
-      case 5 => {
-        try{
-          (parts(2), partFromString(parts(3)), Integer.parseInt(parts(4)))
-        }
-      }
-      case _ => throw new URIParseException
-    }
-
-  }
-
-  private def partFromString(part:String):ResourcePart = part match {
+  def partFromString(part:String):ResourcePart = part match {
     case "data" => ResourceData
     case "metadata" => ResourceMetadata
     case _ => throw new URIParseException
@@ -73,8 +77,21 @@ object Command{
 
 }
 
-class URIParseException extends Exception
-
-sealed class ResourcePart
 object ResourceData extends ResourcePart
 object ResourceMetadata extends ResourcePart
+
+sealed class RequestType
+object RequestType{
+
+  def typeFromString(str:String):RequestType = {
+    str match {
+      case "resource" => ResourceRequest
+      case "search" => SearchRequest
+      case _ => throw new URIParseException
+    }
+
+  }
+
+}
+object ResourceRequest extends RequestType
+object SearchRequest extends RequestType

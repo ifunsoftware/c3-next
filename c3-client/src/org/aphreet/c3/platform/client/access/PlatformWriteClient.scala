@@ -36,7 +36,7 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     val threadCount = cliValue("threads", "1").toInt
     val objectType = cliValue("type", "application/octet-stream")
     val pool = cliValue("pool", "")
-    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/"
+    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/resource/"
     val file = cliValue("out", null)
 
 

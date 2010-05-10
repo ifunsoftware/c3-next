@@ -29,7 +29,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     if(cli.hasOption("help")) helpAndExit("Uploader")
 
     val pool = cliValue("pool", "")
-    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/"
+    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/resource/"
     val out = cliValue("out", null)
     val path = cliValue("file", null)
 

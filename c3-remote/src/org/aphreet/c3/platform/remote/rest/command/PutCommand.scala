@@ -18,9 +18,8 @@ class PutCommand(override val req:HttpServletRequest,
   
 
   override def getResource:Resource = {
-    val req = parseURI
 
-    if(req._1 != null) accessEndpoint.get(req._1)
+    if(query != null) accessEndpoint.get(query)
     else throw new WrongRequestException
   }
 

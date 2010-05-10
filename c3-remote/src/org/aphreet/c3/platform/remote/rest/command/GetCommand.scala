@@ -3,7 +3,8 @@ package org.aphreet.c3.platform.remote.rest.command
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
-import org.aphreet.c3.platform.remote.rest.{ResourceMetadata, URIParseException, Command}
+import org.aphreet.c3.platform.remote.rest._
+import java.util.List
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,23 +15,35 @@ import org.aphreet.c3.platform.remote.rest.{ResourceMetadata, URIParseException,
  */
 
 class GetCommand(override val req:HttpServletRequest, override val resp:HttpServletResponse)
-  extends Command(req, resp){
+  extends HttpCommand(req, resp){
 
   override def execute{
     try{
-      val req = parseURI
 
-      if(req._1 != null){
+      requestType match {
+        case ResourceRequest => executeResource
+        case SearchRequest => executeSearch
+      }
 
-        val resource = accessEndpoint.get(req._1)
+    }catch{
+      case e:URIParseException => badRequest
+      case e:ResourceNotFoundException => notFound
+    }
+  }
+
+  def executeResource = {
+    
+    if(query != null){
+
+        val resource = accessEndpoint.get(query)
 
         if(resource != null){
-          if(req._2 == ResourceMetadata){
+          if(resourcePart == ResourceMetadata){
             sendResourceMetadata(resource)
           }else{
             var vers = 0
-            if(req._3 >= 0) vers = req._3
-            
+            if(version >= 0) vers = version
+
             if(resource.versions.size > vers){
               sendResource(resource, resource.versions(vers))
             }else notFound
@@ -40,10 +53,6 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
         }else notFound
 
       }else badRequest
-    }catch{
-      case e:URIParseException => badRequest
-      case e:ResourceNotFoundException => notFound
-    }
   }
 
   def sendResource(resource:Resource, version:ResourceVersion){
@@ -65,8 +74,37 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
   def sendResourceMetadata(resource:Resource){
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
-    resp.setContentType("text/json")
+    resp.setContentType("text/x-json")
     resp.getWriter.write(resource.toJSON(false))
+    resp.flushBuffer
+  }
+
+  def executeSearch = {
+    if(query != null)
+      sendSearchResults(accessEndpoint.search(query))
+    else
+      badRequest
+  }
+
+  def sendSearchResults(results:List[String]) = {
+    resp.reset
+    resp.setStatus(HttpServletResponse.SC_OK)
+    resp.setContentType("text/x-json")
+
+    val writer = resp.getWriter
+
+    writer.write(
+"""{
+  resources:[
+""")
+
+    for(address <- results.toArray){
+      writer.write("\"" + address.toString + "\",\n")
+    }
+    writer.write(
+""" ]
+}""")
+
     resp.flushBuffer
   }
 

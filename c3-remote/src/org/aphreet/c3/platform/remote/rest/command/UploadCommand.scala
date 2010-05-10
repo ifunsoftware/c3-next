@@ -10,8 +10,8 @@ import org.apache.commons.fileupload.FileItem
 import java.io.File
 import collection.mutable.HashMap
 import javax.servlet.ServletContext
-import org.aphreet.c3.platform.remote.rest.{URIParseException, Command}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.aphreet.c3.platform.remote.rest.{ResourceRequest, URIParseException, Command}
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,7 +23,7 @@ import org.aphreet.c3.platform.exception.ResourceNotFoundException
 
 abstract class UploadCommand(override val req:HttpServletRequest,
                   override val resp:HttpServletResponse,
-                  val context:ServletContext) extends Command(req, resp){
+                  val context:ServletContext) extends HttpCommand(req, resp){
 
   val metadata = new HashMap[String, String]
   var data:DataWrapper = null
@@ -31,8 +31,9 @@ abstract class UploadCommand(override val req:HttpServletRequest,
   val factory = newDiskFileItemFactory
 
   override def execute{
+
     try{
-      if(ServletFileUpload.isMultipartContent(req)){
+      if(requestType == ResourceRequest && ServletFileUpload.isMultipartContent(req)){
 
         val upload = new ServletFileUpload(factory)
 
