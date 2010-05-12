@@ -42,7 +42,7 @@ class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
   }
   
   def query(query:String):List[String] = {
-    Collections.emptyList
+    Collections.emptyList[String]
   }
   
 }
