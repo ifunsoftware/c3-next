@@ -82,6 +82,7 @@
 						<jvmArg>-Xms64m</jvmArg>
 						<jvmArg>-Xmx1024m</jvmArg>
 					</jvmArgs>
+                    <sourceDir>src</sourceDir>
 				</configuration>
 			</plugin>
 
@@ -94,7 +95,6 @@
 				</executions>
 				<configuration>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-					<manifestLocation>META-INF</manifestLocation>
 					<archive>
 						<manifestFile>${bundleManifestPath}</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>

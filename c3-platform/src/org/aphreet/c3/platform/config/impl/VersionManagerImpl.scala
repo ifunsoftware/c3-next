@@ -27,34 +27,36 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.config.impl
 
-package org.aphreet.c3.platform.remote.api.ws.impl
-
-import java.util.HashMap
-import javax.jws.{WebService, WebMethod}
-import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.osgi.context.BundleContextAware
+import collection.mutable.Map
+import collection.mutable.HashMap
+import org.osgi.framework.BundleContext
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
-import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.aphreet.c3.platform.config.VersionManager
+import org.springframework.beans.factory.annotation.Autowired
 
+@Component("versionManager")
+class VersionManagerImpl extends VersionManager with BundleContextAware{
 
-@Component
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
-class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with PlatformWSAccessEndpoint{
-
-  private var accessAdapter:PlatformAccessAdapter = null
+  var bundleContext:BundleContext = null;
 
   @Autowired
-  private def setAccessAdapter(adapter:PlatformAccessAdapter) = {accessAdapter = adapter}
+  override def setBundleContext(bundleContext_ :BundleContext){
+    bundleContext = bundleContext_
+  }
 
-  @WebMethod
-  override def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
+  override def listC3Modules:Map[String, String] = {
 
-  @WebMethod
-  override def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
+    val map = new HashMap[String, String]
 
-  @WebMethod{val exclude=true}
-  override def $tag:Int = super.$tag
+    bundleContext.getBundles
+            .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
+            .foreach(b => map + (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
 
+    println(map)
+
+    map
+  }
 }

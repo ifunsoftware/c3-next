@@ -106,15 +106,19 @@
                     <archive>
                         <manifest>
                             <mainClass>Shell</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <id>make-assembly</id>
+                        <!-- this is used for inheritance merges -->
+                        <phase>package</phase>
+                        <!-- append to the packaging phase. -->
                         <goals>
-                            <goal>single</goal> <!-- goals == mojos -->
+                            <goal>single</goal>
+                            <!-- goals == mojos -->
                         </goals>
                     </execution>
                 </executions>

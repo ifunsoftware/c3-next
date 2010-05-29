@@ -27,34 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.config
 
-package org.aphreet.c3.platform.remote.api.ws.impl
+import collection.mutable.Map
 
-import java.util.HashMap
-import javax.jws.{WebService, WebMethod}
-import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
-import org.springframework.web.context.support.SpringBeanAutowiringSupport
+trait VersionManager{
 
-
-@Component
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
-class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with PlatformWSAccessEndpoint{
-
-  private var accessAdapter:PlatformAccessAdapter = null
-
-  @Autowired
-  private def setAccessAdapter(adapter:PlatformAccessAdapter) = {accessAdapter = adapter}
-
-  @WebMethod
-  override def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
-
-  @WebMethod
-  override def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
-
-  @WebMethod{val exclude=true}
-  override def $tag:Int = super.$tag
-
+  def listC3Modules:Map[String, String]
+  
 }

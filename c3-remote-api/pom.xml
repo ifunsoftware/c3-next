@@ -47,6 +47,7 @@
 						<jvmArg>-Xms64m</jvmArg>
 						<jvmArg>-Xmx1024m</jvmArg>
 					</jvmArgs>
+                    <sourceDir>src</sourceDir>
 				</configuration>
 			</plugin>
 

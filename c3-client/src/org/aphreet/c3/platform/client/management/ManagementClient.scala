@@ -5,9 +5,9 @@ import connection.ConnectionProvider
 import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
 import java.io.{InputStreamReader, BufferedReader}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
-import org.aphreet.c3.platform.client.common.CLI
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.util.logging.LogManager
+import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 
 /**
  * Created by IntelliJ IDEA.
@@ -62,9 +62,13 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     val reader = new BufferedReader(new InputStreamReader(System.in))
 
-    var commandFactory = connect
+    println("C3 Client version " + VersionUtils.clientVersion)
 
+    var commandFactory = connect
+    
     println("Welcome to C3 shell")
+
+
 
     print("C3>")
 

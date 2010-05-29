@@ -82,6 +82,21 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <version>2.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymockclassextension</artifactId>
+            <version>2.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -144,6 +159,14 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <name>C3 site</name>
+            <url>http://darkstar.aphreet.org/docs</url>
+        </site>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -160,6 +183,11 @@
                         </fileset>
                     </filesets>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>2.1</version>
             </plugin>
         </plugins>
     </build>

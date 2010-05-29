@@ -11,5 +11,7 @@
 	<reference id="accessService" interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
 	
 	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
-	
+
+    <reference id="versionService" interface="org.aphreet.c3.platform.config.VersionManager"/>
+
 </beans:beans>  

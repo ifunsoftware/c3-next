@@ -27,34 +27,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.remote.ws.impl
 
-package org.aphreet.c3.platform.remote.api.ws.impl
-
-import java.util.HashMap
+import org.aphreet.c3.platform.remote.api.ws.RemoteApiEndpoint
 import javax.jws.{WebService, WebMethod}
-import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
-import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.aphreet.c3.platform.config.VersionManager
+import org.springframework.beans.factory.annotation.Autowired
 
 
 @Component
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
-class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with PlatformWSAccessEndpoint{
+@WebService{val serviceName="RemoteApiService", val targetNamespace="remote.c3.aphreet.org"}
+class RemoteApiEndpointImpl extends RemoteApiEndpoint{
 
-  private var accessAdapter:PlatformAccessAdapter = null
+  private var versionManager:VersionManager = null
 
   @Autowired
-  private def setAccessAdapter(adapter:PlatformAccessAdapter) = {accessAdapter = adapter}
+  private def setVersionManager(manager:VersionManager) = {versionManager = manager}
 
   @WebMethod
-  override def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
-
-  @WebMethod
-  override def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
+  def getVersion:String = versionManager.listC3Modules.get("org.aphreet.c3.platform.remote.api") match {
+    case Some(v) => v
+    case None => "Unknown"
+  }
 
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag
-
 }

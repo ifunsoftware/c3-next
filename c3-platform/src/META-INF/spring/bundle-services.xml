@@ -17,6 +17,9 @@
        
     <service id="taskService" ref="taskManager"
        interface="org.aphreet.c3.platform.task.TaskManager"/>
+
+    <service id="versionService" ref="versionManager"
+       interface="org.aphreet.c3.platform.config.VersionManager"/>
        
     <service id="accessService" ref="platformAccessEndpoint"
        interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
