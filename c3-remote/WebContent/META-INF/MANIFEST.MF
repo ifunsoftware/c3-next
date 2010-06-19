@@ -6,19 +6,20 @@ Bundle-SymbolicName: org.aphreet.c3.platform.remote
 Web-ContextPath: /c3-remote
 Import-Bundle: org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
- org.springframework.core;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.context;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.beans;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.aop;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.context.support;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.web;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.core;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.context;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.beans;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.aop;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.context.support;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.web;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  com.springsource.javax.servlet;version="[2.5.0,2.5.0]",
- com.springsource.org.apache.commons.fileupload;version="[1.2.1,1.2.1]",
+ com.springsource.org.apache.commons.fileupload;version="[1.2.0,1.2.1]",
  com.springsource.org.apache.commons.io;version="[1.4.0,1.4.0]",
  org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.remote.api;version="[1.0.0,2.0.0)"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.apache.commons.logging;version="[1.1.1,1.1.1]",
- javax.jws
+ javax.jws,
+ com.springsource.server.web.dm
 
