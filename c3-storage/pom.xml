@@ -82,7 +82,6 @@
 				</executions>
 				<configuration>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-					<manifestLocation>META-INF</manifestLocation>
 					<archive>
 						<manifestFile>${bundleManifestPath}</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -109,6 +108,28 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.sleepycat.je</groupId>
+                                    <artifactId>com.springsource.com.sleepycat.je</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${serverHome}/repository/usr</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 

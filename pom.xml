@@ -9,13 +9,13 @@
     <name>C3 Main project</name>
     <url>http://dev.aphreet.org</url>
     <modules>
+        <module>c3-remote-api</module>
         <module>c3-platform</module>
         <module>c3-remote</module>
         <module>c3-storage</module>
         <module>c3-storage-file</module>
         <module>c3-search</module>
         <module>c3-client</module>
-        <module>c3-remote-api</module>
     </modules>
 
     <properties>
