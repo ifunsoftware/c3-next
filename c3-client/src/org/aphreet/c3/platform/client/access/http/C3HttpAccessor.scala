@@ -35,7 +35,7 @@ class C3HttpAccessor(val url:String){
       val status = httpClient.executeMethod(postMethod)
       status match {
         case HttpStatus.SC_OK => postMethod.getResponseBodyAsString().replaceAll("\n", "")
-        case _ => throw new Exception(("Filed to post resource, code" + status).asInstanceOf[String])
+        case _ => throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
       }
     }finally {
       postMethod.releaseConnection

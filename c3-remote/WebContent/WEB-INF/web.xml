@@ -12,7 +12,12 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/resource/*</url-pattern>
+    </servlet-mapping>
+
+        <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/search/*</url-pattern>
     </servlet-mapping>
 
     <context-param>

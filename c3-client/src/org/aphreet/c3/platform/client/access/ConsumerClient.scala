@@ -29,7 +29,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
     if(cli.hasOption("help")) helpAndExit(clientName)
 
     val threadCount = cliValue("threads", "1").toInt
-    val host = "http://" + cliValue("host", "localhost:8088") + "/c3-remote/resource/"
+    val host = "http://" + cliValue("host", "localhost:8080") + "/c3-remote/resource/"
     val file = cliValue("in", null)
 
     if(file == null){
