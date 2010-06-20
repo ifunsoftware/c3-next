@@ -75,9 +75,7 @@
 						<configuration>
 							<tasks>
 								<echo message="Deploying to Spring DM Server"/>
-								<delete file="${serverHome}/pickup/${project.build.finalName}.jar"/>
-                                <sleep seconds="2"/>
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${artPath}" overwrite="true" />
 							</tasks>
 						</configuration>
 						<goals>
@@ -103,7 +101,7 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${serverHome}/repository/usr</outputDirectory>
+                            <outputDirectory>${dependencyPath}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -133,20 +131,6 @@
 								<goals>
 									<goal>run</goal>
 								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>copy-dependencies</goal>
-								</goals>
-								<configuration>
-									<outputDirectory>${dependencyPath}</outputDirectory>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>

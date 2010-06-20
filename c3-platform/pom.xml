@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.springframework.osgi</groupId>
             <artifactId>org.springframework.osgi.core</artifactId>
-            <version>1.1.3.RELEASE</version>
+            <version>1.2.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -127,7 +127,7 @@
                                 <echo message="Deploying to Spring DM Server"/>
                                 <copy
                                         file="${project.build.directory}/${project.build.finalName}.jar"
-                                        toDir="${serverHome}/pickup" overwrite="true"/>
+                                        toDir="${artPath}" overwrite="true"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -166,7 +166,7 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${serverHome}/repository/usr</outputDirectory>
+                            <outputDirectory>${dependencyPath}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -196,20 +196,6 @@
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>copy-dependencies</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${dependencyPath}</outputDirectory>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
