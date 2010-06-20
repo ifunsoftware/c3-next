@@ -197,4 +197,31 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>plan</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy file="${basedir}/c3.plan" toDir="${installPath}/plan" overwrite="true" failonerror="false"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

@@ -113,12 +113,9 @@
                 <executions>
                     <execution>
                         <id>make-assembly</id>
-                        <!-- this is used for inheritance merges -->
                         <phase>package</phase>
-                        <!-- append to the packaging phase. -->
                         <goals>
                             <goal>single</goal>
-                            <!-- goals == mojos -->
                         </goals>
                     </execution>
                 </executions>
@@ -140,5 +137,33 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>manifest</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy
+                                                file="${project.build.directory}/${project.build.finalName}.jar"
+                                                toDir="${installPath}/client" overwrite="true"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
