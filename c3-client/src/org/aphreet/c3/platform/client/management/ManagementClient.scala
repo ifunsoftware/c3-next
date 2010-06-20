@@ -1,8 +1,8 @@
 package org.aphreet.c3.platform.client.management
 
 import command.CommandFactory
-import connection.ConnectionProvider
 import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
+import connection.{ConnectionException, ConnectionProvider}
 import java.io.{InputStreamReader, BufferedReader}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
 import org.aphreet.c3.platform.client.common.ArgumentType._
@@ -37,7 +37,15 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
         val host = cliValue("h", "localhost:9301")
         val user = cliValue("u", "")
         val password = cliValue("p", "")
-        new WSConnectionProvider(host, user, password)
+        try{
+          new WSConnectionProvider(host, user, password)
+        }catch{
+          case e:ConnectionException => {
+            println("Failed to connect to server. Error message is: " + e.getMessage)
+            System.exit(1)
+            null
+          }
+        }
       }
       case _ => throw new IllegalArgumentException("Unknown connection type")
 
@@ -130,6 +138,8 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
             println("Can't connect to server")
             System.exit(0)
           }
+        }case e:ConnectionException => {
+          println("Failed to connect to server. Error message is: " + e.getMessage)
         }
       }
     }

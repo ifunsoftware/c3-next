@@ -72,13 +72,13 @@ class DefaultStorageDispatcher extends StorageDispatcher {
     }
   
   
-  private def random(list:List[Storage]):Storage = {
+  def random(list:List[Storage]):Storage = {
     val onlineList = list.filter(s => s.mode.allowWrite)
     
     if(onlineList.isEmpty){
       null
     }else{
-      val num = random.nextInt % (onlineList.size)
+      val num = Math.abs(random.nextInt) % (onlineList.size)
       onlineList.drop(num).first
     }
   }
