@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.remote.rest._
 import java.util.List
 import query.ServletQueryConsumer
+import java.io.BufferedOutputStream
 
 /**
  * Created by IntelliJ IDEA.
@@ -63,9 +64,9 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
     resp.setContentLength(version.data.length.toInt)
     resp.setContentType(resource.getMetadata.get(Resource.MD_CONTENT_TYPE))
 
-    val os = resp.getOutputStream
+    val os = new BufferedOutputStream(resp.getOutputStream)
     try{
-      version.data.writeTo(resp.getOutputStream)
+      version.data.writeTo(os)
     }finally {
       os.close
       resp.flushBuffer

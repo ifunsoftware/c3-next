@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.resource
 
-import java.nio.channels.{WritableByteChannel}
 import java.nio.ByteBuffer
 
 import org.apache.commons.logging.LogFactory
@@ -8,6 +7,7 @@ import org.apache.commons.logging.LogFactory
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
 import com.twmacinta.util.MD5
+import java.nio.channels.{Channels, WritableByteChannel}
 
 object DataWrapper{
   
@@ -29,6 +29,8 @@ abstract class DataWrapper {
 
   def inputStream:InputStream
 
+  def writeTo(channel:WritableByteChannel):Unit
+
   def writeTo(targetFile:File):Unit = {
     val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
 
@@ -39,9 +41,7 @@ abstract class DataWrapper {
     }
   }
   
-  def writeTo(channel:WritableByteChannel):Unit
-  
-  def writeTo(out:OutputStream):Unit
+  def writeTo(out:OutputStream):Unit = this.writeTo(Channels.newChannel(out))
   
   def getBytes:Array[Byte] = {
     val stream = new ByteArrayOutputStream;
@@ -87,25 +87,6 @@ class FileDataWrapper(val file:File) extends DataWrapper{
     }
   }
   
-  def writeTo(out:OutputStream) = {
-    val is = inputStream
-    
-    val bis = new BufferedInputStream(is)
-    
-    val buffer = new Array[Byte](2048)
-    
-    try{
-    
-      var read:Int = bis.read(buffer)
-      while(read >=0){
-        out.write(buffer, 0, read)
-        read = bis.read(buffer)
-      }
-    }finally{
-      bis.close()
-    }
-  }
-  
   def stringValue:String = {
     val out = new ByteArrayOutputStream
     
@@ -127,10 +108,6 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
   def inputStream = new ByteArrayInputStream(bytes)
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(bytes))
-  
-  def writeTo(out:OutputStream) = {
-    out.write(bytes)
-  }
   
   override def getBytes:Array[Byte] = bytes
 
@@ -154,10 +131,6 @@ class StringDataWrapper(val value:String) extends DataWrapper {
   def inputStream = new ByteArrayInputStream(value.getBytes)
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(value.getBytes))
- 
-  def writeTo(out:OutputStream) = {
-    out.write(value.getBytes)
-  }
   
   def stringValue:String = value
   
@@ -176,8 +149,6 @@ class EmptyDataWrapper extends DataWrapper {
   def inputStream = new ByteArrayInputStream(new Array[Byte](0))
   
   def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(new Array[Byte](0)))
- 
-  def writeTo(out:OutputStream) = {}
   
   def stringValue:String = ""
   
