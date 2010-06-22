@@ -45,5 +45,5 @@ trait PlatformAccessEndpoint {
   
   def search(query:String):List[String]
   
-  def query(query:String):List[String]
+  def query(consumer:QueryConsumer)
 }

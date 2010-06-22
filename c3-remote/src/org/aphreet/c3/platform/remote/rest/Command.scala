@@ -87,6 +87,7 @@ object RequestType{
     str match {
       case "resource" => ResourceRequest
       case "search" => SearchRequest
+      case "query" => QueryRequest
       case _ => throw new URIParseException
     }
 
@@ -95,3 +96,4 @@ object RequestType{
 }
 object ResourceRequest extends RequestType
 object SearchRequest extends RequestType
+object QueryRequest extends RequestType

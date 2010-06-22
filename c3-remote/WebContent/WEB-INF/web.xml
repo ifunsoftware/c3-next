@@ -15,9 +15,14 @@
         <url-pattern>/resource/*</url-pattern>
     </servlet-mapping>
 
-        <servlet-mapping>
+    <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>
         <url-pattern>/search/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/query</url-pattern>
     </servlet-mapping>
 
     <context-param>
@@ -31,7 +36,8 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/bundle-context.xml
-            /WEB-INF/bundle-services.xml</param-value>
+            /WEB-INF/bundle-services.xml
+        </param-value>
     </context-param>
 
     <listener>

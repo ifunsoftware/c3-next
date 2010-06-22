@@ -5,6 +5,7 @@ import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.remote.rest._
 import java.util.List
+import query.ServletQueryConsumer
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,6 +24,7 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
       requestType match {
         case ResourceRequest => executeResource
         case SearchRequest => executeSearch
+        case QueryRequest => executeQuery
       }
 
     }catch{
@@ -84,6 +86,13 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
       sendSearchResults(accessEndpoint.search(query))
     else
       badRequest
+  }
+
+  def executeQuery = {
+    val consumer = new ServletQueryConsumer(resp.getWriter)
+
+    accessEndpoint.query(consumer)
+    resp.flushBuffer
   }
 
   def sendSearchResults(results:List[String]) = {

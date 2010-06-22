@@ -27,54 +27,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.access.impl
-
-import java.util.{List, Collections}
-
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.storage.ResourceAccessor
-import org.aphreet.c3.platform.search.SearchManager
 
 
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.storage.query.QueryManager
-import org.aphreet.c3.platform.access.{QueryConsumer, PlatformAccessEndpoint}
+package org.aphreet.c3.platform.remote.rest.command.query
 
-@Component("platformAccessEndpoint")
-class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
+import java.io.PrintWriter
+import org.aphreet.c3.platform.access.QueryConsumer
 
-  var resourceAccessor:ResourceAccessor = null
-  
-  var searchManager:SearchManager = null
+class ServletQueryConsumer(val writer:PrintWriter) extends QueryConsumer{
 
-  var queryManager:QueryManager = _
-  
-  val log = org.apache.commons.logging.LogFactory.getLog(getClass)
-  
-  @Autowired
-  def setResourceAccessor(accessor:ResourceAccessor) = {resourceAccessor = accessor}
-  
-  @Autowired
-  def setSearchManager(manager:SearchManager) = {searchManager = manager}
+  var addressesWritten = 0
 
-  @Autowired
-  def setQueryManager(manager:QueryManager) = {queryManager = manager}
-  
-  def get(ra:String):Resource = resourceAccessor.get(ra)
-  
-  def add(resource:Resource):String = resourceAccessor.add(resource)
-  
-  def update(resource:Resource):String = resourceAccessor.update(resource)
-  
-  def delete(ra:String) = resourceAccessor.delete(ra)
-  
-  def search(query:String):List[String] = {
-    searchManager.search(query)
+  override def addAddress(address:String){
+    writer.println(address)
+    addressesWritten = addressesWritten+1
+    if(addressesWritten >= 100){
+
+      writer.flush
+      addressesWritten = 0
+    }
   }
-  
-  def query(consumer:QueryConsumer){
-    queryManager.executeQuery(consumer)
+
+  override def close{
+    writer.close
   }
-  
 }
