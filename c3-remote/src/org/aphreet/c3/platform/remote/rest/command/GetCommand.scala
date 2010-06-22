@@ -75,10 +75,13 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
   }
 
   def sendResourceMetadata(resource:Resource){
+    val str = resource.toJSON(false)
+
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
     resp.setContentType("text/x-json")
-    resp.getWriter.write(resource.toJSON(false))
+    resp.setContentLength(str.length)
+    resp.getOutputStream.write(str.getBytes)
     resp.flushBuffer
   }
 

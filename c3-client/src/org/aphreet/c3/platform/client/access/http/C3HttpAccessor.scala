@@ -3,7 +3,9 @@ package org.aphreet.c3.platform.client.access.http
 import org.apache.commons.httpclient.methods.multipart._
 import org.apache.commons.httpclient.{HttpStatus, HttpClient}
 import org.apache.commons.httpclient.methods.{DeleteMethod, GetMethod, PostMethod}
-import java.io.{File, ByteArrayInputStream, InputStream}
+import java.nio.channels.Channels
+import java.io._
+import java.nio.ByteBuffer
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,13 +44,44 @@ class C3HttpAccessor(val url:String){
     }
   }
 
-  def read(address:String):Array[Byte] = {
+  def downloadData(address:String, file:File) = {
     val getMethod = new GetMethod(url + address + "/data")
 
     try{
       val status = httpClient.executeMethod(getMethod)
-      return status match {
-        case HttpStatus.SC_OK => getMethod.getResponseBody
+      status match {
+        case HttpStatus.SC_OK => {
+          val fileChannel = new FileOutputStream(file).getChannel
+          val inChannel = Channels.newChannel(new BufferedInputStream(getMethod.getResponseBodyAsStream))
+          try{
+            fileChannel.transferFrom(inChannel, 0, getMethod.getResponseContentLength)
+          }finally{
+            fileChannel.close
+            inChannel.close
+          }
+        }
+        case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+      }
+    }finally{
+      getMethod.releaseConnection();
+    }
+  }
+
+  def downloadMD(address:String, file:File) = {
+    val getMethod = new GetMethod(url + address + "/metadata")
+
+    try{
+      val status = httpClient.executeMethod(getMethod)
+      status match {
+        case HttpStatus.SC_OK => {
+          val fileChannel = new FileOutputStream(file).getChannel
+
+          try{
+            fileChannel.write(ByteBuffer.wrap(getMethod.getResponseBody))
+          }finally{
+            fileChannel.close
+          }
+        }
         case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
       }
     }finally{

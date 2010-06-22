@@ -36,8 +36,12 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
       throw new IllegalAccessException("File argument is mandatory")
     }
 
+    parseCLI
+
     consumeResources(host, threadCount, file)
   }
+
+  def parseCLI(){}
 
   def consumeResources(host:String, threads:Int, file:String){
 
