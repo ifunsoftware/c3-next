@@ -62,14 +62,14 @@ abstract class UploadCommand(override val req:HttpServletRequest,
     metadata.put(item.getFieldName, value)
 
 
-    System.err.println("Upload:")
+/*    System.err.println("Upload:")
     System.err.println(value.getBytes.toString)
     System.err.println(value)
 
     val bytes:Array[Byte] = value.getBytes("UTF-8")
     System.err.write(bytes)
     System.err.println
-
+*/
   }
 
   def processFile(item:FileItem) = {
