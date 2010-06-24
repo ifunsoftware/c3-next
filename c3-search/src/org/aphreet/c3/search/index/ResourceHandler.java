@@ -56,15 +56,12 @@ public class ResourceHandler {
 		Document doc = new Document();
 		for (String key : resource.getMetadata().keySet()) {
 			String value = resource.getMetadata().get(key);
-			if (value == null) {
-				continue;
-			}
 
 			if (key.equals(ResourceHandler.ADDRESS) || key.equals(ResourceHandler.REVISION)) {
 				doc.add(new Field(key, value, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
 			} else if (key.equals(ResourceHandler.TITLE) || key.equals(ResourceHandler.COMMENT) || 
-					key.equals(ResourceHandler.AUTHOR) || key.equals(ResourceHandler.TAGS) || key.equals("origname")) {
+					key.equals(ResourceHandler.AUTHOR) || key.equals(ResourceHandler.TAGS)) {
 				Field field = new Field(key, value, Field.Store.NO, Field.Index.ANALYZED);
 				field.setBoost(2.0f);
 				doc.add(field);

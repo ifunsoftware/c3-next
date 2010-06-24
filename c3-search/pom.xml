@@ -32,18 +32,6 @@
 			<version>2.4.1</version>
 		</dependency>
 
-		<dependency>
-		    <groupId>org.osgi</groupId>
-		    <artifactId>org.osgi.core</artifactId>
-		    <version>4.1.0</version>
-		</dependency>
- 
-		<dependency>
-		    <groupId>org.springframework.osgi</groupId>
-		    <artifactId>org.springframework.osgi.core</artifactId>
-		    <version>1.2.1</version>
-		</dependency>
- 
 	</dependencies>
 
 	<build>
@@ -85,7 +73,9 @@
 						<configuration>
 							<tasks>
 								<echo message="Deploying to Spring DM Server"/>
+								<!-- 
 								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+								-->
 							</tasks>
 						</configuration>
 						<goals>
