@@ -257,7 +257,7 @@ class ResourceTestCase extends TestCase {
 
     val version = new ResourceVersion
     version.data = DataWrapper.wrap("my data here")
-    version.systemMetadata.put("rkey1", "rvalue1")
+    version.systemMetadata.put("rkey1", "Значение")
     version.date = new Date(1273087676152l)
 
     resource.addVersion(version)
@@ -268,7 +268,7 @@ class ResourceTestCase extends TestCase {
     version2.date = new Date(1273087676195l)
 
     resource.addVersion(version2)
-
+    
     val json = resource.toJSON(true)
 
     val expected =
@@ -289,7 +289,7 @@ class ResourceTestCase extends TestCase {
 			"dataLength": 12,
 			"revision": 0,
 			"systemMetadata": {
-				"rkey1": "rvalue1"
+				"rkey1": "Значение"
 			}
 		},
 		{
@@ -305,5 +305,29 @@ class ResourceTestCase extends TestCase {
     assertEquals(expected, json)
   }
 
+  def testUnicodeChars{
+     val resource = new Resource
+
+    resource.address = "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47"
+    resource.createDate = new Date(1273087676152l)
+
+    resource.metadata.put("ke\"1", "value1")
+    resource.metadata.put("key2", "Значение2")
+
+    resource.systemMetadata.put("skey1", "svalue1")
+    resource.systemMetadata.put("skey2", "svalue2")
+
+    resource.isVersioned = true
+
+    val version = new ResourceVersion
+    version.data = DataWrapper.wrap("my data here")
+    version.systemMetadata.put("rkey1", "value1")
+    version.date = new Date(1273087676152l)
+
+    resource.addVersion(version)
+
+    assertEquals("Значение2", Resource.fromByteArray(resource.toByteArray).metadata.get("key2").get)
+
+  }
 
 }
