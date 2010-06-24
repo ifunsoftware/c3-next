@@ -78,7 +78,7 @@ class Resource {
 
       if(value != null) string = value
 
-      val bytes = string.getBytes
+      val bytes = string.getBytes(Resource.MD_ENCODING)
       dataOs.writeInt(bytes.length)
       dataOs.write(bytes)
     }
@@ -107,7 +107,7 @@ class Resource {
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    dataOs.writeInt(1) //resource class version, for future
+    dataOs.writeInt(2) //resource class version, for future
 
     dataOs.writeBoolean(isVersioned)
 
@@ -212,34 +212,40 @@ object Resource {
   val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
   val MD_POOL = "c3.pool"
   val MD_TAGS = "c3.tags"
+  val MD_ENCODING = "UTF-8"
   
   def fromByteArray(bytes:Array[Byte]):Resource = {
 
-    def readString(dataIs:DataInputStream):String = {
+    def readString(dataIs:DataInputStream, version:Int):String = {
       val strSize = dataIs.readInt
       val strArray = new Array[Byte](strSize)
       dataIs.read(strArray)
-      new String(strArray)
+      if(version <= 1){
+        new String(strArray)
+      }else{
+        new String(strArray, MD_ENCODING)
+      }
+
     }
 
     def readDate(dataIs:DataInputStream):Date = {
       new Date(dataIs.readLong)
     }
 
-    def readMap(dataIs:DataInputStream):HashMap[String, String] = {
+    def readMap(dataIs:DataInputStream, version:Int):HashMap[String, String] = {
       val map = new HashMap[String, String]
 
       val mapSize = dataIs.readInt
 
       for(i <- 1 to mapSize){
-        val key = readString(dataIs)
-        val value = readString(dataIs)
+        val key = readString(dataIs, version)
+        val value = readString(dataIs, version)
         map.put(key, value)
       }
       map
     }
 
-    def readVersions(dataIs:DataInputStream):Buffer[ResourceVersion] = {
+    def readVersions(dataIs:DataInputStream, serializeVersion:Int):Buffer[ResourceVersion] = {
 
       val result = new ArrayList[ResourceVersion]
 
@@ -250,7 +256,7 @@ object Resource {
         val version = new ResourceVersion
         version.revision = dataIs.readInt
         version.date = new Date(dataIs.readLong)
-        version.systemMetadata = readMap(dataIs)
+        version.systemMetadata = readMap(dataIs, serializeVersion)
         version.persisted = true
 
         result + version
@@ -272,13 +278,13 @@ object Resource {
 
     resource.isVersioned = dataIn.readBoolean
 
-    resource.address = readString(dataIn)
+    resource.address = readString(dataIn, serializeVersion)
     resource.createDate = new Date(dataIn.readLong)
 
-    resource.metadata ++= readMap(dataIn)
-    resource.systemMetadata ++= readMap(dataIn)
+    resource.metadata ++= readMap(dataIn, serializeVersion)
+    resource.systemMetadata ++= readMap(dataIn, serializeVersion)
 
-    resource.versions ++= readVersions(dataIn)
+    resource.versions ++= readVersions(dataIn, serializeVersion)
 
     serializeVersion match{
       case 0 => {
@@ -287,7 +293,7 @@ object Resource {
           throw new ResourceException("Failed to deserialize resource, wrong stop sequince")
         }
       }
-      case 1 => {
+      case _ => {
         val currentSumm = md5Is.getMD5.Final
         val savedSumm = new Array[Byte](16)
 
