@@ -31,16 +31,22 @@ import org.aphreet.c3.search.index.C3IndexWriter;
 import org.aphreet.c3.search.index.event.DirectoryEvent;
 import org.aphreet.c3.search.index.executor.CommitIndexThreadFactory;
 import org.aphreet.c3.search.index.executor.CommitIndexThreadPoolExecutor;
-import org.aphreet.c3.search.index.executor.DirectoriedThreadFactory;
+import org.aphreet.c3.search.index.executor.IndexThreadFactory;
 import org.aphreet.c3.search.index.executor.IndexThreadPoolExecutor;
-import org.aphreet.c3.search.index.executor.ResourceIndexingTask;
+import org.aphreet.c3.search.index.executor.IndexTask;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
+import org.osgi.framework.SynchronousBundleListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.osgi.context.BundleContextAware;
 
 @Component
 public class SearcherImpl implements Searcher {
 	
 	private Log logger = LogFactory.getLog(this.getClass());
+
 	@Autowired
 	private PlatformAccessEndpoint platformAccessEndpoint;
 	@Autowired
@@ -52,7 +58,7 @@ public class SearcherImpl implements Searcher {
 	@Autowired
 	private SearchManager searchManager;
 	@Autowired
-	private DirectoriedThreadFactory directoriedThreadFactory;
+	private IndexThreadFactory directoriedThreadFactory;
 	@Autowired
 	private CommitIndexThreadFactory commitIndexThreadFactory;
 	private C3IndexWriter persistentIndexWriter;
@@ -60,58 +66,66 @@ public class SearcherImpl implements Searcher {
 
 	private CommitIndexThreadPoolExecutor commitIndexExecutor;
 	
+	public SearcherImpl() {
+		System.out.println("------------SearcherImpl-constructor---------------");
+	}
+	
 	@PostConstruct
 	public void init() throws IOException {
-		searchManager.registerSearcher(this);
+		
+	
 		// TODO annotate persistentIndexWriter with @Autowired
 		// open persistent index store
-		this.persistentIndexWriter = new C3IndexWriter(new File(searchConfig.getIndexDirectoryPath()),
+		persistentIndexWriter = new C3IndexWriter(new File(searchConfig.getIndexDirectoryPath()),
 				new StandardAnalyzer(), MaxFieldLength.UNLIMITED);
 		// register searcher on writer
-		this.persistentIndexWriter.registerSearcher(indexSearcher);
+		persistentIndexWriter.registerSearcher(indexSearcher);
 
 		// process actions needed to commit index in single thread pool executor
-		this.commitIndexThreadFactory.addDirectoryEventListener(indexSearcher);
-		this.commitIndexThreadFactory.setPersistentIndexWriter(persistentIndexWriter);
-		this.commitIndexExecutor = new CommitIndexThreadPoolExecutor(commitIndexThreadFactory);
+		commitIndexThreadFactory.addDirectoryEventListener(indexSearcher);
+		commitIndexThreadFactory.setPersistentIndexWriter(persistentIndexWriter);
+		commitIndexExecutor = new CommitIndexThreadPoolExecutor(commitIndexThreadFactory);
 		
 		// process actions needed to buffer index to RAM
-		this.directoriedThreadFactory.addDirectoryEventListener(indexSearcher);
-		this.directoriedThreadFactory.setCommitIndexExecutor(commitIndexExecutor);
-		this.indexingExecutor = new IndexThreadPoolExecutor(SearchConfig.INITIAL_CORE_POOL_SIZE,
+		directoriedThreadFactory.addDirectoryEventListener(indexSearcher);
+		directoriedThreadFactory.setCommitIndexExecutor(commitIndexExecutor);
+		indexingExecutor = new IndexThreadPoolExecutor(SearchConfig.INITIAL_CORE_POOL_SIZE,
 				SearchConfig.INITIAL_MAXIMUM_POOL_SIZE, SearchConfig.INITIAL_KEEP_ALIVE_TIME,
 				TimeUnit.MINUTES, directoriedThreadFactory);
+
+		searchManager.registerSearcher(this);
 	}
 	
 	@PreDestroy
 	public void destroy() {
+		indexingExecutor.commitIndex();
+		System.out.println("------------------------SearcherImpl#destroy---------------");
 		searchManager.unregisterSearcher(this);
-		try {
-			indexingExecutor.setCommitIndex(true);
-			directoriedThreadFactory.commitIndex();
-			persistentIndexWriter.close();
-		} catch (IOException e) {
-			logger.error(e, e);
-		}
 	}
 
 	@Override
 	public void index(Resource resource) {
 		logger.info("Begin index resource " + resource.address());
-		ResourceIndexingTask task = new ResourceIndexingTask(resource);
-		this.indexingExecutor.execute(task);
+		IndexTask task = new IndexTask(resource);
+		indexingExecutor.execute(task);
 	}
 	
 	@Override
 	public List<String> search(String query) {
 		logger.info("Begin search for query " + query);
 		List<String> list = null;
+		
+		
 		try {
 			list = indexSearcher.searchResource(query);
 		} catch (IOException e) {
 			logger.error("", e);
 		}
 		return list;
+	}
+	
+	public void commitIndex() {
+		indexingExecutor.commitIndex();
 	}
 
 	public void setPlatformAccessEndpoint(PlatformAccessEndpoint platformAccessEndpoint) {
@@ -134,7 +148,7 @@ public class SearcherImpl implements Searcher {
 		this.searchManager = searchManager;
 	}
 	
-	public void setDirectoriedThreadFacory(DirectoriedThreadFactory threadFactory) {
+	public void setDirectoriedThreadFacory(IndexThreadFactory threadFactory) {
 		this.directoriedThreadFactory = threadFactory;
 	}
 	

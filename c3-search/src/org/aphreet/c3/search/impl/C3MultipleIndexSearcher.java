@@ -1,9 +1,9 @@
 package org.aphreet.c3.search.impl;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -12,18 +12,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.ru.RussianAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.misc.TrigramLanguageGuesser;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searchable;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.aphreet.c3.search.config.SearchConfig;
 import org.aphreet.c3.search.index.ResourceHandler;
 import org.aphreet.c3.search.index.event.DirectoryEvent;
 import org.aphreet.c3.search.index.event.DirectoryEventListener;
@@ -64,10 +58,12 @@ public class C3MultipleIndexSearcher implements DirectoryEventListener {
 	@Override
 	public void directoryDeleted(DirectoryEvent event) {
 		try {
-			for (IndexSearcher searcher : indexSearchers) {
+			Iterator<IndexSearcher> searcherIterator = indexSearchers.iterator();
+			while (searcherIterator.hasNext()) {
+				IndexSearcher searcher = searcherIterator.next();
 				if (searcher.getIndexReader().directory().equals(event.getDirectory())) {
 					synchronized (indexSearchers) {
-						indexSearchers.remove(searcher);
+						searcherIterator.remove();
 						searcher.close();
 					}
 				}

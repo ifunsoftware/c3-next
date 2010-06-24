@@ -47,7 +47,11 @@ public class CommitIndexTask implements Runnable {
 	}
 
 	public Directory getPersistentDirectory() {
-		return this.presistentIndexWriter.getDirectory();
+		return presistentIndexWriter.getDirectory();
+	}
+
+	public RAMDirectory getDirectory() {
+		return directory;
 	}
 
 }

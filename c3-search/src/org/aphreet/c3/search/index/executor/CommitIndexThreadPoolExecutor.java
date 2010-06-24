@@ -13,16 +13,16 @@ public class CommitIndexThreadPoolExecutor extends ThreadPoolExecutor {
 	private final Log log = LogFactory.getLog(getClass());
 
 	public CommitIndexThreadPoolExecutor(CommitIndexThreadFactory threadFactory) {
-		super(1, 1, 0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
+		super(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
 	}
 	
 	@Override
 	protected void beforeExecute(Thread thread, Runnable runnable) {
 		super.beforeExecute(thread, runnable);
 		log.info("CommitIndexThreadPoolExecutor before execute"); 
-		CommitIndexThread commitIndexThread = (CommitIndexThread) Thread.currentThread();
+		CommitIndexThread commitIndexThread = (CommitIndexThread) thread;
 		CommitIndexTask task = (CommitIndexTask) runnable;
-		commitIndexThread.notifyListenersThatDirectoryDeleted(task.getPersistentDirectory());
+		commitIndexThread.notifyDirectoryDeleted(task.getDirectory());
 	}
 	
 	@Override
@@ -31,7 +31,7 @@ public class CommitIndexThreadPoolExecutor extends ThreadPoolExecutor {
 		log.info("CommitIndexThreadPoolExecutor after execute"); 
 		CommitIndexThread commitIndexThread = (CommitIndexThread) Thread.currentThread();
 		CommitIndexTask task = (CommitIndexTask) runnable;
-		commitIndexThread.notifyListenersThatDirectoryUpdated(task.getPersistentDirectory());
+		commitIndexThread.notifyDirectoryUpdated(task.getPersistentDirectory());
 	}
 	
 }

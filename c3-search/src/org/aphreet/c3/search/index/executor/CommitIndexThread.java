@@ -19,8 +19,8 @@ public class CommitIndexThread extends Thread {
 	private Directory currentBuffer;
 	private ArrayList<DirectoryEventListener> list;
 	
-	public CommitIndexThread(C3IndexWriter persistentIndexWriter, 
-			List<DirectoryEventListener> listeners) {
+	public CommitIndexThread(ThreadGroup group, Runnable r, String name, C3IndexWriter persistentIndexWriter, List<DirectoryEventListener> listeners) {
+        super(group, r, name);
 		this.persistentIndexWriter = persistentIndexWriter;
 		this.listeners = listeners;
 	}
@@ -29,7 +29,7 @@ public class CommitIndexThread extends Thread {
 		return persistentIndexWriter;
 	}
 
-	public void notifyListenersThatDirectoryDeleted(Directory directory) {
+	public void notifyDirectoryDeleted(Directory directory) {
 		this.currentBuffer = directory;
 		list = new ArrayList<DirectoryEventListener>(listeners);
 		log.info("Notify listeners " + list + " directory deleted.");
@@ -45,8 +45,8 @@ public class CommitIndexThread extends Thread {
 		}).start();
 	}
 
-	public void notifyListenersThatDirectoryUpdated(Directory directory) {
-		this.currentBuffer = persistentIndexWriter.getDirectory();
+	public void notifyDirectoryUpdated(Directory directory) {
+		this.currentBuffer = persistentIndexWriter.getDirectory(); // only one reference for multiple threads, may occure wrong event
 		list = new ArrayList<DirectoryEventListener>(listeners);
 		log.info("Notify listeners " + list + " directory deleted.");
 		new Thread(new Runnable() {

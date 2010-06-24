@@ -27,11 +27,10 @@ public class LanguageGuesserFilter implements ResourceFilter {
 	}
 
 	
-	public void doFilter(Resource resource) {
+	public synchronized void doFilter(Resource resource) {
 		String str = null, result = null;
 		str = resource.getMetadata().get(ResourceHandler.COMMENT) + resource.getMetadata().get(ResourceHandler.TITLE) 
 				+ resource.getMetadata().get(ResourceHandler.CONTENTS);
-		log.info("Guessing language for string " + str);
 		if (resource.getMetadata().get(ResourceHandler.LANGUAGE) == null) {
 			try {
 				result = this.guessLanguage(str);
@@ -48,7 +47,7 @@ public class LanguageGuesserFilter implements ResourceFilter {
 		return true;//(map.get(Metadata.LANGUAGE) == null);
 	}
 	
-	public String guessLanguage(String str) throws IOException {
+	public synchronized String guessLanguage(String str) throws IOException {
 		return languageGuesser.guessLanguage(new StringReader(str));
 		
 	}
