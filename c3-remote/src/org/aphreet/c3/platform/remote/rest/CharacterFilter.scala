@@ -1,3 +1,8 @@
+package org.aphreet.c3.platform.remote.rest
+
+import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
+import javax.servlet._
+
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -5,7 +10,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -28,14 +33,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.access
+class CharacterFilter extends Filter {
 
-import org.aphreet.c3.platform.resource.Resource
+  override def init(config:FilterConfig){}
 
-trait QueryConsumer{
+  override def destroy{}
 
-  def addResource(resource:Resource)
+  override def doFilter(request: ServletRequest, response: ServletResponse, chain:FilterChain) {
 
-  def close
+    request.setCharacterEncoding("UTF-8")
 
+    chain.doFilter(request, response);
+
+  }
 }

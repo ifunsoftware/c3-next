@@ -7,6 +7,7 @@ import org.aphreet.c3.platform.remote.rest._
 import java.util.List
 import query.ServletQueryConsumer
 import java.io.BufferedOutputStream
+import collection.mutable.HashMap
 
 /**
  * Created by IntelliJ IDEA.
@@ -79,9 +80,15 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
 
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
-    resp.setContentType("text/x-json")
-    resp.setContentLength(str.length)
-    resp.getOutputStream.write(str.getBytes)
+    resp.setContentType("text/plain")
+    resp.setCharacterEncoding("UTF-8")
+
+    val bytes = str.getBytes("UTF-8")
+
+    resp.setContentLength(bytes.length)
+
+    resp.getOutputStream.write(bytes)
+
     resp.flushBuffer
   }
 
@@ -93,7 +100,18 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
   }
 
   def executeQuery = {
-    val consumer = new ServletQueryConsumer(resp.getWriter)
+
+    val map = new HashMap[String, String]
+
+    val enum = req.getParameterNames
+
+    while(enum.hasMoreElements){
+      val key:String = enum.nextElement.asInstanceOf[String]
+      val value:String = req.getParameter(key)
+      map.put(key, value)
+    }
+
+    val consumer = new ServletQueryConsumer(resp.getWriter, map)
 
     accessEndpoint.query(consumer)
     resp.flushBuffer

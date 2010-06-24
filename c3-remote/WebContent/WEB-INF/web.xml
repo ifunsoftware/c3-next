@@ -4,6 +4,16 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
+    <filter>
+        <filter-name>CharacterFilter</filter-name>
+        <filter-class>org.aphreet.c3.platform.remote.rest.CharacterFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>CharacterFilter</filter-name>
+        <servlet-name>RestServlet</servlet-name>
+    </filter-mapping>
+
     <servlet>
         <description></description>
         <servlet-name>RestServlet</servlet-name>

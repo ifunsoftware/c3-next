@@ -33,22 +33,39 @@ package org.aphreet.c3.platform.remote.rest.command.query
 
 import java.io.PrintWriter
 import org.aphreet.c3.platform.access.QueryConsumer
+import org.aphreet.c3.platform.resource.Resource
+import collection.mutable.HashMap
 
-class ServletQueryConsumer(val writer:PrintWriter) extends QueryConsumer{
-
+class ServletQueryConsumer(val writer: PrintWriter, val metadata:HashMap[String, String]) extends QueryConsumer {
   var addressesWritten = 0
 
-  override def addAddress(address:String){
-    writer.println(address)
-    addressesWritten = addressesWritten+1
-    if(addressesWritten >= 100){
+  override def addResource(resource: Resource) {
+    if (isResourceMatchQuery(resource)) {
+      writer.println(resource.address)
 
-      writer.flush
-      addressesWritten = 0
+      addressesWritten = addressesWritten + 1
+
+      if (addressesWritten >= 100) {
+        writer.flush
+        addressesWritten = 0
+      }
     }
   }
 
-  override def close{
+  def isResourceMatchQuery(resource: Resource):Boolean = {
+
+    if(metadata.isEmpty) return true
+
+    for((k, v) <- metadata){
+      resource.metadata.get(k) match {
+        case Some(x) => if(x != v) return false
+        case None => return false
+      }
+    }
+    true
+  }
+
+  override def close {
     writer.close
   }
 }

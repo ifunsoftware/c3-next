@@ -35,7 +35,19 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     val objectCount = cliValue("count", "-1").toInt
     val threadCount = cliValue("threads", "1").toInt
     val objectType = cliValue("type", "application/octet-stream")
-    val pool = cliValue("pool", "")
+    var pool = cliValue("pool", "")
+
+//    println(pool.getBytes.toString)
+//    println(pool.getBytes("UTF-8").toString)
+//    pool = new String(pool.getBytes("UTF-8"))
+//    println(pool)
+    //This is kind of magic
+    //This code works for UTF-8 locale
+    //But i don't know what will happen on windows machines
+    //Possibly
+    pool = new String(pool.getBytes, "UTF-8")
+
+
     val host = "http://" + cliValue("host", "localhost:8080") + "/c3-remote/resource/"
     val file = cliValue("out", null)
 
@@ -44,7 +56,7 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     if(objectCount < 0)
       throw new IllegalArgumentException("Object count is not set")
 
-    writeObjects(host, objectCount, objectSize, threadCount, Map("pool" -> pool, "content.type" -> objectType), file)
+    writeObjects(host, objectCount, objectSize, threadCount, Map("c3.pool" -> pool, "content.type" -> objectType), file)
   }
 
   def writeObjects(host:String, count:Int, size:Int, threads:Int, metadata:Map[String, String], file:String){

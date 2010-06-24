@@ -77,7 +77,7 @@ class QueryManagerImpl extends QueryManager{
       try{
 
         while(iterator.hasNext)
-          consumer.addAddress(iterator.next.address)
+          consumer.addResource(iterator.next)
 
       }finally{
         iterator.close

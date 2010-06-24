@@ -29,7 +29,13 @@ class C3HttpAccessor(val url:String){
     val postMethod = new PostMethod(url)
 
     val parts:Array[Part] = (filePart ::
-            metadata.map(e => new StringPart(e._1, e._2)).toList).toArray
+            metadata.map(e => {
+              val part = new StringPart(e._1, e._2, "UTF-16")
+              part.setCharSet("UTF-8")
+              part
+            }).toList).toArray
+
+    val entity = new MultipartRequestEntity(parts, postMethod.getParams)
 
     postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
 
