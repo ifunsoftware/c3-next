@@ -38,7 +38,7 @@
     <context-param>
         <param-name>contextClass</param-name>
         <param-value>
-            com.springsource.server.web.dm.ServerOsgiBundleXmlWebApplicationContext
+            org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext
         </param-value>
     </context-param>
 

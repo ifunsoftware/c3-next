@@ -41,8 +41,7 @@ import java.io.{File, FileInputStream}
 import org.apache.commons.logging.LogFactory
 import javax.annotation.PreDestroy
 
-class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsServiceExporter{
-
+class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsServiceExporter {
   val log = LogFactory.getLog(getClass)
 
   @BeanProperty
@@ -54,89 +53,96 @@ class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsService
   /*
     Overriding superclass properties
    */
-  protected var server:HttpServer = null
+  protected var server: HttpServer = null
 
-  protected var hostname:String = null
+  protected var hostname: String = null
 
-  protected var port:Int = 9443
+  protected var port: Int = 9443
 
 
-  override def setHostname(hostname:String){
+  override def setHostname(hostname: String) {
     this.hostname = hostname
     super.setHostname(hostname)
   }
 
-  override def setPort(port:Int){
+  override def setPort(port: Int) {
     this.port = port
     super.setPort(port)
   }
 
-  override def setServer(server:HttpServer){
+  override def setServer(server: HttpServer) {
     this.server = server;
     super.setServer(server)
   }
 
-  override def afterPropertiesSet{
-    if(server == null){
+  override def afterPropertiesSet {
+    if (server == null) {
 
-      log info "Starting HTTPS server on port " + port
+      try {
 
-      var address: InetSocketAddress = (if (this.hostname != null) new InetSocketAddress(this.hostname, this.port) else new InetSocketAddress(this.port))
+        log info "Starting HTTPS server on port " + port
 
-
-      val sslContext = SSLContext.getInstance("TLS")
-
-      val kmf:KeyManagerFactory = KeyManagerFactory.getInstance("SunX509")
-
-      val ksPass = keyStorePassword.toCharArray
-      val ctPass = keyStorePassword.toCharArray
-
-      val keyStore = KeyStore.getInstance("JKS")
-
-      val file = new File(keyStoreName)
-      System.err.println(file.getCanonicalPath)
-      
-      keyStore.load(new FileInputStream(keyStoreName), ksPass)
-
-      kmf.init(keyStore, ctPass)
-
-      val keyManagerList = kmf.getKeyManagers
-
-      sslContext.init(keyManagerList, null, null)
+        var address: InetSocketAddress = (if (this.hostname != null) new InetSocketAddress(this.hostname, this.port) else new InetSocketAddress(this.port))
 
 
-      val httpsServer = HttpsServer.create(address, -1)
-      httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext))
+        val sslContext = SSLContext.getInstance("TLS")
 
-      setServer(httpsServer)
+        val kmf: KeyManagerFactory = KeyManagerFactory.getInstance("SunX509")
 
-      httpsServer.start
+        val ksPass = keyStorePassword.toCharArray
+        val ctPass = keyStorePassword.toCharArray
 
-      log info "HTTPS Server started"
+        val keyStore = KeyStore.getInstance("JKS")
 
+        val file = new File(keyStoreName)
+        System.err.println(file.getCanonicalPath)
+
+        keyStore.load(new FileInputStream(keyStoreName), ksPass)
+
+        kmf.init(keyStore, ctPass)
+
+        val keyManagerList = kmf.getKeyManagers
+
+        sslContext.init(keyManagerList, null, null)
+
+
+        val httpsServer = HttpsServer.create(address, -1)
+        httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext))
+
+        setServer(httpsServer)
+
+        httpsServer.start
+
+        log info "HTTPS Server started"
+      } catch {
+        case e => {
+          log.info("Failed to start server", e)
+          throw e
+        }
+      }
     }
 
     super.afterPropertiesSet
   }
 
-  override protected def publishEndpoint(endpoint:Endpoint, annotation:WebService){
-    try{
+  override protected def publishEndpoint(endpoint: Endpoint, annotation: WebService) {
+    try {
       super.publishEndpoint(endpoint, annotation)
-    }catch{
-      case e =>{
+    } catch {
+      case e => {
         this.destroy
         throw e
       }
     }
   }
 
-  @PreDestroy
-  override def destroy{
-    log info "Destroying HTTPS Service exporter"
+  override def destroy {
+    log info "Stopping HTTPS server"
     super.destroy
-    try{
-    server.stop(60)
-    }catch{
+
+    try {
+      server.stop(0)
+    } catch {
       case e => log.error("Failed to stop HTTPS server", e)
     }
   }
