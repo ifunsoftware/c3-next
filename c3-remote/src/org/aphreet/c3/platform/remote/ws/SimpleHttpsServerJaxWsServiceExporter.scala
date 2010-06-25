@@ -37,12 +37,16 @@ import com.sun.net.httpserver.{HttpsConfigurator, HttpsServer, HttpServer}
 import javax.xml.ws.Endpoint
 import javax.jws.WebService
 import reflect.BeanProperty
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
+import org.apache.commons.logging.LogFactory
+import javax.annotation.PreDestroy
 
 class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsServiceExporter{
 
+  val log = LogFactory.getLog(getClass)
+
   @BeanProperty
-  protected var keyStoreName = ".keystore"
+  protected var keyStoreName = "config/c3.keystore"
 
   @BeanProperty
   protected var keyStorePassword = "password"
@@ -75,6 +79,8 @@ class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsService
   override def afterPropertiesSet{
     if(server == null){
 
+      log info "Starting HTTPS server on port " + port
+
       var address: InetSocketAddress = (if (this.hostname != null) new InetSocketAddress(this.hostname, this.port) else new InetSocketAddress(this.port))
 
 
@@ -86,6 +92,10 @@ class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsService
       val ctPass = keyStorePassword.toCharArray
 
       val keyStore = KeyStore.getInstance("JKS")
+
+      val file = new File(keyStoreName)
+      System.err.println(file.getCanonicalPath)
+      
       keyStore.load(new FileInputStream(keyStoreName), ksPass)
 
       kmf.init(keyStore, ctPass)
@@ -102,6 +112,8 @@ class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsService
 
       httpsServer.start
 
+      log info "HTTPS Server started"
+
     }
 
     super.afterPropertiesSet
@@ -115,6 +127,17 @@ class SimpleHttpsServerJaxWsServiceExporter extends SimpleHttpServerJaxWsService
         this.destroy
         throw e
       }
+    }
+  }
+
+  @PreDestroy
+  override def destroy{
+    log info "Destroying HTTPS Service exporter"
+    super.destroy
+    try{
+    server.stop(60)
+    }catch{
+      case e => log.error("Failed to stop HTTPS server", e)
     }
   }
 

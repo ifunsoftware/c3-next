@@ -25,8 +25,15 @@
         <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
         <property name="registryPort" value="1299" />
     </bean>
+    
     <bean class="org.aphreet.c3.platform.remote.ws.C3JaxWSExporter">
         <property name="port" value="9301"/>
         <property name="authenticator" ref="platformWSAuthenticator"/>
     </bean>
+<!--
+    <bean class="org.aphreet.c3.platform.remote.ws.SimpleHttpsServerJaxWsServiceExporter">
+        <property name="port" value="9303"/>
+        <property name="authenticator" ref="platformWSAuthenticator"/>
+    </bean>
+-->
 </beans>

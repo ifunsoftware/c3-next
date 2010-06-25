@@ -19,7 +19,7 @@ class MacRmiServiceExporter extends RmiServiceExporter{
 	  reg
 	}catch{
       case e:RemoteException => {
-		logger.debug("RMI registry access threw exception", e)
+		logger.trace("RMI registry access threw exception", e)
 	    logger.info("Could not detect RMI registry - creating new one")
 	    // Assume no registry found -> create new one.
 		LocateRegistry.createRegistry(registryPort)

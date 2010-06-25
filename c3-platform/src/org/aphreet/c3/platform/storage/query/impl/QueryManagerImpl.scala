@@ -38,9 +38,12 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.exception.PlatformException
 import org.aphreet.c3.platform.storage.query.QueryManager
 import org.aphreet.c3.platform.access.QueryConsumer
+import org.apache.commons.logging.LogFactory
 
 @Component
 class QueryManagerImpl extends QueryManager{
+
+  val log = LogFactory.getLog(getClass)
 
   var storageManager:StorageManager = _
   var taskManager:TaskManager = _
@@ -52,6 +55,9 @@ class QueryManagerImpl extends QueryManager{
   @Autowired
   def setTaskManager(manager:TaskManager) = {taskManager = manager}
 
+  def init = {
+    log info "Staring QueryManager"
+  }
 
   override
   def buildResourceList(dir:File){
