@@ -2,10 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:osgi-compendium="http://www.springframework.org/schema/osgi-compendium"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/osgi-compendium
+           http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium-1.2.xsd">
 
     <context:annotation-config />
 
@@ -25,16 +28,24 @@
         <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
         <property name="registryPort" value="1299" />
     </bean>
-<!-- -->
+<!--
     <bean class="org.aphreet.c3.platform.remote.ws.C3JaxWSExporter">
         <property name="port" value="9301"/>
         <property name="authenticator" ref="platformWSAuthenticator"/>
     </bean>
-
-<!--
-    <bean class="org.aphreet.c3.platform.remote.ws.SimpleHttpsServerJaxWsServiceExporter">
-        <property name="port" value="9303"/>
+-->
+    <bean id="serviceExporter" factory-bean="wsExporterFactory" factory-method="createExporter">
+        <property name="port" value="${remote.serverport}"/>
         <property name="authenticator" ref="platformWSAuthenticator"/>
     </bean>
--->
+
+    <bean id="wsExporterFactory" class="org.aphreet.c3.platform.remote.ws.WSExporterFactory">
+        <constructor-arg value="${remote.servertype}"/>
+    </bean>
+
+    <context:property-placeholder properties-ref="configC3Properties"/>
+
+    <osgi-compendium:cm-properties id="configC3Properties" persistent-id="c3"/>
+
+
 </beans>

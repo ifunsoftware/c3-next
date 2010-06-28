@@ -1,5 +1,3 @@
-package org.aphreet.c3.platform.auth
-
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -30,23 +28,34 @@ package org.aphreet.c3.platform.auth
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-sealed case class User(var name:String, var password:String, var role:UserRole){
+package org.aphreet.c3.platform.client.management.command.impl
 
+import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+
+object CommonCommands extends Commands{
+
+  def instances = List(
+      new EmptyCommand,
+      new QuitCommand
+    )
+}
+
+class EmptyCommand extends Command{
+
+  def execute = ""
+
+  def name = List("")
 
 }
 
-sealed case class UserRole(val name:String)
 
-object ACCESS extends UserRole("access");
-object MANAGEMENT extends UserRole("management");
+class QuitCommand extends Command{
 
-object UserRole {
-  def fromString(name:String):UserRole = {
-    name match{
-      case ACCESS.name => ACCESS
-      case MANAGEMENT.name => MANAGEMENT
-      case _ => throw new IllegalArgumentException
-    }
+  def execute = {
+    println("Bye")
+    System.exit(0)
+    ""
   }
-}
 
+  def name = List("quit")
+}

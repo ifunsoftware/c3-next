@@ -27,35 +27,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.ws
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+package org.aphreet.c3.platform.client.management.command.impl
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
+import org.aphreet.c3.platform.client.management.command.{Commands, Command}
 
-  var authManager:AuthenticationManager = _
+object MigrationCommands extends Commands{
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+  def instances = List(
+      new StartMigrationCommand
+    )
 
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
+}
+class StartMigrationCommand extends Command{
 
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
+  def execute:String = {
+    if(params.size < 2){
+      "Not enought params.\nUsage: start migration <source id> <target id>"
+    }else{
+      management.migrate(params.first, params.tail.first)
+      "Migration started"
+    }
   }
 
-  override def checkCredentials(username:String, password:String):Boolean = {
-
-    val user = authManager.authenticate(username, password)
-
-    if(user != null){
-      user.role == MANAGEMENT
-    }else false
-  }
+  def name = List("start", "migration")
 }

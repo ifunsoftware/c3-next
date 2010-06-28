@@ -27,35 +27,57 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.ws
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+package org.aphreet.c3.platform.client.management.command.impl
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
+import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+import org.aphreet.c3.platform.remote.api.management.Pair
+import collection.immutable.TreeSet
 
-  var authManager:AuthenticationManager = _
+object PlatformPropertiesCommands extends Commands {
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+  def instances = List(
+      new SetPlatformPropertyCommand,
+      new ListPlatformPropertiesCommand
+    )
+}
 
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
 
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
+class SetPlatformPropertyCommand extends Command{
+
+  def execute:String = {
+
+    if(params.size < 2){
+      "Not enought params\nUsage: set platform property <key> <value>"
+    }else{
+      management.setPlatformProperty(params.first, params.tail.first)
+      "Property set"
+    }
+
   }
 
-  override def checkCredentials(username:String, password:String):Boolean = {
+  def name:List[String] = List("set", "platform", "property")
+}
 
-    val user = authManager.authenticate(username, password)
+class ListPlatformPropertiesCommand extends Command{
 
-    if(user != null){
-      user.role == MANAGEMENT
-    }else false
+  def execute:String = {
+    val set = new TreeSet[Pair]
+
+    (set ++ management.platformProperties).map(e => e.key + "=" + e.value + "\n").foldLeft("")(_ + _)
+
+  }
+
+  def name:List[String] = List("list", "platform", "properties")
+
+  implicit def toOrdered(pair:Pair):Ordered[Pair] = {
+    new OrderedPair(pair)
+  }
+
+  class OrderedPair(val pair:Pair) extends Ordered[Pair] {
+
+    override def compare(that:Pair):Int = {
+      that.key.compareTo(pair.key)
+    }
   }
 }

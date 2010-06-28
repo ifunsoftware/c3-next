@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.client.common.{VersionUtils, SpringWsAccessor}
 class WSConnectionProvider(val host:String, val user:String, val password:String) extends ConnectionProvider with SpringWsAccessor{
 
   {
-    val versionService = obtainWebService("http://" + host, user, password, "RemoteApiService", "remote.c3.aphreet.org",
+    val versionService = obtainWebService(host, user, password, "RemoteApiService", "remote.c3.aphreet.org",
                                       "RemoteApiEndpointImplPort", classOf[RemoteApiEndpoint])
 
     val serviceApiVersion = versionService.getVersion
@@ -53,14 +53,14 @@ class WSConnectionProvider(val host:String, val user:String, val password:String
   }
 
   def management:PlatformManagementService =
-    obtainWebService("http://" + host, user, password, "ManagementService", "remote.c3.aphreet.org",
+    obtainWebService(host, user, password, "ManagementService", "remote.c3.aphreet.org",
                                       "PlatformWSManagementEndpointImplPort", classOf[PlatformWSManagementEndpoint])
 
 
 
 
   def access:PlatformAccessService =
-    obtainWebService("http://" + host, user, password, "AccessService", "remote.c3.aphreet.org",
+    obtainWebService(host, user, password, "AccessService", "remote.c3.aphreet.org",
                                   "PlatformWSAccessEndpointImplPort", classOf[PlatformWSAccessEndpoint])
 
 

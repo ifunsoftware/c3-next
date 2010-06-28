@@ -52,6 +52,13 @@ trait PlatformManagementEndpoint {
   def unregisterPropertyListener(listener:PlatformPropertyListener)
 
 
-  def buildResourceList(targetDir:String)
+  def listUsers:List[(String, String)]
+
+  def addUser(name:String, password:String, role:String)
+
+  def updateUser(name:String, password:String, role:String)
+
+  def deleteUser(name:String)
+
 
 }

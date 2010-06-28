@@ -1,11 +1,13 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
+import org.aphreet.c3.platform.client.management.command.Command
+import collection.immutable.TreeSet
+
 class HelpCommand extends Command{
 
   def execute():String = {
-    
-    HelpCommand.commandList
-      .map(c => c.name.foldRight("")(_ + " " + _)).foldRight("")(_ + "\n" + _)
+
+    HelpCommand.commands.reduceLeft(_ + "\n" + _)
     
   }
   
@@ -13,7 +15,17 @@ class HelpCommand extends Command{
 }
 
 object HelpCommand{
-  
-  var commandList:List[Command] = List()
-  
+
+  var commands:TreeSet[String] = new TreeSet
+
+  def addCommand(command:Command) = {
+
+    val commandLine:String = command.name.foldRight("")(_ + " " + _)
+
+    if(!commandLine.isEmpty){
+      commands = commands + commandLine  
+    }
+
+  }
+
 }

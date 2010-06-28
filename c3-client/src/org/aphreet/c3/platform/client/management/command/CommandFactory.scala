@@ -10,34 +10,18 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
 
   val root : CommandTreeNode = new CommandTreeNode(null)
 
-  var commandList:List[Command] = List()
-
   {
-    register(new AddSizeMappingCommand)
-    register(new AddTypeMappingCommand)
-    register(new AddStorageCommand)
-    register(new BuildResourceListCommand)
-    register(new HelpCommand)
-    register(new GetPlatformPropertiesCommand)
-    register(new ListSizeMappingCommand)
-    register(new ListStorageCommand)
-    register(new ListStorageTypesCommand)
-    register(new ListRunningTasksCommand)
-    register(new ListFinishedTasksCommand)
-    register(new ListTypeMappingCommand)
-    register(new PauseTaskCommand)
-    register(new RemoveSizeMappingCommand)
-    register(new RemoveStorageCommand)
-    register(new RemoveTypeMappingCommand)
-    register(new ResumeTaskCommand)
-    register(new SetPlatformPropertyCommand)
-    register(new SetStorageModeCommand)
-    register(new ShowResourceCommand)
-    register(new StartMigrationCommand)
-    register(new QuitCommand)
-    register(new EmptyCommand)
+    register(CommonCommands)
+    register(MigrationCommands)
+    register(PlatformPropertiesCommands)
 
-    HelpCommand.commandList = commandList
+    register(SizeMappingCommands)
+    register(StorageCommands)
+    register(TaskCommands)
+    register(TypeMappingCommands)
+    register(UserCommands)
+    
+    register(new HelpCommand)
   }
 
   def getCommand(query:String):Option[Command] = {
@@ -57,8 +41,14 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
     }
   }
 
+  def register(command:Commands){
+    for(instance <- command.instances){
+      register(instance)
+    }
+  }
+
   def register(command:Command) = {
-    commandList = commandList ::: List(command)
+    HelpCommand.addCommand(command)
     root.addCommand(command.name, command.getClass)
   }
 

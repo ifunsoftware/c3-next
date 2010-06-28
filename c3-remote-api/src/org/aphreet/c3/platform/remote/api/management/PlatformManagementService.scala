@@ -46,6 +46,12 @@ trait PlatformManagementService {
 
   def removeSizeMapping(size:java.lang.Long)
 
-  def buildResourceList(target:String)
+  def listUsers:Array[Pair]
+
+  def addUser(name:String, password:String, role:String)
+
+  def updateUser(name:String, password:String, role:String)
+
+  def deleteUser(name:String)
 
 }

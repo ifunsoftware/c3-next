@@ -165,10 +165,28 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
       managementEndpoint.removeSizeMaping(size.longValue)
     })
 
-  def buildResourceList(targetDir:String) =
+  def listUsers:Array[Pair] =
     catchAll(() => {
-      managementEndpoint.buildResourceList(targetDir)
+      managementEndpoint.listUsers.map(e => new Pair(e._1, e._2)).toSeq.toArray
     })
+
+  def addUser(name:String, password:String, role:String) = {
+    catchAll(() => {
+      managementEndpoint.addUser(name, password, role)
+    })
+  }
+
+  def updateUser(name:String, password:String, role:String) = {
+    catchAll(() => {
+      managementEndpoint.updateUser(name, password,role)
+    })
+  }
+
+  def deleteUser(name:String) = {
+    catchAll(() => {
+      managementEndpoint.deleteUser(name)
+    })
+  }
 
   private def catchAll[T](function:Function0[T]) : T = {
     try{

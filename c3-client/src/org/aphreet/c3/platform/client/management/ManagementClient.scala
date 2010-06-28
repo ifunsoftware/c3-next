@@ -34,7 +34,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     connectionProvider = connectionType match {
       case "rmi" => new RmiConnectionProvider
       case "ws" => {
-        val host = cliValue("h", "localhost:9301")
+        val host = cliValue("h", "http://localhost:9301")
         val user = cliValue("u", "")
         val password = cliValue("p", "")
         try{
@@ -55,7 +55,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
   def cliDescription = parameters(
     "t" has mandatory argument "type" described "Connection type WS|RMI. Default is RMI",
-    "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is localhost:9301",
+    "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is http://localhost:9301",
     "u" has mandatory argument "username" described "Only for WS",
     "p" has mandatory argument "password" described "Only fir WS",
     "help" described "Prints this message"

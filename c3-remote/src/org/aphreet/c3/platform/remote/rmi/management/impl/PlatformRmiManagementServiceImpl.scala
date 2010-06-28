@@ -50,6 +50,13 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
 
   def removeSizeMapping(size:java.lang.Long) = managementAdapter.removeSizeMapping(size)
 
-  def buildResourceList(targetDir:String) = managementAdapter.buildResourceList(targetDir)
+
+  def listUsers:Array[Pair] = managementAdapter.listUsers
+
+  def addUser(name:String, password:String, role:String) = managementAdapter.addUser(name,password,role)
+
+  def updateUser(name:String, password:String, role:String) = managementAdapter.updateUser(name, password, role)
+
+  def deleteUser(name:String) = managementAdapter.deleteUser(name)
 }
 

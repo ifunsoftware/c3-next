@@ -15,3 +15,8 @@ abstract class Command{
   
   def name:List[String]
 }
+
+abstract class Commands{
+
+  def instances:List[Command]
+}

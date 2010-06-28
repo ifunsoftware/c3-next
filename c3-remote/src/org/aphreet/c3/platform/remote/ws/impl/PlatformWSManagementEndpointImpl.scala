@@ -99,7 +99,16 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   def removeSizeMapping(size:java.lang.Long) = managementAdapter.removeSizeMapping(size)
 
   @WebMethod
-  def buildResourceList(targetDir:String) = managementAdapter.buildResourceList(targetDir)
+  def listUsers:Array[Pair] = managementAdapter.listUsers
+
+  @WebMethod
+  def addUser(name:String, password:String, role:String) = managementAdapter.addUser(name, password, role)
+
+  @WebMethod
+  def updateUser(name:String, password:String, role:String) = managementAdapter.updateUser(name, password, role)
+
+  @WebMethod
+  def deleteUser(name:String) = managementAdapter.deleteUser(name)
 
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag

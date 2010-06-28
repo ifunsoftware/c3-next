@@ -33,28 +33,90 @@ package org.aphreet.c3.platform.auth.impl
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.auth.{ACCESS, UserRole, User, AuthenticationManager}
+import org.springframework.beans.factory.annotation.Autowired
+import javax.annotation.PostConstruct
+import collection.mutable.HashMap
+import com.twmacinta.util.MD5
+import org.aphreet.c3.platform.exception.{UserNotFoundException, UserExistsException}
 
-@Component
+@Component("authenticationManager")
 @Scope("singleton")
 class AuthenticationManagerImpl extends AuthenticationManager {
 
-  def authenticate(username:String, password:String):User = {
-    new User("", "", ACCESS)
+  val users = new HashMap[String, User]
+
+  var configAccessor:AuthConfigAccessor = _
+
+  @Autowired
+  def setConfigAccessor(accessor:AuthConfigAccessor) = {configAccessor = accessor}
+
+  @PostConstruct
+  def init{
+    users ++ configAccessor.load
   }
 
-  def update(user:User) = {
+  def authenticate(username:String, password:String):User = {
 
+    users.get(username) match{
+      case Some(user) => {
+        if(hash(password) == user.password){
+          user
+        }else{
+          null
+        }
+      }
+      case None => null
+    }
+  }
+
+  def update(username:String, password:String, role:UserRole) = {
+    users.get(username) match {
+      case Some(user) => {
+        user.password = hash(password)
+        user.role = role
+        users.synchronized{
+          configAccessor.store(users)
+        }
+      }
+      case None => throw new UserNotFoundException
+    }
   }
 
   def create(username:String, password:String, role:UserRole) = {
+    users.get(username) match {
+      case Some(user) => throw new UserExistsException
+      case None => {
+        val user =  new User(username, hash(password), role)
+        users.synchronized{
+          users.put(username, user)
+          configAccessor.store(users)
+        }
+        user
+      }
+    }
 
   }
 
   def delete(username:String) = {
+    users.get(username) match {
+      case Some(user) => {
+        users.synchronized{
+          users.removeKey(username)
+          configAccessor.store(users)
+        }
+      }
 
+      case None => throw new UserNotFoundException
+
+    }
   }
 
-  def list:List[User] = {
-    List()
+  def list:List[User] = users.values.toList
+
+
+  private def hash(string:String):String = {
+     val md5 = new MD5()
+     md5.Update(string)
+     md5.asHex
   }
 }

@@ -38,23 +38,8 @@ object VersionUtils{
   lazy val clientVersion:String = obtainClientVersion
 
   private def obtainClientVersion:String = {
-
-    val clazz = classOf[VersionUtils]
-
-    val className = clazz.getSimpleName
-    val classFileName = className + ".class"
-    val pathToThisClass = clazz.getResource(classFileName).toString
-
-    val mark = pathToThisClass.indexOf("!")
-    val pathToManifest = pathToThisClass.toString().substring(0,mark+1) + "/META-INF/MANIFEST.MF"
-
-    val manifest = new Manifest(new URL(pathToManifest).openStream)
-
-    val attributes = manifest.getMainAttributes
-
-    val version = attributes.getValue("Implementation-Version").asInstanceOf[String]
-
-    version
+    ""
+ 
   }
 
 }

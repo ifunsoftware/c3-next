@@ -27,35 +27,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.remote.ws
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.remoting.jaxws.SimpleHttpServerJaxWsServiceExporter
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
+class WSExporterFactory(val serverType:String){
 
-  var authManager:AuthenticationManager = _
-
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
-
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
-
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
+  def createExporter:SimpleHttpServerJaxWsServiceExporter = {
+    serverType match {
+      case "http" => new C3JaxWSExporter
+      case "https" => new SimpleHttpsServerJaxWsServiceExporter
+      case _ => throw new IllegalArgumentException("Unknown server type " + serverType)
+    }
   }
 
-  override def checkCredentials(username:String, password:String):Boolean = {
-
-    val user = authManager.authenticate(username, password)
-
-    if(user != null){
-      user.role == MANAGEMENT
-    }else false
-  }
 }

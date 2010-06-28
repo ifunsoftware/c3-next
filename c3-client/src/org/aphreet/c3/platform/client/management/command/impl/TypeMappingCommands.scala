@@ -27,35 +27,71 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.ws
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+package org.aphreet.c3.platform.client.management.command.impl
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
+import org.aphreet.c3.platform.client.management.command.{Commands, Command}
 
-  var authManager:AuthenticationManager = _
+object TypeMappingCommands extends Commands{
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+  def instances = List(
+      new AddTypeMappingCommand,
+      new DeleteTypeMappingCommand,
+      new ListTypeMappingCommand
+  )
+}
 
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
+class AddTypeMappingCommand extends Command{
 
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
+  def execute:String = {
+    if(params.size < 3)
+      "Not enough params.\nUsage: add type mapping <mimetype> <storagetype> <versioned>"
+    else{
+
+      val mimeType = params.first
+      val storageType = params.tail.first
+      val versioned = if(params(2) == "true") 1 else 0
+
+      management.addTypeMapping(mimeType, storageType, versioned.shortValue)
+
+      "Type mapping added"
+    }
   }
 
-  override def checkCredentials(username:String, password:String):Boolean = {
+  def name = List("add", "type", "mapping")
 
-    val user = authManager.authenticate(username, password)
+}
 
-    if(user != null){
-      user.role == MANAGEMENT
-    }else false
+class DeleteTypeMappingCommand extends Command{
+
+  def execute:String = {
+
+    if(params.size < 1){
+      "Not enough params.\nUsage delete type mapping <mimetype>"
+    }else{
+      management.removeTypeMapping(params.first)
+      "Type mapping deleted"
+    }
   }
+
+  def name = List("delete", "type", "mapping")
+}
+
+class ListTypeMappingCommand extends Command{
+
+  def execute:String = {
+
+    val builder = new StringBuilder
+
+    for(mapping <- management.listTypeMappigs)
+      builder.append(String.format("%20s %20s %d\n", mapping.mimeType, mapping.storage, mapping.versioned))
+
+
+    builder.toString
+
+  }
+
+  def name = List("list", "type", "mappings")
+
+
 }

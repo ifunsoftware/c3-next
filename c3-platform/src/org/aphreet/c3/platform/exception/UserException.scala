@@ -27,35 +27,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.ws
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+package org.aphreet.c3.platform.exception
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
 
-  var authManager:AuthenticationManager = _
+class UserException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
+  def this(message:String) = this(message, null)
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+  def this() = this(null, null)
 
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
-
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
-  }
-
-  override def checkCredentials(username:String, password:String):Boolean = {
-
-    val user = authManager.authenticate(username, password)
-
-    if(user != null){
-      user.role == MANAGEMENT
-    }else false
-  }
+  def this(cause:Throwable) = this(null, cause)
 }
+
+class UserNotFoundException extends UserException
+class UserExistsException extends UserException

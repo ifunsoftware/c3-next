@@ -21,6 +21,7 @@ import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, PlatformPropertyListener, PlatformManagementEndpoint}
 import org.aphreet.c3.platform.storage.query.QueryManager
 import java.io.File
+import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -40,7 +41,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   var sizeSelector:SizeStorageSelector = null
 
   var queryManager:QueryManager = null
-  
+
+  var authManager:AuthenticationManager = _
   
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
   
@@ -65,6 +67,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   @Autowired
   def setQueryManager(manager:QueryManager) = {queryManager = manager}
+
+  @Autowired
+  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
 
   @Autowired{val required=false}
   def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
@@ -215,7 +220,20 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     log debug propertyListeners.toString
   }
 
-  def buildResourceList(targetDir:String){
-    queryManager.buildResourceList(new File(targetDir))
+
+  def listUsers:List[(String, String)] = {
+    authManager.list.map(u => (u.name, u.role.name))
+  }
+
+  def addUser(name:String, password:String, role:String) = {
+    authManager.create(name, password, UserRole.fromString(role))
+  }
+
+  def updateUser(name:String, password:String, role:String) = {
+    authManager.update(name, password, UserRole.fromString(role))
+  }
+
+  def deleteUser(name:String) = {
+    authManager.delete(name)
   }
 }

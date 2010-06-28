@@ -1,5 +1,3 @@
-package org.aphreet.c3.platform.auth
-
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -30,23 +28,68 @@ package org.aphreet.c3.platform.auth
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-sealed case class User(var name:String, var password:String, var role:UserRole){
+package org.aphreet.c3.platform.client.management.command.impl
 
+import org.aphreet.c3.platform.client.management.command._
+
+object SizeMappingCommands extends Commands{
+
+  def instances = List(
+    new AddSizeMappingCommand,
+    new DeleteSizeMappingCommand,
+    new ListSizeMappingCommand
+  )
 
 }
 
-sealed case class UserRole(val name:String)
+class AddSizeMappingCommand extends Command {
 
-object ACCESS extends UserRole("access");
-object MANAGEMENT extends UserRole("management");
+  def execute = {
+    if (params.size < 3)
+      "Not enough params.\nUsage: add size mapping <size> <storagetype> <versioned>"
+    else {
 
-object UserRole {
-  def fromString(name:String):UserRole = {
-    name match{
-      case ACCESS.name => ACCESS
-      case MANAGEMENT.name => MANAGEMENT
-      case _ => throw new IllegalArgumentException
+      val size = params.first.toLong
+      val storageType = params.tail.first
+      val versioned = if (params(2) == "true") 1 else 0
+
+
+      management.addSizeMapping(size, storageType, versioned)
+
+      "Size mapping added"
     }
   }
+
+  def name = List("add", "size", "mapping")
 }
 
+class DeleteSizeMappingCommand extends Command {
+
+  def execute = {
+
+    if (params.size < 1) {
+      "Not enough params.\nUsage remove size mapping <size>"
+    } else {
+      management.removeSizeMapping(params.first.toLong)
+      "Size mapping deleted"
+    }
+  }
+
+  def name = List("delete", "size", "mapping")
+
+}
+
+class ListSizeMappingCommand extends Command {
+
+  def execute = {
+    val builder = new StringBuilder
+
+    for (mapping <- management.listSizeMappings)
+      builder.append(String.format("%10d %20s %d\n", mapping.size, mapping.storage, mapping.versioned))
+
+
+    builder.toString
+  }
+
+  def name = List("list", "size", "mappings")
+}

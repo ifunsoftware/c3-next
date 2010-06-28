@@ -6,6 +6,7 @@
             http://www.springsource.org/schema/dm-server/plan
             http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
 
+    <artifact type="configuration" name="c3" version="0"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote.api" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote" version="[1.0.0, 2.0.0)"/>
