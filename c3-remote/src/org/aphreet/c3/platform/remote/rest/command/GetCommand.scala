@@ -76,7 +76,8 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
   }
 
   def sendResourceMetadata(resource:Resource){
-    val str = resource.toJSON(false)
+    //TODO remove this in release
+    val str = resource.toJSON(req.getParameterMap.containsKey("system"))
 
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)

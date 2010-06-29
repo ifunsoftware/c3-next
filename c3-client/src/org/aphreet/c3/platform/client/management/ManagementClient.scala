@@ -29,6 +29,8 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     if(cli.hasOption("help")) helpAndExit("Shell" )
 
+    if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification
+
     val connectionType = cliValue("t", "rmi").toLowerCase
 
     connectionProvider = connectionType match {
@@ -58,6 +60,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is http://localhost:9301",
     "u" has mandatory argument "username" described "Only for WS",
     "p" has mandatory argument "password" described "Only fir WS",
+    "ignoreSSLHostname" described  "Ignore host name verification error",
     "help" described "Prints this message"
   )
 
@@ -146,4 +149,11 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     null
   }
 
+  def disableHostNameVerification = {
+    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+      new javax.net.ssl.HostnameVerifier() {
+        override def verify(hostname: String, sslSession: javax.net.ssl.SSLSession): Boolean = true
+      }
+    )
+  }
 }

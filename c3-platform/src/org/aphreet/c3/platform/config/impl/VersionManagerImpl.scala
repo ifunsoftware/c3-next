@@ -36,9 +36,12 @@ import org.osgi.framework.BundleContext
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.VersionManager
 import org.springframework.beans.factory.annotation.Autowired
+import org.apache.commons.logging.LogFactory
 
 @Component("versionManager")
 class VersionManagerImpl extends VersionManager with BundleContextAware{
+
+  val log = LogFactory.getLog(getClass)
 
   var bundleContext:BundleContext = null;
 
@@ -55,7 +58,7 @@ class VersionManagerImpl extends VersionManager with BundleContextAware{
             .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
             .foreach(b => map + (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
 
-    println(map)
+    log.info("Found modules: " + map.toString)
 
     map
   }

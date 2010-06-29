@@ -46,10 +46,22 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
 
   def add(resource:Resource):String = {
 
-    resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
-      case None => resource.metadata.put(Resource.MD_CONTENT_TYPE, resource.versions(0).data.mimeType)
-      case Some(x) => null
+    val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+      case None => resource.versions(0).data.mimeType
+      case Some(x) => if(!x.isEmpty) x else resource.versions(0).data.mimeType
     }
+
+    resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, contentType)
+    resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
+
+    val pool = resource.metadata.get(Resource.MD_POOL) match {
+      case Some(x) => if(!x.isEmpty) x else "default"
+      case None => "default"
+    }
+
+    resource.systemMetadata.put(Resource.MD_POOL, pool)
+    resource.metadata.put(Resource.MD_POOL, pool)
+
 
     val storage = storageManager.dispatcher.selectStorageForResource(resource)
 
@@ -61,8 +73,6 @@ class ResourceAccessorImpl extends ResourceAccessor with SPlatformPropertyListen
     }else{
       throw new StorageNotFoundException("Failed to find storage for resource")
     }
-
-
   }
 
   def update(resource:Resource):String = {
