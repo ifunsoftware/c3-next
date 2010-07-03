@@ -30,11 +30,11 @@
 package org.aphreet.c3.platform.test.integration.storage
 
 import org.aphreet.c3.platform.storage.dispatcher.selector.size._
-import org.aphreet.c3.platform.config.PlatformConfigManager
 
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
+import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 
 class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
 
@@ -47,7 +47,7 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     	250000l -> ("FileBDBStorage", false)
     )
     
-    val configManager = new PlatformConfigManager
+    val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir
     configAccessor.setConfigManager(configManager)
     

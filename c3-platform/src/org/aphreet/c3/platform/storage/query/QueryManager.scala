@@ -35,8 +35,6 @@ import org.aphreet.c3.platform.access.QueryConsumer
 
 trait QueryManager{
 
-  def buildResourceList(dir:File)
-
   def executeQuery(consumer:QueryConsumer)
 
 }

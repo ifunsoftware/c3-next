@@ -2,7 +2,6 @@ package org.aphreet.c3.platform.storage.dispatcher.selector
 
 import java.io.{StringWriter, File}
 
-import scala.collection.mutable.HashMap
 import scala.collection.jcl.Set
 
 import org.aphreet.c3.platform.common.{Path, JSONFormatter}
@@ -20,7 +19,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
   @Autowired
   def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
 
-  def getConfigManager:PlatformConfigManager = configManager
+  def configDir:File = configManager.configDir
 
    def loadConfig(configDir:File):Map[T, (String, Boolean)] = {
     val file = new File(configDir, filename)

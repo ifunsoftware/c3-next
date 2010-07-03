@@ -5,6 +5,7 @@ import org.aphreet.c3.platform.management.{PlatformManagementEndpoint, PropertyC
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U
+import org.aphreet.c3.platform.config.{UnregisterEvent, RegisterEvent, PlatformConfigManager}
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,26 +23,29 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
 
   var currentConfig:BDBConfig = new BDBConfig(false, false, 20)
 
-  var management:PlatformManagementEndpoint = _
+  var configManager:PlatformConfigManager = _
 
   @Autowired
-  def setPlatformManagementEndpoint(endpoint:PlatformManagementEndpoint) = {management = endpoint}
-
+  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
 
   def bdbConfig:BDBConfig = currentConfig
 
 
   @PostConstruct
   override def init = {
-    log info "Post construct callback invoked"
-    management.registerPropertyListener(this)
     super.init
+
+    log info "Post construct callback invoked"
+
+    configManager ! RegisterEvent(this)
   }
 
   @PreDestroy
   override def destroy = {
     log info "Pre destroy callback invoked"
-    management.unregisterPropertyListener(this)
+
+    configManager ! UnregisterEvent(this)
+
     super.destroy
   }
 
@@ -57,33 +61,50 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
     Array(BDB_CONFIG_CACHE_PERCENT, BDB_CONFIG_TX_NO_SYNC, BDB_CONFIG_TX_WRITE_NO_SYNC)
 
 
+  def propertyChanged(event: PropertyChangeEvent) = {
 
-  def propertyChanged(event:PropertyChangeEvent) = {
+    def updateStorageParams {
+      log info "Updating storage param " + event.name
+
+      for (storage <- createdStorages if (storage.isInstanceOf[AbstractBDBStorage])) {
+        val mode = storage.mode
+        storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
+        storage.close
+        storage.asInstanceOf[AbstractBDBStorage].open(currentConfig)
+        storage.mode = mode
+      }
+    }
+
+
     event.name match {
       case BDB_CONFIG_TX_NO_SYNC => {
-          val value = event.newValue == "true"
+        val value = event.newValue == "true"
+        if(currentConfig.txNoSync != value){
           currentConfig = new BDBConfig(value, currentConfig.txWriteNoSync, currentConfig.cachePercent)
+          updateStorageParams
         }
+      }
 
       case BDB_CONFIG_TX_WRITE_NO_SYNC => {
-          val value = event.newValue == "true"
+        val value = event.newValue == "true"
+
+        if(currentConfig.txWriteNoSync != value){
           currentConfig = new BDBConfig(currentConfig.txNoSync, value, currentConfig.cachePercent)
+          updateStorageParams
         }
+
+
+      }
 
       case BDB_CONFIG_CACHE_PERCENT => {
-          val value = Integer.parseInt(event.newValue)
+        val value = Integer.parseInt(event.newValue)
+        if(value != currentConfig.cachePercent){
           currentConfig = new BDBConfig(currentConfig.txNoSync, currentConfig.txWriteNoSync, value)
+          updateStorageParams
         }
+      }
     }
-    log info "Updating storage param " + event.name
 
-    for(storage <- createdStorages if (storage.isInstanceOf[AbstractBDBStorage])){
-      val mode = storage.mode
-      storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-      storage.close
-      storage.asInstanceOf[AbstractBDBStorage].open(bdbConfig)
-      storage.mode = mode
-    }
 
   }
 

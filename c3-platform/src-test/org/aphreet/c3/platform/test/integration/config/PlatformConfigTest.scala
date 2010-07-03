@@ -29,11 +29,9 @@
  */
 package org.aphreet.c3.platform.test.integration.config
 
-import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
-import scala.collection.jcl.HashMap
-
 import junit.framework.Assert._
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
+import org.aphreet.c3.platform.config.impl.PlatformConfigAccessor
 
 class PlatformConfigTest extends AbstractTestWithFileSystem{
 
@@ -41,11 +39,10 @@ class PlatformConfigTest extends AbstractTestWithFileSystem{
 
     val configAccessor = new PlatformConfigAccessor
     
-    val config = new HashMap[String, String]
-    config.put("prop1", "val1")
-    config.put("prop2", "val2")
-    config.put("prop3", "val3")
-    config.put("prop4", "val4")
+    val config = Map[String, String](
+      "prop1" -> "val1",
+      "prop2" -> "val2"
+    )
     
     configAccessor.storeConfig(config, testDir)
     

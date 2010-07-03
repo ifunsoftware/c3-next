@@ -30,46 +30,31 @@
 
 package org.aphreet.c3.platform.config
 
-import java.io.File
-
-import javax.annotation.PostConstruct
-
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.exception.ConfigurationException
-
-import org.apache.commons.logging.LogFactory
+import collection.immutable.Map
 
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.management.PlatformPropertyListener
+import java.io.File
+import actors.Actor
 
 
 @Component
-class PlatformConfigManager {
-  
-  val log = LogFactory getLog getClass
-  
-  var configPath:String = "";
-  var configDir:File = null;
-  
-  @PostConstruct 
-  def init = {
-    configPath = System.getProperty("c3.home")
-    
-    if(configPath == null){
-      log info "Config path is not set. Using user home path"
-      configPath = System.getProperty("user.home") + File.separator + ".c3"
-    }
-    
-    if(configPath == null){
-      throw new ConfigurationException("Can't find path to store config")
-    }else{
-      log info "Using " + configPath + " to store C3 configuration"
-    }
-    
-    val path = new Path(configPath)
-    
-    configPath = path.toString
-    configDir = path.file
-    if(!configDir.exists) configDir.mkdirs
-  }
+trait PlatformConfigManager extends Actor{
+
+ def configDir:File
+
+ def registerPropertyListener(listener:PlatformPropertyListener)
+
+ def unregisterPropertyListener(listener:PlatformPropertyListener)
+
+ def getPlatformProperties:Map[String, String]
+
+ def setPlatformProperty(key:String, value:String)
   
 }
+
+case class RegisterEvent(listener: PlatformPropertyListener)
+
+case class UnregisterEvent(listener: PlatformPropertyListener)
+
+case class SetPropertyEvent(key: String, value: String)

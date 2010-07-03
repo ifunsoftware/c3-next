@@ -48,8 +48,4 @@ abstract class AbstractStorageFactory extends StorageFactory{
     
     createdStorages.clear
   }
-
-  override def finalize{
-    log info "finalizing " + this.toString
-  }
 }

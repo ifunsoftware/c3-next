@@ -30,15 +30,14 @@
 
 package org.aphreet.c3.platform.storage.query.impl
 
-import java.io.File
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.StorageManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.task.TaskManager
-import org.aphreet.c3.platform.exception.PlatformException
-import org.aphreet.c3.platform.storage.query.QueryManager
-import org.aphreet.c3.platform.access.QueryConsumer
 import org.apache.commons.logging.LogFactory
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
+import org.aphreet.c3.platform.access.QueryConsumer
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.storage.query.QueryManager
 
 @Component
 class QueryManagerImpl extends QueryManager{
@@ -46,30 +45,12 @@ class QueryManagerImpl extends QueryManager{
   val log = LogFactory.getLog(getClass)
 
   var storageManager:StorageManager = _
-  var taskManager:TaskManager = _
-
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
-
-  @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
-
+    
   def init = {
     log info "Staring QueryManager"
-  }
-
-  override
-  def buildResourceList(dir:File){
-    if(!dir.isDirectory) throw new PlatformException(dir.getAbsolutePath + " is not directry")
-
-    val storages = storageManager.listStorages
-
-    for(storage <- storages){
-      val task = new ResourceListTask(storage, new File(dir, storage.id + ".out"))
-      taskManager.submitTask(task)
-    }
-
   }
 
   override

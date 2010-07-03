@@ -30,14 +30,14 @@
 package org.aphreet.c3.platform.config.accessor
 
 import java.io.{File, FileWriter}
-import org.aphreet.c3.platform.config.PlatformConfigManager
+import actors.Actor
 
 
-trait ConfigAccessor[T] {
+trait ConfigAccessor[T]{
   
-  def load:T = loadConfig(getConfigManager.configDir)
+  def load:T = loadConfig(configDir)
   
-  def store(data:T) = storeConfig(data, getConfigManager.configDir)
+  def store(data:T) = storeConfig(data, configDir)
   
   def update(f:Function1[T, T]) = store(f.apply(load))
   
@@ -45,7 +45,8 @@ trait ConfigAccessor[T] {
   
   def storeConfig(data:T, configDir:File)
 
-  def getConfigManager:PlatformConfigManager
+  def configDir:File
+
 
   protected def writeToFile(text:String, configFile:File) = {
     

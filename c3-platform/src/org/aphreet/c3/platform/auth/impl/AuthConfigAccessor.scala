@@ -53,7 +53,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String,User]] {
 
   var configManager:PlatformConfigManager = null
 
-  def getConfigManager:PlatformConfigManager = configManager
+  def configDir:File = configManager.configDir
 
   @Autowired
   def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}

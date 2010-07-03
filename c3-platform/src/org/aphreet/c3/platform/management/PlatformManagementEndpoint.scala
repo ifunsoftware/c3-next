@@ -46,10 +46,6 @@ trait PlatformManagementEndpoint {
   
   def removeSizeMaping(size:Long)
   
-  
-  def registerPropertyListener(listener:PlatformPropertyListener)
-  
-  def unregisterPropertyListener(listener:PlatformPropertyListener)
 
 
   def listUsers:List[(String, String)]

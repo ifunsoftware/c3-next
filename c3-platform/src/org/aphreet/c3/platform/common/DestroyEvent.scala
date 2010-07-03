@@ -27,21 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.access
 
-import java.util.List
+package org.aphreet.c3.platform.common
 
-import org.aphreet.c3.platform.resource.Resource
-
-trait PlatformAccessEndpoint {
-
-  def get(ra:String):Resource
-  
-  def add(resource:Resource):String
-  
-  def update(resource:Resource):String
-  
-  def delete(ra:String)
-  
-  def query(consumer:QueryConsumer)
-}
+object DestroyEvent 

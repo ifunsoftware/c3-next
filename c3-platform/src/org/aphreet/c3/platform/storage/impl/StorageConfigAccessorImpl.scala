@@ -25,7 +25,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor{
   @Autowired
   def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
 
-  def getConfigManager:PlatformConfigManager = configManager
+  def configDir:File = configManager.configDir
 
   def loadConfig(configDir:File):List[StorageParams] = {
     val configFile = new File(configDir, STORAGE_CONFIG)

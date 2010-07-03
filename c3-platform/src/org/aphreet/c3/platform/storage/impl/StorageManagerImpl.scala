@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.exception.{StorageException, StorageNotFoundException}
 import java.io.File
+import org.aphreet.c3.platform.resource.Resource
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -67,6 +68,10 @@ class StorageManagerImpl extends StorageManager{
       case Some(storage) => storage
       case None => throw new StorageNotFoundException(id)
     }
+  }
+
+  def storageForResource(resource:Resource):Storage = {
+    storageDispatcher.selectStorageForResource(resource)
   }
 
   def createStorage(storageType:String, storagePath:Path){

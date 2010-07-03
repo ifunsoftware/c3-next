@@ -27,58 +27,52 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.config.accessor
+package org.aphreet.c3.platform.config.impl
 
-import org.aphreet.c3.platform.common.{JSONFormatter, Constants}
+import org.aphreet.c3.platform.common.{JSONFormatter}
 
 import java.io.{File, FileWriter, StringWriter}
 
-import scala.collection.jcl.{Set, HashMap}
 
-import com.springsource.json.parser.{Node, MapNode, ListNode, AntlrJSONParser, ScalarNode}
+import scala.collection.jcl.Set
+import scala.collection.immutable.Map
+
+import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.springframework.beans.factory.annotation.Autowired;
+import org.aphreet.c3.platform.config.accessor.ConfigAccessor;
 
 import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
 
 @Component
-class PlatformConfigAccessor extends ConfigAccessor[HashMap[String,String]]{
+class PlatformConfigAccessor extends ConfigAccessor[Map[String,String]]{
 
   val PLATFORM_CONFIG = "c3-platform-config.json"
 
   var configManager:PlatformConfigManager = null
 
-  def getConfigManager:PlatformConfigManager = configManager
 
-  @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  var configDirectory:File = _
 
-  @PostConstruct
-  def init = {
-    val props = load
-    props.put(Constants.C3_PLATFORM_HOME, configManager.configPath)
-    store(props)
-  }
-  
-  def loadConfig(configDir:File):HashMap[String, String] = {
-    val map = new HashMap[String, String]
+  def configDir:File = configDirectory
+
+  def loadConfig(configDir:File):Map[String, String] = {
+    var map = Map[String, String]()
     
     val file = new File(configDir, PLATFORM_CONFIG)
     
     if(file.exists){
       val node = new AntlrJSONParser().parse(file).asInstanceOf[MapNode]
-      
+
       for(key <- Set.apply(node.getKeys)){
         val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
-        map.put(key, value)
+        map = map + ((key, value))
       }
     }
     map
   }
   
-  def storeConfig(map:HashMap[String, String], configDir:File) = {
+  def storeConfig(map:Map[String, String], configDir:File) = {
     this.synchronized{
       val swriter = new StringWriter()
       

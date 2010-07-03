@@ -29,49 +29,38 @@
  */
 package org.aphreet.c3.platform.access.impl
 
-import java.util.{List, Collections}
+import java.util.List
 
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.storage.ResourceAccessor
-import org.aphreet.c3.platform.search.SearchManager
 
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.storage.query.QueryManager
-import org.aphreet.c3.platform.access.{QueryConsumer, PlatformAccessEndpoint}
+import org.aphreet.c3.platform.access.{AccessManager, QueryConsumer, PlatformAccessEndpoint}
 
 @Component("platformAccessEndpoint")
 class PlatformAccessEndpointImpl extends PlatformAccessEndpoint{
 
-  var resourceAccessor:ResourceAccessor = null
-  
-  var searchManager:SearchManager = null
+  var accessManager:AccessManager = _
 
   var queryManager:QueryManager = _
   
   val log = org.apache.commons.logging.LogFactory.getLog(getClass)
   
   @Autowired
-  def setResourceAccessor(accessor:ResourceAccessor) = {resourceAccessor = accessor}
-  
-  @Autowired
-  def setSearchManager(manager:SearchManager) = {searchManager = manager}
+  def setAccessManager(manager:AccessManager) = {accessManager = manager}
 
   @Autowired
   def setQueryManager(manager:QueryManager) = {queryManager = manager}
   
-  def get(ra:String):Resource = resourceAccessor.get(ra)
+  def get(ra:String):Resource = accessManager.get(ra)
   
-  def add(resource:Resource):String = resourceAccessor.add(resource)
+  def add(resource:Resource):String = accessManager.add(resource)
   
-  def update(resource:Resource):String = resourceAccessor.update(resource)
+  def update(resource:Resource):String = accessManager.update(resource)
   
-  def delete(ra:String) = resourceAccessor.delete(ra)
-  
-  def search(query:String):List[String] = {
-    searchManager.search(query)
-  }
+  def delete(ra:String) = accessManager.delete(ra)
   
   def query(consumer:QueryConsumer){
     queryManager.executeQuery(consumer)

@@ -1,130 +1,149 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.aphreet.c3</groupId>
-	<artifactId>c3-search</artifactId>
-	<version>${bundleVersion}</version>
-	<packaging>jar</packaging>
-	<name>C3 Search</name>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.aphreet.c3</groupId>
+    <artifactId>c3-search</artifactId>
+    <version>${bundleVersion}</version>
+    <packaging>jar</packaging>
+    <name>C3 Search</name>
 
-	<parent>
-		<groupId>org.aphreet.c3</groupId>
-		<artifactId>main</artifactId>
-		<version>${bundleVersion}</version>
-	</parent>
+    <parent>
+        <groupId>org.aphreet.c3</groupId>
+        <artifactId>main</artifactId>
+        <version>${bundleVersion}</version>
+    </parent>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>org.aphreet.c3</groupId>
-			<artifactId>c3-platform</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-platform</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>com.springsource.org.apache.lucene.analysis</artifactId>
-			<version>2.4.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>com.springsource.org.apache.lucene.analysis</artifactId>
+            <version>2.4.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>com.springsource.org.apache.lucene</artifactId>
-			<version>2.4.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>com.springsource.org.apache.lucene</artifactId>
+            <version>2.4.1</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<defaultGoal>package</defaultGoal>
-		<sourceDirectory>src</sourceDirectory>
-		<outputDirectory>bin</outputDirectory>
+    <build>
+        <defaultGoal>package</defaultGoal>
+        <outputDirectory>bin</outputDirectory>
 
-		<resources>
-			<resource>
-				<directory>src/</directory>
-				<includes>
-					<include>META-INF/spring/*.xml</include>
-				</includes>
-			</resource>
-		</resources>
+        <resources>
+            <resource>
+                <directory>src/</directory>
+                <includes>
+                    <include>META-INF/spring/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
 
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-					</execution>
-				</executions>
-				<configuration>
-					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-					<archive>
-						<manifestFile>${bundleManifestPath}</manifestFile>
-						<addMavenDescriptor>false</addMavenDescriptor>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>deploy</id>
-						<phase>install</phase>
-						<configuration>
-							<tasks>
-								<echo message="Deploying to Spring DM Server"/>
-								<!-- 
-								<copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
-								-->
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<profiles>
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>manifest</id>
-								<phase>prepare-package</phase>
-								<configuration>
-									<tasks>
-										<echo message="Updating manifest file with current build number" />
-										<copy file="src/META-INF/MANIFEST.MF" toDir="target"
-											overwrite="true" />
-										<replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
-											value="Bundle-Version: ${bundleVersion}" />
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                    </execution>
+                </executions>
+                <configuration>
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <archive>
+                        <manifestFile>${bundleManifestPath}</manifestFile>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>deploy</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Deploying to Spring DM Server"/>
+                                <!--
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${serverHome}/pickup" overwrite="true" />
+                                        -->
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/java</source>
+                                <source>src/scala</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>manifest</id>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Updating manifest file with current build number"/>
+                                        <copy file="src/META-INF/MANIFEST.MF" toDir="target"
+                                              overwrite="true"/>
+                                        <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
+                                                 value="Bundle-Version: ${bundleVersion}"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

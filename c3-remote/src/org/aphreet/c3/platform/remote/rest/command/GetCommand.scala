@@ -95,7 +95,8 @@ class GetCommand(override val req:HttpServletRequest, override val resp:HttpServ
 
   def executeSearch = {
     if(query != null)
-      sendSearchResults(accessEndpoint.search(query))
+      //sendSearchResults(accessEndpoint.search(query))
+      notFound
     else
       badRequest
   }

@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.aphreet.c3.platform.common.Constants;
+import org.aphreet.c3.platform.config.PlatformConfigManager;
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint;
 import org.aphreet.c3.platform.management.PlatformPropertyListener;
 import org.aphreet.c3.platform.management.PropertyChangeEvent;
@@ -37,7 +38,11 @@ public class SearchConfig implements PlatformPropertyListener {
 	private String tikaServerPath;
 	
 	private String c3Home;
-	
+
+
+    @Autowired
+    private PlatformConfigManager configManager;
+
 	@Autowired
 	private PlatformManagementEndpoint managementEndpoint;
 
@@ -68,13 +73,13 @@ public class SearchConfig implements PlatformPropertyListener {
 
 	@PostConstruct
 	public void init() {
-		managementEndpoint.registerPropertyListener(this);
+        configManager.registerPropertyListener(this);
 		c3Home = managementEndpoint.getPlatformProperties().get(Constants.C3_PLATFORM_HOME());
 	}
 
 	@PreDestroy
 	public void destroy() {
-		managementEndpoint.unregisterPropertyListener(this);
+        configManager.unregisterPropertyListener(this);
 	}
 	
 	public String getIndexDirectoryPath() {

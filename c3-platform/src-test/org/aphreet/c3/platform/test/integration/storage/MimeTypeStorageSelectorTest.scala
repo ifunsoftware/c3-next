@@ -36,6 +36,7 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 
 import junit.framework.Assert._
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
+import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 
 class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
@@ -51,7 +52,7 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
      
     configAccessor.storeConfig(config, testDir)
    
-    val configManager = new PlatformConfigManager
+    val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir
     
     configAccessor.setConfigManager(configManager)

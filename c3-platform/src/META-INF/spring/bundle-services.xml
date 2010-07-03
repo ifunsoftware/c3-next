@@ -12,20 +12,24 @@
     <service id="storageService" ref="storageManager"                                  
        interface="org.aphreet.c3.platform.storage.StorageManager" />
        
-    <service id="searchService" ref="searchManager"
-       interface="org.aphreet.c3.platform.search.SearchManager"/>
-       
     <service id="taskService" ref="taskManager"
        interface="org.aphreet.c3.platform.task.TaskManager"/>
 
     <service id="versionService" ref="versionManager"
        interface="org.aphreet.c3.platform.config.VersionManager"/>
        
-    <service id="accessService" ref="platformAccessEndpoint"
+    <service id="accessEndpoint" ref="platformAccessEndpoint"
        interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
+
+    <service id="accessService" ref="accessManager"
+       interface="org.aphreet.c3.platform.access.AccessManager"/>
        
     <service id="managementService" ref="platformManagementEndpoint"
        interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
+
+    <service id="configService" ref="platformConfigManager"
+       interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
+
 
     <service id="authService" ref="authenticationManager"
        interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>

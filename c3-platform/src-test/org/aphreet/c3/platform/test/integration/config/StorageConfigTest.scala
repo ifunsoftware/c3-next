@@ -30,13 +30,14 @@
 package org.aphreet.c3.platform.test.integration.config
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.storage.impl.StorageConfigAccessorImpl
 import org.aphreet.c3.platform.storage._
 
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
+import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
+
 class StorageConfigTest extends AbstractTestWithFileSystem{
 
 
@@ -47,7 +48,7 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
       StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""))
     )
     
-    val configManager = new PlatformConfigManager
+    val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir
     
     val accessor = new StorageConfigAccessorImpl

@@ -3,7 +3,6 @@ package org.aphreet.c3.platform.management.impl
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.config.accessor.PlatformConfigAccessor
 import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
@@ -13,15 +12,12 @@ import org.aphreet.c3.platform.task._
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.collection.jcl.{HashMap, HashSet}
 
-import javax.annotation.PostConstruct
-import java.util.{Map => JMap, Collections, Set => JSet, HashSet => JHashSet}
 import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.management.{PropertyChangeEvent, PlatformPropertyListener, PlatformManagementEndpoint}
-import org.aphreet.c3.platform.storage.query.QueryManager
-import java.io.File
+import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
+import org.aphreet.c3.platform.config.{SetPropertyEvent, PlatformConfigManager}
+import java.util.{HashMap, Map => JMap, Collections}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -29,8 +25,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   val log = LogFactory.getLog(getClass)
   
   var storageManager:StorageManager = null
-
-  var configAccessor:PlatformConfigAccessor = null
   
   var taskManager:TaskManager = null
   
@@ -40,22 +34,13 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   var sizeSelector:SizeStorageSelector = null
 
-  var queryManager:QueryManager = null
+  var configManager:PlatformConfigManager = _
 
   var authManager:AuthenticationManager = _
-  
-  private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
-  
-  private var currentConfig:JMap[String, String] = null;
-  
-  private var foundListeners:JHashSet[PlatformPropertyListener] = null;
-  
+
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
-  
-  @Autowired
-  def setPlatformConfigAccessor(accessor:PlatformConfigAccessor) = {configAccessor = accessor}
-  
+
   @Autowired
   def setMigrationManager(manager:MigrationManager) = {migrationManager = manager}
   
@@ -66,30 +51,15 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
 
   @Autowired
-  def setQueryManager(manager:QueryManager) = {queryManager = manager}
-
-  @Autowired
   def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
-
-  @Autowired{val required=false}
-  def setPlatformPropertyListeners(listeners:JSet[PlatformPropertyListener]) = {
-    foundListeners = new JHashSet()
-    foundListeners.addAll(listeners)
-  }
   
   @Autowired
   def setTaskExecutor(manager:TaskManager) = {taskManager = manager}
-  
-  
-  @PostConstruct
-  def init{
-    if(foundListeners != null){
-      for(listener <- new HashSet(foundListeners)){
-        this.registerPropertyListener(listener)
-      }
-    }
-  }
-  
+
+  @Autowired
+  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+
+
   def listStorages:List[Storage] = storageManager.listStorages
   
   def listStorageTypes:List[String] = storageManager.listStorageTypes
@@ -112,46 +82,17 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
   
   def getPlatformProperties:JMap[String, String] = {
-    
-    if(currentConfig == null){
-      currentConfig = configAccessor.load.underlying
-    }
-    Collections.unmodifiableMap[String, String](currentConfig)
+
+    val properties = new HashMap[String, String]
+
+    configManager.getPlatformProperties.foreach{e => properties.put(e._1, e._2)}
+
+    properties
   }
-  
+
   def setPlatformProperty(key:String, value:String) = {
-    
-	this.synchronized{
 
-	  log info "Setting platform property: " + key
-	    
-	  val config = configAccessor.load
-
-	  val oldValue:String = config.get(key) match {
-	    case Some(v) => v
-        case None => null
-	  }
-	  	  
-      try{
-		propertyListeners.get(key) match {
-		  case Some(lx) => for(l <- lx)
-		  	  				 l.propertyChanged(new PropertyChangeEvent(key, oldValue, value, this))
-		  case None => null
-		}
-    
-		config.put(key, value)
-		  
-		if(currentConfig != null)
-		  currentConfig.put(key,value)
-
-        configAccessor store config
-      }catch{
-        case e => {
-          log.warn("Failed to set property " + key, e)
-          throw e
-        }
-      }
-	}
+    configManager ! SetPropertyEvent(key, value)
   }
   
   def listTasks:List[TaskDescription] = taskManager.taskList
@@ -185,40 +126,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def removeSizeMaping(size:Long) = sizeSelector.removeEntry(size)
   
   
-  def registerPropertyListener(listener:PlatformPropertyListener) = {
-    log info "Registering property listener: " + listener.getClass.getSimpleName
-    
-    propertyListeners.synchronized{
-      for(paramName <- listener.listeningForProperties){
-        propertyListeners.get(paramName) match{
-          case Some(regListeners) => propertyListeners.put(paramName, regListeners + listener)
-          case None => propertyListeners.put(paramName, Set(listener))
-        }
-        
-        val currentParamValue = getPlatformProperties.get(paramName)
-        
-        if(currentParamValue != null)
-          listener.propertyChanged(new PropertyChangeEvent(paramName, null, currentParamValue, this))
-        else{
-          val defaultParamValue = listener.defaultPropertyValues.get(paramName)
-          if(defaultParamValue != null)
-            setPlatformProperty(paramName, defaultParamValue)
-        }
-      }
-    }
-    log debug propertyListeners.toString
-  }
   
-  def unregisterPropertyListener(listener:PlatformPropertyListener) = {
-    log info "Unregistering property listener: " + listener.getClass.getSimpleName
-    propertyListeners.synchronized{
-
-      for((prop, listeners) <- propertyListeners if listeners.contains(listener)){
-        propertyListeners.put(prop, listeners - listener)
-      }
-    }
-    log debug propertyListeners.toString
-  }
 
 
   def listUsers:List[(String, String)] = {
