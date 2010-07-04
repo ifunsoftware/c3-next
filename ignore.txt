@@ -10,7 +10,9 @@ bin-test
 .classpath
 .springBeans
 *.iml
+*.iws
 *.out
 *.log
 *.ipr
+*.tmp
 
