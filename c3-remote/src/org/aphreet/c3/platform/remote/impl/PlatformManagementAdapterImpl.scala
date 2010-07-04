@@ -41,6 +41,7 @@ import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.remote.api.RemoteException
 import scala.collection.jcl.Map
 import org.aphreet.c3.platform.exception.{StorageException, PlatformException}
+import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
 
 @Component("platformManagementAdapter")
 class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
@@ -48,9 +49,16 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
 
   var managementEndpoint:PlatformManagementEndpoint = null
 
+  var authenticationManager:AuthenticationManager = _
+
   @Autowired
   def setManagementEndpoint(endPoint:PlatformManagementEndpoint)
   = {managementEndpoint = endPoint}
+
+  @Autowired
+  def setAuthenticationManager(manager:AuthenticationManager) = {
+    authenticationManager = manager
+  }
 
   def listStorages:Array[StorageDescription] = {
 
@@ -167,24 +175,24 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
 
   def listUsers:Array[Pair] =
     catchAll(() => {
-      managementEndpoint.listUsers.map(e => new Pair(e._1, e._2)).toSeq.toArray
+      authenticationManager.list.map(e => new Pair(e.name, e.role.name)).toSeq.toArray
     })
 
   def addUser(name:String, password:String, role:String) = {
     catchAll(() => {
-      managementEndpoint.addUser(name, password, role)
+      authenticationManager.create(name, password, UserRole.fromString(role))
     })
   }
 
   def updateUser(name:String, password:String, role:String) = {
     catchAll(() => {
-      managementEndpoint.updateUser(name, password,role)
+      authenticationManager.update(name, password, UserRole.fromString(role))
     })
   }
 
   def deleteUser(name:String) = {
     catchAll(() => {
-      managementEndpoint.deleteUser(name)
+      authenticationManager.delete(name)
     })
   }
 

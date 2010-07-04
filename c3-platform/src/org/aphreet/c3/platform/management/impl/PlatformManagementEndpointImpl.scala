@@ -15,9 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
-import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
 import org.aphreet.c3.platform.config.{SetPropertyEvent, PlatformConfigManager}
-import java.util.{HashMap, Map => JMap, Collections}
+import java.util.{HashMap, Map => JMap}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -36,8 +35,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   var configManager:PlatformConfigManager = _
 
-  var authManager:AuthenticationManager = _
-
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
 
@@ -50,9 +47,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   @Autowired
   def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
-  
   @Autowired
   def setTaskExecutor(manager:TaskManager) = {taskManager = manager}
 
@@ -128,7 +122,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   
 
-
+/*
   def listUsers:List[(String, String)] = {
     authManager.list.map(u => (u.name, u.role.name))
   }
@@ -144,4 +138,5 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def deleteUser(name:String) = {
     authManager.delete(name)
   }
+  */
 }

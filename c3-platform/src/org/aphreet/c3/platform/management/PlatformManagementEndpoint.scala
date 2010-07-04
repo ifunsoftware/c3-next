@@ -10,6 +10,7 @@ import java.util.{Map => JMap}
 
 trait PlatformManagementEndpoint {
   
+
   def listStorages:List[Storage]
   
   def listStorageTypes:List[String]
@@ -22,9 +23,11 @@ trait PlatformManagementEndpoint {
   
   def setStorageMode(id:String, mode:StorageMode)
   
+
   def getPlatformProperties:JMap[String, String]
   
   def setPlatformProperty(key:String, value:String)
+
 
   def listTasks:List[TaskDescription]
 
@@ -39,22 +42,12 @@ trait PlatformManagementEndpoint {
   def addTypeMapping(mapping:(String, String, Boolean))
   
   def removeTypeMapping(mimeType:String)
+
   
   def listSizeMappings:List[(Long, String, Boolean)]
   
   def addSizeMapping(mapping:(Long, String, Boolean))
   
   def removeSizeMaping(size:Long)
-  
-
-
-  def listUsers:List[(String, String)]
-
-  def addUser(name:String, password:String, role:String)
-
-  def updateUser(name:String, password:String, role:String)
-
-  def deleteUser(name:String)
-
 
 }

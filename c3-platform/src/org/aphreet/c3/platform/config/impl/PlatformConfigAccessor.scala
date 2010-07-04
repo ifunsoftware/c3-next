@@ -39,8 +39,7 @@ import scala.collection.immutable.Map
 
 import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.aphreet.c3.platform.config.accessor.ConfigAccessor;
+import org.aphreet.c3.platform.config._
 
 import org.springframework.stereotype.Component
 

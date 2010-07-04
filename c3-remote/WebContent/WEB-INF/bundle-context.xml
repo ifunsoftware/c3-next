@@ -14,6 +14,7 @@
 
 
     <context:component-scan base-package="org.aphreet.c3.platform.remote" />
+    <context:component-scan base-package="org.aphreet.c3.platform.auth" />
 
     <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
         <property name="serviceName" value="PlatformRmiManagementEndPoint" />
@@ -28,12 +29,7 @@
         <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
         <property name="registryPort" value="1299" />
     </bean>
-<!--
-    <bean class="org.aphreet.c3.platform.remote.ws.C3JaxWSExporter">
-        <property name="port" value="9301"/>
-        <property name="authenticator" ref="platformWSAuthenticator"/>
-    </bean>
--->
+
     <bean id="serviceExporter" factory-bean="wsExporterFactory" factory-method="createExporter">
         <property name="port" value="${remote.serverport}"/>
         <property name="authenticator" ref="platformWSAuthenticator"/>

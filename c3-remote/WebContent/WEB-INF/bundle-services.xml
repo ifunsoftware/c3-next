@@ -14,6 +14,6 @@
 
     <reference id="versionService" interface="org.aphreet.c3.platform.config.VersionManager"/>
 
-    <reference id="authService" interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>
+    <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
 </beans:beans>  

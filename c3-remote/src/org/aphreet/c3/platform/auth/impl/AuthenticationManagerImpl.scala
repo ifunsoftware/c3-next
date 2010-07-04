@@ -30,17 +30,19 @@
 package org.aphreet.c3.platform.auth.impl
 
 
-import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
-import org.aphreet.c3.platform.auth.{ACCESS, UserRole, User, AuthenticationManager}
-import org.springframework.beans.factory.annotation.Autowired
+
+import org.aphreet.c3.platform.auth._
+import org.aphreet.c3.platform.auth.exception._
+
 import javax.annotation.PostConstruct
+import java.security.MessageDigest
+
 import collection.mutable.HashMap
-import com.twmacinta.util.MD5
-import org.aphreet.c3.platform.exception.{UserNotFoundException, UserExistsException}
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 @Component("authenticationManager")
-@Scope("singleton")
 class AuthenticationManagerImpl extends AuthenticationManager {
 
   val users = new HashMap[String, User]
@@ -59,7 +61,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
     users.get(username) match{
       case Some(user) => {
-        if(hash(password) == user.password){
+        if(md5hash(password) == user.password){
           user
         }else{
           null
@@ -72,7 +74,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
   def update(username:String, password:String, role:UserRole) = {
     users.get(username) match {
       case Some(user) => {
-        user.password = hash(password)
+        user.password = md5hash(password)
         user.role = role
         users.synchronized{
           configAccessor.store(users)
@@ -86,7 +88,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
-        val user =  new User(username, hash(password), role)
+        val user =  new User(username, md5hash(password), role)
         users.synchronized{
           users.put(username, user)
           configAccessor.store(users)
@@ -114,9 +116,25 @@ class AuthenticationManagerImpl extends AuthenticationManager {
   def list:List[User] = users.values.toList
 
 
-  private def hash(string:String):String = {
-     val md5 = new MD5()
-     md5.Update(string)
-     md5.asHex
+  def md5hash(input:String):String = {
+
+    if(input == null || input.isEmpty) return ""
+
+    val hexString = new StringBuffer
+
+    val md = MessageDigest.getInstance("MD5")
+    md.update(input.getBytes())
+
+    val hash = md.digest
+
+    for(b <- hash){
+      if((0xFF & b) < 0x10){
+        hexString.append("0").append(Integer.toHexString((0xFF & b)))
+      }else{
+        hexString.append(Integer.toHexString((0xFF & b)))
+      }
+    }
+
+    hexString.toString
   }
 }

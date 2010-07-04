@@ -34,6 +34,20 @@
             <scope>provided</scope>
         </dependency>
 
+         <dependency>
+            <groupId>com.springsource.json</groupId>
+            <artifactId>com.springsource.json</artifactId>
+            <version>1.0.1.RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>com.springsource.org.antlr</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>com.springsource.javax.servlet</artifactId>

@@ -27,17 +27,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.config
 
-package org.aphreet.c3.platform.exception
+import java.io.{File, FileWriter}
 
 
-class UserException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
-  def this(message:String) = this(message, null)
+trait ConfigAccessor[T]{
+  
+  def load:T = loadConfig(configDir)
+  
+  def store(data:T) = storeConfig(data, configDir)
+  
+  def update(f:Function1[T, T]) = store(f.apply(load))
+  
+  def loadConfig(configDir:File):T
+  
+  def storeConfig(data:T, configDir:File)
 
-  def this() = this(null, null)
+  def configDir:File
 
-  def this(cause:Throwable) = this(null, cause)
+
+  protected def writeToFile(text:String, configFile:File) = {
+    
+    if(!configFile.exists)
+      configFile.createNewFile
+    
+    
+    val fileWriter = new FileWriter(configFile, false)
+    try{
+      fileWriter write text
+      fileWriter.flush
+    }finally{
+      fileWriter.close
+    }
+  }
 }
-
-class UserNotFoundException extends UserException
-class UserExistsException extends UserException

@@ -30,8 +30,4 @@
     <service id="configService" ref="platformConfigManager"
        interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
-
-    <service id="authService" ref="authenticationManager"
-       interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>
-
 </beans:beans>  

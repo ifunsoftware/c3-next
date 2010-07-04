@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.auth.impl
 
-import org.aphreet.c3.platform.config.accessor.ConfigAccessor
+import org.aphreet.c3.platform.config.ConfigAccessor
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
