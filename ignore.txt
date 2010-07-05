@@ -3,6 +3,7 @@ bin-test.timestamp
 target
 bin
 bin-test
+.idea
 .manager
 .externalToolBuilders
 .settings
