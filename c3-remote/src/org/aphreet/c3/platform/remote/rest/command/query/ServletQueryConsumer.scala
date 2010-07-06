@@ -32,9 +32,9 @@
 package org.aphreet.c3.platform.remote.rest.command.query
 
 import java.io.PrintWriter
-import org.aphreet.c3.platform.access.QueryConsumer
 import org.aphreet.c3.platform.resource.Resource
 import collection.mutable.HashMap
+import org.aphreet.c3.platform.query.QueryConsumer
 
 class ServletQueryConsumer(val writer: PrintWriter, val metadata:HashMap[String, String]) extends QueryConsumer {
   var addressesWritten = 0

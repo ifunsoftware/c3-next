@@ -13,7 +13,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.RAMDirectory;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
+import org.aphreet.c3.platform.access.AccessManager;
 import org.aphreet.c3.search.config.SearchConfig;
 import org.aphreet.c3.search.index.ResourceHandler;
 import org.aphreet.c3.search.index.event.DirectoryEvent;
@@ -30,7 +30,7 @@ public class RAMIndexThread extends Thread {
 	private CommitIndexThreadPoolExecutor commitIndexExecutor;
 	private ResourceHandler resourceHandler;
 	private Set<String> indexedResources;
-	private PlatformAccessEndpoint platformAccessEndpoint; 
+	private AccessManager platformAccessEndpoint;
 	private DirectoryEventListener [] array;
 	
 	/**
@@ -45,7 +45,7 @@ public class RAMIndexThread extends Thread {
 	 */
 	public RAMIndexThread(ThreadGroup group, Runnable r, String name,
 			final List<DirectoryEventListener> listeners, CommitIndexThreadPoolExecutor executor,
-			ResourceHandler resourceHandler, PlatformAccessEndpoint endpoint) throws IOException {
+			ResourceHandler resourceHandler, AccessManager endpoint) throws IOException {
 		super(group, r, name);
 		this.commitIndexExecutor = executor;
 		this.resourceHandler = resourceHandler;

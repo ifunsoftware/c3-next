@@ -30,7 +30,6 @@
 
 package org.aphreet.c3.platform.remote.api.ws.impl
 
-import java.util.HashMap
 import javax.jws.{WebService, WebMethod}
 import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,9 +49,6 @@ class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with Plat
 
   @WebMethod
   override def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
-
-  @WebMethod
-  override def getMetadata(ra:String):HashMap[String, String] = accessAdapter.getMetadata(ra)
 
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag

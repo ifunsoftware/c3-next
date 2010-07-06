@@ -27,21 +27,48 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.access
 
-import java.util.List
+package org.aphreet.c3.platform.query.impl
 
-import org.aphreet.c3.platform.resource.Resource
+import org.apache.commons.logging.LogFactory
 
-trait PlatformAccessEndpoint {
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
-  def get(ra:String):Resource
-  
-  def add(resource:Resource):String
-  
-  def update(resource:Resource):String
-  
-  def delete(ra:String)
-  
-  def query(consumer:QueryConsumer)
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.query._
+
+@Component("queryManager")
+class QueryManagerImpl extends QueryManager{
+
+  val log = LogFactory.getLog(getClass)
+
+  var storageManager:StorageManager = _
+
+  @Autowired
+  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+    
+  def init = {
+    log info "Staring QueryManager"
+  }
+
+  override
+  def executeQuery(consumer:QueryConsumer){
+
+    val storages = storageManager.listStorages
+
+    for(storage <- storages){
+      val iterator = storage.iterator
+
+      try{
+
+        while(iterator.hasNext)
+          consumer.addResource(iterator.next)
+
+      }finally{
+        iterator.close
+      }
+    } 
+  }
+
 }

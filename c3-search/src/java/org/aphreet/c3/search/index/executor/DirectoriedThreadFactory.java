@@ -4,7 +4,7 @@ import java.util.Enumeration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
+import org.aphreet.c3.platform.access.AccessManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ public class DirectoriedThreadFactory extends SimpleThreadFactory {
 	private CommitIndexThreadPoolExecutor commitIndexThreadPoolExecutor;
 	
 	@Autowired
-	private PlatformAccessEndpoint platformAccessEndpoint;
+	private AccessManager platformAccessEndpoint;
 
 	public Thread newThread(Runnable runnable) {
 		Thread thread = null;
@@ -43,7 +43,7 @@ public class DirectoriedThreadFactory extends SimpleThreadFactory {
 		this.commitIndexThreadPoolExecutor = executor;
 	}
 
-	public void setPlatformAccessEndpoint(PlatformAccessEndpoint platformAccessEndpoint) {
+	public void setPlatformAccessEndpoint(AccessManager platformAccessEndpoint) {
 		this.platformAccessEndpoint = platformAccessEndpoint;
 	}
 	

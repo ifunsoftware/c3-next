@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
+import org.aphreet.c3.platform.access.AccessManager;
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint;
 import org.aphreet.c3.platform.resource.Resource;
 import org.aphreet.c3.search.config.SearchConfig;
@@ -25,7 +25,7 @@ public class SearcherImpl{
 	
 	private Log logger = LogFactory.getLog(this.getClass());
 	@Autowired
-	private PlatformAccessEndpoint platformAccessEndpoint;
+	private AccessManager platformAccessEndpoint;
 
     @Autowired
 	private PlatformManagementEndpoint platformManagementEndpoint;
@@ -96,7 +96,7 @@ public class SearcherImpl{
 		return list;
 	}
 
-	public void setPlatformAccessEndpoint(PlatformAccessEndpoint platformAccessEndpoint) {
+	public void setPlatformAccessEndpoint(AccessManager platformAccessEndpoint) {
 		this.platformAccessEndpoint = platformAccessEndpoint;
 	}
 

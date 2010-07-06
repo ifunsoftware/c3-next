@@ -2,7 +2,6 @@ package org.aphreet.c3.search.index.executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
 import org.aphreet.c3.search.index.C3IndexWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

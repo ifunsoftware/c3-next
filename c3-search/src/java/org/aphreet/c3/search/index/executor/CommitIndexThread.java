@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
 import org.aphreet.c3.search.index.C3IndexWriter;
 import org.aphreet.c3.search.index.event.DirectoryEvent;
 import org.aphreet.c3.search.index.event.DirectoryEventListener;

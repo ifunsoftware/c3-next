@@ -28,48 +28,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.storage.query.impl
+package org.aphreet.c3.platform.query
 
-import org.apache.commons.logging.LogFactory
+trait QueryManager{
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-
-import org.aphreet.c3.platform.access.QueryConsumer
-import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.storage.query.QueryManager
-
-@Component
-class QueryManagerImpl extends QueryManager{
-
-  val log = LogFactory.getLog(getClass)
-
-  var storageManager:StorageManager = _
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
-    
-  def init = {
-    log info "Staring QueryManager"
-  }
-
-  override
-  def executeQuery(consumer:QueryConsumer){
-
-    val storages = storageManager.listStorages
-
-    for(storage <- storages){
-      val iterator = storage.iterator
-
-      try{
-
-        while(iterator.hasNext)
-          consumer.addResource(iterator.next)
-
-      }finally{
-        iterator.close
-      }
-    } 
-  }
+  def executeQuery(consumer:QueryConsumer)
 
 }

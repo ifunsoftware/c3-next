@@ -18,8 +18,8 @@
     <service id="versionService" ref="versionManager"
        interface="org.aphreet.c3.platform.config.VersionManager"/>
        
-    <service id="accessEndpoint" ref="platformAccessEndpoint"
-       interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
+    <service id="queryService" ref="queryManager"
+       interface="org.aphreet.c3.platform.query.QueryManager"/>
 
     <service id="accessService" ref="accessManager"
        interface="org.aphreet.c3.platform.access.AccessManager"/>

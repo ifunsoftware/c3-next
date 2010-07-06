@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
+import org.aphreet.c3.platform.access.AccessManager;
 import org.aphreet.c3.platform.resource.Resource;
 import org.aphreet.c3.search.config.SearchConfig;
 
@@ -17,11 +17,11 @@ public class CommitIndexTask implements Runnable {
 	private final Log logger = LogFactory.getLog(getClass());
 	private RAMDirectory directory;
 	private Set<String> indexedResources;
-	private PlatformAccessEndpoint platformAccessEndpoint;
+	private AccessManager platformAccessEndpoint;
 	private IndexWriter presistentIndexWriter;
 	
 	public CommitIndexTask(RAMDirectory directory, Set<String> indexedResources,
-			PlatformAccessEndpoint endpoint) {
+			AccessManager endpoint) {
 		this.directory = directory;
 		this.indexedResources = indexedResources;
 		this.platformAccessEndpoint = endpoint;

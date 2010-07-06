@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.access
+package org.aphreet.c3.platform.query
 
 import org.aphreet.c3.platform.resource.Resource
 

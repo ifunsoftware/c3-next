@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.ru.RussianAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
-import org.aphreet.c3.platform.access.PlatformAccessEndpoint;
 import org.aphreet.c3.platform.resource.Resource;
 import org.aphreet.c3.search.config.SearchConfig;
 import org.aphreet.c3.search.index.ResourceHandler;

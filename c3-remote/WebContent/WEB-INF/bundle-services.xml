@@ -8,8 +8,10 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans.xsd">                    
     
-	<reference id="accessEndpoint" interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
-	
+	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
+
+    <reference id="queryService" interface="org.aphreet.c3.platform.query.QueryManager"/>
+
 	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
 
     <reference id="versionService" interface="org.aphreet.c3.platform.config.VersionManager"/>
