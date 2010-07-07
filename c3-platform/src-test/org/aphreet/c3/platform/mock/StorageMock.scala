@@ -26,7 +26,7 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
 
   def put(resource:Resource) = {}
 
-
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
 
   def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode)
 

@@ -7,7 +7,7 @@ import java.io.File
 
 import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
 import org.aphreet.c3.platform.storage.{U, StorageIterator}
-import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 
 abstract class AbstractBDBStorage(val storageId:String, override val path:Path, val config:BDBConfig) extends AbstractStorage(storageId, path){
 
@@ -167,11 +167,40 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
     val tx = env.beginTransaction(null, null)
 
+
     try{
-      storeData(resource, tx)
+
+
+      //Obtaining actual version of resource and locking it for write
+      val savedResource:Resource = {
+        val key = new DatabaseEntry(ra.getBytes)
+        val value = new DatabaseEntry()
+
+        val status = database.get(tx, key, value, LockMode.RMW)
+        if(status == OperationStatus.SUCCESS){
+          val res = Resource.fromByteArray(value.getData)
+          res.address = ra
+          res
+        }else throw new ResourceNotFoundException(
+            "Failed to get resource with address " + ra + " Operation status " + status.toString)
+      }
+
+      //Replacing metadata
+      savedResource.metadata.clear
+      savedResource.metadata ++ resource.metadata
+
+      //Appending system metadata
+      savedResource.systemMetadata ++ resource.systemMetadata
+
+
+      for(version <- resource.versions if !version.persisted)
+        savedResource.addVersion(version)
+
+
+      storeData(savedResource, tx)
 
       val key = new DatabaseEntry(ra.getBytes)
-      val value = new DatabaseEntry(resource.toByteArray)
+      val value = new DatabaseEntry(savedResource.toByteArray)
 
       if(database.put(tx, key, value) != OperationStatus.SUCCESS){
         throw new StorageException("Failed to store resource in database")
@@ -179,7 +208,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
       tx.commit
 
-      postSave(resource)
+      postSave(savedResource)
 
       ra
     }catch{
@@ -229,6 +258,44 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
       tx.commit
     }catch{
       case e=> {
+        tx.abort
+        throw e
+      }
+    }
+  }
+
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]){
+
+    val tx = env.beginTransaction(null, null)
+
+      try{
+
+      //Obtaining actual version of resource and locking it for write
+      val savedResource:Resource = {
+        val key = new DatabaseEntry(ra.getBytes)
+        val value = new DatabaseEntry()
+
+        val status = database.get(tx, key, value, LockMode.RMW)
+        if(status == OperationStatus.SUCCESS){
+          val res = Resource.fromByteArray(value.getData)
+          res.address = ra
+          res
+        }else throw new ResourceNotFoundException(
+            "Failed to get resource with address " + ra + " Operation status " + status.toString)
+      }
+      //Appending system metadata
+      savedResource.systemMetadata ++ metadata
+
+      val key = new DatabaseEntry(ra.getBytes)
+      val value = new DatabaseEntry(savedResource.toByteArray)
+
+      if(database.put(tx, key, value) != OperationStatus.SUCCESS){
+        throw new StorageException("Failed to store resource in database")
+      }
+
+      tx.commit
+    }catch{
+      case e => {
         tx.abort
         throw e
       }

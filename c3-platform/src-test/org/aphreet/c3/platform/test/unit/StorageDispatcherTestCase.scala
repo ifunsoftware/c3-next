@@ -75,6 +75,8 @@ class StorageStub0(storageId:String) extends Storage{
     this.mode = RW("")
   }
 
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
+
   def id:String = storageId
 
   def add(resource:Resource):String = ""

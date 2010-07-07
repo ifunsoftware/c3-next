@@ -30,6 +30,7 @@ abstract class Storage {
 
   def put(resource:Resource)
 
+  def appendSystemMetadata(ra:String, metadata:Map[String, String])
 
 
   def params:StorageParams

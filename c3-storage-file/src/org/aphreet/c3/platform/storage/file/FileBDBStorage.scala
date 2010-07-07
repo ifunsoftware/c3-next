@@ -27,9 +27,12 @@ class FileBDBStorage(override val id:String, override val path:Path, override va
         storeVersionData(fileName, version)
       }
     }else{
-      val fileName = resource.address
-      resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
-      storeVersionData(fileName, resource.versions(0))
+      val version = resource.versions(0)
+      if(!version.persisted){
+        val fileName = resource.address
+        version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+        storeVersionData(fileName, version)
+      }
     }
   }
 

@@ -69,6 +69,42 @@ class PureBDBStorageTest extends TestCase{
       storage.close
   }
 
+  def testAppendMetadata = {
+
+    var storage = createStorage("1000")
+
+    try{
+
+      val resource = createResource
+
+      val ra = storage.add(resource)
+
+      var readResource:Resource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      compareResources(resource, readResource)
+
+      storage.close
+
+      storage = createStorage("1000")
+
+      storage.appendSystemMetadata(ra, Map("sysmd1"->"sysvalue1"))
+      
+      readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      assertEquals("sysvalue1", readResource.systemMetadata.get("sysmd1").get)
+      assertEquals("some_value", readResource.systemMetadata.get("key1").get)
+            
+  
+    }finally
+      storage.close
+  }
+
   def testVersionedUpdate {
     var storage = createStorage("1001")
 

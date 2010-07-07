@@ -125,6 +125,8 @@ class StorageStub extends Storage{
   def fullPath:Path = null
   
   def name:String = ""
+
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
   
   def allowMoveFromModeToModes(initial:StorageMode, targetModes:List[StorageMode]){
     
