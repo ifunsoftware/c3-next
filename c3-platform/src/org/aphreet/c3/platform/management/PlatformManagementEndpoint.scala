@@ -50,4 +50,6 @@ trait PlatformManagementEndpoint {
   
   def removeSizeMaping(size:Long)
 
+  def statistics:Map[String,String]
+
 }

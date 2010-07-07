@@ -27,69 +27,51 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.access.impl
 
-package org.aphreet.c3.platform.client.management.command.impl
+import actors.Actor
+import actors.Actor._
+import org.aphreet.c3.platform.common.DestroyEvent
+import org.aphreet.c3.platform.access.{AccessManager, ResourceAddedEvent}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsEvent, StatisticsManager}
 
-import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.Pair
-import collection.immutable.TreeSet
+@Component
+class AccessCounter extends Actor{
 
-object PlatformPropertiesCommands extends Commands {
+  var accessManager:AccessManager = _
 
-  def instances = List(
-      new SetPlatformPropertyCommand,
-      new ListPlatformPropertiesCommand,
-      new ListStatisticsCommand
-    )
-}
+  var statisticsManger:StatisticsManager = _
 
+  @Autowired
+  def setAccessManager(manager:AccessManager) = {accessManager = manager}
 
-class SetPlatformPropertyCommand extends Command{
-
-  def execute:String = {
-
-    if(params.size < 2){
-      "Not enought params\nUsage: set platform property <key> <value>"
-    }else{
-      management.setPlatformProperty(params.first, params.tail.first)
-      "Property set"
-    }
-
+  @Autowired
+  def setStatisticsManager(manager:StatisticsManager) = {statisticsManger = manager}
+  
+  @PostConstruct
+  def init{
+    this.start
+    accessManager.registerListener(this)
   }
 
-  def name:List[String] = List("set", "platform", "property")
-}
-
-class ListPlatformPropertiesCommand extends Command{
-
-  def execute:String = {
-    val set = new TreeSet[Pair]
-
-    (set ++ management.platformProperties).map(e => e.key + "=" + e.value + "\n").foldLeft("")(_ + _)
-
+  @PreDestroy
+  def destroy{
+    accessManager.unregisterListener(this)
+    this ! DestroyEvent
   }
 
-  def name:List[String] = List("list", "platform", "properties")
+  def act{
+    loop{
+      react{
+        case ResourceAddedEvent(resource) => {
+          statisticsManger ! IncreaseStatisticsEvent("access.created", 1)
+        }
 
-  implicit def toOrdered(pair:Pair):Ordered[Pair] = {
-    new OrderedPair(pair)
-  }
-
-  class OrderedPair(val pair:Pair) extends Ordered[Pair] {
-
-    override def compare(that:Pair):Int = {
-      that.key.compareTo(pair.key)
+        case DestroyEvent => this.exit
+      }
     }
   }
-}
-
-class ListStatisticsCommand extends Command{
-
-  def execute:String = {
-
-    management.statistics.map(e => (String.format("-30%s %s", e.key, e.value))).reduceLeft(_ + "\n" + _)
-    
-  }
-
-  def name = List("statistics")
 }

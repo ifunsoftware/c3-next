@@ -17,6 +17,7 @@ import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.config.{SetPropertyEvent, PlatformConfigManager}
 import java.util.{HashMap, Map => JMap}
+import org.aphreet.c3.platform.statistics.StatisticsManager
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -34,6 +35,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   var sizeSelector:SizeStorageSelector = null
 
   var configManager:PlatformConfigManager = _
+
+  var statisticsManager:StatisticsManager = _
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
@@ -53,6 +56,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   @Autowired
   def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
 
+  @Autowired
+  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
 
   def listStorages:List[Storage] = storageManager.listStorages
   
@@ -118,8 +123,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def addSizeMapping(mapping:(Long, String, Boolean)) = sizeSelector.addEntry(mapping)
   
   def removeSizeMaping(size:Long) = sizeSelector.removeEntry(size)
-  
-  
+
+
+  def statistics:Map[String,String] = statisticsManager.fullStatistics
   
 
 /*

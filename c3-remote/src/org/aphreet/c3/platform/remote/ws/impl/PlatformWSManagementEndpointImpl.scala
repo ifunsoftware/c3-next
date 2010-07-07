@@ -110,6 +110,9 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   @WebMethod
   def deleteUser(name:String) = managementAdapter.deleteUser(name)
 
+  @WebMethod
+  def statistics:Array[Pair] = managementAdapter.statistics
+
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag
 

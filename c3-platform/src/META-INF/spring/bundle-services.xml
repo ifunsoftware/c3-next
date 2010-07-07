@@ -30,4 +30,7 @@
     <service id="configService" ref="platformConfigManager"
        interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
+    <service id="statisticsService" ref="statisticsManager"
+       interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
+
 </beans:beans>  

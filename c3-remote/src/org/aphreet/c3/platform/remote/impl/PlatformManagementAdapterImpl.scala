@@ -196,6 +196,13 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
     })
   }
 
+  def statistics:Array[Pair] = {
+    catchAll(() => {
+      (for((key,value) <- managementEndpoint.statistics)
+        yield new Pair(key, value)).toSeq.toArray
+    })
+  }
+
   private def catchAll[T](function:Function0[T]) : T = {
     try{
       function.apply

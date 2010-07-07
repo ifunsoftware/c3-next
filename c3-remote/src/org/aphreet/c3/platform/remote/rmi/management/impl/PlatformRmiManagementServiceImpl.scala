@@ -58,5 +58,8 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
   def updateUser(name:String, password:String, role:String) = managementAdapter.updateUser(name, password, role)
 
   def deleteUser(name:String) = managementAdapter.deleteUser(name)
+
+
+  def statistics:Array[Pair] = managementAdapter.statistics
 }
 

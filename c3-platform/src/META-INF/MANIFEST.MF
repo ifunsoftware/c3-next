@@ -26,6 +26,7 @@ Export-Package: org.aphreet.c3.platform.access,
  org.aphreet.c3.platform.query,
  org.aphreet.c3.platform.resource,
  org.aphreet.c3.platform.storage,
+ org.aphreet.c3.platform.statistics,
  org.aphreet.c3.platform.metadata,
  org.aphreet.c3.platform.task
 
