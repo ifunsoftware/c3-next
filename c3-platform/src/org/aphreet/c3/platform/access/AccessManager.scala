@@ -54,3 +54,5 @@ case class ResourceAddedEvent(resource:Resource)
 case class ResourceUpdatedEvent(resource:Resource)
 
 case class ResourceDeletedEvent(address:String)
+
+case class UpdateMetadataRequest(address:String, metadata:Map[String,String])

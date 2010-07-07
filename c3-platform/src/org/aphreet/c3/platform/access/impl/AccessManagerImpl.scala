@@ -44,9 +44,13 @@ import org.springframework.stereotype.Component
 import collection.immutable.{Set, HashSet}
 import org.aphreet.c3.platform.access._
 import actors.Actor
+import actors.Actor._
+import org.apache.commons.logging.LogFactory
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common.DestroyEvent
 
 @Component("accessManager")
-class AccessManagerImpl extends AccessManager{
+class AccessManagerImpl extends AccessManager with Actor{
 
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
@@ -54,6 +58,20 @@ class AccessManagerImpl extends AccessManager{
   var storageManager:StorageManager = _
 
   var accessListeners:Set[Actor] = new HashSet
+
+  val log = LogFactory.getLog(getClass)
+
+  @PostConstruct
+  def init{
+    log info "Starting AccessManager actor..."
+    this.start
+  }
+
+  @PreDestroy
+  def destroy{
+    log info "Stopping AccessManager actor..."
+    this ! DestroyEvent
+  }
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
@@ -152,11 +170,36 @@ class AccessManagerImpl extends AccessManager{
   }
 
   def registerListener(listener:Actor) = {
-    accessListeners = accessListeners + listener
+    this.synchronized(
+      accessListeners = accessListeners + listener
+    )
+
   }
 
   def unregisterListener(listener:Actor) = {
-    accessListeners = accessListeners - listener
+    this.synchronized(
+      accessListeners = accessListeners - listener
+    )
+
+  }
+
+  def act{
+    loop{
+      react{
+        case UpdateMetadataRequest(address, metadata) =>{
+          try{
+          val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+          if(storage != null){
+            storage.appendSystemMetadata(address, metadata)
+          }
+          }catch{
+            case e=> log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
+          }
+        }
+
+        case DestroyEvent => this.exit
+      }
+    }
   }
 
   def listeningForProperties:Array[String] = Array(MIME_DETECTOR_CLASS)
