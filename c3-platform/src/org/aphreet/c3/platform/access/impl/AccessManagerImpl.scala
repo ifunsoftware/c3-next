@@ -188,7 +188,7 @@ class AccessManagerImpl extends AccessManager with Actor{
       react{
         case UpdateMetadataRequest(address, metadata) =>{
           try{
-          val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+          val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
           if(storage != null){
             storage.appendSystemMetadata(address, metadata)
           }
