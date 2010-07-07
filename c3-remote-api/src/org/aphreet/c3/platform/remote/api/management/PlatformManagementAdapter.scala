@@ -51,4 +51,6 @@ trait PlatformManagementAdapter {
   def updateUser(name:String, password:String, role:String)
 
   def deleteUser(name:String)
+
+  def statistics:Array[Pair]
 }

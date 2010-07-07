@@ -77,5 +77,7 @@ trait PlatformWSManagementEndpoint extends PlatformManagementService{
   @WebMethod
   def deleteUser(name:String)
 
+  @WebMethod
+  def statistics:Array[Pair]
 
 }
