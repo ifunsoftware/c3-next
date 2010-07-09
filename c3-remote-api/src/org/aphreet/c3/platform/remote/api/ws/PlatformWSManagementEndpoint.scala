@@ -1,83 +1,40 @@
+/**
+ * Copyright (c) 2010, Mikhail Malygin
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the IFMO nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package org.aphreet.c3.platform.remote.api.ws
 
 import org.aphreet.c3.platform.remote.api.management._
-import javax.jws.{WebMethod, WebService}
+import javax.jws.WebService
 
-/**
- * Created by IntelliJ IDEA.
- * User: Aphreet
- * Date: Feb 24, 2010
- * Time: 12:31:34 AM
- * To change this template use File | Settings | File Templates.
- */
 
 @WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
 trait PlatformWSManagementEndpoint extends PlatformManagementService{
 
-  @WebMethod
-  def listStorages:Array[StorageDescription]
-
-  @WebMethod
-  def listStorageTypes:Array[String]
-
-  @WebMethod
-  def createStorage(stType:String, path:String)
-
-  @WebMethod
-  def removeStorage(id:String)
-
-  @WebMethod
-  def migrate(source:String, target:String)
-
-  @WebMethod
-  def setStorageMode(id:String, mode:String)
-
-  @WebMethod
-  def setPlatformProperty(key:String, value:String)
-
-  @WebMethod
-  def platformProperties:Array[Pair]
-
-  @WebMethod
-  def listTasks:Array[TaskDescription]
-
-  @WebMethod
-  def listFinishedTasks:Array[TaskDescription]
-
-  @WebMethod
-  def setTaskMode(taskId:String, mode:String)
-
-  @WebMethod
-  def listTypeMappigs:Array[TypeMapping]
-
-  @WebMethod
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short)
-
-  @WebMethod
-  def removeTypeMapping(mimeType:String)
-
-  @WebMethod
-  def listSizeMappings:Array[SizeMapping]
-
-  @WebMethod
-  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer)
-
-  @WebMethod
-  def removeSizeMapping(size:java.lang.Long)
-
-  @WebMethod
-  def listUsers:Array[Pair]
-
-  @WebMethod
-  def addUser(name:String, password:String, role:String)
-
-  @WebMethod
-  def updateUser(name:String, password:String, role:String)
-
-  @WebMethod
-  def deleteUser(name:String)
-
-  @WebMethod
-  def statistics:Array[Pair]
 
 }

@@ -31,13 +31,10 @@
 package org.aphreet.c3.platform.remote.api.ws
 
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import javax.jws.{WebService, WebMethod}
+import javax.jws.WebService
 
 
 @WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
 trait PlatformWSAccessEndpoint extends PlatformAccessService {
-
-  @WebMethod
-  def getResourceAsString(ra:String):String
-
+  
 }
