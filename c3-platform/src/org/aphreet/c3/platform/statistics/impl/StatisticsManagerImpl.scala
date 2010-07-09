@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.common.DestroyEvent
 import javax.annotation.{PreDestroy, PostConstruct}
 
-@Component
+@Component("statisticsManager")
 class StatisticsManagerImpl extends StatisticsManager{
 
   val statistics = new HashMap[String, Any]

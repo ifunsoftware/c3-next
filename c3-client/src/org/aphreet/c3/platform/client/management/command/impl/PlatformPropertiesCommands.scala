@@ -62,10 +62,16 @@ class SetPlatformPropertyCommand extends Command{
 
 class ListPlatformPropertiesCommand extends Command{
 
+  val header = "|                    Key                     |                        Value                       |\n"+
+               "|--------------------------------------------|----------------------------------------------------|\n"
+
+  val footer = "|--------------------------------------------|----------------------------------------------------|\n"
+
   def execute:String = {
     val set = new TreeSet[Pair]
 
-    (set ++ management.platformProperties).map(e => e.key + "=" + e.value + "\n").foldLeft("")(_ + _)
+    (set ++ management.platformProperties)
+      .map(e => String.format("| %-42s | %-50s |\n", e.key, e.value)).foldLeft(header)(_ + _) + footer
 
   }
 
@@ -85,9 +91,15 @@ class ListPlatformPropertiesCommand extends Command{
 
 class ListStatisticsCommand extends Command{
 
+  val header = "|               Key              |      Value      |\n" +
+               "|--------------------------------|-----------------|\n"
+
+  val footer = "|--------------------------------|-----------------|\n"
+
   def execute:String = {
 
-    management.statistics.map(e => (String.format("-30%s %s", e.key, e.value))).reduceLeft(_ + "\n" + _)
+    management.statistics
+      .map(e => (String.format("| %-30s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer
     
   }
 

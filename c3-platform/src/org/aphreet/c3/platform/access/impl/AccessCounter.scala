@@ -67,7 +67,7 @@ class AccessCounter extends Actor{
     loop{
       react{
         case ResourceAddedEvent(resource) => {
-          statisticsManger ! IncreaseStatisticsEvent("access.created", 1)
+          statisticsManger ! IncreaseStatisticsEvent("c3.access.created", 1)
         }
 
         case DestroyEvent => this.exit

@@ -30,6 +30,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Commands, Command}
+import org.aphreet.c3.platform.remote.api.management.StorageDescription
 
 object StorageCommands extends Commands{
 
@@ -90,21 +91,22 @@ class SetStorageModeCommand extends Command{
 
 class ListStorageCommand extends Command {
 
+  def format(desc:StorageDescription):String =
+    String.format("| %-20s | %4s | %-10s | %6d | %-30s |\n",
+      desc.storageType,
+      desc.id,
+      desc.mode,
+      desc.count,
+      desc.path)
+
+  val header = "|         Type         |  ID  |    Mode    | Count  |              Path              |\n" +
+               "|----------------------|------|------------|--------|--------------------------------|\n"
+  val footer = "|----------------------|------|------------|--------|--------------------------------|\n"
+
   def execute:String = {
-    val storages = management.listStorages
 
-    val builder = new StringBuilder
-
-    builder.append(String.format("%-20s %4s %-10s %6s %s\n", "Storage type", "Id", "Mode", "Count", "Storage path"))
-
-    for(storage <- storages){
-
-      builder.append(String.format("%-20s %4s %-10s %6d %s\n", storage.storageType, storage.id, storage.mode, storage.count, storage.path))
-
-    }
-
-    builder.toString
-
+    management.listStorages.map(s => format(s)).foldLeft(header)(_ + _) + footer
+    
   }
 
   def name = List("list", "storages")
