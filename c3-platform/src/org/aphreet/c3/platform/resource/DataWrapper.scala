@@ -31,6 +31,14 @@ abstract class DataWrapper {
 
   def writeTo(channel:WritableByteChannel):Unit
 
+  def stringValue:String
+
+  def length:Long
+
+  def mimeType:String
+
+  def calculateHash:String
+
   def writeTo(targetFile:File):Unit = {
     val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
 
@@ -49,13 +57,7 @@ abstract class DataWrapper {
     stream.toByteArray
   }
   
-  def stringValue:String
- 
-  def length:Long
-  
-  def mimeType:String
 
-  def calculateHash:String
   
   protected def top(types:java.util.Collection[_]):String = {
     types.iterator.next.asInstanceOf[MimeType].toString
@@ -103,42 +105,51 @@ class FileDataWrapper(val file:File) extends DataWrapper{
   
 }
 
-class BytesDataWrapper(val bytes:Array[Byte]) extends DataWrapper {
-  
-  def inputStream = new ByteArrayInputStream(bytes)
-  
-  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(bytes))
-  
-  override def getBytes:Array[Byte] = bytes
+abstract class AbstractBytesDataWrapper extends DataWrapper {
+
+  protected def loadBytes:Array[Byte]
+
+  def inputStream = new ByteArrayInputStream(loadBytes)
+
+  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(loadBytes))
+
+  override def getBytes:Array[Byte] = loadBytes
 
   def calculateHash:String = MD5.asHex({
     val md5 = new MD5
-    md5.Update(bytes)
+    md5.Update(loadBytes)
     md5.Final
   })
 
-  def stringValue:String = new String(bytes)
-  
-  def length:Long = bytes.length
-  
-  def mimeType:String = top(MimeUtil.getMimeTypes(bytes))
-  
+  def stringValue:String = new String(loadBytes)
+
+  def length:Long = loadBytes.length
+
+  def mimeType:String = top(MimeUtil.getMimeTypes(loadBytes))
+
+
+}
+
+class BytesDataWrapper(val bytes:Array[Byte]) extends AbstractBytesDataWrapper {
+
+  override def loadBytes:Array[Byte] = bytes
+
 }
 
 
 class StringDataWrapper(val value:String) extends DataWrapper {
   
-  def inputStream = new ByteArrayInputStream(value.getBytes)
+  def inputStream = new ByteArrayInputStream(value.getBytes("UTF-8"))
   
-  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(value.getBytes))
+  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(value.getBytes("UTF-8")))
   
   def stringValue:String = value
   
-  def length:Long = value.getBytes.length
+  def length:Long = value.getBytes("UTF-8").length
 
   def calculateHash:String = MD5.asHex({
     val md5 = new MD5
-    md5.Update(value.getBytes())
+    md5.Update(value.getBytes("UTF-8"))
     md5.Final
   })
   

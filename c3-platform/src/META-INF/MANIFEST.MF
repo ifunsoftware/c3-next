@@ -28,6 +28,7 @@ Export-Package: org.aphreet.c3.platform.access,
  org.aphreet.c3.platform.storage,
  org.aphreet.c3.platform.statistics,
  org.aphreet.c3.platform.metadata,
- org.aphreet.c3.platform.task
+ org.aphreet.c3.platform.task,
+ com.twmacinta.util
 
 

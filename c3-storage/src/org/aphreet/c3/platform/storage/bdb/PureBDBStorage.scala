@@ -47,6 +47,9 @@ class PureBDBStorage(override val id: String, override val path: Path, override 
         case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
       }
 
+      version.data = new LazyBDBDataWrapper(versionKey, database)
+
+      /*
       val key = new DatabaseEntry(versionKey.getBytes)
       val value = new DatabaseEntry()
 
@@ -54,6 +57,7 @@ class PureBDBStorage(override val id: String, override val path: Path, override 
         version.data = DataWrapper.wrap(value.getData)
       else
         throw new StorageException("Failed to get data from MutableBDBStorage, operation status is not SUCCESS for resource: " + resource.address + " and version: " + versionKey)
+      */
     }
   }
 
