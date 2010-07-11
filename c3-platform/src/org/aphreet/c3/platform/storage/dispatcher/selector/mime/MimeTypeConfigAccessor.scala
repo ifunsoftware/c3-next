@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component
 @Component
 class MimeTypeConfigAccessor extends SelectorConfigAccessor[String]{
 
-  override def filename = "c3-mime-types.json"
+  override def configFileName:String = "c3-mime-types.json"
   
   override def keyFromString(string:String):String = string
   

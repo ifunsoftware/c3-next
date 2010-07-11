@@ -40,54 +40,58 @@ import com.springsource.json.writer.JSONWriterImpl
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import com.springsource.json.parser.{ListNode, ScalarNode, MapNode, AntlrJSONParser}
-import org.aphreet.c3.platform.auth.{UserRole, User}
 import collection.mutable.HashMap
 import collection.Map
 import collection.jcl.Buffer
+import org.aphreet.c3.platform.auth.{MANAGEMENT, UserRole, User}
 
 @Component
 @Scope("singleton")
-class AuthConfigAccessor extends ConfigAccessor[Map[String,User]] {
+class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
+  var configManager: PlatformConfigManager = _
 
-  val AUTH_CONFIG = "c3-auth-config.json"
+  def configDir: File = configManager.configDir
 
-  var configManager:PlatformConfigManager = null
-
-  def configDir:File = configManager.configDir
+  def configFileName: String = "c3-auth-config.json"
 
   @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
-  def loadConfig(configDir:File):Map[String, User] = {
+  def defaultConfig:Map[String, User] = {
     val map = new HashMap[String, User]
 
-    val file = new File(configDir, AUTH_CONFIG)
+    map.put("admin", User("admin", "5f4dcc3b5aa765d61d8327deb882cf99", MANAGEMENT))
 
-    if(file.exists){
-      val node = new AntlrJSONParser().parse(file).asInstanceOf[MapNode]
+    map
+  }
 
-      val userListNode = node.getNode("users").asInstanceOf[ListNode]
+  def loadConfig(configFile: File): Map[String, User] = {
+    val map = new HashMap[String, User]
 
-      for(userNode <- Buffer.apply(userListNode.getNodes)){
-        val name = getValue(userNode.asInstanceOf[MapNode], "name")
-        val password = getValue(userNode.asInstanceOf[MapNode], "password")
-        val role = getValue(userNode.asInstanceOf[MapNode], "role")
 
-        val user = new User(name, password, UserRole.fromString(role))
+    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
-        map.put(name, user)
-      }
+    val userListNode = node.getNode("users").asInstanceOf[ListNode]
+
+    for (userNode <- Buffer.apply(userListNode.getNodes)) {
+      val name = getValue(userNode.asInstanceOf[MapNode], "name")
+      val password = getValue(userNode.asInstanceOf[MapNode], "password")
+      val role = getValue(userNode.asInstanceOf[MapNode], "role")
+
+      val user = new User(name, password, UserRole.fromString(role))
+
+      map.put(name, user)
     }
     map
   }
 
-  def storeConfig(map:Map[String, User], configDir:File) = {
-    this.synchronized{
+  def storeConfig(map: Map[String, User], configFile: File) = {
+    this.synchronized {
       val swriter = new StringWriter()
 
-      var fileWriter:FileWriter = null
+      var fileWriter: FileWriter = null
 
-      try{
+      try {
         val writer = new JSONWriterImpl(swriter)
 
         writer.`object`
@@ -96,7 +100,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String,User]] {
 
         writer.array
 
-        for((name, user) <- map){
+        for ((name, user) <- map) {
           writer.`object`
 
           writer.key("name")
@@ -115,17 +119,15 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String,User]] {
 
         val result = JSONFormatter.format(swriter.toString)
 
-        val file = new File(configDir, AUTH_CONFIG)
+        writeToFile(result, configFile)
 
-        writeToFile(result, file)
-
-      }finally{
+      } finally {
         swriter.close
       }
     }
   }
 
-  private def getValue(node:MapNode, key:String):String = {
+  private def getValue(node: MapNode, key: String): String = {
     node.getNode(key).asInstanceOf[ScalarNode].getValue[String]
   }
 }

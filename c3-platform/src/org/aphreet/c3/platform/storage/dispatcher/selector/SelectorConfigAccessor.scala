@@ -42,77 +42,72 @@ import com.springsource.json.writer.JSONWriterImpl
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, Boolean)]]{
-
-  var configManager:PlatformConfigManager = null
+abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, Boolean)]] {
+  var configManager: PlatformConfigManager = null
 
   @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
-  def configDir:File = configManager.configDir
+  def configDir: File = configManager.configDir
 
-   def loadConfig(configDir:File):Map[T, (String, Boolean)] = {
-    val file = new File(configDir, filename)
-    
-    if(file.exists){
-      val node = new AntlrJSONParser().parse(file).asInstanceOf[MapNode]
-      
-      val entries = 
-        for(key <- Set.apply(node.getKeys))
-          yield (
-        	keyFromString(key),
-        	(
-        	  getArrayValue[String](node, key, 0),
-        	  getArrayValue[Boolean](node, key, 1)
-        	)
-         
-          )
-      Map[T, (String, Boolean)]() ++ entries
-    }else{
-      Map[T, (String, Boolean)]()
-    }
+  def defaultConfig:Map[T, (String, Boolean)] = Map()
+
+  def loadConfig(configFile: File): Map[T, (String, Boolean)] = {
+
+    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
+
+    val entries =
+    for (key <- Set.apply(node.getKeys))
+    yield (
+            keyFromString(key),
+            (
+                    getArrayValue[String](node, key, 0),
+                    getArrayValue[Boolean](node, key, 1)
+                    )
+
+            )
+    Map[T, (String, Boolean)]() ++ entries
+
   }
-   
-  def keyFromString(string:String):T
-  
-  def keyToString(key:T):String
-  
-  def filename:String
-  
 
-  private def getArrayValue[T](node:MapNode, key:String, num:Int):T = {
+  def keyFromString(string: String): T
+
+  def keyToString(key: T): String
+
+
+  private def getArrayValue[T](node: MapNode, key: String, num: Int): T = {
     node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[T]
   }
 
-  def storeConfig(data:Map[T, (String,Boolean)], configDir:File) = {
-    this.synchronized{
-    	
-      
-	    val swriter = new StringWriter()
-	    try{
-		    val writer = new JSONWriterImpl(swriter)
-		    
-		    writer.`object`
-	
-		    for(entry <- data){
-		    	writer.key(keyToString(entry._1))
-		    	writer.array
-		    	writer.value(entry._2._1)
-		    	writer.value(entry._2._2)
-		    	writer.endArray
-		    }
-		   
-		    writer.endObject
-		    
-		    swriter.flush
-      
-		    val result = JSONFormatter.format(swriter.toString)
-		    
-		    writeToFile(result, new File(configDir, filename))
-      
-	    }finally{
-	    	swriter.close
-	    }
+  def storeConfig(data: Map[T, (String, Boolean)], configFile: File) = {
+    this.synchronized {
+
+
+      val swriter = new StringWriter()
+      try {
+        val writer = new JSONWriterImpl(swriter)
+
+        writer.`object`
+
+        for (entry <- data) {
+          writer.key(keyToString(entry._1))
+          writer.array
+          writer.value(entry._2._1)
+          writer.value(entry._2._2)
+          writer.endArray
+        }
+
+        writer.endObject
+
+        swriter.flush
+
+        val result = JSONFormatter.format(swriter.toString)
+
+        writeToFile(result, configFile)
+
+      } finally {
+        swriter.close
+      }
     }
   }
 }

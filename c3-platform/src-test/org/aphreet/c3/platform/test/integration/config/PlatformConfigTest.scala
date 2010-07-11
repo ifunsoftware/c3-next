@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.test.integration.config
 import junit.framework.Assert._
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import org.aphreet.c3.platform.config.impl.PlatformConfigAccessor
+import java.io.File
 
 class PlatformConfigTest extends AbstractTestWithFileSystem{
 
@@ -43,10 +44,12 @@ class PlatformConfigTest extends AbstractTestWithFileSystem{
       "prop1" -> "val1",
       "prop2" -> "val2"
     )
+
+    val fileName = "config.json"
     
-    configAccessor.storeConfig(config, testDir)
+    configAccessor.storeConfig(config, new File(testDir, fileName))
     
-    val readConfig = configAccessor.loadConfig(testDir)
+    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
     
     assertEquals(config, readConfig)
   }

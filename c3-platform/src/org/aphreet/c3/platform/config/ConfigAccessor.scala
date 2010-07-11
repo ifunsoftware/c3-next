@@ -32,33 +32,48 @@ package org.aphreet.c3.platform.config
 import java.io.{File, FileWriter}
 
 
-trait ConfigAccessor[T]{
-  
-  def load:T = loadConfig(configDir)
-  
-  def store(data:T) = storeConfig(data, configDir)
-  
-  def update(f:Function1[T, T]) = store(f.apply(load))
-  
-  def loadConfig(configDir:File):T
-  
-  def storeConfig(data:T, configDir:File)
+trait ConfigAccessor[T] {
+  def load: T = {
 
-  def configDir:File
+    val file = new File(configDir, configFileName)
+
+    if (!file.exists) {
+      storeConfig(defaultConfig, file)
+    }
+
+    loadConfig(file)
+  }
+
+  def store(data: T) = storeConfig(data, new File(configDir, configFileName))
+
+  def update(f: Function1[T, T]) = store(f.apply(load))
 
 
-  protected def writeToFile(text:String, configFile:File) = {
-    
-    if(!configFile.exists)
+  protected def writeToFile(text: String, configFile: File) = {
+
+    if (!configFile.exists)
       configFile.createNewFile
-    
-    
+
+
     val fileWriter = new FileWriter(configFile, false)
-    try{
+    try {
       fileWriter write text
       fileWriter.flush
-    }finally{
+    } finally {
       fileWriter.close
     }
+
   }
+
+
+  protected def configDir: File
+
+  protected def configFileName: String
+
+  protected def defaultConfig: T
+
+  protected def loadConfig(configFile: File): T
+
+  protected def storeConfig(data: T, configFile: File)
+
 }

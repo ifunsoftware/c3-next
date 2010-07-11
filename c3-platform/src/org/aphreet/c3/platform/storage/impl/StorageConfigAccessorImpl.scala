@@ -44,66 +44,62 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 
 @Component
 class StorageConfigAccessorImpl extends StorageConfigAccessor {
-  val STORAGE_CONFIG = "c3-storage-config.json"
-
   var configManager: PlatformConfigManager = null
 
   @Autowired
   def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
+  def configFileName: String = "c3-storage-config.json"
+
   def configDir: File = configManager.configDir
 
-  def loadConfig(configDir: File): List[StorageParams] = {
-    val configFile = new File(configDir, STORAGE_CONFIG)
+  def defaultConfig:List[StorageParams] = List()
 
-    if (configFile.exists) {
-      val node = new AntlrJSONParser().parse(configFile)
-      val storageArray = node.asInstanceOf[MapNode].getNode("storages").asInstanceOf[ListNode].getNodes.toArray
+  def loadConfig(configFile: File): List[StorageParams] = {
 
-      var list: List[StorageParams] = List()
+    val node = new AntlrJSONParser().parse(configFile)
+    val storageArray = node.asInstanceOf[MapNode].getNode("storages").asInstanceOf[ListNode].getNodes.toArray
 
-      for (st <- storageArray) {
-        val storage = st.asInstanceOf[MapNode]
+    var list: List[StorageParams] = List()
 
-        val ids = collection.jcl.Conversions.convertList(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
+    for (st <- storageArray) {
+      val storage = st.asInstanceOf[MapNode]
 
-        val idArray = for (node <- ids)
-                          yield node.getValue.toString
+      val ids = collection.jcl.Conversions.convertList(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
 
-        val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
+      val idArray = for (node <- ids)
+      yield node.getValue.toString
 
-        var storageModeMessage = ""
+      val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
 
-        val storageModeMessageNode = storage.getNode("modemsg")
+      var storageModeMessage = ""
 
-
-        if (storageModeMessageNode != null) {
-          storageModeMessage = storageModeMessageNode.asInstanceOf[ScalarNode].getValue.toString
-        }
-
-        val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
+      val storageModeMessageNode = storage.getNode("modemsg")
 
 
-        list = list ::: List(
-          new StorageParams(
-            storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
-            List.fromIterator(idArray.elements),
-            new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
-            storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
-            storageMode
-            ))
+      if (storageModeMessageNode != null) {
+        storageModeMessage = storageModeMessageNode.asInstanceOf[ScalarNode].getValue.toString
       }
 
+      val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
 
-      list
-    } else {
-      List()
+
+      list = list ::: List(
+        new StorageParams(
+          storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
+          List.fromIterator(idArray.elements),
+          new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
+          storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
+          storageMode
+          ))
     }
+
+
+    list
   }
 
-  def storeConfig(params: List[StorageParams], configDir: File) = {
+  def storeConfig(params: List[StorageParams], configFile: File) = {
     this.synchronized {
-
 
       val swriter = new StringWriter()
       try {
@@ -134,7 +130,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
         val result = JSONFormatter.format(swriter.toString)
 
-        writeToFile(result, new File(configDir, STORAGE_CONFIG))
+        writeToFile(result, configFile)
 
       } finally {
         swriter.close

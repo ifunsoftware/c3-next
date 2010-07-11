@@ -33,6 +33,8 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.size.SizeSelectorConf
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
+import java.io.File
+
 class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
 
   def testConfigPersistence {
@@ -43,10 +45,12 @@ class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
     	0l -> ("PureBDBStorage", true),
     	250000l -> ("FileBDBStorage", true)
     )
+
+    val fileName = "config.json"
      
-    configAccessor.storeConfig(config, testDir)
+    configAccessor.storeConfig(config, new File(testDir, fileName))
     
-    val readConfig = configAccessor.loadConfig(testDir)
+    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
     
     assertEquals(config, readConfig)
   }

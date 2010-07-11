@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.config.impl
 
 import org.aphreet.c3.platform.common.{JSONFormatter}
 
-import java.io.{File, FileWriter, StringWriter}
+import java.io.{File, StringWriter}
 
 
 import scala.collection.jcl.Set
@@ -44,60 +44,54 @@ import org.aphreet.c3.platform.config._
 import org.springframework.stereotype.Component
 
 @Component
-class PlatformConfigAccessor extends ConfigAccessor[Map[String,String]]{
-
-  val PLATFORM_CONFIG = "c3-platform-config.json"
-
-  var configManager:PlatformConfigManager = null
+class PlatformConfigAccessor extends ConfigAccessor[Map[String, String]] {
+  var configDirectory: File = _
 
 
-  var configDirectory:File = _
+  def configDir: File = configDirectory
 
-  def configDir:File = configDirectory
+  def configFileName: String = "c3-platform-config.json"
 
-  def loadConfig(configDir:File):Map[String, String] = {
+
+  def defaultConfig: Map[String, String] = Map()
+
+  def loadConfig(configFile: File): Map[String, String] = {
     var map = Map[String, String]()
-    
-    val file = new File(configDir, PLATFORM_CONFIG)
-    
-    if(file.exists){
-      val node = new AntlrJSONParser().parse(file).asInstanceOf[MapNode]
 
-      for(key <- Set.apply(node.getKeys)){
-        val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
-        map = map + ((key, value))
-      }
+    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
+
+    for (key <- Set.apply(node.getKeys)) {
+      val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
+      map = map + ((key, value))
     }
+
     map
   }
-  
-  def storeConfig(map:Map[String, String], configDir:File) = {
-    this.synchronized{
+
+  def storeConfig(map: Map[String, String], configFile: File) = {
+
+    this.synchronized {
       val swriter = new StringWriter()
-      
-      var fileWriter:FileWriter = null
-      
-      try{
+
+      try {
         val writer = new JSONWriterImpl(swriter)
-        
+
         writer.`object`
-        
-        map.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
-        
+
+        map.foreach((e: (String, String)) => writer.key(e._1).value(e._2))
+
         writer.endObject
-        
+
         swriter.flush
-        
+
         val result = JSONFormatter.format(swriter.toString)
-        
-        val file = new File(configDir, PLATFORM_CONFIG)
-        
-        writeToFile(result, file)
-        
-      }finally{
+
+        writeToFile(result, configFile)
+
+      } finally {
         swriter.close
       }
     }
   }
-  
+
 }

@@ -32,11 +32,11 @@ package org.aphreet.c3.platform.test.integration.storage
 import eu.medsea.mimeutil.MimeType
 
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
-import org.aphreet.c3.platform.config.PlatformConfigManager
 
 import junit.framework.Assert._
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
+import java.io.File
 
 class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
@@ -49,8 +49,11 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
     	"image/*" -> ("FileBDBStorage", true),
     	"image/png" -> ("PureBDBStorage", true)
     )
-     
-    configAccessor.storeConfig(config, testDir)
+
+    val configFile = "c3-mime-types.json"
+
+
+    configAccessor.storeConfig(config, new File(testDir, configFile))
    
     val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir

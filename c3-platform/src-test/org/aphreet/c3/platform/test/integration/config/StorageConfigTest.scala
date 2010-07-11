@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
+import java.io.File
 
 class StorageConfigTest extends AbstractTestWithFileSystem{
 
@@ -53,11 +54,13 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     
     val accessor = new StorageConfigAccessorImpl
     accessor.setConfigManager(configManager)
+
+    val fileName = "c3-storage-config.json"
     
     
-    accessor.storeConfig(config, testDir)
+    accessor.storeConfig(config, new File(testDir, fileName))
     
-    val readConfig = accessor.loadConfig(testDir)
+    val readConfig = accessor.loadConfig(new File(testDir, fileName))
     
     assertEquals(config, readConfig)
     

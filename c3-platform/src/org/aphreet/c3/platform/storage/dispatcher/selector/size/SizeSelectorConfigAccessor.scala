@@ -37,8 +37,8 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.SelectorConfigAccesso
 @Component
 class SizeSelectorConfigAccessor extends SelectorConfigAccessor[Long]{
 
-  override def filename = "c3-size-types.json"
-  
+  override def configFileName:String = "c3-size-types.json"
+
   override def keyFromString(string:String):Long = string.toLong
   
   override def keyToString(key:Long):String = key.toString

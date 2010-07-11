@@ -29,11 +29,11 @@
  */
 package org.aphreet.c3.platform.test.integration.config
 
-import scala.collection.mutable.HashMap
-
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeConfigAccessor
 
 import junit.framework.Assert._
+import java.io.File
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class MimeTypeConfigTest extends AbstractTestWithFileSystem{
 
@@ -46,10 +46,12 @@ class MimeTypeConfigTest extends AbstractTestWithFileSystem{
     	"image/*" -> ("FileBDBStorage", true),
     	"image/png" -> ("PureBDBStorage", true)
     )
+
+    val fileName = "config.json"
      
-    configAccessor.storeConfig(config, testDir)
+    configAccessor.storeConfig(config, new File(testDir, fileName))
     
-    val readConfig = configAccessor.loadConfig(testDir)
+    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
     
     assertEquals(config, readConfig)
     
