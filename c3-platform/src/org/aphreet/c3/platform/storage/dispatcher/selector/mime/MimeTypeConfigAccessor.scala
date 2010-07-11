@@ -37,6 +37,13 @@ import org.springframework.stereotype.Component
 @Component
 class MimeTypeConfigAccessor extends SelectorConfigAccessor[String]{
 
+  override def defaultConfig = Map(
+    	"image/*" -> ("FileBDBStorage", false),
+    	"application/png" -> ("FileBDBStorage", false),
+      "application/x-c3-wiki" -> ("PureBDBStroage", true),
+      "application/x-c3-ref" -> ("PureBDBStorage", false)
+    )
+
   override def configFileName:String = "c3-mime-types.json"
   
   override def keyFromString(string:String):String = string

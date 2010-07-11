@@ -39,6 +39,12 @@ class SizeSelectorConfigAccessor extends SelectorConfigAccessor[Long]{
 
   override def configFileName:String = "c3-size-types.json"
 
+  override def defaultConfig = Map(
+    	0l -> ("PureBDBStorage", true),
+    	102400l -> ("FileBDBStorage", true),
+      5242880l -> ("FileBDBStorage", false)
+    )
+
   override def keyFromString(string:String):Long = string.toLong
   
   override def keyToString(key:Long):String = key.toString
