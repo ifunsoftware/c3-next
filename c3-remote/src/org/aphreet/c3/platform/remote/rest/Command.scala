@@ -73,10 +73,10 @@ class Command(val url:String, val contextPath:String) extends SpringBeanAutowiri
         try{
           version = Integer.parseInt(parts(3))
         }catch{
-          case e:NumberFormatException => throw new URIParseException
+          case e:NumberFormatException => throw new URIParseException("Incorrect version number")
         }
       }
-    }else throw new URIParseException
+    }else throw new URIParseException("Empty path")
 
   }
 
@@ -86,7 +86,7 @@ class Command(val url:String, val contextPath:String) extends SpringBeanAutowiri
 
 }
 
-class URIParseException extends Exception
+class URIParseException(val message:String) extends Exception(message)
 
 sealed class ResourcePart
 
@@ -95,7 +95,7 @@ object ResourcePart{
   def partFromString(part:String):ResourcePart = part match {
     case "data" => ResourceData
     case "metadata" => ResourceMetadata
-    case _ => throw new URIParseException
+    case _ => throw new URIParseException("Incorrect resource part")
   }
 
 }
@@ -111,7 +111,7 @@ object RequestType{
       case "resource" => ResourceRequest
       case "search" => SearchRequest
       case "query" => QueryRequest
-      case _ => throw new URIParseException
+      case _ => throw new URIParseException("Incorrect service name")
     }
 
   }

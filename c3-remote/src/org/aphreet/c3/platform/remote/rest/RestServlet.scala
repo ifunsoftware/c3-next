@@ -16,7 +16,9 @@ class RestServlet extends HttpServlet {
     try{
       super.service(request, response)
     }catch {
-      case e:URIParseException => response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+      case e:URIParseException =>
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+        response.getWriter.println(e.message)
     }
   }
 
