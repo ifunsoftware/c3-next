@@ -41,6 +41,8 @@ trait AuthenticationManager{
 
   def delete(username:String)
 
+  def get(username:String):User
+
   def list:List[User]
 
 }

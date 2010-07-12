@@ -43,7 +43,7 @@ import com.springsource.json.parser.{ListNode, ScalarNode, MapNode, AntlrJSONPar
 import collection.mutable.HashMap
 import collection.Map
 import collection.jcl.Buffer
-import org.aphreet.c3.platform.auth.{MANAGEMENT, UserRole, User}
+import org.aphreet.c3.platform.auth.{ACCESS, MANAGEMENT, UserRole, User}
 
 @Component
 @Scope("singleton")
@@ -61,6 +61,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
     val map = new HashMap[String, User]
 
     map.put("admin", User("admin", "5f4dcc3b5aa765d61d8327deb882cf99", MANAGEMENT))
+    map.put("anonymous", User("anonymous", "", ACCESS))
 
     map
   }

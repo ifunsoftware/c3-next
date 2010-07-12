@@ -5,7 +5,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -30,7 +30,6 @@
 package org.aphreet.c3.platform.auth.impl
 
 
-
 import org.aphreet.c3.platform.auth._
 import org.aphreet.c3.platform.auth.exception._
 
@@ -44,26 +43,25 @@ import org.springframework.stereotype.Component
 
 @Component("authenticationManager")
 class AuthenticationManagerImpl extends AuthenticationManager {
-
   val users = new HashMap[String, User]
 
-  var configAccessor:AuthConfigAccessor = _
+  var configAccessor: AuthConfigAccessor = _
 
   @Autowired
-  def setConfigAccessor(accessor:AuthConfigAccessor) = {configAccessor = accessor}
+  def setConfigAccessor(accessor: AuthConfigAccessor) = {configAccessor = accessor}
 
   @PostConstruct
-  def init{
+  def init {
     users ++ configAccessor.load
   }
 
-  def authenticate(username:String, password:String):User = {
+  def authenticate(username: String, password: String): User = {
 
-    users.get(username) match{
+    users.get(username) match {
       case Some(user) => {
-        if(md5hash(password) == user.password){
+        if (md5hash(password) == user.password) {
           user
-        }else{
+        } else {
           null
         }
       }
@@ -71,12 +69,12 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def update(username:String, password:String, role:UserRole) = {
+  def update(username: String, password: String, role: UserRole) = {
     users.get(username) match {
       case Some(user) => {
         user.password = md5hash(password)
         user.role = role
-        users.synchronized{
+        users.synchronized {
           configAccessor.store(users)
         }
       }
@@ -84,12 +82,12 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def create(username:String, password:String, role:UserRole) = {
+  def create(username: String, password: String, role: UserRole) = {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
-        val user =  new User(username, md5hash(password), role)
-        users.synchronized{
+        val user = new User(username, md5hash(password), role)
+        users.synchronized {
           users.put(username, user)
           configAccessor.store(users)
         }
@@ -99,10 +97,10 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   }
 
-  def delete(username:String) = {
+  def delete(username: String) = {
     users.get(username) match {
       case Some(user) => {
-        users.synchronized{
+        users.synchronized {
           users.removeKey(username)
           configAccessor.store(users)
         }
@@ -113,12 +111,19 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def list:List[User] = users.values.toList
+  def get(username: String): User = {
+    users.get(username) match {
+      case Some(user) => user
+      case None => null
+    }
+  }
+
+  def list: List[User] = users.values.toList
 
 
-  def md5hash(input:String):String = {
+  def md5hash(input: String): String = {
 
-    if(input == null || input.isEmpty) return ""
+    if (input == null || input.isEmpty) return ""
 
     val hexString = new StringBuffer
 
@@ -127,10 +132,10 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
     val hash = md.digest
 
-    for(b <- hash){
-      if((0xFF & b) < 0x10){
+    for (b <- hash) {
+      if ((0xFF & b) < 0x10) {
         hexString.append("0").append(Integer.toHexString((0xFF & b)))
-      }else{
+      } else {
         hexString.append(Integer.toHexString((0xFF & b)))
       }
     }
