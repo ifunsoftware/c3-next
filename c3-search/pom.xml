@@ -32,22 +32,62 @@
             <version>2.4.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>language-guesser</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/lg.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>
         <defaultGoal>package</defaultGoal>
+        <sourceDirectory>src</sourceDirectory>
         <outputDirectory>bin</outputDirectory>
+
+        <testSourceDirectory>src-test</testSourceDirectory>
+        <testOutputDirectory>bin-test</testOutputDirectory>
 
         <resources>
             <resource>
                 <directory>src/</directory>
                 <includes>
                     <include>META-INF/spring/*.xml</include>
+                    <include>META-INF/trigrams/*.tri</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>lib/*.jar</include>
                 </includes>
             </resource>
         </resources>
 
         <plugins>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmArgs>
+                        <jvmArg>-Xms64m</jvmArg>
+                        <jvmArg>-Xmx1024m</jvmArg>
+                    </jvmArgs>
+                    <sourceDir>src</sourceDir>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -92,26 +132,6 @@
                     <target>1.6</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/java</source>
-                                <source>src/scala</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

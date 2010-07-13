@@ -8,12 +8,11 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans.xsd">                    
 
-    <reference id="searchService" interface="org.aphreet.c3.platform.search.SearchManager"/>
-      
-	<reference id="accessService" interface="org.aphreet.c3.platform.access.PlatformAccessEndpoint"/>
+    <service id="searchService" ref="searchManager"
+       interface="org.aphreet.c3.platform.search.SearchManager" />
+
+	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 	
 	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
-
-    <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
 </beans:beans>  

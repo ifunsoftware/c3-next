@@ -33,7 +33,7 @@ import org.aphreet.c3.platform.resource.Resource
 import actors.Actor
 
 
-trait AccessManager{
+trait AccessManager extends Actor{
 
   def get(ra:String):Resource
 
@@ -42,17 +42,13 @@ trait AccessManager{
   def update(resource:Resource):String
 
   def delete(ra:String)
-
-  def registerListener(listener:Actor)
-
-  def unregisterListener(listener:Actor)
   
 }
 
-case class ResourceAddedEvent(resource:Resource)
+case class ResourceAddedMsg(resource:Resource)
 
-case class ResourceUpdatedEvent(resource:Resource)
+case class ResourceUpdatedMsg(resource:Resource)
 
-case class ResourceDeletedEvent(address:String)
+case class ResourceDeletedMsg(address:String)
 
-case class UpdateMetadataRequest(address:String, metadata:Map[String,String])
+case class UpdateMetadataMsg(address:String, metadata:Map[String,String])

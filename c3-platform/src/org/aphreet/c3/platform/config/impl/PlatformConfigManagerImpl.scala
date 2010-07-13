@@ -40,12 +40,12 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.{Set => JSet}
 import org.aphreet.c3.platform.config._
-import org.aphreet.c3.platform.common.{DestroyEvent, Path}
-//import collection.jcl.Set
+import org.aphreet.c3.platform.common.Path
 
 import actors.Actor._
 import javax.annotation.{PreDestroy, PostConstruct}
 import collection.mutable.{HashMap, HashSet}
+import org.aphreet.c3.platform.common.msg.DestroyMsg
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
@@ -103,20 +103,20 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
     if (foundListeners != null)
       foundListeners.foreach { 
-        this ! new RegisterEvent(_)
+        this ! new RegisterMsg(_)
       }
 
   }
 
   @PreDestroy
   def destroy = {
-    this ! DestroyEvent
+    this ! DestroyMsg
   }
 
   def act {
     loop {
       react {
-        case RegisterEvent(listener) => {
+        case RegisterMsg(listener) => {
           log info "Registering property listener: " + listener.getClass.getSimpleName
 
           for (paramName <- listener.listeningForProperties) {
@@ -138,7 +138,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
           log debug propertyListeners.toString
         }
 
-        case UnregisterEvent(listener) => {
+        case UnregisterMsg(listener) => {
 
           log info "Registering property listener: " + listener.getClass.getSimpleName
 
@@ -151,7 +151,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
           log debug propertyListeners.toString
         }
 
-        case SetPropertyEvent(key, value) => {
+        case SetPropertyMsg(key, value) => {
           log info "Setting platform property: " + key
 
           var config = configAccessor.load
@@ -180,7 +180,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
           }else log info "The value of the property " + key + " did not change"
         }
 
-        case DestroyEvent => {
+        case DestroyMsg => {
           log info "Stopping config manager actor..."
           exit
         }
@@ -191,14 +191,14 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   override
   def registerPropertyListener(listener: PlatformPropertyListener) = {
 
-    this ! RegisterEvent(listener)
+    this ! RegisterMsg(listener)
 
   }
 
   override
   def unregisterPropertyListener(listener: PlatformPropertyListener) = {
 
-    this ! UnregisterEvent(listener)
+    this ! UnregisterMsg(listener)
 
   }
 
@@ -216,7 +216,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   override
   def setPlatformProperty(key: String, value: String) = {
 
-    this ! SetPropertyEvent(key, value)
+    this ! SetPropertyMsg(key, value)
 
   }
 }

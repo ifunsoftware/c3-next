@@ -53,8 +53,8 @@ trait PlatformConfigManager extends Actor{
   
 }
 
-case class RegisterEvent(listener: PlatformPropertyListener)
+case class RegisterMsg(listener: PlatformPropertyListener)
 
-case class UnregisterEvent(listener: PlatformPropertyListener)
+case class UnregisterMsg(listener: PlatformPropertyListener)
 
-case class SetPropertyEvent(key: String, value: String)
+case class SetPropertyMsg(key: String, value: String)

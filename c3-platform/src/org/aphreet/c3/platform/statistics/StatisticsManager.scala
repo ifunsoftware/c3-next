@@ -39,6 +39,6 @@ trait StatisticsManager extends Actor{
 
 }
 
-case class SetStatisticsEvent(key:String, value:String)
+case class SetStatisticsMsg(key:String, value:String)
 
-case class IncreaseStatisticsEvent(key:String, value:Long)
+case class IncreaseStatisticsMsg(key:String, value:Long)

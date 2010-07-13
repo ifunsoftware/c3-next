@@ -31,12 +31,12 @@ package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
 import actors.Actor._
-import org.aphreet.c3.platform.common.DestroyEvent
-import org.aphreet.c3.platform.access.{AccessManager, ResourceAddedEvent}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsEvent, StatisticsManager}
+import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessManager}
+import org.aphreet.c3.platform.common.msg.{RegisterListenerMsg, UnregisterListenerMsg, DestroyMsg}
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 
 @Component
 class AccessCounter extends Actor{
@@ -54,23 +54,23 @@ class AccessCounter extends Actor{
   @PostConstruct
   def init{
     this.start
-    accessManager.registerListener(this)
+    accessManager ! RegisterListenerMsg(this)
   }
 
   @PreDestroy
   def destroy{
-    accessManager.unregisterListener(this)
-    this ! DestroyEvent
+    accessManager ! UnregisterListenerMsg(this)
+    this ! DestroyMsg
   }
 
   def act{
     loop{
       react{
-        case ResourceAddedEvent(resource) => {
-          statisticsManger ! IncreaseStatisticsEvent("c3.access.created", 1)
+        case ResourceAddedMsg(resource) => {
+          statisticsManger ! IncreaseStatisticsMsg("c3.access.created", 1)
         }
 
-        case DestroyEvent => this.exit
+        case DestroyMsg => this.exit
       }
     }
   }

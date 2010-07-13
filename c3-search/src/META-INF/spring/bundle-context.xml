@@ -10,8 +10,9 @@
 
 	<context:annotation-config />
 
-    <context:component-scan base-package="org.aphreet.c3.search" />
-    
+    <context:component-scan base-package="org.aphreet.c3.platform.search" />
+
+    <!--
     <bean id="textExtractorProvider" class="org.aphreet.c3.search.index.server.TextExtractorProvider">
         <property name="serviceUrl" value="rmi://localhost:1199/SearchProvider"/>
         <property name="serviceInterfaceName" value="org.aphreet.c3.search.index.server.SearchProvider"/>
@@ -26,5 +27,7 @@
             </list>
         </property>
     </bean>
+
+    -->
 
 </beans>

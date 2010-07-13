@@ -31,10 +31,10 @@ package org.aphreet.c3.platform.statistics.impl
 
 import actors.Actor._
 import collection.mutable.HashMap
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsEvent, SetStatisticsEvent, StatisticsManager}
+import org.aphreet.c3.platform.statistics._
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.common.DestroyEvent
 import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common.msg.DestroyMsg
 
 @Component("statisticsManager")
 class StatisticsManagerImpl extends StatisticsManager{
@@ -48,16 +48,16 @@ class StatisticsManagerImpl extends StatisticsManager{
 
   @PreDestroy
   def destroy{
-    this ! DestroyEvent
+    this ! DestroyMsg
   }
 
   def act{
     loop{
       react{
-        case SetStatisticsEvent(key, value) =>{
+        case SetStatisticsMsg(key, value) =>{
           statistics.put(key, value)
         }
-        case IncreaseStatisticsEvent(key, delta) => {
+        case IncreaseStatisticsMsg(key, delta) => {
           statistics.get(key) match {
             case Some(string) => {
               try{
@@ -73,7 +73,7 @@ class StatisticsManagerImpl extends StatisticsManager{
             }
           }
         }
-        case DestroyEvent => this.exit
+        case DestroyMsg => this.exit
       }
     }
   }

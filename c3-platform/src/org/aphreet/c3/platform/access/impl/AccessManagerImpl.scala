@@ -47,10 +47,10 @@ import actors.Actor
 import actors.Actor._
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.DestroyEvent
+import org.aphreet.c3.platform.common.msg._
 
 @Component("accessManager")
-class AccessManagerImpl extends AccessManager with Actor{
+class AccessManagerImpl extends AccessManager{
 
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
@@ -63,14 +63,14 @@ class AccessManagerImpl extends AccessManager with Actor{
 
   @PostConstruct
   def init{
-    log info "Starting AccessManager actor..."
+    log info "Starting AccessManager"
     this.start
   }
 
   @PreDestroy
   def destroy{
-    log info "Stopping AccessManager actor..."
-    this ! DestroyEvent
+    log info "Stopping AccessManager"
+    this ! DestroyMsg
   }
 
   @Autowired
@@ -120,7 +120,7 @@ class AccessManagerImpl extends AccessManager with Actor{
       val ra = storage.add(resource)
 
       accessListeners.foreach{
-        _ ! ResourceAddedEvent(resource)
+        _ ! ResourceAddedMsg(resource)
       }
 
       ra
@@ -137,7 +137,7 @@ class AccessManagerImpl extends AccessManager with Actor{
         val ra = storage.update(resource)
 
         accessListeners.foreach{
-          _ ! ResourceUpdatedEvent(resource)
+          _ ! ResourceUpdatedMsg(resource)
         }
 
         ra
@@ -158,7 +158,7 @@ class AccessManagerImpl extends AccessManager with Actor{
         storage delete ra
 
         accessListeners.foreach {
-          _ ! ResourceDeletedEvent(ra)
+          _ ! ResourceDeletedMsg(ra)
         }
       }
 
@@ -169,24 +169,10 @@ class AccessManagerImpl extends AccessManager with Actor{
     }
   }
 
-  def registerListener(listener:Actor) = {
-    this.synchronized(
-      accessListeners = accessListeners + listener
-    )
-
-  }
-
-  def unregisterListener(listener:Actor) = {
-    this.synchronized(
-      accessListeners = accessListeners - listener
-    )
-
-  }
-
   def act{
     loop{
       react{
-        case UpdateMetadataRequest(address, metadata) =>{
+        case UpdateMetadataMsg(address, metadata) =>{
           try{
           val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
           if(storage != null){
@@ -197,7 +183,14 @@ class AccessManagerImpl extends AccessManager with Actor{
           }
         }
 
-        case DestroyEvent => this.exit
+        case RegisterListenerMsg(actor) =>
+          log debug "Registering listener " + actor.toString
+          accessListeners = accessListeners + actor
+        case UnregisterListenerMsg(actor) =>
+          log debug "Unregistering listener " + actor.toString
+          accessListeners = accessListeners - actor
+
+        case DestroyMsg => this.exit
       }
     }
   }

@@ -4,6 +4,7 @@ Bundle-Name: C3 Search
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.search
 Spring-Context: *
+Bundle-ClassPath: ., lib/md5.jar
 Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
  org.springframework.beans;version="[2.5.6.SEC01,2.5.6.SEC01]",

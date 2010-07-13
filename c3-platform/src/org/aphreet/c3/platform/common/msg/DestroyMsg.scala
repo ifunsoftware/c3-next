@@ -28,6 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.common
+package org.aphreet.c3.platform.common.msg
 
-object DestroyEvent 
+object DestroyMsg

@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.management.{PlatformManagementEndpoint, PropertyC
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U
-import org.aphreet.c3.platform.config.{UnregisterEvent, RegisterEvent, PlatformConfigManager}
+import org.aphreet.c3.platform.config._
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,14 +37,14 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
 
     log info "Post construct callback invoked"
 
-    configManager ! RegisterEvent(this)
+    configManager ! RegisterMsg(this)
   }
 
   @PreDestroy
   override def destroy = {
     log info "Pre destroy callback invoked"
 
-    configManager ! UnregisterEvent(this)
+    configManager ! UnregisterMsg(this)
 
     super.destroy
   }

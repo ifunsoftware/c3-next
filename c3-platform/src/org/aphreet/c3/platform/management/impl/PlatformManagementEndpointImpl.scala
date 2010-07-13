@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
-import org.aphreet.c3.platform.config.{SetPropertyEvent, PlatformConfigManager}
+import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
 import java.util.{HashMap, Map => JMap}
 import org.aphreet.c3.platform.statistics.StatisticsManager
 
@@ -91,7 +91,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   def setPlatformProperty(key:String, value:String) = {
 
-    configManager ! SetPropertyEvent(key, value)
+    configManager ! SetPropertyMsg(key, value)
   }
   
   def listTasks:List[TaskDescription] = taskManager.taskList
@@ -126,23 +126,5 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
 
   def statistics:Map[String,String] = statisticsManager.fullStatistics
-  
 
-/*
-  def listUsers:List[(String, String)] = {
-    authManager.list.map(u => (u.name, u.role.name))
-  }
-
-  def addUser(name:String, password:String, role:String) = {
-    authManager.create(name, password, UserRole.fromString(role))
-  }
-
-  def updateUser(name:String, password:String, role:String) = {
-    authManager.update(name, password, UserRole.fromString(role))
-  }
-
-  def deleteUser(name:String) = {
-    authManager.delete(name)
-  }
-  */
 }
