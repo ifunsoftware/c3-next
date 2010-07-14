@@ -161,7 +161,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
             case None => null
           }
 
-          if(oldValue != null && oldValue != value){
+          if(oldValue == null || oldValue != value){
 
             try {
               propertyListeners.get(key) match {

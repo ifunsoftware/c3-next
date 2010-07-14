@@ -20,6 +20,7 @@ Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.osgi.framework
 Export-Package: org.aphreet.c3.platform.access,
  org.aphreet.c3.platform.common,
+ org.aphreet.c3.platform.common.msg,
  org.aphreet.c3.platform.config,
  org.aphreet.c3.platform.exception,
  org.aphreet.c3.platform.management,

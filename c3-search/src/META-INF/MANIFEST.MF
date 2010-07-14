@@ -4,16 +4,16 @@ Bundle-Name: C3 Search
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.search
 Spring-Context: *
-Bundle-ClassPath: ., lib/md5.jar
+Bundle-ClassPath: ., lib/lg.jar
 Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
- org.springframework.beans;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.context;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.context.support;version="[2.5.6.SEC01,2.5.6.SEC01]",
- org.springframework.core;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.beans;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.context;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.context.support;version="[2.5.6.SEC01,3.0.0.RELEASE]",
+ org.springframework.core;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.apache.lucene.analysis;version="[2.4.1,2.4.1]",
  com.springsource.org.apache.lucene;version="[2.4.1,2.4.1]",
- org.springframework.aop;version="[2.5.6.SEC01,2.5.6.SEC01]",
+ org.springframework.aop;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.apache.commons.logging;version="[1.1.1,1.1.1]"

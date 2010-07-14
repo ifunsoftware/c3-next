@@ -13,6 +13,6 @@
 
 	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 	
-	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
+	<reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
 </beans:beans>  

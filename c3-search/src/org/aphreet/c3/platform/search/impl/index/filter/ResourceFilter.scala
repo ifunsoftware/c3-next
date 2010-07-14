@@ -31,11 +31,12 @@
 package org.aphreet.c3.platform.search.impl.index.filter
 
 import org.aphreet.c3.platform.resource.Resource
+import collection.mutable.HashMap
 
 trait ResourceFilter {
 
   def support(resource:Resource):Boolean
 
-  def apply(resource:Resource):Map[String,String]
+  def apply(resource:Resource,  foundMetadata:HashMap[String,String]):Map[String,String]
 
 }

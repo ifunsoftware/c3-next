@@ -31,12 +31,13 @@
 package org.aphreet.c3.platform.search.impl.index.filter
 
 import org.aphreet.c3.platform.resource.Resource
+import collection.mutable.HashMap
 
 class MetadataFilter extends ResourceFilter{
 
   override def support(resource:Resource):Boolean = true
 
-  override def apply(resource:Resource):Map[String, String] = {
+  override def apply(resource:Resource,  foundMetadata:HashMap[String,String]):Map[String,String] = {
     Map[String,String]() ++ resource.metadata
   }
 

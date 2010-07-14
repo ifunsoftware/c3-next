@@ -35,6 +35,7 @@ import collection.mutable.HashMap
 import org.apache.lucene.document.{Field, Document}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.ru.RussianAnalyzer
 
 
 class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
@@ -42,7 +43,10 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
   val fields = new HashMap[String, String]
 
   {
-    filters.filter(_.support(resource)).map(_.apply(resource)).foreach(fields ++ _)
+    for(filter <- filters if filter.support(resource)){
+      fields ++ filter.apply(resource, fields)
+    }
+
   }
 
   def document:Document = {
@@ -59,7 +63,12 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
   }
 
   def analyzer:Analyzer = {
-    new StandardAnalyzer
+    fields.get("c3.lang") match {
+      case Some(lang) =>
+        if(lang == "ru") new RussianAnalyzer
+        else new StandardAnalyzer
+      case None => new StandardAnalyzer
+    }
   }
 
 

@@ -31,12 +31,13 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
+import filter.{MetadataFilter, LanguageGuesserFilter, TextExtractorFilter}
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.store.{RAMDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 
 class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   val log = LogFactory.getLog(getClass)
@@ -50,6 +51,12 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   {
     createNewWriter
   }
+
+  val filters = List(
+    new MetadataFilter,
+    new TextExtractorFilter,
+    new LanguageGuesserFilter
+    )
 
   def createNewWriter = {
     if (writer != null) {
@@ -70,7 +77,7 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
           try {
             indexResource(resource)
             sender ! ResourceIndexedMsg(resource.address)
-            if (writer.numDocs > 100) {
+            if (writer.numDocs > maxDocsCount) {
               createNewWriter
             }
           } catch {
@@ -83,11 +90,16 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
         case DestroyMsg => {
           try {
             log info "Stopping memory indexer"
-            this.exit
             writer.close()
             fileIndexer ! MergeIndexMsg(directory)
+
           } catch {
             case e => log.warn("Failed to store indexer", e)
+          } finally {
+            reply {
+              DestroyMsgReply
+            }
+            this.exit
           }
 
         }
@@ -97,7 +109,11 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   }
 
   def indexResource(resource: Resource) = {
-    //TODO implement this magic!
+    val resourceHandler = new ResourceHandler(resource, filters)
+    val document = resourceHandler.document
+    val analyzer = resourceHandler.analyzer
+
+    writer.addDocument(document, analyzer)
   }
 }
 

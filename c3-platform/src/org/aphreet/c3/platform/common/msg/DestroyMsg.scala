@@ -31,3 +31,4 @@
 package org.aphreet.c3.platform.common.msg
 
 object DestroyMsg
+object DestroyMsgReply

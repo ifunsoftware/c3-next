@@ -42,6 +42,7 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.common.Path
 import java.util.Date
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
+import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
@@ -53,9 +54,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   var accessManager: AccessManager = _
 
-  var fileIndexer: FileIndexer = _
+  var configManager: PlatformConfigManager = _
 
-  var indexPath: Path = new Path("/path/to/file")
+  var fileIndexer: FileIndexer = null
+
+  var indexPath: Path = null
 
   var ramIndexers: List[RamIndexer] = List()
 
@@ -64,19 +67,30 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
 
+  @Autowired
+  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+
   @PostConstruct
   def init {
-    log info "Starting SearchManager"
+
+    configManager ! RegisterMsg(this)
 
     if (indexPath != null) {
+      initialize
+    } else {
+      log warn "Index path is not set. Waiting for property to appear"
+    }
+  }
+
+  def initialize() {
+    if (fileIndexer == null) {
+      log info "Starting SearchManager"
       fileIndexer = new FileIndexer(indexPath)
 
       ramIndexers = new RamIndexer(fileIndexer) :: ramIndexers
 
       this.start
       accessManager ! RegisterListenerMsg(this)
-    } else {
-      log warn "Index path is not set. Waiting for property to appear"
     }
   }
 
@@ -84,11 +98,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   def destroy {
     log info "Destroying SearchManager"
     accessManager ! UnregisterListenerMsg(this)
+
+    configManager ! UnregisterMsg(this)
+
+    ramIndexers.foreach(_ !? DestroyMsg)
+    fileIndexer ! DestroyMsg
     this ! DestroyMsg
 
-    ramIndexers.foreach(_ ! DestroyMsg)
-    fileIndexer ! DestroyMsg
-    
   }
 
   def search(query: String): List[String] = List()
@@ -130,17 +146,24 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   def propertyChanged(event: PropertyChangeEvent) {
     event.name match {
       case INDEX_PATH =>
+        if(indexPath == null){
+          indexPath = new Path(event.newValue)
+          initialize
+        }else{
+          log warn "Search manager already initialized, new value will be used after system restart and all previous index will be lost!!!"
+        }
+
 
       case INDEXER_COUNT => {
         val newCount = Integer.parseInt(event.newValue)
 
-        if(ramIndexers.size < newCount){
-          for(i <- 1 to newCount - ramIndexers.size){
+        if (ramIndexers.size < newCount) {
+          for (i <- 1 to newCount - ramIndexers.size) {
             val indexer = new RamIndexer(fileIndexer)
             indexer.start
             ramIndexers = indexer :: ramIndexers
           }
-        }else if(ramIndexers.size > newCount){
+        } else if (ramIndexers.size > newCount) {
           val dropCount = ramIndexers.size - newCount
           val toStop = ramIndexers.take(dropCount)
           ramIndexers = ramIndexers.drop(dropCount)
@@ -150,7 +173,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       }
 
       case MAX_TMP_INDEX_SIZE =>
-        if(event.newValue != event.oldValue)
+        if (event.newValue != event.oldValue)
           ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
       case _ =>
     }

@@ -27,19 +27,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-
 package org.aphreet.c3.platform.search.impl.index.filter
 
 import org.aphreet.c3.platform.resource.Resource
+import org.apache.lucene.misc.TrigramLanguageGuesser
+import java.net.URL
+import collection.mutable.HashMap
+import org.apache.commons.logging.LogFactory
+import java.io.StringReader
 
 
 class LanguageGuesserFilter extends ResourceFilter{
 
+  val log = LogFactory.getLog(getClass)
+
+  val trigrams = Array("en.tri", "ru.tri")
+
+  val languageGuesser = {
+    val guesser = new TrigramLanguageGuesser(trigrams.map(name => getClass.getClassLoader.getResource("/META-INF/trigrams/" + name)).toArray)
+    log info "Filter started. Supported languages are: " + guesser.supportedLanguages.toString
+    guesser
+  }
+
   override def support(resource:Resource):Boolean = true
 
-  override def apply(resource:Resource):Map[String, String] = {
-    Map()
+  override def apply(resource:Resource,  foundMetadata:HashMap[String,String]):Map[String,String] = {
+
+    var str:String = null
+
+    if(foundMetadata.contains("c3.content"))
+      str = foundMetadata.get("c3.content").get
+    else if(foundMetadata.contains("title")){
+      str = foundMetadata.get("title").get
+    }
+
+    if(str != null){
+      Map("c3.lang" -> languageGuesser.guessLanguage(new StringReader(str)))
+    }else{
+      Map()
+    }
+
   }
 
 

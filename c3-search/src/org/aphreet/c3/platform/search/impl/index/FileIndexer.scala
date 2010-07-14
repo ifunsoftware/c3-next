@@ -64,6 +64,7 @@ class FileIndexer(val path:Path) extends Actor{
             indexWriter.addIndexesNoOptimize(Array(directory))
             indexWriter.optimize
             indexWriter.commit
+            log debug "Index merged"
           }catch{
             case e =>
               log.warn("Failed to merge index", e)
