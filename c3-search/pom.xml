@@ -40,6 +40,12 @@
             <systemPath>${basedir}/lib/lg.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-tika-api</artifactId>
+            <version>1.0.512</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -122,6 +128,12 @@
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
                                     <artifactId>com.springsource.org.apache.lucene</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.aphreet.c3</groupId>
+                                    <artifactId>c3-tika-api</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

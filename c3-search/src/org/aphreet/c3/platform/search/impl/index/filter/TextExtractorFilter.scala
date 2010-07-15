@@ -32,8 +32,11 @@ package org.aphreet.c3.platform.search.impl.index.filter
 
 import org.aphreet.c3.platform.resource.Resource
 import collection.mutable.HashMap
+import org.aphreet.c3.search.tika.TikaProvider
 
 class TextExtractorFilter extends ResourceFilter{
+
+  var tikaProvider:TikaProvider = null
 
   override def support(resource:Resource):Boolean = true
 
