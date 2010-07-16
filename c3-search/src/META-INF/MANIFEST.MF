@@ -12,9 +12,11 @@ Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
  org.springframework.context.support;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  org.springframework.core;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.apache.lucene.analysis;version="[2.4.1,2.4.1]",
+ com.springsource.org.apache.lucene.search.highlight;version="[2.4.1,2.4.1]",
  com.springsource.org.apache.lucene;version="[2.4.1,2.4.1]",
  org.springframework.aop;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  org.aphreet.c3.search.tika.api;version="[1.0.519,1.0.519]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.apache.commons.logging;version="[1.1.1,1.1.1]"
+Export-Package: org.aphreet.c3.platform.search

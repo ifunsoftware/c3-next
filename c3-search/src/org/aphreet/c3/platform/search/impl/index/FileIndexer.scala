@@ -30,6 +30,7 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
+import scala.actors.ExitActorException
 import org.apache.lucene.index.IndexWriter
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -77,10 +78,12 @@ class FileIndexer(val path:Path) extends Actor{
 
         case DestroyMsg => {
           try{
-            this.exit
             indexWriter.close
+            log info "IndexWriter closed"
+            this.exit
           }catch{
-            case e => log.warn("Failed to close index", e) 
+            case e => log.warn("Failed to close index", e)
+            throw e
           }
         }
       }

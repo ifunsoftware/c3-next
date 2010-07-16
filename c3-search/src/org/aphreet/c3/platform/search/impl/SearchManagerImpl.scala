@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.search.impl
 import actors.Actor._
 
 import index._
-import org.aphreet.c3.platform.search.SearchManager
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
@@ -43,6 +42,8 @@ import org.aphreet.c3.platform.common.Path
 import java.util.Date
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
+import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
+import search.Searcher
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
@@ -64,6 +65,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   val random = new java.util.Random(System.currentTimeMillis)
 
+  var searcher:Searcher = null
+
+  val indexScheduler = new SearchIndexScheduler(this)
+
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
 
@@ -84,34 +89,59 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   def initialize() {
     if (fileIndexer == null) {
-      log info "Starting SearchManager"
       fileIndexer = new FileIndexer(indexPath)
+      fileIndexer.start
 
-      ramIndexers = new RamIndexer(fileIndexer) :: ramIndexers
-      ramIndexers = new RamIndexer(fileIndexer) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, 1) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, 2) :: ramIndexers
       
 
       ramIndexers.foreach(_.start)
 
       this.start
       accessManager ! RegisterListenerMsg(this)
+
+      searcher = new Searcher(indexPath)
+
+      indexScheduler.start
     }
   }
 
   @PreDestroy
   def destroy {
+
+    indexScheduler.interrupt
+
+    if(searcher != null){
+      searcher.close
+      searcher = null
+    }
+
     log info "Destroying SearchManager"
     accessManager ! UnregisterListenerMsg(this)
 
     configManager ! UnregisterMsg(this)
 
-    ramIndexers.foreach(_ !? DestroyMsg)
+    for(ramIndexer <- ramIndexers){
+      val exitValue = ramIndexer !? DestroyMsg
+      log debug "Exit value for indexer is " + exitValue
+    }
+
     fileIndexer ! DestroyMsg
     this ! DestroyMsg
 
   }
 
-  def search(query: String): List[String] = List()
+  def search(query: String): List[SearchResultEntry] = {
+
+    log debug "Search called with query: " + query
+
+    if(searcher == null){
+      log debug "Searcher is null"
+      List()
+    }
+    else searcher.search(query)
+  }
 
   def act {
     while (true) {
@@ -131,6 +161,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           this.exit
       }
     }
+  }
+
+  def flushIndexes {
+    ramIndexers.foreach(_ ! FlushIndex(true))
   }
 
   def selectIndexer: RamIndexer = {
@@ -162,9 +196,9 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       case INDEXER_COUNT => {
         val newCount = Integer.parseInt(event.newValue)
 
-        log info "Setting indexer count to " + newCount
+        log info "Ignoring new indexer count " + newCount
 
-        if (ramIndexers.size < newCount) {
+        /*if (ramIndexers.size < newCount) {
           for (i <- 1 to newCount - ramIndexers.size) {
             val indexer = new RamIndexer(fileIndexer)
             indexer.start
@@ -176,7 +210,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           ramIndexers = ramIndexers.drop(dropCount)
 
           toStop.foreach(_ ! DestroyMsg)
-        }
+        }*/
       }
 
       case MAX_TMP_INDEX_SIZE =>
@@ -184,6 +218,30 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
       case _ =>
     }
+  }
+
+}
+
+class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
+
+  val log = LogFactory.getLog(getClass)
+
+  override def run{
+
+    log info "Started scheduler"
+
+    while(!Thread.currentThread.isInterrupted){
+      try{
+      Thread.sleep(1000 * 60)
+      }catch{
+        case e:InterruptedException =>
+          log info "Thread interrupted"
+          Thread.currentThread.interrupt
+      }
+      searchManager.ramIndexers.foreach(_ ! FlushIndex(false))
+    }
+
+    log info "Search scheduler stopped"
   }
 
 }

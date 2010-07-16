@@ -12,6 +12,8 @@
 
     <reference id="queryService" interface="org.aphreet.c3.platform.query.QueryManager"/>
 
+    <reference id="searchService" interface="org.aphreet.c3.platform.search.SearchManager"/>
+
 	<reference id="managementService" interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>
 
     <reference id="versionService" interface="org.aphreet.c3.platform.config.VersionManager"/>

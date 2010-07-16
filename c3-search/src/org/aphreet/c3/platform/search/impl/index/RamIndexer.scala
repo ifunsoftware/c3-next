@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 
-class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
+class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
   val log = LogFactory.getLog(getClass)
 
   var maxDocsCount: Int = 100
@@ -47,6 +47,8 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   var directory: Directory = null
 
   var writer: IndexWriter = null
+
+  var lastDocumentTime: Long = System.currentTimeMillis
 
   {
     createNewWriter
@@ -75,26 +77,44 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
       receive {
         case IndexMsg(resource) => {
           try {
+
             indexResource(resource)
             sender ! ResourceIndexedMsg(resource.address)
+            lastDocumentTime = System.currentTimeMillis
             if (writer.numDocs > maxDocsCount) {
               createNewWriter
             }
           } catch {
-            case e => log.warn("Failed to index resource", e)
+            case e => log.warn(num + ": Failed to index resource", e)
           }
         }
 
         case SetMaxDocsCountMsg(count) => maxDocsCount = count
 
+        case FlushIndex(force) => {
+          if (writer.numDocs > 0) {
+            if (force)
+              createNewWriter
+            else {
+              //More than 30 seconds we
+              if (System.currentTimeMillis - lastDocumentTime > 30 * 1000)
+                createNewWriter
+            }
+          }else{
+            log debug num + ": Writer is empty, flush skipped"
+          }
+
+        }
+
         case DestroyMsg => {
           try {
-            log info "Stopping memory indexer"
+            log info num + ": Stopping memory indexer"
             writer.close()
             fileIndexer ! MergeIndexMsg(directory)
 
           } catch {
-            case e => log.warn("Failed to store indexer", e)
+            case e => log.warn(num + ": Failed to store indexer", e)
+            throw e
           } finally {
             reply {
               DestroyMsgReply
@@ -109,7 +129,7 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   }
 
   def indexResource(resource: Resource) = {
-    log debug "Indexing resource " + resource.address
+    log debug num + ": Indexing resource " + resource.address
     val resourceHandler = new ResourceHandler(resource, filters)
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
@@ -122,3 +142,4 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
 case class ResourceIndexedMsg(address: String)
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)
+case class FlushIndex(force: Boolean)

@@ -34,19 +34,26 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.remote.rest._
-import java.util.List
 import query.ServletQueryConsumer
 import java.io.BufferedOutputStream
 import collection.mutable.HashMap
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
+import org.aphreet.c3.platform.common.JSONFormatter
 
 class GetCommand(override val req: HttpServletRequest, override val resp: HttpServletResponse)
         extends HttpCommand(req, resp) {
+
   var queryManager: QueryManager = _
+
+  var searchManager: SearchManager = _
 
   @Autowired
   def setQueryManager(manager: QueryManager) = {queryManager = manager}
+
+  @Autowired
+  def setSearchManager(manager: SearchManager) = {searchManager = manager}
 
 
   override def execute {
@@ -122,13 +129,7 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
     resp.flushBuffer
   }
 
-  def executeSearch = {
-    if (query != null)
-    //sendSearchResults(accessEndpoint.search(query))
-      notFound
-    else
-      badRequest
-  }
+
 
   def executeQuery = {
 
@@ -148,25 +149,29 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
     resp.flushBuffer
   }
 
-  def sendSearchResults(results: List[String]) = {
+  def executeSearch = {
+    if (query != null)
+      sendSearchResults(searchManager.search(query))
+    else
+      badRequest
+  }
+
+  def sendSearchResults(results: List[SearchResultEntry]) = {
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
-    resp.setContentType("text/x-json")
+    resp.setContentType("text/plain")
 
-    val writer = resp.getWriter
+    val buffer = new StringBuffer
 
-    writer.write(
-      """{
-        resources:[
-      """)
+    buffer.append("{resources:[")
 
-    for (address <- results.toArray) {
-      writer.write("\"" + address.toString + "\",\n")
+    for(entry <- results){
+      buffer.append(entry.toJSON).append(",")
     }
-    writer.write(
-      """ ]
-      }""")
+    buffer.append("]}")
 
+    resp.getWriter().println(JSONFormatter.format(buffer.toString))
+    
     resp.flushBuffer
   }
 

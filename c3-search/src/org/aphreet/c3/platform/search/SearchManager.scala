@@ -34,6 +34,8 @@ import actors.Actor
 
 trait SearchManager extends Actor{
 
-  def search(query:String):List[String]
+  def search(query:String):List[SearchResultEntry]
+
+  def flushIndexes
   
 }

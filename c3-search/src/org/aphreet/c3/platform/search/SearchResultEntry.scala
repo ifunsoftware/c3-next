@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin, Ashirbaev Ildar
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.search.impl.index.filter
 
-import org.aphreet.c3.platform.resource.Resource
-import org.apache.lucene.misc.TrigramLanguageGuesser
-import java.net.URL
-import collection.mutable.HashMap
-import org.apache.commons.logging.LogFactory
-import java.io.StringReader
-import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
+package org.aphreet.c3.platform.search
 
 
-class LanguageGuesserFilter extends ResourceFilter{
+case class SearchResultEntry(val address:String, val score:Float, val fragments:Array[String]){
 
-  val log = LogFactory.getLog(getClass)
-
-  val languageGuesser = LanguageGuesserUtil.createGuesser
-
-  override def support(resource:Resource):Boolean = true
-
-  override def apply(resource:Resource,  foundMetadata:HashMap[String,String]):Map[String,String] = {
-
-    var str:String = null
-
-    if(foundMetadata.contains("c3.content"))
-      str = foundMetadata.get("c3.content").get
-    else if(foundMetadata.contains("title")){
-      str = foundMetadata.get("title").get
-    }
-
-    if(str != null){
-      Map("c3.lang" -> languageGuesser.guessLanguage(new StringReader(str)))
-    }else{
-      Map()
-    }
-
+  def toJSON:String = {
+    String.format("{address:\"%s\",score:%.2f,fragments:[%s]}", address, float2Float(score),
+      fragments.map((e:String) => "\"" + e + "\"").reduceLeft(_ + "," + _))
   }
-
 
 }
