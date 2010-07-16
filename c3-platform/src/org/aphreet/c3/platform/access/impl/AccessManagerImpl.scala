@@ -186,9 +186,11 @@ class AccessManagerImpl extends AccessManager{
         case RegisterListenerMsg(actor) =>
           log debug "Registering listener " + actor.toString
           accessListeners = accessListeners + actor
+          log debug accessListeners.toString
         case UnregisterListenerMsg(actor) =>
           log debug "Unregistering listener " + actor.toString
           accessListeners = accessListeners - actor
+          log debug accessListeners.toString
 
         case DestroyMsg => this.exit
       }

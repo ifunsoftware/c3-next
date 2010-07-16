@@ -109,11 +109,13 @@ class RamIndexer(val fileIndexer: FileIndexer) extends Actor {
   }
 
   def indexResource(resource: Resource) = {
+    log debug "Indexing resource " + resource.address
     val resourceHandler = new ResourceHandler(resource, filters)
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
 
     writer.addDocument(document, analyzer)
+    log debug "Resource writen to tmp index (" + resource.address + ")"
   }
 }
 

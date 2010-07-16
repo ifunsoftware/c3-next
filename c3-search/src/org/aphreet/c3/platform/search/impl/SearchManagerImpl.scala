@@ -88,6 +88,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       fileIndexer = new FileIndexer(indexPath)
 
       ramIndexers = new RamIndexer(fileIndexer) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer) :: ramIndexers
+      
+
+      ramIndexers.foreach(_.start)
 
       this.start
       accessManager ! RegisterListenerMsg(this)
@@ -130,6 +134,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   }
 
   def selectIndexer: RamIndexer = {
+    log debug "Selecting indexer..."
     val num = Math.abs(random.nextInt) % (ramIndexers.size)
     ramIndexers.drop(num).first
   }
@@ -156,6 +161,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
       case INDEXER_COUNT => {
         val newCount = Integer.parseInt(event.newValue)
+
+        log info "Setting indexer count to " + newCount
 
         if (ramIndexers.size < newCount) {
           for (i <- 1 to newCount - ramIndexers.size) {

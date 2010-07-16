@@ -140,7 +140,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
         case UnregisterMsg(listener) => {
 
-          log info "Registering property listener: " + listener.getClass.getSimpleName
+          log info "Unregistering property listener: " + listener.getClass.getSimpleName
 
           for ((prop, listeners) <- propertyListeners if listeners.contains(listener)) {
 

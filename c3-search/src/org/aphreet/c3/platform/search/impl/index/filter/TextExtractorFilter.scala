@@ -30,17 +30,73 @@
 
 package org.aphreet.c3.platform.search.impl.index.filter
 
-import org.aphreet.c3.platform.resource.Resource
 import collection.mutable.HashMap
+import collection.jcl.{HashMap => JHashMap}
 import org.aphreet.c3.search.tika.TikaProvider
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.resource.{FileDataWrapper, Resource}
+import java.io.{FileOutputStream, File}
+import java.nio.channels.WritableByteChannel
+import org.aphreet.c3.platform.search.impl.rmi.SearchRmiProxyFactoryBean
 
 class TextExtractorFilter extends ResourceFilter{
 
+  val log = LogFactory.getLog(getClass)
+
   var tikaProvider:TikaProvider = null
 
-  override def support(resource:Resource):Boolean = true
+  override def support(resource:Resource):Boolean = {
+    resource.systemMetadata.get(Resource.MD_CONTENT_TYPE) match {
+      case Some(x) => !x.matches("application/x-c3-.*")
+      case None => true
+    }
+  }
 
   override def apply(resource:Resource,  foundMetadata:HashMap[String,String]):Map[String,String] = {
-    Map()
+
+    var file:File = null
+    var shouldDelete = false
+
+    try{
+      if(tikaProvider == null) tikaProvider = connect
+
+      val dataWarpper = resource.versions.last.data
+
+      if(dataWarpper.isInstanceOf[FileDataWrapper]){
+        file = dataWarpper.asInstanceOf[FileDataWrapper].file
+      }else{
+        file = File.createTempFile("index", "tmp")
+        shouldDelete = true
+        var channel:WritableByteChannel = null
+        try{
+          channel = new FileOutputStream(file).getChannel
+          dataWarpper.writeTo(channel)
+        }finally{
+          channel.close
+        }
+      }
+      
+      Map() ++ new JHashMap[String, String](tikaProvider.extractMetadata(file.getCanonicalPath))
+
+    }catch{
+      case e=> log.warn("Failed to extract document content: " + e.getMessage)
+               log.debug("Cause: ", e)
+               tikaProvider = null
+               Map()
+    }finally {
+      if(shouldDelete && file != null){
+        file.delete
+      }
+    }
+  }
+
+  def connect:TikaProvider = {
+    log debug "Connecting to tika..."
+    val rmiBean = new SearchRmiProxyFactoryBean
+    rmiBean.setServiceUrl("rmi://localhost:1399/TikaProvider")
+    rmiBean.setServiceInterface(classOf[TikaProvider])
+    rmiBean.afterPropertiesSet
+    log debug "Connected"
+    rmiBean.getObject.asInstanceOf[TikaProvider]
   }
 }

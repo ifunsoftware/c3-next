@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-tika-api</artifactId>
-            <version>1.0.512</version>
+            <version>1.0.519</version>
         </dependency>
 
     </dependencies>
