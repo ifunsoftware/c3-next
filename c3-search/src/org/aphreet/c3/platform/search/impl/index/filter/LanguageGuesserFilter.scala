@@ -50,14 +50,16 @@ class LanguageGuesserFilter extends ResourceFilter{
 
     var str:String = null
 
-    if(foundMetadata.contains("c3.content"))
-      str = foundMetadata.get("c3.content").get
+    if(foundMetadata.contains("content"))
+      str = foundMetadata.get("content").get
     else if(foundMetadata.contains("title")){
       str = foundMetadata.get("title").get
     }
 
     if(str != null){
-      Map("c3.lang" -> languageGuesser.guessLanguage(new StringReader(str)))
+      //FIXME languageGuesser have a bug, need to be rebuilded
+      //  Map("c3.lang" -> languageGuesser.guessLanguage(new StringReader(str)))
+      Map()
     }else{
       Map()
     }

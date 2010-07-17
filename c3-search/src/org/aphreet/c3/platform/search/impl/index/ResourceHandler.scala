@@ -57,7 +57,7 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
 
     doc.add(new Field("c3.address", resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
 
-    fields.foreach(e => doc.add(new Field(e._1, e._2, Field.Store.NO, Field.Index.ANALYZED)))
+    fields.foreach(e => doc.add(new Field(e._1, e._2, Field.Store.YES, Field.Index.ANALYZED)))
 
     doc
   }

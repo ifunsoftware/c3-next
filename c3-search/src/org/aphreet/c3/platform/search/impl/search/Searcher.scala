@@ -37,22 +37,51 @@ import org.apache.lucene.queryParser.QueryParser
 import org.apache.lucene.analysis.{CachingTokenFilter, Analyzer}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.commons.logging.LogFactory
+import actors.Actor
+import actors.Actor._
+import org.aphreet.c3.platform.common.msg.DestroyMsg
 
-class Searcher(val indexPath: Path) {
+class Searcher(val indexPath: Path) extends Actor{
 
   val log = LogFactory.getLog(getClass)
 
-  val indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
+  var indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
+  
+  def act{
+    loop{
+      react{
+        case ReopenSearcher => {
+          log info "Reopening searcher"
+          val oldSearcher = indexSearcher
+
+          indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
+
+          Thread.sleep(1000 * 5) //May be some threads still using old searcher
+
+          oldSearcher.close
+        }
+
+        case DestroyMsg => {
+          log info "Destroying searcher"
+          this.exit
+        }
+      }
+    }
+  }
+
+  def getSearcher:IndexSearcher = indexSearcher
 
   def search(sourceQuery: String): List[SearchResultEntry] = {
 
     val analyzer = new StandardAnalyzer
 
-    val query = new QueryParser("contents", analyzer).parse(sourceQuery)
+    val query = new QueryParser("content", analyzer).parse(sourceQuery)
 
     log debug "query: " + query.toString
 
-    val topDocs = indexSearcher.search(query, 30)
+    val searcher = getSearcher
+
+    val topDocs = searcher.search(query, 30)
 
 
     var results:List[SearchResultEntry] = List()
@@ -63,12 +92,18 @@ class Searcher(val indexPath: Path) {
 
       val docNum = scoreDoc.doc
 
-      val document = indexSearcher.doc(docNum)
+      val document = searcher.doc(docNum)
 
       val address = document.get("c3.address")
-      val contents = document.get("contents")
+      val contents = document.get("content")
 
-      val fragments = fragmentsWithHighlightedTerms(analyzer, query, "contents", contents, 5, 100)
+      log debug "Document contents: " + contents
+
+
+      val fragments = if(contents != null)
+        fragmentsWithHighlightedTerms(analyzer, query, "content", contents, 5, 100)
+      else
+        Array("")
 
       results = new SearchResultEntry(address, score, fragments) :: results
 
@@ -105,7 +140,9 @@ class Searcher(val indexPath: Path) {
 
   def close {
     indexSearcher.close
+    this ! DestroyMsg
   }
 
-
 }
+
+object ReopenSearcher

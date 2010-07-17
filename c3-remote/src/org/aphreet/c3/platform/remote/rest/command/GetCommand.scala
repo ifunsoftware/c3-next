@@ -160,6 +160,7 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
     resp.setContentType("text/plain")
+    resp.setCharacterEncoding("UTF-8")
 
     val buffer = new StringBuffer
 
@@ -170,7 +171,7 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
     }
     buffer.append("]}")
 
-    resp.getWriter().println(JSONFormatter.format(buffer.toString))
+    resp.getOutputStream.write(JSONFormatter.format(buffer.toString).getBytes("UTF-8"))
     
     resp.flushBuffer
   }

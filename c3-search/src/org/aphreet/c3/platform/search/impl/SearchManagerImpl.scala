@@ -47,9 +47,13 @@ import search.Searcher
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
+
   val INDEX_PATH = "c3.search.index.path"
+
   val INDEXER_COUNT = "c3.search.index.count"
+
   val MAX_TMP_INDEX_SIZE = "c3.search.index.max_size"
+
 
   val log = LogFactory.getLog(getClass)
 
@@ -89,7 +93,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   def initialize() {
     if (fileIndexer == null) {
-      fileIndexer = new FileIndexer(indexPath)
+
+      searcher = new Searcher(indexPath)
+      searcher.start
+
+      fileIndexer = new FileIndexer(indexPath, searcher)
       fileIndexer.start
 
       ramIndexers = new RamIndexer(fileIndexer, 1) :: ramIndexers
@@ -101,7 +109,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       this.start
       accessManager ! RegisterListenerMsg(this)
 
-      searcher = new Searcher(indexPath)
+
 
       indexScheduler.start
     }

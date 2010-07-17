@@ -38,9 +38,9 @@ import org.apache.lucene.store.{Directory, FSDirectory}
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
 
-
-class FileIndexer(val path:Path) extends Actor{
+class FileIndexer(val path:Path, val searcher:Searcher) extends Actor{
 
   val log = LogFactory.getLog(getClass)
 
@@ -63,9 +63,10 @@ class FileIndexer(val path:Path) extends Actor{
         case MergeIndexMsg(directory) =>
           try{
             indexWriter.addIndexesNoOptimize(Array(directory))
-            indexWriter.optimize
             indexWriter.commit
+            indexWriter.optimize
             log debug "Index merged"
+            searcher ! ReopenSearcher
           }catch{
             case e =>
               log.warn("Failed to merge index", e)
