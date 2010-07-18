@@ -5,7 +5,7 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.search
 Spring-Context: *
 Bundle-ClassPath: ., lib/lg.jar
-Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,1.0.0]",
+Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
  org.springframework.beans;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  org.springframework.context;version="[2.5.6.SEC01,3.0.0.RELEASE]",
