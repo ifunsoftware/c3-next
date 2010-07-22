@@ -36,6 +36,7 @@ import org.apache.lucene.document.{Field, Document}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
+import org.aphreet.c3.platform.search.impl.common.Fields
 
 
 class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
@@ -53,9 +54,9 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
 
     val doc = new Document
 
-    fields.removeKey("c3.address")
+    fields.removeKey(Fields.ADDRESS)
 
-    doc.add(new Field("c3.address", resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
+    doc.add(new Field(Fields.ADDRESS, resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
 
     fields.foreach(e => doc.add(new Field(e._1, e._2, Field.Store.YES, Field.Index.ANALYZED)))
 
@@ -63,13 +64,11 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
   }
 
   def analyzer:Analyzer = {
-    fields.get("c3.lang") match {
+    fields.get(Fields.LANG) match {
       case Some(lang) =>
         if(lang == "ru") new RussianAnalyzer
         else new StandardAnalyzer
       case None => new StandardAnalyzer
     }
   }
-
-
 }

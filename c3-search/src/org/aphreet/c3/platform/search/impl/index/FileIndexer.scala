@@ -31,7 +31,6 @@ package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
 import scala.actors.ExitActorException
-import org.apache.lucene.index.IndexWriter
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{Directory, FSDirectory}
@@ -39,6 +38,8 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
+import org.apache.lucene.index.{Term, IndexWriter}
+import org.aphreet.c3.platform.search.impl.common.Fields
 
 class FileIndexer(val path:Path, val searcher:Searcher) extends Actor{
 
@@ -93,9 +94,11 @@ class FileIndexer(val path:Path, val searcher:Searcher) extends Actor{
 
   def deleteResource(address:String) = {
     try{
-      //TODO implement delete here
+      val term = new Term(Fields.ADDRESS, address)
+      indexWriter.deleteDocuments(term)
+      log debug "Documents with term address:" + address + " have been deleted"
     }catch{
-      case e => log.warn("Failed to delete resource, e is: ", e)
+      case e => log.error("Failed to delete resource, e is: ", e)
     }
   }
 }

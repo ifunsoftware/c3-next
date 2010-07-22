@@ -40,6 +40,8 @@ import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.search.impl.common.Fields._
+
 
 class Searcher(val indexPath: Path) extends Actor{
 
@@ -75,7 +77,7 @@ class Searcher(val indexPath: Path) extends Actor{
 
     val analyzer = new StandardAnalyzer
 
-    val query = new QueryParser("content", analyzer).parse(sourceQuery)
+    val query = new QueryParser(CONTENT, analyzer).parse(sourceQuery)
 
     log debug "query: " + query.toString
 
@@ -94,14 +96,14 @@ class Searcher(val indexPath: Path) extends Actor{
 
       val document = searcher.doc(docNum)
 
-      val address = document.get("c3.address")
-      val contents = document.get("content")
+      val address = document.get(ADDRESS)
+      val contents = document.get(CONTENT)
 
       log debug "Document contents: " + contents
 
 
       val fragments = if(contents != null)
-        fragmentsWithHighlightedTerms(analyzer, query, "content", contents, 5, 100)
+        fragmentsWithHighlightedTerms(analyzer, query, CONTENT, contents, 5, 100)
       else
         Array("")
 

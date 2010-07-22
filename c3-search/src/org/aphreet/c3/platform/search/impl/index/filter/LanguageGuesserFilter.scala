@@ -35,8 +35,8 @@ import java.net.URL
 import collection.mutable.HashMap
 import org.apache.commons.logging.LogFactory
 import java.io.StringReader
-import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
-
+import org.aphreet.c3.platform.search.impl.common.{Fields, LanguageGuesserUtil}
+import org.aphreet.c3.platform.search.impl.common.Fields._
 
 class LanguageGuesserFilter extends ResourceFilter{
 
@@ -50,13 +50,13 @@ class LanguageGuesserFilter extends ResourceFilter{
 
     var str:String = null
 
-    if(foundMetadata.contains("content"))
-      str = foundMetadata.get("content").get
-    else if(foundMetadata.contains("title")){
-      str = foundMetadata.get("title").get
+    if(foundMetadata.contains(CONTENT))
+      str = foundMetadata.get(CONTENT).get
+    else if(foundMetadata.contains(TITLE)){
+      str = foundMetadata.get(TITLE).get
     }
 
-    if(str != null) Map("c3.lang" -> languageGuesser.guessLanguage(new StringReader(str)))
+    if(str != null) Map(LANG -> languageGuesser.guessLanguage(new StringReader(str)))
     else Map()
   }
 
