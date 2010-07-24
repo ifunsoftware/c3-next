@@ -31,6 +31,7 @@ package org.aphreet.c3.platform.search.impl
 
 import actors.Actor._
 
+import background.BackgroundIndexTask
 import index._
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
@@ -44,6 +45,8 @@ import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropert
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
 import search.Searcher
+import org.aphreet.c3.platform.task.TaskManager
+import org.aphreet.c3.platform.storage.StorageManager
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
@@ -57,9 +60,15 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   val log = LogFactory.getLog(getClass)
 
+
   var accessManager: AccessManager = _
 
   var configManager: PlatformConfigManager = _
+
+  var taskManager: TaskManager = _
+
+  var storageManager: StorageManager = _
+
 
   var fileIndexer: FileIndexer = null
 
@@ -73,11 +82,19 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   val indexScheduler = new SearchIndexScheduler(this)
 
+  var indexerTaskId:String = null
+
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
 
   @Autowired
   def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+
+  @Autowired
+  def setTaskManager(manager:TaskManager) = {taskManager = manager}
+
+  @Autowired
+  def setStorageManager(manager:StorageManager) = {storageManager = manager}
 
   @PostConstruct
   def init {
@@ -110,6 +127,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       accessManager ! RegisterListenerMsg(this)
 
 
+      indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
 
       indexScheduler.start
     }
@@ -119,6 +137,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   def destroy {
 
     indexScheduler.interrupt
+
+    if(indexerTaskId != null){
+      taskManager.stopTask(indexerTaskId)
+    }
 
     if(searcher != null){
       searcher.close

@@ -12,6 +12,6 @@ trait TaskManager {
   
   def resumeTask(id:String)
   
-  def submitTask(task:Task)
+  def submitTask(task:Task):String
   
 }

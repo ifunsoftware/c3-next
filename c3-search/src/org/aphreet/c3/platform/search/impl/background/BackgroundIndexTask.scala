@@ -38,14 +38,16 @@ import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import java.util.Date
 
-class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:SearchManager) extends Task {
+class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager) extends Task {
 
-  val indexedTimeout:Long = 1000 * 60 * 60
+  //We suppose that it should take no more than hour for resource to be indexed
+  val indexedTimeout: Long = 1000 * 60 * 60
 
-  var iterator:StorageIterator = null
+  var iterator: StorageIterator = null
 
-  var currentStorage:Storage = null
+  var currentStorage: Storage = null
 
+  //Initial storage list is all storages in storageManager
   var storagesToIndex = storageManager.listStorages
 
   override def preStart = {
@@ -54,25 +56,28 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 
   override def step {
 
-    if(iterator == null){
+    if (iterator == null) {
       initIterator
-    }else{
-      try{
-        if(iterator.hasNext){
+    } else {
+      try {
+        if (iterator.hasNext) {
           val resource = iterator.next
-          if(shouldIndex(resource)){
+          log debug "Checking resource " + resource.address
+          if (shouldIndex(resource)) {
             log debug "Resource " + resource.address + " should be indexed"
             searchManager ! ResourceUpdatedMsg(resource)
           }
-        }else{
+        } else {
           log debug "Iteration over storage " + currentStorage.id + " has competed"
           iterator.close
           iterator = null
         }
-      }catch{
-        case e:StorageException => {
-          iterator.close
-          iterator = null
+      } catch {
+        case e: StorageException => {
+          if (iterator != null) {
+            iterator.close
+            iterator = null
+          }
         }
       }
     }
@@ -80,9 +85,14 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     Thread.sleep(1000)
   }
 
-  private def shouldIndex(resource:Resource):Boolean = {
+  override def postFailure = {
+    if (iterator != null)
+      iterator.close
+  }
 
-    def isOutOfTimeout(date:Date):Boolean = {
+  private def shouldIndex(resource: Resource): Boolean = {
+
+    def isOutOfTimeout(date: Date): Boolean = {
       System.currentTimeMillis - date.getTime > indexedTimeout
     }
 
@@ -95,13 +105,15 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 
   private def initIterator = {
 
-    if(storagesToIndex.size > 0){
+    if (storagesToIndex.size > 0) {
       currentStorage = storagesToIndex.head
       storagesToIndex = storagesToIndex.tail
       iterator = currentStorage.iterator
       log debug "Starting iteration over storage " + currentStorage.id
-    }else{
+    } else {
+      log debug "I've checked all storages and now will sleep for an hour"
       storagesToIndex = storageManager.listStorages
+      Thread.sleep(1000 * 60 * 60)
     }
   }
 
