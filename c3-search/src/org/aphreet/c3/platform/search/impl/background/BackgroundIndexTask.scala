@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.search.SearchManager
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import java.util.Date
+import org.aphreet.c3.platform.search.impl.BackgroundIndexMsg
 
 class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager) extends Task {
 
@@ -48,10 +49,13 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   var currentStorage: Storage = null
 
   //Initial storage list is all storages in storageManager
-  var storagesToIndex = storageManager.listStorages
+  var storagesToIndex:List[Storage] = List()
 
   override def preStart = {
     log info "Starting BackgroundIndexTask"
+    log info "Waiting for 2 minutes to get system in state"
+    Thread.sleep(2 * 60 * 1000)
+    storagesToIndex = storageManager.listStorages
   }
 
   override def step {
@@ -65,7 +69,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
           log debug "Checking resource " + resource.address
           if (shouldIndex(resource)) {
             log debug "Resource " + resource.address + " should be indexed"
-            searchManager ! ResourceUpdatedMsg(resource)
+            searchManager ! BackgroundIndexMsg(resource)
           }
         } else {
           log debug "Iteration over storage " + currentStorage.id + " has competed"
@@ -111,7 +115,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       iterator = currentStorage.iterator
       log debug "Starting iteration over storage " + currentStorage.id
     } else {
-      log debug "I've checked all storages and now will sleep for an hour"
+      log debug "All storages have been checked, sleeping for an hour"
       storagesToIndex = storageManager.listStorages
       Thread.sleep(1000 * 60 * 60)
     }

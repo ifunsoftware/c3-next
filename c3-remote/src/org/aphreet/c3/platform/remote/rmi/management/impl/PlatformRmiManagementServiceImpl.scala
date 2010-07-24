@@ -61,5 +61,7 @@ class PlatformRmiManagementServiceImpl extends PlatformRmiManagementService{
 
 
   def statistics:Array[Pair] = managementAdapter.statistics
+
+  def volumes:Array[VolumeDescription] = managementAdapter.volumes
 }
 

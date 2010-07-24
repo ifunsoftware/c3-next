@@ -113,6 +113,9 @@ class PlatformWSManagementEndpointImpl extends PlatformWSManagementEndpoint{
   @WebMethod
   def statistics:Array[Pair] = managementAdapter.statistics
 
+  @WebMethod
+  def volumes:Array[VolumeDescription] = managementAdapter.volumes
+
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag
 

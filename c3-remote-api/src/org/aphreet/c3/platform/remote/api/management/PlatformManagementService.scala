@@ -55,4 +55,6 @@ trait PlatformManagementService {
   def deleteUser(name:String)
 
   def statistics:Array[Pair]
+
+  def volumes:Array[VolumeDescription]
 }

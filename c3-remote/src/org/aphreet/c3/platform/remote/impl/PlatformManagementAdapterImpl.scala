@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.remote.impl
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.remote.api.management.{Pair, SizeMapping, TypeMapping, StorageDescription, PlatformManagementAdapter, TaskDescription => RemoteTaskDescription}
 import org.aphreet.c3.platform.task.{RUNNING, PAUSED, TaskState, TaskDescription}
 import org.aphreet.c3.platform.storage.{U, RO, RW}
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
@@ -42,6 +41,13 @@ import org.aphreet.c3.platform.remote.api.RemoteException
 import scala.collection.jcl.Map
 import org.aphreet.c3.platform.exception.{StorageException, PlatformException}
 import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
+import org.aphreet.c3.platform.remote.api.management.{StorageDescription,
+  TaskDescription => RemoteTaskDescription,
+  PlatformManagementAdapter,
+  TypeMapping,
+  SizeMapping,
+  VolumeDescription,
+  Pair}
 
 @Component("platformManagementAdapter")
 class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
@@ -200,6 +206,13 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
     catchAll(() => {
       (for((key,value) <- managementEndpoint.statistics)
         yield new Pair(key, value)).toSeq.toArray
+    })
+  }
+
+  def volumes:Array[VolumeDescription] = {
+    catchAll(() => {
+      (for(v <- managementEndpoint.listVolumes)
+        yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
     })
   }
 

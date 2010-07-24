@@ -20,6 +20,8 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
     register(TaskCommands)
     register(TypeMappingCommands)
     register(UserCommands)
+
+    register(VolumeCommands)
     
     register(new HelpCommand)
   }

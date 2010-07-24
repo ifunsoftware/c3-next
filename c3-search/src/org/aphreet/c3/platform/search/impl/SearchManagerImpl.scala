@@ -47,6 +47,8 @@ import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
 import search.Searcher
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import org.aphreet.c3.platform.resource.Resource
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
@@ -68,6 +70,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   var taskManager: TaskManager = _
 
   var storageManager: StorageManager = _
+
+  var statisticsManager: StatisticsManager = _
 
 
   var fileIndexer: FileIndexer = null
@@ -95,6 +99,9 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
+
+  @Autowired
+  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
 
   @PostConstruct
   def init {
@@ -184,8 +191,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
         case IndexMsg(resource) => selectIndexer ! IndexMsg(resource)
 
+        case BackgroundIndexMsg(resource) =>
+          fileIndexer ! DeleteForUpdateMsg(resource)
+          statisticsManager ! IncreaseStatisticsMsg("c3.search.background", 1)
+
         case ResourceIndexedMsg(address) =>
           accessManager ! UpdateMetadataMsg(address, Map("indexed" -> new Date().getTime.toString))
+          statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
         case DestroyMsg =>
           log info "Destroying SearchManager actor"
           this.exit
@@ -275,3 +287,5 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
   }
 
 }
+
+case class BackgroundIndexMsg(val resource:Resource)

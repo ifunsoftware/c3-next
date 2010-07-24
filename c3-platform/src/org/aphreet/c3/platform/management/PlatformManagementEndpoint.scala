@@ -7,6 +7,7 @@ import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 
 import java.util.{Map => JMap}
+import org.aphreet.c3.platform.storage.volume.Volume
 
 trait PlatformManagementEndpoint {
   
@@ -34,7 +35,9 @@ trait PlatformManagementEndpoint {
   def listFinishedTasks:List[TaskDescription]
  
   def setTaskMode(taskId:String, state:TaskState)
-  
+
+
+  def listVolumes:List[Volume]
   
   
   def listTypeMappings:List[(String, String, Boolean)]

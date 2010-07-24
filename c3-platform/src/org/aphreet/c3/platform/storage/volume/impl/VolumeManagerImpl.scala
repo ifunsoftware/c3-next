@@ -66,6 +66,8 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
     taskManager.submitTask(new VolumeUpdater(volumes, dataProvider))
   }
 
+  def volumeList:List[Volume] = volumes
+
   def register(storage:Storage) = {
     val volume = volumeForPath(storage.path.toString)
 

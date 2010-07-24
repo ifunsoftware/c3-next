@@ -7,5 +7,6 @@ trait VolumeManager{
   def register(storage:Storage)
   
   def unregister(storage:Storage)
-  
+
+  def volumeList:List[Volume]
 }
