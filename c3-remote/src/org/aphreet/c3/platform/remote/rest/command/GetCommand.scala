@@ -41,6 +41,7 @@ import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
 import org.aphreet.c3.platform.common.JSONFormatter
+import java.net.URLDecoder
 
 class GetCommand(override val req: HttpServletRequest, override val resp: HttpServletResponse)
         extends HttpCommand(req, resp) {
@@ -151,7 +152,7 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
 
   def executeSearch = {
     if (query != null)
-      sendSearchResults(searchManager.search(query))
+      sendSearchResults(searchManager.search(URLDecoder.decode(query, "UTF-8")))
     else
       badRequest
   }
