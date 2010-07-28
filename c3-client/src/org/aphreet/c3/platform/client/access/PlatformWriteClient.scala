@@ -13,8 +13,7 @@ import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
  * To change this template use File | Settings | File Templates.
  */
 
-class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
-
+class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
   def cliDescription = parameters(
     "host" has mandatory argument "host" described "Host to connect to",
     "size" has mandatory argument "num" described "Size of object to write",
@@ -24,12 +23,12 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     "pool" has mandatory argument "name" described "Target pool",
     "out" has mandatory argument "file" described "File to write resource addressed",
     "help" described "Prints this message"
-  )
+    )
 
-  def run{
-    if(cli.getOptions.length == 0) helpAndExit("Writer")
+  def run {
+    if (cli.getOptions.length == 0) helpAndExit("Writer")
 
-    if(cli.hasOption("help")) helpAndExit("Writer" )
+    if (cli.hasOption("help")) helpAndExit("Writer")
 
     val objectSize = cliValue("size", "512").toInt
     val objectCount = cliValue("count", "-1").toInt
@@ -37,10 +36,10 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
     val objectType = cliValue("type", "application/octet-stream")
     var pool = cliValue("pool", "")
 
-//    println(pool.getBytes.toString)
-//    println(pool.getBytes("UTF-8").toString)
-//    pool = new String(pool.getBytes("UTF-8"))
-//    println(pool)
+    //    println(pool.getBytes.toString)
+    //    println(pool.getBytes("UTF-8").toString)
+    //    pool = new String(pool.getBytes("UTF-8"))
+    //    println(pool)
     //This is kind of magic
     //This code works for UTF-8 locale
     //But i don't know what will happen on windows machines
@@ -53,27 +52,27 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
 
 
 
-    if(objectCount < 0)
+    if (objectCount < 0)
       throw new IllegalArgumentException("Object count is not set")
 
     writeObjects(host, objectCount, objectSize, threadCount, Map("c3.pool" -> pool, "content.type" -> objectType), file)
   }
 
-  def writeObjects(host:String, count:Int, size:Int, threads:Int, metadata:Map[String, String], file:String){
+  def writeObjects(host: String, count: Int, size: Int, threads: Int, metadata: Map[String, String], file: String) {
 
     println("Writing " + count + " objects of size " + size)
 
     val queue = new LinkedBlockingQueue[String]
 
-    var writers:List[ResourceWriter] = List()
+    var writers: List[ResourceWriter] = List()
 
     val perThread = count / threads
     val rest = count % threads
 
-    for(i <- 1 to threads){
-      val toWrite = if(i == threads){
+    for (i <- 1 to threads) {
+      val toWrite = if (i == threads) {
         perThread + rest
-      }else{
+      } else {
         perThread
       }
       writers = new ResourceWriter(host, toWrite).size(size).metadata(metadata).queue(queue) :: writers
@@ -88,49 +87,56 @@ class PlatformWriteClient(override val args:Array[String]) extends CLI(args){
 
     writers.foreach(executor.submit(_))
 
-    var fos:OutputStream = null
+    var fos: OutputStream = null
 
-    if(file != null){
+    if (file != null) {
 
       val fileHandle = new File(file)
-      if(fileHandle.exists) fileHandle.delete
+      if (fileHandle.exists) fileHandle.delete
 
       fos = new BufferedOutputStream(new FileOutputStream(new File(file)))
     }
 
-    while(isRunning(writers)){
+    while (isRunning(writers)) {
       var ra = queue.poll
-      while(ra != null){
-        if(fos != null) fos.write((ra + "\n").getBytes)
+      while (ra != null) {
+        if (fos != null) fos.write((ra + "\n").getBytes)
         ra = queue.poll
       }
 
       val currentTime = System.currentTimeMillis
-      val dif = (currentTime - time)/1000
-      if(dif >= 10){
+      val dif = (currentTime - time) / 1000
+      if (dif >= 10) {
         time = currentTime
         val writtenResources = written(writers)
 
         val rate = (writtenResources - totalWritten).asInstanceOf[Float] / (dif)
-        val avgRate = (writtenResources).asInstanceOf[Float] / ((time - startTime)/1000)
+        val avgRate = (writtenResources).asInstanceOf[Float] / ((time - startTime) / 1000)
 
         totalWritten = writtenResources
 
-        println("Written " + writtenResources + " resources (" + rate + ", " + avgRate +") errors: " + errors(writers))
+        println("Written " + writtenResources + " resources (" + rate + ", " + avgRate + ") errors: " + errors(writers))
       }
     }
 
-    val endTime = System.currentTimeMillis
-    println(count + " objects written in " + (endTime - startTime)/1000)
+    var ra = queue.poll
+    while (ra != null) {
+      if (fos != null) fos.write((ra + "\n").getBytes)
+      ra = queue.poll
+    }
 
-    if(fos != null) fos.close
+
+    val endTime = System.currentTimeMillis
+    println(count + " objects written in " + (endTime - startTime) / 1000)
+
+    if (fos != null) fos.close
     executor.shutdown
 
   }
 
-  def isRunning(writers:List[ResourceWriter]):Boolean = writers.exists(!_.done)
+  def isRunning(writers: List[ResourceWriter]): Boolean = writers.exists(!_.done)
 
-  def written(writers:List[ResourceWriter]):Int = writers.map(e => e.written).foldLeft(0)(_ + _)
+  def written(writers: List[ResourceWriter]): Int = writers.map(e => e.written).foldLeft(0)(_ + _)
 
-  def errors(writers:List[ResourceWriter]):Int = writers.map(e => e.errors).foldLeft(0)(_ + _)
+  def errors(writers: List[ResourceWriter]): Int = writers.map(e => e.errors).foldLeft(0)(_ + _)
 }

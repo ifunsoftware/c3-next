@@ -45,6 +45,13 @@
 			<version>2.1.2</version>
 			<scope>test</scope>
 		</dependency>
+
+        <dependency>
+            <groupId>com.twmacinta.util</groupId>
+            <artifactId>md5</artifactId>
+            <version>1.0.539</version>
+            <scope>test</scope>
+        </dependency>
 		
 	</dependencies>
 	

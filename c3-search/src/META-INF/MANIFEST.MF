@@ -4,7 +4,6 @@ Bundle-Name: C3 Search
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.search
 Spring-Context: *
-Bundle-ClassPath: ., lib/lg.jar
 Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  org.scala-lang-osgi.scala-library;version="[2.7.6,2.7.6]",
  org.springframework.beans;version="[2.5.6.SEC01,3.0.0.RELEASE]",
@@ -16,7 +15,8 @@ Import-Bundle: org.aphreet.c3.platform;version="[1.0.0,2.0.0)",
  com.springsource.org.apache.lucene;version="[2.4.1,2.4.1]",
  org.springframework.aop;version="[2.5.6.SEC01,3.0.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
- org.aphreet.c3.search.tika.api;version="[1.0.519,1.0.519]"
+ org.aphreet.c3.search.tika.api;version="[1.0.519,1.0.519]",
+ org.aphreet.c3.language.guesser;version="[1.0.541,2.0.0)"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.apache.commons.logging;version="[1.1.1,1.1.1]"
 Export-Package: org.aphreet.c3.platform.search

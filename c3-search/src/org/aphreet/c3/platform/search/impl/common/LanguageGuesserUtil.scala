@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory
 
 object LanguageGuesserUtil{
 
-  val log = LogFactory.getLog("LanguageGuesserUtil")
+  val log = LogFactory.getLog("org.aphreet.c3.search.impl.common.LanguageGuesserUtil")
 
   val trigrams = Array("en.tri", "ru.tri")
 
