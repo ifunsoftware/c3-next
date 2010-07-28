@@ -143,7 +143,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   @PreDestroy
   def destroy {
 
+    try{
     indexScheduler.interrupt
+    }catch{
+      case e => log.warn("Exception while interrupting scheduler", e)
+    }
 
     if(indexerTaskId != null){
       taskManager.stopTask(indexerTaskId)
