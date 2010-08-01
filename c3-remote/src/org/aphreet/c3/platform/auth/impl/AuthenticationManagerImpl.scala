@@ -55,11 +55,11 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users ++ configAccessor.load
   }
 
-  def authenticate(username: String, password: String): User = {
+  def authenticate(username: String, password: String, role:UserRole): User = {
 
     users.get(username) match {
       case Some(user) => {
-        if (user.enabled && md5hash(password) == user.password) {
+        if (user.enabled && user.role == role && md5hash(password) == user.password) {
           user
         } else {
           null

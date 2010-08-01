@@ -31,6 +31,7 @@ package org.aphreet.c3.platform.remote.rest
 
 import command.{PutCommand, DeleteCommand, PostCommand, GetCommand}
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
+import org.aphreet.c3.platform.auth.exception.AuthFailedException
 
 class RestServlet extends HttpServlet {
 
@@ -41,6 +42,8 @@ class RestServlet extends HttpServlet {
       case e:URIParseException =>
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
         response.getWriter.println(e.message)
+      case e:AuthFailedException =>
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
     }
   }
 

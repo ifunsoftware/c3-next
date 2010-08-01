@@ -33,7 +33,7 @@ package org.aphreet.c3.platform.auth
 
 trait AuthenticationManager{
 
-  def authenticate(username:String, password:String):User
+  def authenticate(username:String, password:String, role:UserRole):User
 
   def update(username:String, password:String, role:UserRole, enabled:Boolean)
 

@@ -110,7 +110,6 @@ class AccessManagerImpl extends AccessManager{
     }
 
     resource.systemMetadata.put(Resource.MD_POOL, pool)
-    resource.metadata.put(Resource.MD_POOL, pool)
 
 
     val storage = storageManager.storageForResource(resource)

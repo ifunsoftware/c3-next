@@ -41,8 +41,9 @@ class PostCommand(override val req:HttpServletRequest,
   override def getResource:Resource = new Resource
 
   def processUpload(resource:Resource) = {
-     val ra = accessManager.add(resource)
-     resp.getWriter.println(ra)
+    resource.systemMetadata.put(Resource.MD_USER, currentUser)
+    val ra = accessManager.add(resource)
+    resp.getWriter.println(ra)
   }
 
 }

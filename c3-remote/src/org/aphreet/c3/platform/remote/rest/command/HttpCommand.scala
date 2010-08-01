@@ -32,9 +32,54 @@ package org.aphreet.c3.platform.remote.rest.command
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.remote.rest.Command
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.auth.exception.AuthFailedException
+import org.aphreet.c3.platform.auth.{ACCESS, AuthenticationManager}
 
 class HttpCommand(val req:HttpServletRequest, val resp:HttpServletResponse)
         extends Command(req.getRequestURI, req.getContextPath){
+
+  var authManager:AuthenticationManager = _
+
+  lazy val currentUser:String = getCurrentUser
+
+  @Autowired
+  def setAuthenticationManager(manager:AuthenticationManager) = {
+    authManager = manager
+  }
+
+  private def getCurrentUser:String = {
+
+    val up = getUsernameAndPassword
+
+    var username = up._1
+    val password = up._2
+
+    if(username == null && password == null){
+
+      val anonymous = authManager.get("anonymous")
+
+      if(anonymous != null && anonymous.enabled)
+        return "anonymous"
+
+    }else if(username != null && password != null){
+      val user = authManager.authenticate(username, password, ACCESS)
+
+      if(user != null)
+        return user.name
+
+    }
+
+    throw new AuthFailedException
+  }
+
+  def getUsernameAndPassword:(String,String) = {
+    var username:String = req.getParameter("c3.username")
+    val password:String = req.getParameter("c3.password")
+
+    (username, password)
+  }
+
 
   protected def badRequest = resp.setStatus(HttpServletResponse.SC_BAD_REQUEST)
 

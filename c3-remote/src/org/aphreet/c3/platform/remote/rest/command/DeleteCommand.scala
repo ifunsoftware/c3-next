@@ -33,6 +33,8 @@ package org.aphreet.c3.platform.remote.rest.command
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.exception.{StorageIsNotWritableException, ResourceNotFoundException}
 import org.aphreet.c3.platform.remote.rest.{ResourceRequest, Command}
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.auth.exception.AuthFailedException
 
 
 class DeleteCommand(override val req:HttpServletRequest, override val resp:HttpServletResponse)
@@ -42,6 +44,14 @@ class DeleteCommand(override val req:HttpServletRequest, override val resp:HttpS
     try{
 
       if(query != null && requestType == ResourceRequest){
+
+        val resource = accessManager.get(query)
+
+        resource.systemMetadata.get(Resource.MD_USER) match {
+          case Some(u) => if(u != currentUser) throw new AuthFailedException
+          case None =>
+        }
+
         accessManager.delete(query)
         ok
       }else badRequest

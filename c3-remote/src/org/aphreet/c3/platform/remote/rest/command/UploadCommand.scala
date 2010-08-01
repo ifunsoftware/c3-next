@@ -44,72 +44,94 @@ import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.remote.rest.{ResourceRequest, URIParseException, Command}
 
 
-abstract class UploadCommand(override val req:HttpServletRequest,
-                  override val resp:HttpServletResponse,
-                  val context:ServletContext) extends HttpCommand(req, resp){
-
+abstract class UploadCommand(override val req: HttpServletRequest,
+                             override val resp: HttpServletResponse,
+                             val context: ServletContext) extends HttpCommand(req, resp) {
   val metadata = new HashMap[String, String]
-  var data:DataWrapper = null
-  var tmpFile:File = null
+  var data: DataWrapper = null
+  var tmpFile: File = null
   val factory = newDiskFileItemFactory
 
-  override def execute{
+  var username:String = null
+  var password:String = null
 
-    try{
-      if(requestType == ResourceRequest && ServletFileUpload.isMultipartContent(req)){
+  override def execute {
+
+    try {
+      if (requestType == ResourceRequest && ServletFileUpload.isMultipartContent(req)) {
 
         val upload = new ServletFileUpload(factory)
 
         val iterator = upload.parseRequest(req).iterator
 
-        while(iterator.hasNext){
+        while (iterator.hasNext) {
           val item = iterator.next.asInstanceOf[FileItem]
 
-          if(item.isFormField) processField(item)
+          if (item.isFormField) processField(item)
           else processFile(item)
 
         }
 
         completeUpload
 
-      }else badRequest
-    }catch{
-      case e:WrongRequestException => badRequest
-      case e:URIParseException => badRequest
-      case e:ResourceNotFoundException => notFound
+      } else badRequest
+    } catch {
+      case e: WrongRequestException => badRequest
+      case e: URIParseException => badRequest
+      case e: ResourceNotFoundException => notFound
     }
   }
 
-  def processField(item:FileItem) = {
-    val value = item.getString("UTF-8")//correct string in UTF-16
-    metadata.put(item.getFieldName, value)
 
-
-/*    System.err.println("Upload:")
-    System.err.println(value.getBytes.toString)
-    System.err.println(value)
-
-    val bytes:Array[Byte] = value.getBytes("UTF-8")
-    System.err.write(bytes)
-    System.err.println
-*/
+  override def getUsernameAndPassword: (String, String) = {
+    (username, password)
   }
 
-  def processFile(item:FileItem) = {
+  def processField(item: FileItem) = {
 
-    if(data != null) throw new WrongRequestException
+    val value = item.getString("UTF-8") //correct string in UTF-16
 
-    if(item.isInMemory){
-      data = DataWrapper.wrap(item.get)
+    if (!item.getFieldName.startsWith("c3.")) {
+
+      metadata.put(item.getFieldName, value)
+
+
+      /*    System.err.println("Upload:")
+          System.err.println(value.getBytes.toString)
+          System.err.println(value)
+
+          val bytes:Array[Byte] = value.getBytes("UTF-8")
+          System.err.write(bytes)
+          System.err.println
+      */
     }else{
+      item.getFieldName match {
+        case "c3.username" =>
+          if(!value.isEmpty)
+            username = value
+        case "c3.password" =>
+          if(!value.isEmpty)
+            password = value
+      }
+
+    }
+  }
+
+  def processFile(item: FileItem) = {
+
+    if (data != null) throw new WrongRequestException
+
+    if (item.isInMemory) {
+      data = DataWrapper.wrap(item.get)
+    } else {
       tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
       item.write(tmpFile)
       data = DataWrapper.wrap(tmpFile)
     }
   }
 
-  def completeUpload{
-    try{
+  def completeUpload {
+    try {
       val version = new ResourceVersion
       version.data = data
 
@@ -118,19 +140,21 @@ abstract class UploadCommand(override val req:HttpServletRequest,
       resource.metadata ++ metadata
       resource.addVersion(version)
 
-     processUpload(resource)
-
-    }finally{
-      if(tmpFile != null) tmpFile.delete
+      processUpload(resource)
+    } catch {
+      case e: ResourceNotFoundException =>
+        notFound
+    } finally {
+      if (tmpFile != null) tmpFile.delete
     }
   }
 
-  def getResource:Resource
+  def getResource: Resource
 
-  def processUpload(resource:Resource)
+  def processUpload(resource: Resource)
 
-  def newDiskFileItemFactory:DiskFileItemFactory = {
-    val fileCleaningTacker:FileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(context)
+  def newDiskFileItemFactory: DiskFileItemFactory = {
+    val fileCleaningTacker: FileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(context)
 
     val factory = new DiskFileItemFactory()
     factory.setFileCleaningTracker(fileCleaningTacker)

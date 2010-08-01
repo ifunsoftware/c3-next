@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.remote.rest
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.access.{AccessManager}
+import org.aphreet.c3.platform.auth.AuthenticationManager
 
 
 class Command(val url:String, val contextPath:String) extends SpringBeanAutowiringSupport {
@@ -43,7 +44,7 @@ class Command(val url:String, val contextPath:String) extends SpringBeanAutowiri
   var resourcePart:ResourcePart = ResourceMetadata
 
 
-  var accessManager:AccessManager = null
+  var accessManager:AccessManager = _
 
   @Autowired
   def setAccessManager(manager:AccessManager) = {
@@ -51,6 +52,10 @@ class Command(val url:String, val contextPath:String) extends SpringBeanAutowiri
   }
 
   {
+    parseUrl
+  }
+
+  def parseUrl = {
     val cleanUrl = url.replaceFirst(contextPath, "").replaceFirst("^/+", "").replaceFirst("/+$", "")
 
     //"resource/1231-1234-1234-1234/data/27
@@ -77,7 +82,6 @@ class Command(val url:String, val contextPath:String) extends SpringBeanAutowiri
         }
       }
     }else throw new URIParseException("Empty path")
-
   }
 
 

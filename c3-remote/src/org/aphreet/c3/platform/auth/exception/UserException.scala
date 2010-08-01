@@ -42,3 +42,4 @@ class UserException(override val message:String, override val cause:Throwable) e
 
 class UserNotFoundException extends UserException
 class UserExistsException extends UserException
+class AuthFailedException extends UserException

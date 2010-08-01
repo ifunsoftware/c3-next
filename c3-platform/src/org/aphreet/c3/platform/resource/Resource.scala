@@ -212,6 +212,7 @@ object Resource {
   val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
   val MD_POOL = "c3.pool"
   val MD_TAGS = "c3.tags"
+  val MD_USER = "c3.user"
   val MD_ENCODING = "UTF-8"
   
   def fromByteArray(bytes:Array[Byte]):Resource = {

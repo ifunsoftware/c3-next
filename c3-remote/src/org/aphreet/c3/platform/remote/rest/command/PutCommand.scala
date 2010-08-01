@@ -33,6 +33,8 @@ package org.aphreet.c3.platform.remote.rest.command
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import javax.servlet.ServletContext
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.aphreet.c3.platform.auth.exception.AuthFailedException
 
 class PutCommand(override val req:HttpServletRequest,
                   override val resp:HttpServletResponse,
@@ -41,8 +43,20 @@ class PutCommand(override val req:HttpServletRequest,
 
   override def getResource:Resource = {
 
-    if(query != null) accessManager.get(query)
-    else throw new WrongRequestException
+    if(query == null) throw new WrongRequestException
+
+
+    val resource = accessManager.get(query)
+
+    resource.systemMetadata.get(Resource.MD_USER) match{
+      case Some(u) =>
+        if(u != currentUser)
+          throw new AuthFailedException
+        else
+          resource
+      case None => resource
+    }
+
   }
 
   def processUpload(resource:Resource) = {
