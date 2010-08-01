@@ -35,9 +35,12 @@ import org.aphreet.c3.platform.statistics._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.apache.commons.logging.LogFactory
 
 @Component("statisticsManager")
 class StatisticsManagerImpl extends StatisticsManager{
+
+  val log = LogFactory.getLog(getClass)
 
   val statistics = new HashMap[String, Any]
 
@@ -64,7 +67,7 @@ class StatisticsManagerImpl extends StatisticsManager{
                 statistics.put(key, string.asInstanceOf[Long] + delta)
               }catch{
                 case e => {
-
+                  log warn "Failed to store statistics " + key
                 }
               }
             }
