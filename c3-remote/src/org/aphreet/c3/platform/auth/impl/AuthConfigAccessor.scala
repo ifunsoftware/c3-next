@@ -60,8 +60,8 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
   def defaultConfig:Map[String, User] = {
     val map = new HashMap[String, User]
 
-    map.put("admin", User("admin", "5f4dcc3b5aa765d61d8327deb882cf99", MANAGEMENT))
-    map.put("anonymous", User("anonymous", "", ACCESS))
+    map.put("admin", User("admin", "5f4dcc3b5aa765d61d8327deb882cf99", MANAGEMENT, true))
+    map.put("anonymous", User("anonymous", "", ACCESS, false))
 
     map
   }
@@ -78,8 +78,9 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
       val name = getValue(userNode.asInstanceOf[MapNode], "name")
       val password = getValue(userNode.asInstanceOf[MapNode], "password")
       val role = getValue(userNode.asInstanceOf[MapNode], "role")
+      val enabled = getBoolValue(userNode.asInstanceOf[MapNode], "enabled")
 
-      val user = new User(name, password, UserRole.fromString(role))
+      val user = new User(name, password, UserRole.fromString(role), enabled)
 
       map.put(name, user)
     }
@@ -110,6 +111,8 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
           writer.value(user.password)
           writer.key("role")
           writer.value(user.role.name)
+          writer.key("enabled")
+          writer.value(user.enabled)
           writer.endObject
         }
         writer.endArray
@@ -130,5 +133,13 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
   private def getValue(node: MapNode, key: String): String = {
     node.getNode(key).asInstanceOf[ScalarNode].getValue[String]
+  }
+
+  private def getBoolValue(node: MapNode, key: String): Boolean = {
+    try{
+      node.getNode(key).asInstanceOf[ScalarNode].getValue[Boolean]
+    }catch{
+      case e => true
+    }
   }
 }

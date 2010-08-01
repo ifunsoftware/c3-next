@@ -27,11 +27,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.remote.api.management
 
-package org.aphreet.c3.platform.remote.api.access
+import reflect.BeanProperty
 
-trait PlatformAccessAdapter{
+class UserDescription(
+  @BeanProperty var name:String,
+  @BeanProperty var role:String,
+  @BeanProperty var enabled:java.lang.Boolean) extends java.io.Serializable{
 
-  def getResourceAsString(ra:String):String
-  
+  def this() = this(null, null, null)
+
 }

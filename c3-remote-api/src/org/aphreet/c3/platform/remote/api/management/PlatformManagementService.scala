@@ -1,15 +1,9 @@
 package org.aphreet.c3.platform.remote.api.management
 
+import javax.jws.WebService
 
 
-/**
- * Created by IntelliJ IDEA.
- * User: Aphreet
- * Date: Feb 22, 2010
- * Time: 1:13:57 PM
- * To change this template use File | Settings | File Templates.
- */
-
+@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
 trait PlatformManagementService {
 
   def listStorages:Array[StorageDescription]
@@ -28,29 +22,29 @@ trait PlatformManagementService {
 
   def platformProperties:Array[Pair]
 
-  def listTasks:Array[TaskDescription]
+  def listTasks:Array[RemoteTaskDescription]
 
-  def listFinishedTasks:Array[TaskDescription]
+  def listFinishedTasks:Array[RemoteTaskDescription]
 
   def setTaskMode(taskId:String, mode:String)
 
   def listTypeMappigs:Array[TypeMapping]
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short)
+  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean)
 
   def removeTypeMapping(mimeType:String)
 
   def listSizeMappings:Array[SizeMapping]
 
-  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer)
+  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean)
 
   def removeSizeMapping(size:java.lang.Long)
 
-  def listUsers:Array[Pair]
+  def listUsers:Array[UserDescription]
 
   def addUser(name:String, password:String, role:String)
 
-  def updateUser(name:String, password:String, role:String)
+  def updateUser(name:String, password:String, role:String, enabled:java.lang.Boolean)
 
   def deleteUser(name:String)
 

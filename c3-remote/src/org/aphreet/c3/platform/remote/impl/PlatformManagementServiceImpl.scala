@@ -30,39 +30,36 @@
 
 package org.aphreet.c3.platform.remote.impl
 
+import org.aphreet.c3.platform.task.{RUNNING, TaskState, PAUSED, TaskDescription}
+import org.aphreet.c3.platform.remote.api.management._
+import org.aphreet.c3.platform.remote.api.RemoteException
+import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
+import org.aphreet.c3.platform.common.Constants._
+import org.aphreet.c3.platform.storage._
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.task.{RUNNING, PAUSED, TaskState, TaskDescription}
-import org.aphreet.c3.platform.storage.{U, RO, RW}
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.apache.commons.logging.LogFactory
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.common.Constants._
-import org.aphreet.c3.platform.remote.api.RemoteException
+import org.aphreet.c3.platform.exception.{PlatformException, StorageException}
+import javax.jws.{WebMethod, WebService}
 import scala.collection.jcl.Map
-import org.aphreet.c3.platform.exception.{StorageException, PlatformException}
-import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
-import org.aphreet.c3.platform.remote.api.management.{StorageDescription,
-  TaskDescription => RemoteTaskDescription,
-  PlatformManagementAdapter,
-  TypeMapping,
-  SizeMapping,
-  VolumeDescription,
-  Pair}
+import org.springframework.stereotype.Component
 
-@Component("platformManagementAdapter")
-class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
-  val log = LogFactory getLog getClass
+@Component("platformManagementService")
+@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
+class PlatformManagementServiceImpl extends PlatformManagementService{
 
-  var managementEndpoint:PlatformManagementEndpoint = null
+  private val log = LogFactory getLog getClass
 
-  var authenticationManager:AuthenticationManager = _
+  private var managementEndpoint:PlatformManagementEndpoint = null
+
+  private var authenticationManager:AuthenticationManager = _
 
   @Autowired
-  def setManagementEndpoint(endPoint:PlatformManagementEndpoint)
+  private def setManagementEndpoint(endPoint:PlatformManagementEndpoint)
   = {managementEndpoint = endPoint}
 
   @Autowired
-  def setAuthenticationManager(manager:AuthenticationManager) = {
+  private def setAuthenticationManager(manager:AuthenticationManager) = {
     authenticationManager = manager
   }
 
@@ -148,13 +145,12 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
   def listTypeMappigs:Array[TypeMapping] =
     catchAll(() => {
       (for(entry <- managementEndpoint.listTypeMappings)
-        yield new TypeMapping(entry._1, entry._2, if(entry._3) 1.shortValue else 0.shortValue )).toArray
+        yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
     })
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Short) =
+  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean) =
     catchAll(() => {
-      val vers = versioned == 1
-      managementEndpoint.addTypeMapping((mimeType, storage, vers))
+      managementEndpoint.addTypeMapping((mimeType, storage, versioned.booleanValue))
     })
 
   def removeTypeMapping(mimeType:String) =
@@ -165,13 +161,12 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
   def listSizeMappings:Array[SizeMapping] =
     catchAll(() => {
       (for(entry <- managementEndpoint.listSizeMappings)
-        yield new SizeMapping(entry._1, entry._2, if(entry._3) 1 else 0)).toArray
+        yield new SizeMapping(entry._1, entry._2, entry._3)).toArray
     })
 
-  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Integer) =
+  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean) =
     catchAll(() => {
-      val vers = versioned == 1
-      managementEndpoint.addSizeMapping((size.longValue, storage, vers))
+      managementEndpoint.addSizeMapping((size.longValue, storage, versioned.booleanValue))
     })
 
   def removeSizeMapping(size:java.lang.Long) =
@@ -179,9 +174,9 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
       managementEndpoint.removeSizeMaping(size.longValue)
     })
 
-  def listUsers:Array[Pair] =
+  def listUsers:Array[UserDescription] =
     catchAll(() => {
-      authenticationManager.list.map(e => new Pair(e.name, e.role.name)).toSeq.toArray
+      authenticationManager.list.map(e => new UserDescription(e.name, e.role.name, e.enabled)).toSeq.toArray
     })
 
   def addUser(name:String, password:String, role:String) = {
@@ -190,9 +185,9 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
     })
   }
 
-  def updateUser(name:String, password:String, role:String) = {
+  def updateUser(name:String, password:String, role:String, enabled:java.lang.Boolean) = {
     catchAll(() => {
-      authenticationManager.update(name, password, UserRole.fromString(role))
+      authenticationManager.update(name, password, UserRole.fromString(role), enabled.booleanValue)
     })
   }
 
@@ -226,4 +221,8 @@ class PlatformManagementAdapterImpl extends PlatformManagementAdapter{
       }
     }
   }
+
+  @WebMethod{val exclude=true}
+  override def $tag:Int = super.$tag
+
 }

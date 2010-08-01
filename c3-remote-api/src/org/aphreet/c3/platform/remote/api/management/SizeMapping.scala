@@ -13,7 +13,7 @@ import reflect.BeanProperty
 class SizeMapping(
         @BeanProperty var size:java.lang.Long,
         @BeanProperty var storage:String,
-        @BeanProperty var versioned:java.lang.Integer) extends java.io.Serializable{
+        @BeanProperty var versioned:java.lang.Boolean) extends java.io.Serializable{
 
   def this() = this(null, null, null)
 }

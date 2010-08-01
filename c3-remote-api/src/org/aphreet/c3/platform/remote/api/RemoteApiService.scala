@@ -27,14 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.api.ws
 
-import org.aphreet.c3.platform.remote.api.management._
+package org.aphreet.c3.platform.remote.api
+
 import javax.jws.WebService
 
+@WebService{val serviceName="RemoteApiService", val targetNamespace="remote.c3.aphreet.org"}
+trait RemoteApiService{
 
-@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
-trait PlatformWSManagementEndpoint extends PlatformManagementService{
-
-
+  def getVersion:String
+  
 }

@@ -30,7 +30,7 @@ package org.aphreet.c3.platform.auth
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-sealed case class User(var name:String, var password:String, var role:UserRole){
+sealed case class User(var name:String, var password:String, var role:UserRole, var enabled:Boolean){
 
 
 }

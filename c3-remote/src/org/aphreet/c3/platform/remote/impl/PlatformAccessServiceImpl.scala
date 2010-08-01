@@ -27,19 +27,21 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.remote.impl
 
-import org.aphreet.c3.platform.remote.api.access.PlatformAccessAdapter
+import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import java.util.HashMap
 import scala.collection.jcl.{HashMap => JMap}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.access.AccessManager
+import javax.jws.{WebService, WebMethod}
 
-
-@Component("platformAccessAdapter")
-class PlatformAccessAdapterImpl extends PlatformAccessAdapter{
+@Component("platformAccessService")
+@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
+class PlatformAccessServiceImpl extends PlatformAccessService{
 
   private var accessManager:AccessManager = _
 
@@ -59,24 +61,7 @@ class PlatformAccessAdapterImpl extends PlatformAccessAdapter{
     }
   }
 
-  def getMetadata(ra:String):HashMap[String, String] = {
-
-    try{
-
-      val resource = accessManager get ra
-
-      if(resource != null){
-        val map = new JMap[String, String]
-
-        map ++ resource.metadata
-
-        map.underlying
-      }else{
-        null
-      }
-    }catch{
-      case e=> throw new RemoteException(e)
-    }
-  }
+  @WebMethod{val exclude=true}
+  override def $tag:Int = super.$tag
 
 }

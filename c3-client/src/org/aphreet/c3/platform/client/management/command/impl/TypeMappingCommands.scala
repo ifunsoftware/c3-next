@@ -50,9 +50,9 @@ class AddTypeMappingCommand extends Command{
 
       val mimeType = params.first
       val storageType = params.tail.first
-      val versioned = if(params(2) == "true") 1 else 0
+      val versioned = (params(2) == "true")
 
-      management.addTypeMapping(mimeType, storageType, versioned.shortValue)
+      management.addTypeMapping(mimeType, storageType, versioned)
 
       "Type mapping added"
     }
@@ -84,7 +84,7 @@ class ListTypeMappingCommand extends Command{
     val builder = new StringBuilder
 
     for(mapping <- management.listTypeMappigs)
-      builder.append(String.format("%20s %20s %d\n", mapping.mimeType, mapping.storage, mapping.versioned))
+      builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
 
 
     builder.toString

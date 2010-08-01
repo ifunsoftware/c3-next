@@ -35,7 +35,7 @@ trait AuthenticationManager{
 
   def authenticate(username:String, password:String):User
 
-  def update(username:String, password:String, role:UserRole)
+  def update(username:String, password:String, role:UserRole, enabled:Boolean)
 
   def create(username:String, password:String, role:UserRole)
 

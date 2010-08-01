@@ -28,27 +28,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.api.ws.impl
+package org.aphreet.c3.platform.remote.impl
 
-import javax.jws.{WebService, WebMethod}
-import org.aphreet.c3.platform.remote.api.access.{PlatformAccessAdapter}
-import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.remote.api.RemoteApiService
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.remote.api.ws.PlatformWSAccessEndpoint
-import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.config.VersionManager
+import javax.jws.{WebMethod, WebService}
 
+@Component("remoteApiService")
+@WebService{val serviceName="RemoteApiService", val targetNamespace="remote.c3.aphreet.org"}
+class RemoteApiServiceImpl extends RemoteApiService{
 
-@Component
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
-class PlatformWSAccessEndpointImpl extends SpringBeanAutowiringSupport with PlatformWSAccessEndpoint{
-
-  private var accessAdapter:PlatformAccessAdapter = null
+  private var versionManager:VersionManager = null
 
   @Autowired
-  private def setAccessAdapter(adapter:PlatformAccessAdapter) = {accessAdapter = adapter}
+  private def setVersionManager(manager:VersionManager) = {versionManager = manager}
 
-  @WebMethod
-  override def getResourceAsString(ra:String):String = accessAdapter.getResourceAsString(ra)
+  def getVersion:String = versionManager.listC3Modules.get("org.aphreet.c3.platform.remote.api") match {
+    case Some(v) => v
+    case None => "Unknown"
+  }
 
   @WebMethod{val exclude=true}
   override def $tag:Int = super.$tag

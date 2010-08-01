@@ -18,15 +18,15 @@
 
     <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
         <property name="serviceName" value="PlatformRmiManagementEndPoint" />
-        <property name="service" ref="platformRmiManagementService" />
-        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.management.PlatformRmiManagementService" />
+        <property name="service" ref="platformManagementService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.management.PlatformManagementService" />
         <property name="registryPort" value="1299" />
     </bean>
 
     <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
         <property name="serviceName" value="PlatformRmiAccessEndPoint" />
-        <property name="service" ref="platformRmiAccessService" />
-        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.rmi.access.PlatformRmiAccessService" />
+        <property name="service" ref="platformAccessService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.access.PlatformAccessService" />
         <property name="registryPort" value="1299" />
     </bean>
 

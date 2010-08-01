@@ -10,7 +10,7 @@ import reflect.BeanProperty
  * To change this template use File | Settings | File Templates.
  */
 
-class TaskDescription(
+class RemoteTaskDescription(
         @BeanProperty var id:String,
         @BeanProperty var name:String,
         @BeanProperty var status:String,

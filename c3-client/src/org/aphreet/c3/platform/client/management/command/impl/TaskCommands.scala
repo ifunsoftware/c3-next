@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.TaskDescription
+import org.aphreet.c3.platform.remote.api.management.RemoteTaskDescription
 
 object TaskCommands extends Commands{
 
@@ -68,13 +68,13 @@ abstract class ListTasksCommand extends Command {
 
   }
 
-  def getTasks:Array[TaskDescription]
+  def getTasks:Array[RemoteTaskDescription]
 
 }
 
 class ListRunningTasksCommand extends ListTasksCommand {
 
-  override def getTasks:Array[TaskDescription] = management.listTasks
+  override def getTasks:Array[RemoteTaskDescription] = management.listTasks
 
   override def name = List("list", "tasks")
 
@@ -82,7 +82,7 @@ class ListRunningTasksCommand extends ListTasksCommand {
 
 class ListFinishedTasksCommand extends ListTasksCommand {
 
-  override def getTasks:Array[TaskDescription] = management.listFinishedTasks
+  override def getTasks:Array[RemoteTaskDescription] = management.listFinishedTasks
 
   override def name = List("list", "finished", "tasks")
 

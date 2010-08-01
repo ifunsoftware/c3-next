@@ -59,7 +59,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
     users.get(username) match {
       case Some(user) => {
-        if (md5hash(password) == user.password) {
+        if (user.enabled && md5hash(password) == user.password) {
           user
         } else {
           null
@@ -69,11 +69,12 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def update(username: String, password: String, role: UserRole) = {
+  def update(username: String, password: String, role: UserRole, enabled:Boolean) = {
     users.get(username) match {
       case Some(user) => {
         user.password = md5hash(password)
         user.role = role
+        user.enabled = enabled
         users.synchronized {
           configAccessor.store(users)
         }
@@ -86,7 +87,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
-        val user = new User(username, md5hash(password), role)
+        val user = new User(username, md5hash(password), role, true)
         users.synchronized {
           users.put(username, user)
           configAccessor.store(users)

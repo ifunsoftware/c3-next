@@ -51,7 +51,7 @@ class AddSizeMappingCommand extends Command {
 
       val size = params.first.toLong
       val storageType = params.tail.first
-      val versioned = if (params(2) == "true") 1 else 0
+      val versioned = (params(2) == "true")
 
 
       management.addSizeMapping(size, storageType, versioned)
@@ -85,7 +85,7 @@ class ListSizeMappingCommand extends Command {
     val builder = new StringBuilder
 
     for (mapping <- management.listSizeMappings)
-      builder.append(String.format("%10d %20s %d\n", mapping.size, mapping.storage, mapping.versioned))
+      builder.append(String.format("%10d %20s %b\n", mapping.size, mapping.storage, mapping.versioned))
 
 
     builder.toString

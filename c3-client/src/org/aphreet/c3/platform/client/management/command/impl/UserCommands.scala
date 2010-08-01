@@ -48,11 +48,11 @@ class ListUsersCommand extends Command {
 
     val builder = new StringBuilder
 
-    builder.append(String.format("%-12s %-10s\n", "User name", "Type"))
+    builder.append(String.format("%-12s %-10s %-8s\n", "User name", "Type", "Enabled"))
 
     for(user <- users){
 
-      builder.append(String.format("%-12s %-10s\n", user.key, user.value))
+      builder.append(String.format("%-12s %-10s %-8b\n", user.name, user.role, user.enabled))
 
     }
 
@@ -83,12 +83,12 @@ class AddUserCommand extends Command {
 class UpdateUserCommand extends Command {
   def execute = {
     if (params.size < 3) {
-      "Not enought params.\nUsage: update user <name> <password> <type>"
+      "Not enought params.\nUsage: update user <name> <password> <type> <enabled>"
     } else {
 
       val array = params.toArray
 
-      management.addUser(array(0), array(1), array(2))
+      management.updateUser(array(0), array(1), array(2), (array(3) == "true"))
       "User created"
     }
 
