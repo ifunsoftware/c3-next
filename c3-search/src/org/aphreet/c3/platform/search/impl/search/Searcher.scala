@@ -75,9 +75,6 @@ class Searcher(val indexPath: Path) extends Actor{
 
   def search(sourceQuery: String): List[SearchResultEntry] = {
 
-    System.err.write(sourceQuery.getBytes("UTF-8"))
-    System.err.println
-
     val analyzer = new StandardAnalyzer
 
     val query = new QueryParser(CONTENT, analyzer).parse(sourceQuery)

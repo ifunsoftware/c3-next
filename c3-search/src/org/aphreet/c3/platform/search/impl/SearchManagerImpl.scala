@@ -119,6 +119,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
     if (fileIndexer == null) {
 
       fileIndexer = new FileIndexer(indexPath, searcher)
+
+      searcher = new Searcher(indexPath)
+      fileIndexer.searcher = searcher
+      searcher.start
+
       fileIndexer.start
 
       ramIndexers = new RamIndexer(fileIndexer, 1) :: ramIndexers
@@ -133,10 +138,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
       indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
 
+
+
       indexScheduler.start
 
-      searcher = new Searcher(indexPath)
-      searcher.start
+
     }
   }
 

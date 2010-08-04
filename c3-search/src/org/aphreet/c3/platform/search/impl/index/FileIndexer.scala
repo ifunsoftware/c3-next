@@ -41,9 +41,11 @@ import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
 import org.apache.lucene.index.{Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
 
-class FileIndexer(val path:Path, val searcher:Searcher) extends Actor{
+class FileIndexer(val path:Path) extends Actor{
 
   val log = LogFactory.getLog(getClass)
+
+  var searcher:Searcher = null
 
   val indexWriter:IndexWriter = {
 

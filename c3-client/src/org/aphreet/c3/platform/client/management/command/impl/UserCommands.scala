@@ -89,7 +89,7 @@ class UpdateUserCommand extends Command {
       val array = params.toArray
 
       management.updateUser(array(0), array(1), array(2), (array(3) == "true"))
-      "User created"
+      "User updated"
     }
 
   }
