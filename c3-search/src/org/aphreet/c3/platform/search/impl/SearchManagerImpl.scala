@@ -278,6 +278,10 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 
   val log = LogFactory.getLog(getClass)
 
+  {
+    this.setDaemon(true)
+  }
+
   override def run{
 
     log info "Started scheduler"

@@ -11,6 +11,7 @@ abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
 
   def startObjectCounter = {
     counter = new Thread(new ObjectCounter(this))
+    counter.setDaemon(true)
     counter.start
     log info "Started object counter for storage " + this.id
   }
