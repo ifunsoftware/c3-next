@@ -118,9 +118,6 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   def initialize() {
     if (fileIndexer == null) {
 
-      searcher = new Searcher(indexPath)
-      searcher.start
-
       fileIndexer = new FileIndexer(indexPath, searcher)
       fileIndexer.start
 
@@ -137,6 +134,9 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
 
       indexScheduler.start
+
+      searcher = new Searcher(indexPath)
+      searcher.start
     }
   }
 
