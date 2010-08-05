@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component
 
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.query._
+import javax.annotation.PostConstruct
 
 @Component("queryManager")
 class QueryManagerImpl extends QueryManager{
@@ -47,7 +48,8 @@ class QueryManagerImpl extends QueryManager{
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
-    
+
+  @PostConstruct
   def init = {
     log info "Staring QueryManager"
   }

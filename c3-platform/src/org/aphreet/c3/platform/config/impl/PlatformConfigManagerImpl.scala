@@ -57,7 +57,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
 
-  private var currentConfig: Map[String, String] = null;
+  private var currentConfig: Map[String, String] = null
 
   var configAccessor: PlatformConfigAccessor = _
 
@@ -190,27 +190,12 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     }
   }
 
-  override
-  def registerPropertyListener(listener: PlatformPropertyListener) = {
-
-    this ! RegisterMsg(listener)
-
-  }
-
-  override
-  def unregisterPropertyListener(listener: PlatformPropertyListener) = {
-
-    this ! UnregisterMsg(listener)
-
-  }
-
 
   def getPlatformProperties: Map[String, String] = {
 
     if (currentConfig == null) {
       currentConfig = configAccessor.load
     }
-    //Collections.unmodifiableMap[String, String](currentConfig)
     currentConfig
   }
 

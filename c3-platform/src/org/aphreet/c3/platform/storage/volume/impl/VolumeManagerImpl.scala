@@ -138,7 +138,7 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
   class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Task {
 
     override def step{
-      log.debug("Updating volume state")
+      log.trace("Updating volume state")
 
       val newVolumeList = dataProvider.getVolumeList
 

@@ -37,9 +37,12 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessManager}
 import org.aphreet.c3.platform.common.msg.{RegisterListenerMsg, UnregisterListenerMsg, DestroyMsg}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import org.apache.commons.logging.LogFactory
 
 @Component
 class AccessCounter extends Actor{
+
+  val log = LogFactory.getLog(getClass)
 
   var accessManager:AccessManager = _
 
@@ -50,15 +53,20 @@ class AccessCounter extends Actor{
 
   @Autowired
   def setStatisticsManager(manager:StatisticsManager) = {statisticsManger = manager}
-  
+
+  {
+    this.start
+  }
+
   @PostConstruct
   def init{
-    this.start
+    log info "Starting AccessCounter"
     accessManager ! RegisterListenerMsg(this)
   }
 
   @PreDestroy
   def destroy{
+    log info "Stopping AccessCounter"
     accessManager ! UnregisterListenerMsg(this)
     this ! DestroyMsg
   }

@@ -84,7 +84,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
   def count:Long = objectCount;
 
   override protected def updateObjectCount = {
-    log debug "Updating object count" 
+    log trace "Updating object count" 
     val cnt = database.count
     this.synchronized{
       objectCount = cnt  

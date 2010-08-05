@@ -44,8 +44,8 @@ class StatisticsManagerImpl extends StatisticsManager{
 
   val statistics = new HashMap[String, Any]
 
-  @PostConstruct
-  def init{
+  {
+    log info "Starting Statistics manager"
     this.start
   }
 

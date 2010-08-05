@@ -101,7 +101,7 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
                 createNewWriter
             }
           }else{
-            log debug num + ": Writer is empty, flush skipped"
+            log trace num + ": Writer is empty, flush skipped"
           }
 
         }

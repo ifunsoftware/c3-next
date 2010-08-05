@@ -61,8 +61,7 @@ class AccessManagerImpl extends AccessManager{
 
   val log = LogFactory.getLog(getClass)
 
-  @PostConstruct
-  def init{
+  {
     log info "Starting AccessManager"
     this.start
   }

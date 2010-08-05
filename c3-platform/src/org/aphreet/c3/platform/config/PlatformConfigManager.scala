@@ -43,9 +43,9 @@ trait PlatformConfigManager extends Actor{
 
  def configDir:File
 
- def registerPropertyListener(listener:PlatformPropertyListener)
+ //def registerPropertyListener(listener:PlatformPropertyListener)
 
- def unregisterPropertyListener(listener:PlatformPropertyListener)
+ //def unregisterPropertyListener(listener:PlatformPropertyListener)
 
  def getPlatformProperties:Map[String, String]
 

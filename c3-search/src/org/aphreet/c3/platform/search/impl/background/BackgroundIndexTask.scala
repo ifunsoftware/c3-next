@@ -51,10 +51,17 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   //Initial storage list is all storages in storageManager
   var storagesToIndex:List[Storage] = List()
 
+  val startTime = System.currentTimeMillis + 3 * 60 * 1000
+
+  {
+    log info "Creating BackgroundIndexTask"
+    log info "Waiting for 3 minutes to get system in state"
+  }
+
+  override def canStart:Boolean = System.currentTimeMillis > startTime
+
   override def preStart = {
     log info "Starting BackgroundIndexTask"
-    log info "Waiting for 2 minutes to get system in state"
-    Thread.sleep(2 * 60 * 1000)
     storagesToIndex = storageManager.listStorages
   }
 
