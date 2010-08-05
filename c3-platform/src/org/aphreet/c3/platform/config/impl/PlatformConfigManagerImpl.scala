@@ -45,7 +45,7 @@ import org.aphreet.c3.platform.common.Path
 import actors.Actor._
 import javax.annotation.{PreDestroy, PostConstruct}
 import collection.mutable.{HashMap, HashSet}
-import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
@@ -134,7 +134,9 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
                   setPlatformProperty(paramName, defaultParamValue)
             }
           }
-
+          reply{
+            DoneMsg
+          }
           log debug propertyListeners.toString
         }
 

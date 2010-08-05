@@ -33,11 +33,9 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
 
   @PostConstruct
   override def init = {
-    super.init
-
     log info "Post construct callback invoked"
-
-    configManager ! RegisterMsg(this)
+    configManager !? RegisterMsg(this) //sync call. Setting properties before opening storages
+    super.init
   }
 
   @PreDestroy
