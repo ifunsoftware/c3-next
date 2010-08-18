@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
 import org.aphreet.c3.platform.remote.api.management.Pair
-import collection.immutable.TreeSet
+import collection.immutable.HashSet
 
 object PlatformPropertiesCommands extends Commands {
 
@@ -68,7 +68,7 @@ class ListPlatformPropertiesCommand extends Command{
   val footer = "|--------------------------------------------|----------------------------------------------------|\n"
 
   def execute:String = {
-    val set = new TreeSet[Pair]
+    val set = new HashSet[Pair]
 
     (set ++ management.platformProperties)
       .map(e => String.format("| %-42s | %-50s |\n", e.key, e.value)).foldLeft(header)(_ + _) + footer
