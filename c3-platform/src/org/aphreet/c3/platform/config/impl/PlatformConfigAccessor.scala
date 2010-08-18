@@ -29,13 +29,12 @@
  */
 package org.aphreet.c3.platform.config.impl
 
-import org.aphreet.c3.platform.common.{JSONFormatter}
+import org.aphreet.c3.platform.common.JSONFormatter
 
 import java.io.{File, StringWriter}
 
-
-import scala.collection.jcl.Set
 import scala.collection.immutable.Map
+import scala.collection.JavaConversions
 
 import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl
@@ -60,7 +59,7 @@ class PlatformConfigAccessor extends ConfigAccessor[Map[String, String]] {
 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
-    for (key <- Set.apply(node.getKeys)) {
+    for (key <- JavaConversions.asSet(node.getKeys)) {
       val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
       map = map + ((key, value))
     }

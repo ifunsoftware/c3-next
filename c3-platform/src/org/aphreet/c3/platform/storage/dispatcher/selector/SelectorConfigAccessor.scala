@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.storage.dispatcher.selector
 
 import java.io.{StringWriter, File}
 
-import collection.jcl.Set
+import collection.JavaConversions
 
 import org.aphreet.c3.platform.common.JSONFormatter
 import org.aphreet.c3.platform.config.ConfigAccessor
@@ -57,8 +57,8 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
     val entries =
-    for (key <- Set.apply(node.getKeys))
-    yield (
+      for (key <- JavaConversions.asSet(node.getKeys))
+        yield (
             keyFromString(key),
             (
                     getArrayValue[String](node, key, 0),

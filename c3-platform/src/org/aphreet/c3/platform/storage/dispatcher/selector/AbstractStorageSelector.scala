@@ -48,8 +48,8 @@ abstract class AbstractStorageSelector[T] extends StorageSelector{
   }
   
   def removeEntry(key:T) = {
-	configAccessor.update(_.filter(_._1 != key))
-	updateConfig(configAccessor.load)
+	  configAccessor.update(_.filter(_._1 != key))
+	  updateConfig(configAccessor.load)
   }
   
   protected def updateConfig(config:Map[T, (String, Boolean)])

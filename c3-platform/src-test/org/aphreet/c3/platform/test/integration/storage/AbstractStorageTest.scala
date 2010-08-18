@@ -38,6 +38,7 @@ import scala.collection.mutable.HashMap
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 abstract class AbstractStorageTest extends AbstractTestWithFileSystem{
 

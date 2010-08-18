@@ -67,7 +67,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     configAccessor = accessor
   }
 
-  @Autowired {val required = false}
+  @Autowired (required = false)
   def setPlatformPropertyListeners(listeners: JSet[PlatformPropertyListener]) = {
     foundListeners ++ Set.apply(listeners)
   }

@@ -8,6 +8,8 @@ import org.aphreet.c3.platform.task.TaskManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.migration.MigrationManager
 
 @Component
 class MigrationManagerImpl extends MigrationManager{

@@ -3,7 +3,7 @@ package org.aphreet.c3.platform.remote.api.management
 import javax.jws.WebService
 
 
-@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
 trait PlatformManagementService {
 
   def listStorages:Array[StorageDescription]

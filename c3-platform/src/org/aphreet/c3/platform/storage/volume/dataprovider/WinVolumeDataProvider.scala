@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.storage.volume.dataprovider
 
 import java.io.File
+import org.aphreet.c3.platform.storage.volume.Volume
 
 class WinVolumeDataProvider extends VolumeDataProvider{
 

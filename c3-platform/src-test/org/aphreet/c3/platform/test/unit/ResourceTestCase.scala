@@ -31,8 +31,8 @@ package org.aphreet.c3.platform.test.unit
 
 import junit.framework.TestCase
 import junit.framework.Assert._
-import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
 import java.util.Date
+import org.aphreet.c3.platform.resource.{ResourceSerializer, DataWrapper, ResourceVersion, Resource}
 
 
 class ResourceTestCase extends TestCase {
@@ -217,15 +217,15 @@ class ResourceTestCase extends TestCase {
 
     resource.addVersion(version2)
 
-    val json = resource.toJSON(false)
+    val json = ResourceSerializer.toJSON(resource)
 
     val expected =
 """{
 	"address": "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47",
 	"createDate": 1273087676152,
 	"metadata": {
-		"key2": "value2",
-		"ke\"1": "value1"
+		"ke\"1": "value1",
+		"key2": "value2"
 	},
 	"versions": [
 		{
@@ -269,15 +269,15 @@ class ResourceTestCase extends TestCase {
 
     resource.addVersion(version2)
     
-    val json = resource.toJSON(true)
+    val json = ResourceSerializer.toJSON(resource, true)
 
     val expected =
 """{
 	"address": "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47",
 	"createDate": 1273087676152,
 	"metadata": {
-		"key2": "value2",
-		"ke\"1": "value1"
+		"ke\"1": "value1",
+		"key2": "value2"
 	},
 	"systemMetadata": {
 		"skey1": "svalue1",

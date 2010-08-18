@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.remote.rest.command
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.remote.rest._
 import query.ServletQueryConsumer
@@ -42,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
 import org.aphreet.c3.platform.common.JSONFormatter
 import java.net.URLDecoder
+import org.aphreet.c3.platform.resource.{ResourceSerializer, Resource, ResourceVersion}
 
 class GetCommand(override val req: HttpServletRequest, override val resp: HttpServletResponse)
         extends HttpCommand(req, resp) {
@@ -100,7 +100,11 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
     resp.setContentLength(version.data.length.toInt)
-    resp.setContentType(resource.getMetadata.get(Resource.MD_CONTENT_TYPE))
+
+    resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+      case Some(x) => resp.setContentType(x)
+      case None =>
+    }
 
     val os = new BufferedOutputStream(resp.getOutputStream)
     try {
@@ -114,7 +118,9 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
 
   def sendResourceMetadata(resource: Resource) {
     //TODO remove this in release
-    val str = resource.toJSON(req.getParameterMap.containsKey("system"))
+    val showSystem = req.getParameterMap.containsKey("system")
+
+    val str = ResourceSerializer.toJSON(resource, showSystem)
 
     resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)

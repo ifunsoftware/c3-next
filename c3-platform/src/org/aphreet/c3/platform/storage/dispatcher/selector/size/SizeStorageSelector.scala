@@ -59,7 +59,7 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
   }
   
   override def updateConfig(config:Map[Long, (String,Boolean)]) = {
-    sizeRanges = new TreeMap[Long, (String,Boolean)]()(new ReverceOrdered(_)) ++ config
+    sizeRanges = new TreeMap[Long, (String,Boolean)]()(new ReverseOrdering) ++ config
   }
   
   override def configEntries:List[(Long, String, Boolean)] = {
@@ -68,11 +68,11 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
   
 }
 
-class ReverceOrdered(val value:Long) extends Ordered[Long] {
+class ReverseOrdering extends Ordering[Long] {
   
-  override def compare(x:Long):Int = {
-    if(x > value) return 1
-    if(x < value) return -1
+  override def compare(x:Long, y:Long):Int = {
+    if(x > y) return 1
+    if(x < y) return -1
     0
   }
 }

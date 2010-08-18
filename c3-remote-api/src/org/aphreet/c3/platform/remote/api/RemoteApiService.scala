@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.remote.api
 
 import javax.jws.WebService
 
-@WebService{val serviceName="RemoteApiService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="RemoteApiService", targetNamespace="remote.c3.aphreet.org")
 trait RemoteApiService{
 
   def getVersion:String

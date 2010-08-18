@@ -1,8 +1,6 @@
 package org.aphreet.c3.platform.resource
 
-import scala.collection.jcl.{HashMap, Map, Buffer, ArrayList}
-
-import java.util.{Map => JMap, List => JList}
+import scala.collection.mutable.{HashMap, Map, Buffer, ArrayBuffer}
 
 import java.util.Date
 
@@ -15,13 +13,13 @@ class Resource {
 
   var address:String = null
 
-  var createDate:Date = new Date
+  var createDate = new Date
 
-  var metadata:HashMap[String, String] = new HashMap
+  var metadata = new HashMap[String, String]
 
-  var systemMetadata:HashMap[String, String] = new HashMap
+  var systemMetadata = new HashMap[String, String]
 
-  var versions:ArrayList[ResourceVersion] = new ArrayList
+  var versions = new ArrayBuffer[ResourceVersion]
 
   var isVersioned = false
 
@@ -49,20 +47,12 @@ class Resource {
     }
   }
 
-  def getMetadata:JMap[String, String] = metadata.underlying
-
-  def getSysMetadata:JMap[String, String] = systemMetadata.underlying
-
-  def getVersions:JList[ResourceVersion] = versions.underlying
-
   def addVersion(version:ResourceVersion){
     if(!isVersioned){
       versions.clear
     }
-    versions add version
+    versions + version
   }
-
-  override def toString:String = toJSON(true)
 
   def toByteArray:Array[Byte] = {
 
@@ -120,85 +110,12 @@ class Resource {
 
     writeVersions(versions, dataOs)
 
-    //dataOs.writeLong(Resource.STOP_SEQ)
-
     val md5 = new MD5
     md5.Update(byteOs.toByteArray)
 
     byteOs.write(md5.Final)
 
     byteOs.toByteArray
-  }
-
-  def toJSON(full:Boolean):String = {
-
-    val swriter = new StringWriter()
-
-
-    try{
-      val writer = new JSONWriterImpl(swriter)
-
-      writer.`object`
-
-      writer.key("address").value(this.address)
-
-      writer.key("createDate").value(this.createDate.getTime)
-
-
-      writer.key("metadata")
-
-      writer.`object`
-
-      metadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
-
-      writer.endObject
-
-      if(full){
-        writer.key("systemMetadata")
-
-        writer.`object`
-
-        systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
-
-        writer.endObject
-      }
-
-      writer.key("versions")
-
-      writer.array
-
-      versions.foreach(v => {
-        writer.`object`
-
-        writer.key("createDate").value(v.date.getTime)
-        writer.key("dataLength").value(v.data.length)
-
-
-        if(full){
-          writer.key("revision").value(v.revision)
-
-          writer.key("systemMetadata")
-
-          writer.`object`
-
-          v.systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
-          
-          writer.endObject
-        }
-        writer.endObject
-      })
-
-      writer.endArray
-
-
-      writer.endObject
-      swriter.flush
-
-      JSONFormatter.format(swriter.toString)
-
-    }finally{
-      swriter.close
-    }
   }
 
 }
@@ -248,7 +165,7 @@ object Resource {
 
     def readVersions(dataIs:DataInputStream, serializeVersion:Int):Buffer[ResourceVersion] = {
 
-      val result = new ArrayList[ResourceVersion]
+      val result = new ArrayBuffer[ResourceVersion]
 
       dataIs.readInt //read version
       val count = dataIs.readInt

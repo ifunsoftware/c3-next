@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.remote.api.access
 
 import javax.jws.WebService
 
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
 trait PlatformAccessService{
 
   def getResourceAsString(ra:String):String

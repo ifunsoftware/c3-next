@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.search.impl.index.filter
 
 import collection.mutable.HashMap
-import collection.jcl.{HashMap => JHashMap}
+import collection.JavaConversions._
 import org.aphreet.c3.search.tika.TikaProvider
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.{FileDataWrapper, Resource}
@@ -76,7 +76,7 @@ class TextExtractorFilter extends ResourceFilter{
         }
       }
       
-      Map() ++ new JHashMap[String, String](tikaProvider.extractMetadata(file.getCanonicalPath))
+      Map() ++ asMap(tikaProvider.extractMetadata(file.getCanonicalPath))
 
     }catch{
       case e=> log.warn("Failed to extract document content: " + e.getMessage)

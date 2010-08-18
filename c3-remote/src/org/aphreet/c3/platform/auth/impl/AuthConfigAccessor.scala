@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Scope
 import com.springsource.json.parser.{ListNode, ScalarNode, MapNode, AntlrJSONParser}
 import collection.mutable.HashMap
 import collection.Map
-import collection.jcl.Buffer
+import collection.JavaConversions._
 import org.aphreet.c3.platform.auth.{ACCESS, MANAGEMENT, UserRole, User}
 
 @Component
@@ -74,7 +74,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
     val userListNode = node.getNode("users").asInstanceOf[ListNode]
 
-    for (userNode <- Buffer.apply(userListNode.getNodes)) {
+    for (userNode <- asBuffer(userListNode.getNodes)) {
       val name = getValue(userNode.asInstanceOf[MapNode], "name")
       val password = getValue(userNode.asInstanceOf[MapNode], "password")
       val role = getValue(userNode.asInstanceOf[MapNode], "role")

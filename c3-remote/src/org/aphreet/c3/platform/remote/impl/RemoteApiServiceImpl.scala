@@ -37,7 +37,7 @@ import org.aphreet.c3.platform.config.VersionManager
 import javax.jws.{WebMethod, WebService}
 
 @Component("remoteApiService")
-@WebService{val serviceName="RemoteApiService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="RemoteApiService", targetNamespace="remote.c3.aphreet.org")
 class RemoteApiServiceImpl extends RemoteApiService{
 
   private var versionManager:VersionManager = null
@@ -49,8 +49,4 @@ class RemoteApiServiceImpl extends RemoteApiService{
     case Some(v) => v
     case None => "Unknown"
   }
-
-  @WebMethod{val exclude=true}
-  override def $tag:Int = super.$tag
-
 }

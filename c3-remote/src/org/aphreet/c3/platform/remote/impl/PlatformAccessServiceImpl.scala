@@ -31,16 +31,15 @@
 package org.aphreet.c3.platform.remote.impl
 
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import java.util.HashMap
-import scala.collection.jcl.{HashMap => JMap}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.access.AccessManager
 import javax.jws.{WebService, WebMethod}
+import org.aphreet.c3.platform.resource.ResourceSerializer
 
 @Component("platformAccessService")
-@WebService{val serviceName="AccessService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
 class PlatformAccessServiceImpl extends PlatformAccessService{
 
   private var accessManager:AccessManager = _
@@ -53,15 +52,11 @@ class PlatformAccessServiceImpl extends PlatformAccessService{
       val resource = accessManager get ra
 
       if(resource != null)
-        resource.toString
+        ResourceSerializer.toJSON(resource, true)
       else null
 
     }catch{
       case e => throw new RemoteException(e)
     }
   }
-
-  @WebMethod{val exclude=true}
-  override def $tag:Int = super.$tag
-
 }

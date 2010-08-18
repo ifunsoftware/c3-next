@@ -30,7 +30,6 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
-import scala.actors.ExitActorException
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{Directory, FSDirectory}

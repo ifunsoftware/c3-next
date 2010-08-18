@@ -41,11 +41,11 @@ import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.exception.{PlatformException, StorageException}
 import javax.jws.{WebMethod, WebService}
-import scala.collection.jcl.Map
+import collection.JavaConversions._
 import org.springframework.stereotype.Component
 
 @Component("platformManagementService")
-@WebService{val serviceName="ManagementService", val targetNamespace="remote.c3.aphreet.org"}
+@WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
 class PlatformManagementServiceImpl extends PlatformManagementService{
 
   private val log = LogFactory getLog getClass
@@ -112,7 +112,7 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
 
   def platformProperties:Array[Pair] =
     catchAll(() => {
-      (for(e <- Map.apply(managementEndpoint.getPlatformProperties))
+      (for(e <- asMap(managementEndpoint.getPlatformProperties))
         yield new Pair(e._1, e._2)).toSeq.toArray
     })
 
@@ -221,8 +221,4 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
       }
     }
   }
-
-  @WebMethod{val exclude=true}
-  override def $tag:Int = super.$tag
-
 }

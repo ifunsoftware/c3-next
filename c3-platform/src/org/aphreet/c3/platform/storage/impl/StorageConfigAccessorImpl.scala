@@ -40,6 +40,8 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageParams, StorageModeParser}
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
+import collection.mutable.Buffer
+import collection.JavaConversions
 
 
 @Component
@@ -65,10 +67,10 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
     for (st <- storageArray) {
       val storage = st.asInstanceOf[MapNode]
 
-      val ids = collection.jcl.Conversions.convertList(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
+      val ids = JavaConversions.asBuffer(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
 
       val idArray = for (node <- ids)
-      yield node.getValue.toString
+        yield node.getValue.toString
 
       val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
 

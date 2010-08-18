@@ -4,8 +4,10 @@ import scala.collection.mutable.{Set, HashSet}
 
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.exception.PropertyChangeException
+import org.aphreet.c3.platform.storage._
 
 import org.apache.commons.logging.LogFactory
+
 
 class Volume(val mountPoint:String, var size:Long, var available:Long){
   

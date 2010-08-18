@@ -95,7 +95,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.scala-lang-osgi</groupId>
+                                    <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
                                     <artifactId>scala-library</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
