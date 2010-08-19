@@ -20,7 +20,7 @@ class RandomTestCase extends TestCase{
     val array:Array[Int] = Array(0,0,0)
 
     for(i <- 1 to 10000){
-      val randValue = Math.abs(random.nextInt) % 2
+      val randValue = math.abs(random.nextInt) % 2
       array(randValue) = array(randValue) + 1
     }
 

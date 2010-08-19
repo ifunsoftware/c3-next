@@ -51,7 +51,7 @@ class Resource {
     if(!isVersioned){
       versions.clear
     }
-    versions + version
+    versions += version
   }
 
   def toByteArray:Array[Byte] = {
@@ -177,7 +177,7 @@ object Resource {
         version.systemMetadata = readMap(dataIs, serializeVersion)
         version.persisted = true
 
-        result + version
+        result += version
       }
 
       result

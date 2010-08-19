@@ -56,7 +56,7 @@ class FileIndexer(val path:Path) extends Actor{
       IndexWriter.unlock(directory)
     }
 
-    new IndexWriter(directory, new StandardAnalyzer)
+    new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
   }
 
   def act{

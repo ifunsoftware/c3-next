@@ -95,7 +95,7 @@ class ResumeTaskCommand extends Command{
     if(params.size < 1){
       "Not enought params.\nUsage: resume task <id>"
     }else{
-      management.setTaskMode(params.first, "resume" )
+      management.setTaskMode(params.head, "resume" )
       "Resumed"
     }
 
@@ -112,7 +112,7 @@ class PauseTaskCommand extends Command{
     if(params.size < 1){
       "Not enought params.\nUsage: pause task <id>"
     }else{
-      management.setTaskMode(params.first, "pause" )
+      management.setTaskMode(params.head, "pause" )
       "Paused"
     }
   }

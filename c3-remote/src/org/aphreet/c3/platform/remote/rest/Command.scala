@@ -107,7 +107,7 @@ object ResourcePart{
 object ResourceData extends ResourcePart
 object ResourceMetadata extends ResourcePart
 
-sealed class RequestType
+abstract sealed class RequestType
 object RequestType{
 
   def typeFromString(str:String):RequestType = {

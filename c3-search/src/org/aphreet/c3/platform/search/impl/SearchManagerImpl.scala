@@ -221,8 +221,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   def selectIndexer: RamIndexer = {
     log debug "Selecting indexer..."
-    val num = Math.abs(random.nextInt) % (ramIndexers.size)
-    ramIndexers.drop(num).first
+    val num = math.abs(random.nextInt) % (ramIndexers.size)
+    ramIndexers.drop(num).head
   }
 
   def defaultValues: Map[String, String] = Map(

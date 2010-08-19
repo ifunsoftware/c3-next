@@ -45,7 +45,7 @@ class StartMigrationCommand extends Command{
     if(params.size < 2){
       "Not enought params.\nUsage: start migration <source id> <target id>"
     }else{
-      management.migrate(params.first, params.tail.first)
+      management.migrate(params.head, params.tail.head)
       "Migration started"
     }
   }

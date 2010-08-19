@@ -28,7 +28,7 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
 
   def getCommand(query:String):Option[Command] = {
 
-    val input = List.fromArray(query.trim.split("\\s+"))
+    val input = query.trim.split("\\s+").toList
 
     val classAndParams = root.classForInput(input)
 
@@ -62,13 +62,13 @@ class CommandTreeNode(val commandClass:Class[_]) {
     def classForInput(input:List[String]):(Class[_], List[String]) = {
 
       if(input.size > 0){
-        map.get(input.first) match {
+        map.get(input.head) match {
           case Some(node) => node.classForInput(input.tail)
           case None => {
             if(commandClass != null)
               (commandClass, input)
             else{
-              val nonStrictNode = foundCommandAsSubstring(input.first)
+              val nonStrictNode = foundCommandAsSubstring(input.head)
               if(nonStrictNode != null){
                 nonStrictNode.classForInput(input.tail)
               }else{
@@ -101,13 +101,13 @@ class CommandTreeNode(val commandClass:Class[_]) {
 
     def addCommand(input:List[String], commandClass:Class[_]):Unit = {
       if(input.size == 1){
-        map.put(input.first, new CommandTreeNode(commandClass))
+        map.put(input.head, new CommandTreeNode(commandClass))
       }else{
-        map.get(input.first) match {
+        map.get(input.head) match {
           case Some(node) => node.addCommand(input.tail, commandClass)
           case None => {
             val node = new CommandTreeNode(null)
-            map.put(input.first, node)
+            map.put(input.head, node)
             node.addCommand(input.tail, commandClass)
           }
         }

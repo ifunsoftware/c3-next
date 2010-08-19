@@ -48,8 +48,8 @@ class AddTypeMappingCommand extends Command{
       "Not enough params.\nUsage: add type mapping <mimetype> <storagetype> <versioned>"
     else{
 
-      val mimeType = params.first
-      val storageType = params.tail.first
+      val mimeType = params.head
+      val storageType = params.tail.head
       val versioned = (params(2) == "true")
 
       management.addTypeMapping(mimeType, storageType, versioned)
@@ -69,7 +69,7 @@ class DeleteTypeMappingCommand extends Command{
     if(params.size < 1){
       "Not enough params.\nUsage delete type mapping <mimetype>"
     }else{
-      management.removeTypeMapping(params.first)
+      management.removeTypeMapping(params.head)
       "Type mapping deleted"
     }
   }

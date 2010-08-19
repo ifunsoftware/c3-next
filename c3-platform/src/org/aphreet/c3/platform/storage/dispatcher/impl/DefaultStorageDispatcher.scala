@@ -107,8 +107,8 @@ class DefaultStorageDispatcher extends StorageDispatcher {
     if(onlineList.isEmpty){
       null
     }else{
-      val num = Math.abs(random.nextInt) % (onlineList.size)
-      onlineList.drop(num).first
+      val num = math.abs(random.nextInt) % (onlineList.size)
+      onlineList.drop(num).head
     }
   }
 }

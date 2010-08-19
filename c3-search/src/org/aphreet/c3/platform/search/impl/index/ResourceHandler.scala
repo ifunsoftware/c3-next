@@ -45,7 +45,7 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
 
   {
     for(filter <- filters if filter.support(resource)){
-      fields ++ filter.apply(resource, fields)
+      fields ++= filter.apply(resource, fields)
     }
 
   }
@@ -54,7 +54,7 @@ class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
 
     val doc = new Document
 
-    fields.removeKey(Fields.ADDRESS)
+    fields.remove(Fields.ADDRESS)
 
     doc.add(new Field(Fields.ADDRESS, resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
 

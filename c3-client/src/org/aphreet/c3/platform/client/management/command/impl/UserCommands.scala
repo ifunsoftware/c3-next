@@ -103,7 +103,7 @@ class DeleteUserCommand extends Command {
     if (params.size < 1) {
       "Not enought params.\nUsage: delete user <name>"
     } else {
-      management.deleteUser(params.first)
+      management.deleteUser(params.head)
       "User deleted"
     }
   }

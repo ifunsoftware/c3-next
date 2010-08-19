@@ -56,7 +56,7 @@ class VersionManagerImpl extends VersionManager with BundleContextAware{
 
     bundleContext.getBundles
             .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
-            .foreach(b => map + (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
+            .foreach(b => map += (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
 
     log.info("Found modules: " + map.toString)
 

@@ -28,12 +28,12 @@ class TaskManagerImpl extends TaskManager{
   
   def taskList:List[TaskDescription] = {
     (for((taskId, task) <- tasks if !task.state.isFinalState)
-      yield task.description).elements.toList
+      yield task.description).toList
   }
 
   def finishedTaskList:List[TaskDescription] = 
     (for((taskId, task) <- tasks if task.state.isFinalState)
-      yield task.description).elements.toList
+      yield task.description).toList
   
   def stopTask(id:String)  = 
     tasks.get(id) match {

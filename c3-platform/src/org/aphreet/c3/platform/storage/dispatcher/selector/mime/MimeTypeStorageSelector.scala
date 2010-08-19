@@ -78,7 +78,7 @@ class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
   override def updateConfig(config:Map[String, (String,Boolean)]) = {
     val map = new HashMap[String, (String,Boolean)]
     for(entry <- config)
-      map + entry
+      map += entry
     
     typeMap = map
   }

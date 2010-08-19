@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
 import org.aphreet.c3.platform.remote.api.management.Pair
-import collection.immutable.HashSet
+import collection.immutable.TreeSet
 
 object PlatformPropertiesCommands extends Commands {
 
@@ -51,7 +51,7 @@ class SetPlatformPropertyCommand extends Command{
     if(params.size < 2){
       "Not enought params\nUsage: set platform property <key> <value>"
     }else{
-      management.setPlatformProperty(params.first, params.tail.first)
+      management.setPlatformProperty(params.head, params.tail.head)
       "Property set"
     }
 
@@ -68,7 +68,11 @@ class ListPlatformPropertiesCommand extends Command{
   val footer = "|--------------------------------------------|----------------------------------------------------|\n"
 
   def execute:String = {
-    val set = new HashSet[Pair]
+    val set = new TreeSet[Pair]()(
+      new Ordering[Pair] {
+        override def compare(x:Pair, y:Pair):Int = x.key.compareTo(y.key)
+      }
+    )
 
     (set ++ management.platformProperties)
       .map(e => String.format("| %-42s | %-50s |\n", e.key, e.value)).foldLeft(header)(_ + _) + footer
@@ -76,17 +80,7 @@ class ListPlatformPropertiesCommand extends Command{
   }
 
   def name:List[String] = List("list", "platform", "properties")
-
-  implicit def toOrdered(pair:Pair):Ordered[Pair] = {
-    new OrderedPair(pair)
-  }
-
-  class OrderedPair(val pair:Pair) extends Ordered[Pair] {
-
-    override def compare(that:Pair):Int = {
-      that.key.compareTo(pair.key)
-    }
-  }
+  
 }
 
 class ListStatisticsCommand extends Command{

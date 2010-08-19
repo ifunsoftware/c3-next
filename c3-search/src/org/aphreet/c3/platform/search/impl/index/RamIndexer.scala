@@ -68,7 +68,7 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
 
     directory = new RAMDirectory
 
-    writer = new IndexWriter(directory, new StandardAnalyzer)
+    writer = new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
   }
 
 

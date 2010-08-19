@@ -49,8 +49,8 @@ class AddSizeMappingCommand extends Command {
       "Not enough params.\nUsage: add size mapping <size> <storagetype> <versioned>"
     else {
 
-      val size = params.first.toLong
-      val storageType = params.tail.first
+      val size = params.head.toLong
+      val storageType = params.tail.head
       val versioned = (params(2) == "true")
 
 
@@ -70,7 +70,7 @@ class DeleteSizeMappingCommand extends Command {
     if (params.size < 1) {
       "Not enough params.\nUsage remove size mapping <size>"
     } else {
-      management.removeSizeMapping(params.first.toLong)
+      management.removeSizeMapping(params.head.toLong)
       "Size mapping deleted"
     }
   }

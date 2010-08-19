@@ -52,6 +52,7 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
   
   def storageTypeForSize(size:Long):(String,Boolean) = {
     for(sizeRange <- sizeRanges){
+      println(sizeRange)
       if(size >= sizeRange._1)
         return sizeRange._2
     }
@@ -71,8 +72,8 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
 class ReverseOrdering extends Ordering[Long] {
   
   override def compare(x:Long, y:Long):Int = {
-    if(x > y) return 1
-    if(x < y) return -1
+    if(x > y) return -1
+    if(x < y) return 1
     0
   }
 }

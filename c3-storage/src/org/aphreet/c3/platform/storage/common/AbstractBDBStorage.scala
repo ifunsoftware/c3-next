@@ -187,10 +187,10 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
       //Replacing metadata
       savedResource.metadata.clear
-      savedResource.metadata ++ resource.metadata
+      savedResource.metadata ++= resource.metadata
 
       //Appending system metadata
-      savedResource.systemMetadata ++ resource.systemMetadata
+      savedResource.systemMetadata ++= resource.systemMetadata
 
 
       for(version <- resource.versions if !version.persisted)
@@ -284,7 +284,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
             "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
       //Appending system metadata
-      savedResource.systemMetadata ++ metadata
+      savedResource.systemMetadata ++= metadata
 
       val key = new DatabaseEntry(ra.getBytes)
       val value = new DatabaseEntry(savedResource.toByteArray)

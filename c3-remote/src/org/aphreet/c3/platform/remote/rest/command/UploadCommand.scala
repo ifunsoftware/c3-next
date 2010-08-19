@@ -137,7 +137,7 @@ abstract class UploadCommand(override val req: HttpServletRequest,
 
 
       val resource = getResource
-      resource.metadata ++ metadata
+      resource.metadata ++= metadata
       resource.addVersion(version)
 
       processUpload(resource)

@@ -52,7 +52,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   @PostConstruct
   def init {
-    users ++ configAccessor.load
+    users ++= configAccessor.load
   }
 
   def authenticate(username: String, password: String, role:UserRole): User = {
@@ -102,7 +102,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users.get(username) match {
       case Some(user) => {
         users.synchronized {
-          users.removeKey(username)
+          users.remove(username)
           configAccessor.store(users)
         }
       }

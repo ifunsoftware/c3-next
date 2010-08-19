@@ -6,7 +6,7 @@ import org.aphreet.c3.platform.storage.volume.Volume
 class WinVolumeDataProvider extends VolumeDataProvider{
 
   def getVolumeList:List[Volume] =
-    for(root <- List fromArray File.listRoots)
+    for(root <- File.listRoots.toList)
       yield new Volume(root.getAbsolutePath.substring(0, 2).toUpperCase, 
                        root.getTotalSpace, root.getFreeSpace)
 }

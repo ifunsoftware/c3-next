@@ -82,7 +82,7 @@ class StorageManagerImpl extends StorageManager{
         var stId = ""
 
         do{
-          stId = Integer.toHexString((Math.abs(rand.nextInt) % 0xEFFF) + 0x1000)
+          stId = Integer.toHexString((math.abs(rand.nextInt) % 0xEFFF) + 0x1000)
         }while(!isIdCorrect(stId))
 
         log info "Creating new storage with id: " + stId
@@ -99,7 +99,7 @@ class StorageManagerImpl extends StorageManager{
 
 
   def listStorages:List[Storage] =
-    List.fromIterator(storages.map(_._2).elements).removeDuplicates
+    storages.map(_._2).toList.distinct
 
   def removeStorage(storage:Storage) = {
 
@@ -128,7 +128,7 @@ class StorageManagerImpl extends StorageManager{
 
 
   def listStorageTypes:List[String] =
-    List.fromIterator((for((key, factory) <- factories) yield factory.name).elements)
+    factories.map(e => e._2.name).toList
 
   def dispatcher:StorageDispatcher = storageDispatcher
 
@@ -171,7 +171,7 @@ class StorageManagerImpl extends StorageManager{
 
 
   private def updateDispatcher{
-    storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).elements.toList)
+    storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).toList)
   }
 
 

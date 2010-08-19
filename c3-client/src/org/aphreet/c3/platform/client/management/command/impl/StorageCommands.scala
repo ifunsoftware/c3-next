@@ -49,7 +49,7 @@ class AddStorageCommand extends Command{
     if(params.size < 2){
       "Not enought params.\nUsage: add storage <type> <path>"
     }else{
-      management.createStorage(params.first, params.tail.first)
+      management.createStorage(params.head, params.tail.head)
       "Storage created"
     }
   }
@@ -65,7 +65,7 @@ class DeleteStorageCommand extends Command{
     if(params.size < 1){
       "Not enought params.\nUsage: delete storage <storage id>"
     }else{
-      management.removeStorage(params.first)
+      management.removeStorage(params.head)
       "Storage deleted"
     }
   }
@@ -81,7 +81,7 @@ class SetStorageModeCommand extends Command{
     if(params.size < 2){
       "Not enought params.\nUsage: set storage mode <id> <mode>"
     }else{
-      management.setStorageMode(params.first, params.tail.first)
+      management.setStorageMode(params.head, params.tail.head)
       "Mode set"
     }
   }

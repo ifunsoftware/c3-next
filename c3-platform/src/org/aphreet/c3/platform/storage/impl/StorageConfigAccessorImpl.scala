@@ -89,7 +89,8 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
       list = list ::: List(
         new StorageParams(
           storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
-          List.fromIterator(idArray.elements),
+          idArray.toList,
+          //List.fromIterator(idArray.elements),
           new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
           storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
           storageMode
