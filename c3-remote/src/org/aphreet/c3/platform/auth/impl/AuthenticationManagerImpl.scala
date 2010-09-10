@@ -69,12 +69,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
         val strToHash = username + user.password + id.toLowerCase
 
-        log info key
-        log info strToHash
-
         val hash = md5hash(strToHash)
-
-        log info hash
 
         val authCorrect = (hash == key && user.role == ACCESS)
 

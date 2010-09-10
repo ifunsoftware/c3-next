@@ -159,7 +159,6 @@ class C3HttpAccessor(val host:String, val username:String, val key:String){
     if(username != "anonymous"){
 
       val strToHash = username + key + resource
-      println(strToHash)
 
       val md5 = new MD5
       md5.Update(strToHash.getBytes)
