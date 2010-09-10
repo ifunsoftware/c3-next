@@ -11,13 +11,13 @@ import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
  * To change this template use File | Settings | File Templates.
  */
 
-class ConsumerWorker(val host:String, val queue:ArrayBlockingQueue[String]) extends Runnable{
+class ConsumerWorker(val host:String, val user:String, val key:String, val queue:ArrayBlockingQueue[String]) extends Runnable{
 
   var done:Boolean = false
   var processed:Int = 0
   var errors:Int = 0
   var bytesRead:Long = 0l
-  val client = new C3HttpAccessor(host)
+  val client = new C3HttpAccessor(host, user, key)
 
   override def run{
 

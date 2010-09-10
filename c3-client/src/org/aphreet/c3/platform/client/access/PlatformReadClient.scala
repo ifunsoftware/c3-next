@@ -17,6 +17,7 @@ class PlatformReadClient(override val args:Array[String]) extends ConsumerClient
 
   def actionName = "read"
 
-  def createConsumer(host:String, queue:ArrayBlockingQueue[String]):ConsumerWorker = new ReadWorker(host, queue)
+  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker
+    = new ReadWorker(host, user, key, queue)
 
 }

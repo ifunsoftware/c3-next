@@ -52,32 +52,34 @@ class HttpCommand(val req:HttpServletRequest, val resp:HttpServletResponse)
 
     val up = getUsernameAndPassword
 
-    var username = up._1
-    val password = up._2
-
-    if(username == null && password == null){
-
-      val anonymous = authManager.get("anonymous")
-
-      if(anonymous != null && anonymous.enabled)
-        return "anonymous"
-
-    }else if(username != null && password != null){
-      val user = authManager.authenticate(username, password, ACCESS)
+    if(up != null){
+      val user = authManager.authAccess(up._1, up._2, req.getRequestURI)
 
       if(user != null)
         return user.name
 
+    }else{
+      val anonymous = authManager.get("anonymous")
+
+      if(anonymous != null && anonymous.enabled)
+        return "anonymous"
     }
 
     throw new AuthFailedException
   }
 
   def getUsernameAndPassword:(String,String) = {
-    var username:String = req.getParameter("c3.username")
-    val password:String = req.getParameter("c3.password")
 
-    (username, password)
+
+    val authHeader = req.getHeader(HttpCommand.AUTH_HEADER)
+
+    if(authHeader != null){
+      val array = authHeader.split(":", 2)
+      if(array.length == 2)
+        return (array(0), array(1))
+    }
+
+    null
   }
 
 
@@ -88,5 +90,11 @@ class HttpCommand(val req:HttpServletRequest, val resp:HttpServletResponse)
   protected def forbidden = resp.setStatus(HttpServletResponse.SC_FORBIDDEN)
 
   protected def ok = resp.setStatus(HttpServletResponse.SC_OK)
+
+}
+
+object HttpCommand{
+
+  val AUTH_HEADER = "C3Auth"
 
 }

@@ -40,10 +40,16 @@ import collection.mutable.HashMap
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.apache.commons.logging.LogFactory
 
 @Component("authenticationManager")
 class AuthenticationManagerImpl extends AuthenticationManager {
+
+  val log = LogFactory.getLog(getClass)
+
   val users = new HashMap[String, User]
+
+
 
   var configAccessor: AuthConfigAccessor = _
 
@@ -55,11 +61,35 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users ++= configAccessor.load
   }
 
-  def authenticate(username: String, password: String, role:UserRole): User = {
+
+  def authAccess(username:String, key:String, id:String):User = {
 
     users.get(username) match {
       case Some(user) => {
-        if (user.enabled && user.role == role && md5hash(password) == user.password) {
+
+        val strToHash = username + user.password + id.toLowerCase
+
+        log info key
+        log info strToHash
+
+        val hash = md5hash(strToHash)
+
+        log info hash
+
+        val authCorrect = (hash == key && user.role == ACCESS)
+
+        if(authCorrect) user
+        else null
+      }
+      case None => null
+    }
+  }
+
+  def authManagement(username: String, password: String): User = {
+
+    users.get(username) match {
+      case Some(user) => {
+        if (user.enabled && user.role == MANAGEMENT && password == user.password) {
           user
         } else {
           null
@@ -72,7 +102,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
   def update(username: String, password: String, role: UserRole, enabled:Boolean) = {
     users.get(username) match {
       case Some(user) => {
-        user.password = md5hash(password)
+        user.password = password
         user.role = role
         user.enabled = enabled
         users.synchronized {
@@ -87,7 +117,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
-        val user = new User(username, md5hash(password), role, true)
+        val user = new User(username, password, role, true)
         users.synchronized {
           users.put(username, user)
           configAccessor.store(users)
@@ -126,7 +156,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
     if (input == null || input.isEmpty) return ""
 
-    val hexString = new StringBuffer
+    val hexString = new StringBuilder
 
     val md = MessageDigest.getInstance("MD5")
     md.update(input.getBytes())

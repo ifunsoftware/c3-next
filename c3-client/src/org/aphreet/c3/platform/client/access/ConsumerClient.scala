@@ -17,20 +17,16 @@ import worker.ConsumerWorker
 abstract class ConsumerClient(override val args:Array[String]) extends CLI(args){
 
   def cliDescription = parameters(
-    "host" has mandatory argument "host" described "Host to connect to",
-    "threads" has mandatory argument "num" described "Thread count",
-    "in" has mandatory argument "file" described "File with resource addresses",
-    "help" described "Prints this message"
+    HOST_ARG,
+    USER_ARG,
+    KEY_ARG,
+    THREADS_ARG,
+    IN_ARG,
+    HELP_ARG
     )
 
   def run{
-    if(cli.getOptions.length == 0) helpAndExit(clientName)
-
-    if(cli.hasOption("help")) helpAndExit(clientName)
-
-    val threadCount = cliValue("threads", "1").toInt
-    val host = "http://" + cliValue("host", "localhost:8080") + "/c3-remote/resource/"
-    val file = cliValue("in", null)
+    val file:String = IN_ARG
 
     if(file == null){
       throw new IllegalAccessException("File argument is mandatory")
@@ -38,12 +34,12 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
     parseCLI
 
-    consumeResources(host, threadCount, file)
+    consumeResources(HOST_ARG, USER_ARG, KEY_ARG, THREADS_ARG, file)
   }
 
   def parseCLI(){}
 
-  def consumeResources(host:String, threads:Int, file:String){
+  def consumeResources(host:String, user:String, key:String, threads:Int, file:String){
 
     println("Starting " + clientName + "...")
 
@@ -51,7 +47,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
     var consumers:List[ConsumerWorker] = List()
     for(i <- 1 to threads){
-      consumers = createConsumer(host, queue) :: consumers
+      consumers = createConsumer(host, user, key, queue) :: consumers
     }
 
 
@@ -104,10 +100,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
   def errors(consumers:List[ConsumerWorker]):Int = consumers.map(e => e.errors).foldLeft(0)(_ + _)
 
-
-  def clientName:String
-
   def actionName:String
 
-  def createConsumer(host:String, queue:ArrayBlockingQueue[String]):ConsumerWorker
+  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker
 }

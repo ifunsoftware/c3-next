@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue
  * To change this template use File | Settings | File Templates.
  */
 
-class ResourceWriter(val host:String, val count:Int) extends Runnable {
+class ResourceWriter(val host:String, val user:String, val key:String, val count:Int) extends Runnable {
 
   var _size:Int = 1024
   var _md:Map[String, String] = Map()
@@ -29,7 +29,7 @@ class ResourceWriter(val host:String, val count:Int) extends Runnable {
 
   override def run{
 
-    val client = new C3HttpAccessor(host)
+    val client = new C3HttpAccessor(host, user, key)
 
     for(i <- 1 to count){
       try{

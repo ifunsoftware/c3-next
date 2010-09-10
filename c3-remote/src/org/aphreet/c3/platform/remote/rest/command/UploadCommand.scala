@@ -52,9 +52,6 @@ abstract class UploadCommand(override val req: HttpServletRequest,
   var tmpFile: File = null
   val factory = newDiskFileItemFactory
 
-  var username:String = null
-  var password:String = null
-
   override def execute {
 
     try {
@@ -82,39 +79,11 @@ abstract class UploadCommand(override val req: HttpServletRequest,
     }
   }
 
-
-  override def getUsernameAndPassword: (String, String) = {
-    (username, password)
-  }
-
   def processField(item: FileItem) = {
 
     val value = item.getString("UTF-8") //correct string in UTF-16
+    metadata.put(item.getFieldName, value)
 
-    if (!item.getFieldName.startsWith("c3.")) {
-
-      metadata.put(item.getFieldName, value)
-
-
-      /*    System.err.println("Upload:")
-          System.err.println(value.getBytes.toString)
-          System.err.println(value)
-
-          val bytes:Array[Byte] = value.getBytes("UTF-8")
-          System.err.write(bytes)
-          System.err.println
-      */
-    }else{
-      item.getFieldName match {
-        case "c3.username" =>
-          if(!value.isEmpty)
-            username = value
-        case "c3.password" =>
-          if(!value.isEmpty)
-            password = value
-      }
-
-    }
   }
 
   def processFile(item: FileItem) = {

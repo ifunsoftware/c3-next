@@ -52,7 +52,7 @@ class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
 
   override def checkCredentials(username:String, password:String):Boolean = {
 
-    val user = authManager.authenticate(username, password, MANAGEMENT)
+    val user = authManager.authManagement(username, password)
     
     user != null
   }

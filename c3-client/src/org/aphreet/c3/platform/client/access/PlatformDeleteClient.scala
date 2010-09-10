@@ -17,6 +17,6 @@ class PlatformDeleteClient(override val args:Array[String]) extends ConsumerClie
 
   def actionName = "deleted"
 
-  def createConsumer(host:String, queue:ArrayBlockingQueue[String]):ConsumerWorker = new DeleteWorker(host, queue)
+  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker = new DeleteWorker(host, user, key, queue)
 
 }

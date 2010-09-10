@@ -14,27 +14,27 @@ import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
  */
 
 class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
+
+ 
+
+  def clientName = "Writer"
+
   def cliDescription = parameters(
-    "host" has mandatory argument "host" described "Host to connect to",
-    "size" has mandatory argument "num" described "Size of object to write",
-    "count" has mandatory argument "num" described "Count of objects to write",
-    "threads" has mandatory argument "num" described "Thread count",
-    "type" has mandatory argument "mime" described "Mime type of content",
-    "pool" has mandatory argument "name" described "Target pool",
-    "out" has mandatory argument "file" described "File to write resource addressed",
-    "help" described "Prints this message"
+    HOST_ARG,
+    POOL_ARG,
+    USER_ARG,
+    KEY_ARG,
+    SIZE_ARG,
+    COUNT_ARG,
+    THREADS_ARG,
+    TYPE_ARG,
+    OUT_ARG,
+    HELP_ARG
     )
 
   def run {
-    if (cli.getOptions.length == 0) helpAndExit("Writer")
-
-    if (cli.hasOption("help")) helpAndExit("Writer")
-
-    val objectSize = cliValue("size", "512").toInt
-    val objectCount = cliValue("count", "-1").toInt
-    val threadCount = cliValue("threads", "1").toInt
-    val objectType = cliValue("type", "application/octet-stream")
-    var pool = cliValue("pool", "")
+    val objectType:String = TYPE_ARG
+    val pool:String = POOL_ARG
 
     //    println(pool.getBytes.toString)
     //    println(pool.getBytes("UTF-8").toString)
@@ -44,21 +44,13 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
     //This code works for UTF-8 locale
     //But i don't know what will happen on windows machines
     //Possibly
-    pool = new String(pool.getBytes, "UTF-8")
+    //pool = new String(pool.getBytes, "UTF-8")
 
 
-    val host = "http://" + cliValue("host", "localhost:8080") + "/c3-remote/resource/"
-    val file = cliValue("out", null)
-
-
-
-    if (objectCount < 0)
-      throw new IllegalArgumentException("Object count is not set")
-
-    writeObjects(host, objectCount, objectSize, threadCount, Map("c3.pool" -> pool, "content.type" -> objectType), file)
+    writeObjects(HOST_ARG, USER_ARG, KEY_ARG, COUNT_ARG, SIZE_ARG, THREADS_ARG, Map("c3.pool" -> pool, "content.type" -> objectType), OUT_ARG)
   }
 
-  def writeObjects(host: String, count: Int, size: Int, threads: Int, metadata: Map[String, String], file: String) {
+  def writeObjects(host: String, user:String, key:String, count: Int, size: Int, threads: Int, metadata: Map[String, String], file: String) {
 
     println("Writing " + count + " objects of size " + size)
 
@@ -75,7 +67,7 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
       } else {
         perThread
       }
-      writers = new ResourceWriter(host, toWrite).size(size).metadata(metadata).queue(queue) :: writers
+      writers = new ResourceWriter(host, user, key, toWrite).size(size).metadata(metadata).queue(queue) :: writers
     }
 
 

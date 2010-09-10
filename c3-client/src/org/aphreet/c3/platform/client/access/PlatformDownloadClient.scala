@@ -40,30 +40,32 @@ class PlatformDownloadClient (override val args:Array[String]) extends ConsumerC
   var directory:File = _
 
   override def cliDescription = parameters(
-    "host" has mandatory argument "host" described "Host to connect to",
-    "threads" has mandatory argument "num" described "Thread count",
-    "in" has mandatory argument "file" described "File with resource addresses",
-    "out" has mandatory argument "dir" described "Directory to store results",
-    "help" described "Prints this message"
+    HOST_ARG,
+    USER_ARG,
+    KEY_ARG,
+    THREADS_ARG,
+    IN_ARG,
+    OUT_ARG,
+    HELP_ARG
   )
 
   override def parseCLI{
 
-    if(cli.hasOption("out")){
-      directory = new File(cli.getOptionValue("out"))
+    val directoryName:String = OUT_ARG
+
+    if(directoryName != null){
+      directory = new File(directoryName)
 
       if(!directory.isDirectory){
         throw new IllegalArgumentException("Specified path is not directory")
       }
-
     }else{
       throw new IllegalArgumentException("out option is required")
     }
-
   }
 
-  override def createConsumer(host:String, queue:ArrayBlockingQueue[String]):ConsumerWorker =
-     new DownloadWorker(host, queue, directory)
+  override def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker =
+     new DownloadWorker(host, user, key, queue, directory)
 
   override def clientName = "Downloader"
 

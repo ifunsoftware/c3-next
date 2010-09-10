@@ -2,36 +2,24 @@ package org.aphreet.c3.platform.client.access
 
 import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import org.aphreet.c3.platform.client.common.CLI
-import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{OutputStream, BufferedOutputStream, FileOutputStream, File}
-
-/**
- * Created by IntelliJ IDEA.
- * User: malygm
- * Date: Mar 30, 2010
- * Time: 3:33:54 PM
- * To change this template use File | Settings | File Templates.
- */
 
 class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
 
+  def clientName = "Uploader"
+
   def cliDescription = parameters(
-    "host" has mandatory argument "host" described "Host to connect to",
-    "pool" has mandatory argument "name" described "Target pool",
-    "out" has mandatory argument "file" described "File to write resource addressed",
-    "file" has mandatory argument "path" described "File or Directory path to upload",
-    "help" described "Prints this message"
+    HOST_ARG,
+    POOL_ARG,
+    OUT_ARG,
+    FILE_ARG,
+    USER_ARG,
+    KEY_ARG,
+    HELP_ARG
   )
 
-  def run{
-    if(cli.getOptions.length == 0) helpAndExit("Uploader")
-
-    if(cli.hasOption("help")) helpAndExit("Uploader")
-
-    val pool = cliValue("pool", "")
-    val host = "http://" + cliValue("host", "localhost:8080") + "/c3-remote/resource/"
-    val out = cliValue("out", null)
-    val path = cliValue("file", null)
+  def run{    
+    val path = cliValue(FILE_ARG)
 
     if(path == null){
       throw new IllegalArgumentException("file argument required")
@@ -41,10 +29,12 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     if(!file.exists){
       throw new IllegalArgumentException("Specified file does not exit")
     }
-    upload(host, pool, file, out)
+
+
+    upload(HOST_ARG, USER_ARG, KEY_ARG, POOL_ARG, file, OUT_ARG)
   }
 
-  def upload(host:String, pool:String, path:File, out:String){
+  def upload(host:String, user:String, key:String, pool:String, path:File, out:String){
 
     var fos:OutputStream = null
 
@@ -58,7 +48,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
 
     println("Starting  upload...")
 
-    val client = new C3HttpAccessor(host)
+    val client = new C3HttpAccessor(host, user, key)
 
     var fileList:List[File] = List()
 

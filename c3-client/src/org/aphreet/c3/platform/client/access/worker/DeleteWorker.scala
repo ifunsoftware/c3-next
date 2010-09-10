@@ -11,8 +11,10 @@ import java.util.concurrent.ArrayBlockingQueue
  */
 
 class DeleteWorker(override val host:String,
-                 override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, queue){
+                   override val user:String,
+                   override val key:String,
+                   override val queue:ArrayBlockingQueue[String])
+        extends ConsumerWorker(host, user, key, queue){
 
   override def execute(address:String) = {client.delete(address); 0l}
 

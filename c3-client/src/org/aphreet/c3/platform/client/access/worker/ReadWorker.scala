@@ -11,8 +11,10 @@ import java.util.concurrent.ArrayBlockingQueue
  */
 
 class ReadWorker(override val host:String,
-                 override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, queue){
+                   override val user:String,
+                   override val key:String,
+                   override val queue:ArrayBlockingQueue[String])
+        extends ConsumerWorker(host, user, key, queue){
 
   override def execute(address:String) = client.fakeRead(address)
 }

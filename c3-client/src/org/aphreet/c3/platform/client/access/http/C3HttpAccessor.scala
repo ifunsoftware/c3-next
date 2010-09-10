@@ -1,11 +1,12 @@
 package org.aphreet.c3.platform.client.access.http
 
 import org.apache.commons.httpclient.methods.multipart._
-import org.apache.commons.httpclient.{HttpStatus, HttpClient}
 import org.apache.commons.httpclient.methods.{DeleteMethod, GetMethod, PostMethod}
 import java.nio.channels.Channels
 import java.io._
 import java.nio.ByteBuffer
+import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpStatus, HttpClient}
+import com.twmacinta.util.MD5
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,18 +16,29 @@ import java.nio.ByteBuffer
  * To change this template use File | Settings | File Templates.
  */
 
-class C3HttpAccessor(val url:String){
+class C3HttpAccessor(val host:String, val username:String, val key:String){
+
+  val requestUri = "/c3-remote/resource/"
+  val url = host + requestUri
 
   val httpClient = new HttpClient
+
+
 
   def write(data:Array[Byte], metadata:Map[String, String]):String =
     writeData(new FilePart("data", new ByteArrayPartSource(data)), metadata)
 
+
+
   def upload(file:File, metadata:Map[String, String]):String =
     writeData(new FilePart("data", new FilePartSource(file)), metadata)
 
+
+
   private def writeData(filePart:FilePart, metadata:Map[String, String]):String = {
     val postMethod = new PostMethod(url)
+
+    addAuthHeader(postMethod, requestUri)
 
     val parts:Array[Part] = (filePart ::
             metadata.map(e => {
@@ -50,8 +62,12 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+
+
   def downloadData(address:String, file:File) = {
     val getMethod = new GetMethod(url + address + "/data")
+
+    addAuthHeader(getMethod, requestUri + address + "/data")
 
     try{
       val status = httpClient.executeMethod(getMethod)
@@ -73,8 +89,12 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+
+
   def downloadMD(address:String, file:File) = {
     val getMethod = new GetMethod(url + address + "/metadata")
+
+    addAuthHeader(getMethod, requestUri + address + "/metadata")
 
     try{
       val status = httpClient.executeMethod(getMethod)
@@ -95,8 +115,12 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+
+
   def delete(address:String) = {
     val deleteMethod = new DeleteMethod(url + address)
+
+    addAuthHeader(deleteMethod, requestUri + address)
 
     try{
       val status = httpClient.executeMethod(deleteMethod)
@@ -107,8 +131,12 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+
+
   def fakeRead(address:String):Int = {
     val getMethod = new GetMethod(url + address + "/data")
+
+    addAuthHeader(getMethod, requestUri + address + "/data")
 
     try{
       val status = httpClient.executeMethod(getMethod)
@@ -126,6 +154,21 @@ class C3HttpAccessor(val url:String){
     }
   }
 
+
+  def addAuthHeader(method:HttpMethodBase, resource:String) = {
+    if(username != "anonymous"){
+
+      val strToHash = username + key + resource
+      println(strToHash)
+
+      val md5 = new MD5
+      md5.Update(strToHash.getBytes)
+      
+      val hash = MD5.asHex(md5.Final)
+      val header = new Header("C3Auth", username + ":" + hash)
+      method.addRequestHeader(header)
+    }
+  }
 }
 
 class ByteArrayPartSource(val data:Array[Byte]) extends PartSource {

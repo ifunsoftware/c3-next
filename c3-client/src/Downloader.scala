@@ -32,6 +32,6 @@ import org.aphreet.c3.platform.client.access.PlatformDownloadClient
 
 object Downloader {
 
-  def main(args:Array[String]) = new PlatformDownloadClient(args).run
+  def main(args:Array[String]) = new PlatformDownloadClient(args).launch
 
 }

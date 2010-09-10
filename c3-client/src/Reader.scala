@@ -10,6 +10,6 @@ import org.aphreet.c3.platform.client.access.PlatformReadClient
 
 object Reader{
 
-  def main(args:Array[String]) = new PlatformReadClient(args).run
+  def main(args:Array[String]) = new PlatformReadClient(args).launch
 
 }

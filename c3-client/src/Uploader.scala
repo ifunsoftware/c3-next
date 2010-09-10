@@ -10,6 +10,6 @@ import org.aphreet.c3.platform.client.access.PlatformUploadClient
 
 object Uploader{
 
-  def main(args:Array[String]) = new PlatformUploadClient(args).run
+  def main(args:Array[String]) = new PlatformUploadClient(args).launch
 
 }

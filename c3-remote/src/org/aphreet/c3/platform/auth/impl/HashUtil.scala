@@ -1,3 +1,7 @@
+package org.aphreet.c3.platform.auth.impl
+
+import java.security.MessageDigest
+
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -28,23 +32,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.auth
+object HashUtil{
 
 
-trait AuthenticationManager{
+  def hash(input:String, algorithm:DigestAlgorithm):String = {
+    if (input == null || input.isEmpty) return ""
 
-  def authAccess(username:String, key:String, id:String):User
+    val hexString = new StringBuilder
 
-  def authManagement(username: String, password: String): User
+    val md = MessageDigest.getInstance(algorithm.name)
+    md.update(input.getBytes())
 
-  def update(username:String, password:String, role:UserRole, enabled:Boolean)
+    val hash = md.digest
 
-  def create(username:String, password:String, role:UserRole)
+    for (b <- hash) {
+      if ((0xFF & b) < 0x10) {
+        hexString.append("0").append(Integer.toHexString((0xFF & b)))
+      } else {
+        hexString.append(Integer.toHexString((0xFF & b)))
+      }
+    }
 
-  def delete(username:String)
+    hexString.toString
+  }
 
-  def get(username:String):User
+  def md5hash(input: String): String = hash(input, MD5)
 
-  def list:List[User]
-
+  def sha256hash(input:String):String = hash(input, SHA256)
 }
+
+sealed class DigestAlgorithm(val name:String)
+
+object MD5 extends DigestAlgorithm("MD5")
+object SHA256 extends DigestAlgorithm("SHA-256")

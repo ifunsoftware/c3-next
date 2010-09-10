@@ -21,13 +21,15 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
   var connectionProvider:ConnectionProvider = null
 
+  val clientName = "Shell"
+
   {
     LogManager.getLogManager.readConfiguration(getClass.getClassLoader.getResourceAsStream("log.properties"))
 
 
-    if(cli.getOptions.length == 0) helpAndExit("Shell")
+    if(cli.getOptions.length == 0) helpAndExit(clientName)
 
-    if(cli.hasOption("help")) helpAndExit("Shell" )
+    if(cli.hasOption("help")) helpAndExit(clientName)
 
     if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification
 
