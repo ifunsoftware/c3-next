@@ -1,8 +1,8 @@
 package org.aphreet.c3.platform.search.test
 
-import junit.framework.TestCase
 import org.aphreet.c3.platform.search.SearchResultEntry
 import org.aphreet.c3.platform.common.JSONFormatter
+import junit.framework.{Assert, TestCase}
 
 /**
  * Copyright (c) 2010, Mikhail Malygin
@@ -36,14 +36,6 @@ import org.aphreet.c3.platform.common.JSONFormatter
 
 class ResultTestEntryTestCase extends TestCase{
 
-  def testEntry{
-
-    val entry = new SearchResultEntry("asdasdasd", 0.2f, Array("1234", "324234", "234234"))
-
-    println(entry.toJSON)
-
-  }
-
   def testResults = {
 
     val entry1 = new SearchResultEntry("asdasdasd", 0.2f, Array("1234", "324234", "234234"))
@@ -60,7 +52,31 @@ class ResultTestEntryTestCase extends TestCase{
     }
     buffer.append("]}")
 
-    println(JSONFormatter.format(buffer.toString))
+    val expected = """{
+	resources: [
+		{
+			address: "asdasdasd",
+			score: 0.20,
+			fragments: [
+				"1234",
+				"324234",
+				"234234"
+			]
+		},
+		{
+			address: "asdasdasd",
+			score: 0.20,
+			fragments: [
+				"1234",
+				"324234",
+				"234234"
+			]
+		},
+		
+	]
+}"""
+
+    Assert.assertEquals(expected, JSONFormatter.format(buffer.toString))
 
   }
 }

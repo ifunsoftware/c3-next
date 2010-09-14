@@ -52,7 +52,6 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
   
   def storageTypeForSize(size:Long):(String,Boolean) = {
     for(sizeRange <- sizeRanges){
-      println(sizeRange)
       if(size >= sizeRange._1)
         return sizeRange._2
     }

@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.remote.test.rest.command
 
 import junit.framework.TestCase
+import junit.framework.Assert._
 import org.aphreet.c3.platform.auth.impl.AuthenticationManagerImpl
 
 /**
@@ -39,7 +40,7 @@ class HashTest extends TestCase{
 
     val authManager = new AuthenticationManagerImpl
 
-    println(authManager.md5hash("password"))
+    assertEquals("5f4dcc3b5aa765d61d8327deb882cf99", authManager.md5hash("password"))
     
   }
 

@@ -29,12 +29,13 @@
  */
 package org.aphreet.c3.platform.test.unit
 
-import junit.framework.TestCase
+import junit.framework.Assert._
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage._
 import collection.mutable.HashMap
 import dispatcher.impl.DefaultStorageDispatcher
+import junit.framework.{AssertionFailedError, TestCase}
 
 class StorageDispatcherTestCase extends TestCase{
 
@@ -60,10 +61,19 @@ class StorageDispatcherTestCase extends TestCase{
 
       map.put(id, (num+1))
     }
+    
+    val baseline = 10000/3f
 
-    println("Average calls per storage")
-    println(map)
-
+    try{
+      for((key, value) <- map){
+        assertTrue(math.abs(value - baseline)/baseline < 0.1f)
+      }
+    }catch{
+      case e:AssertionFailedError =>
+        println("Average calls per storage")
+        println(map)
+        throw e;
+    }
   }
 
 
