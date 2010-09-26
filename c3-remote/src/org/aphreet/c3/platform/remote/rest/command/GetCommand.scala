@@ -150,9 +150,9 @@ class GetCommand(override val req: HttpServletRequest, override val resp: HttpSe
       map.put(key, value)
     }
 
-    val consumer = new ServletQueryConsumer(resp.getWriter, map)
+    val consumer = new ServletQueryConsumer(resp.getWriter)
 
-    queryManager.executeQuery(consumer)
+    queryManager.executeQuery(Map[String, String]() ++ map, Map(), consumer)
     resp.flushBuffer
   }
 

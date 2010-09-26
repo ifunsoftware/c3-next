@@ -9,7 +9,7 @@ class FileBDBStorageFactory extends AbstractBDBStorageFactory{
 
   protected def createNewStorage(params:StorageParams):Storage = {
     
-    val storage = new FileBDBStorage(params.id, params.path, bdbConfig)
+    val storage = new FileBDBStorage(params, bdbConfig)
     storage.ids = params.secIds
     storage
     

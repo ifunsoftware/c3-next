@@ -8,8 +8,10 @@ import java.nio.channels.WritableByteChannel
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
+import org.aphreet.c3.platform.storage.{StorageParams, StorageIndex}
 
-class FileBDBStorage(override val id:String, override val path:Path, override val config:BDBConfig) extends AbstractBDBStorage(id, path, config) {
+class FileBDBStorage(override val parameters:StorageParams,
+                     override val config:BDBConfig) extends AbstractBDBStorage(parameters, config) {
 
   var dataPath : File = null
 

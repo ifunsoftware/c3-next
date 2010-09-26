@@ -9,7 +9,7 @@ class PureBDBStorageFactory extends AbstractBDBStorageFactory{
 
   protected def createNewStorage(params:StorageParams):Storage = {
     
-    val storage = new PureBDBStorage(params.id, params.path, bdbConfig)
+    val storage = new PureBDBStorage(params, bdbConfig)
     storage.ids = params.secIds
     storage
     

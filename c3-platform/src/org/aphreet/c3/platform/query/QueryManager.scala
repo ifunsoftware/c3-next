@@ -32,6 +32,8 @@ package org.aphreet.c3.platform.query
 
 trait QueryManager{
 
-  def executeQuery(consumer:QueryConsumer)
+  def executeQuery(fields:Map[String, String] = Map(),
+                   systemFields:Map[String, String] = Map(),
+                   consumer:QueryConsumer)
 
 }

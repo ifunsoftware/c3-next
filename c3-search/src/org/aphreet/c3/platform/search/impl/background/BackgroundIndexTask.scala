@@ -119,7 +119,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     if (storagesToIndex.size > 0) {
       currentStorage = storagesToIndex.head
       storagesToIndex = storagesToIndex.tail
-      iterator = currentStorage.iterator
+      iterator = currentStorage.iterator()
       log debug "Starting iteration over storage " + currentStorage.id
     } else {
       log debug "All storages have been checked, sleeping for an hour"

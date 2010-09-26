@@ -25,5 +25,9 @@ trait StorageManager {
   def setStorageMode(id:String, mode:StorageMode)
   
   def updateStorageParams(storage:Storage)
-  
+
+  def createIndex(id:String, index:StorageIndex)
+
+  def removeIndex(id:String, name:String)
+
 }

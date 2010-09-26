@@ -8,7 +8,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   var iterator:StorageIterator = _
   
   override def preStart = {
-    iterator = source.iterator
+    iterator = source.iterator()
   }
   
   override def step = {

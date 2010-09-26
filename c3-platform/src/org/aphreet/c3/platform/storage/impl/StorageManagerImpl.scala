@@ -87,7 +87,7 @@ class StorageManagerImpl extends StorageManager{
 
         log info "Creating new storage with id: " + stId
 
-        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE)))
+        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE), List()))
 
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
@@ -150,6 +150,32 @@ class StorageManagerImpl extends StorageManager{
     for(id <- storage.id :: storage.ids){
       storages.put(id, storage)
     }
+  }
+
+  def createIndex(id:String, index:StorageIndex) = {
+    val storage = storageForId(id)
+
+    if(storage.count != 0){
+      throw new StorageException("Unable to create index on storage with content")
+    }
+
+    storage.createIndex(index)
+
+    updateStorageParams(storage)
+  }
+
+  def removeIndex(id:String, name:String) = {
+    val storage = storageForId(id)
+
+    val indexes = storage.params.indexes.filter(_.name != name)
+
+    if(indexes.size > 0){
+      storage.removeIndex(indexes.head)
+      updateStorageParams(storage)
+    }else{
+      throw new StorageException("Index not found")
+    }
+
   }
 
   private def registerStorage(storage:Storage){

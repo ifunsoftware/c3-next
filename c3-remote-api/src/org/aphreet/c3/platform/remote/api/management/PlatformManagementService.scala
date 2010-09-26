@@ -51,4 +51,8 @@ trait PlatformManagementService {
   def statistics:Array[Pair]
 
   def volumes:Array[VolumeDescription]
+
+  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
+
+  def removeIndex(id:String, name:String)
 }

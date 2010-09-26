@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.mock
 
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
-import org.aphreet.c3.platform.storage.{RW, StorageParams, StorageIterator, Storage}
+import org.aphreet.c3.platform.storage._
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,13 +28,16 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
 
   def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
 
-  def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode)
+  def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode, List())
 
   def count:Long = 0
 
   def size:Long = 0
 
-  def iterator:StorageIterator = null
+  def iterator(fields:Map[String,String],
+               systemFields:Map[String,String],
+               filter:Function1[Resource, Boolean]
+          ):StorageIterator = null
 
   def close = {}
 
@@ -44,4 +47,8 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
   def fullPath:Path = path
 
   def name:String = "StorageMock-" + mockId
+
+  def createIndex(index:StorageIndex) = {}
+
+  def removeIndex(index:StorageIndex) = {}
 }

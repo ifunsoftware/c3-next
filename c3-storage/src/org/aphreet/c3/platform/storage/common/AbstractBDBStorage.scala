@@ -5,11 +5,13 @@ import org.aphreet.c3.platform.resource.Resource
 
 import java.io.File
 
-import com.sleepycat.je.{EnvironmentConfig, Environment, DatabaseConfig, Database, DatabaseEntry, LockMode, OperationStatus, Transaction}
-import org.aphreet.c3.platform.storage.{U, StorageIterator}
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
+import org.aphreet.c3.platform.storage.{StorageParams, StorageIndex, U, StorageIterator}
+import collection.mutable.HashMap
+import com.sleepycat.je._
 
-abstract class AbstractBDBStorage(val storageId:String, override val path:Path, val config:BDBConfig) extends AbstractStorage(storageId, path){
+abstract class AbstractBDBStorage(override val parameters:StorageParams,
+                                  val config:BDBConfig) extends AbstractStorage(parameters){
 
   protected var env : Environment = null
 
@@ -21,6 +23,8 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
   protected val storagePath:String = path.toString + "/" + storageName
 
+  val secondaryDatabases = new HashMap[String, SecondaryDatabase]
+
   //Please, remove this in future!
   private var isIteratorsUsed = false
 
@@ -29,7 +33,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
   }
 
   def open(bdbConfig:BDBConfig) {
-    log info "Opening storage " + storageId + " with config " + config
+    log info "Opening storage " + id + " with config " + config
 
     val envConfig = new EnvironmentConfig
     envConfig setAllowCreate true
@@ -46,18 +50,66 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
 
     env = new Environment(storagePathFile, envConfig)
 
+    log info "Opening database..."
+
     val dbConfig = new DatabaseConfig
     dbConfig setAllowCreate true
     dbConfig setTransactional true
     database = env.openDatabase(null, storageName, dbConfig)
 
-    log info "Storage " + storageId + " opened"
+    log info "Opening secondary databases..."
+
+    for(index <- indexes){
+
+      log info "Index " + index.name + "..."
+
+      val secConfig = new SecondaryConfig
+      secConfig setAllowCreate true
+      secConfig setTransactional true
+      secConfig setSortedDuplicates true
+      secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+      val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
+
+      secondaryDatabases.put(index.name, secDatabase)
+
+    }
+
+    log info "Storage " + id + " opened"
 
     startObjectCounter
   }
 
+  def createIndex(index:StorageIndex){
+     val secConfig = new SecondaryConfig
+     secConfig setAllowCreate true
+     secConfig setTransactional true
+     secConfig setSortedDuplicates true
+     secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+    val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
+
+    secondaryDatabases.put(index.name, secDatabase)
+
+    indexes = index :: indexes
+  }
+
+  def removeIndex(index:StorageIndex){
+    val idxName = index.name
+
+    secondaryDatabases.get(idxName) match{
+      case None => {}
+      case Some(secDb) => {
+        secDb.close
+        env.removeDatabase(null, idxName)
+      }
+    }
+
+    indexes = indexes.filter(_.name != index.name)
+  }
+
   override def close = {
-    log info "Closing storage " + storageId
+    log info "Closing storage " + id
     super.close
     if(this.mode.allowRead)
       mode = U(Constants.STORAGE_MODE_NONE)
@@ -65,6 +117,11 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
     //waiting for iterators to die
     if(isIteratorsUsed) Thread.sleep(5000)
 
+    for((name, secDb) <- secondaryDatabases){
+      secDb.close
+    }
+
+    secondaryDatabases.clear
 
     if(database != null){
       database.close
@@ -77,7 +134,7 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
       env = null
     }
 
-    log info "Storage " + storageId + " closed"
+    log info "Storage " + id + " closed"
   }
 
 
@@ -310,9 +367,11 @@ abstract class AbstractBDBStorage(val storageId:String, override val path:Path, 
     database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
-  def iterator:StorageIterator = {
+  def iterator(fields:Map[String,String],
+               systemFields:Map[String,String],
+               filter:Function1[Resource, Boolean]):StorageIterator = {
     isIteratorsUsed = true
-    new BDBStorageIterator(this)
+    new BDBStorageIterator(this, fields, systemFields, filter)
   }
 
   def loadData(resource:Resource)

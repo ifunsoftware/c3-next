@@ -189,7 +189,7 @@ abstract class AbstractStorageTest extends AbstractTestWithFileSystem{
       raMap.put(ra2, res2)
       
       
-      val iterator = storage.iterator
+      val iterator = storage.iterator()
       
       while(iterator.hasNext){
         val readResource = iterator.next

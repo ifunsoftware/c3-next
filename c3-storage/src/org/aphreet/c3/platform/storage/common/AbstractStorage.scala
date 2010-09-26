@@ -1,13 +1,23 @@
 package org.aphreet.c3.platform.storage.common
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.AddressGenerator
+import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageParams}
 
-abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
+abstract class AbstractStorage(val parameters:StorageParams) extends Storage{
 
   protected var counter:Thread = null
+
+  def id:String = parameters.id
+
+  def path:Path = parameters.path
+
+  var indexes = parameters.indexes
+
+  def params:StorageParams = {
+    new StorageParams(id, parameters.secIds, parameters.path, parameters.storageType, parameters.mode, indexes)
+  }
 
   def startObjectCounter = {
     counter = new Thread(new ObjectCounter(this))
@@ -25,8 +35,6 @@ abstract class AbstractStorage(val id:String, val path:Path) extends Storage{
     
     address
   }
-  
-  def params:StorageParams = new StorageParams(id, ids, path, name, mode)
   
   def isAddressExists(address:String):Boolean
 

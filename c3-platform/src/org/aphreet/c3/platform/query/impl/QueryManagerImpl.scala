@@ -55,12 +55,14 @@ class QueryManagerImpl extends QueryManager{
   }
 
   override
-  def executeQuery(consumer:QueryConsumer){
+  def executeQuery(fields:Map[String, String],
+                   systemFields:Map[String, String],
+                   consumer:QueryConsumer){
 
     val storages = storageManager.listStorages
 
     for(storage <- storages){
-      val iterator = storage.iterator
+      val iterator = storage.iterator(fields, systemFields)
 
       try{
 

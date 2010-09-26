@@ -63,18 +63,10 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
     authenticationManager = manager
   }
 
-  def listStorages:Array[StorageDescription] = {
-
+  def listStorages:Array[StorageDescription] =
     catchAll(() => {
-      (for(s <-managementEndpoint.listStorages)
-        yield new StorageDescription(s.id,
-            s.getClass.getSimpleName,
-            s.path.toString,
-            s.mode.name + "(" + s.mode.message + ")",
-            s.count)).toArray
+      managementEndpoint.listStorages.map(storageToDescription(_)).toArray
     })
-
-  }
 
   def listStorageTypes:Array[String] =
     catchAll(() => {
@@ -211,6 +203,24 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
     })
   }
 
+  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) = {
+    catchAll(() => {
+      val idx = new StorageIndex(name,
+                                 fields.toList,
+                                 multi.booleanValue,
+                                 system.booleanValue,
+                                 System.currentTimeMillis)
+      
+      managementEndpoint.createIndex(id, idx)
+    })
+  }
+
+  def removeIndex(id:String, name:String) = {
+    catchAll(() => {
+      managementEndpoint.removeIndex(id, name)
+    })
+  }
+
   private def catchAll[T](function:Function0[T]) : T = {
     try{
       function.apply
@@ -220,5 +230,19 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
+
+  private def storageToDescription(storage:Storage):StorageDescription = {
+    new StorageDescription(storage.id,
+            storage.ids.toArray,
+            storage.getClass.getSimpleName,
+            storage.path.toString,
+            storage.mode.name + "(" + storage.mode.message + ")",
+            storage.count,
+            storage.params.indexes.map(indexToDescription(_)).toArray)
+  }
+
+  private def indexToDescription(index:StorageIndex):StorageIndexDescription = {
+    new StorageIndexDescription(index.name, index.multi, index.system, index.fields.toArray, index.created)
   }
 }

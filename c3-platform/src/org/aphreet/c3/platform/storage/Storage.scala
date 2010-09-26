@@ -32,6 +32,9 @@ abstract class Storage {
 
   def appendSystemMetadata(ra:String, metadata:Map[String, String])
 
+  def createIndex(index:StorageIndex)
+
+  def removeIndex(index:StorageIndex)
 
   def params:StorageParams
 
@@ -114,8 +117,6 @@ abstract class Storage {
       }
     }
 
-
-
     if(this.mode != newMode) {
       throw new StorageException("Failed to set mode " + newMode + " due to current mode: " + this.mode)
     }
@@ -130,7 +131,10 @@ abstract class Storage {
 
   def size:Long
 
-  def iterator:StorageIterator
+  def iterator(fields:Map[String,String] = Map(),
+               systemFields:Map[String,String] = Map(),
+               filter:Function1[Resource, Boolean] = ((resource:Resource) => true)
+          ):StorageIterator
 
   def close;
 

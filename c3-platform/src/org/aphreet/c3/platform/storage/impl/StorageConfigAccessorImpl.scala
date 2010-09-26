@@ -37,11 +37,11 @@ import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriterImpl
 
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageParams, StorageModeParser}
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import collection.mutable.Buffer
 import collection.JavaConversions
+import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
 
 
 @Component
@@ -86,14 +86,41 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
       val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
 
 
+
+      var indexes:List[StorageIndex] = List()
+
+      val indexesNode = storage.getNode("indexes")
+
+      if(indexesNode != null){
+
+        val indexMaps = JavaConversions.asBuffer(
+          indexesNode.asInstanceOf[ListNode].getNodes.asInstanceOf[JList[MapNode]])
+
+        val result = for (indexMap <- indexMaps){
+          val indexName = indexMap.getNode("name").asInstanceOf[ScalarNode].getValue[String]
+          val mulIndex =  indexMap.getNode("multi").asInstanceOf[ScalarNode].getValue[Boolean]
+          val system = indexMap.getNode("system").asInstanceOf[ScalarNode].getValue[Boolean]
+          val created:Long = indexMap.getNode("created").asInstanceOf[ScalarNode].getValue[String].toLong
+
+          val fields = JavaConversions.asBuffer(
+            indexMap.getNode("fields").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
+
+          val fieldList = fields.map(_.getValue[String]).toList
+
+          indexes = indexes ::: List(new StorageIndex(indexName, fieldList, mulIndex, system, created))
+        }
+        
+
+      }
+
       list = list ::: List(
         new StorageParams(
           storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
           idArray.toList,
-          //List.fromIterator(idArray.elements),
           new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
           storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
-          storageMode
+          storageMode,
+          indexes
           ))
     }
 
@@ -119,10 +146,25 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
                   .key("mode").value(storage.mode.name)
                   .key("modemsg").value(storage.mode.message)
                   .key("ids").array
-          for (id <- storage.secIds)
-            writer.value(id)
+                    for (id <- storage.secIds)
+                       writer.value(id)
+                  writer.endArray
 
-          writer.endArray
+          writer.key("indexes").array //indexes start
+            for(index <- storage.indexes){
+              writer.`object`
+                .key("name").value(index.name)
+                .key("multi").value(index.multi)
+                .key("system").value(index.system)
+                .key("created").value(index.created)
+                .key("fields").array
+                   for(field <- index.fields)
+                     writer.value(field)
+                writer.endArray
+              writer.endObject
+            }
+
+          writer.endArray //indexes end
 
           writer.endObject
         }

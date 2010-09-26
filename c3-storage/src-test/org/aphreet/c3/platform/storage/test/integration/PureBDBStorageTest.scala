@@ -6,7 +6,7 @@ import junit.framework.Assert._
 import scala.collection.mutable.HashMap
 
 import org.aphreet.c3.platform.storage._
-import common.BDBConfig
+import common.{BDBStorageIterator, BDBConfig}
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
 
@@ -22,7 +22,7 @@ class PureBDBStorageTest extends TestCase{
   var storagePath:Path = null
 
   def createStorage(id:String):Storage =
-    new PureBDBStorage(id, storagePath, new BDBConfig(true, true, 20))
+    new PureBDBStorage(new StorageParams(id, List(), storagePath, "PureBDBStorage", RW(""), List()), new BDBConfig(true, true, 20))
 
   override def setUp{
 	testDir = new File(System.getProperty("user.home"), "c3_int_test")
@@ -215,7 +215,8 @@ class PureBDBStorageTest extends TestCase{
       raMap.put(ra2, res2)
 
 
-      val iterator = storage.iterator
+      val iterator = storage.iterator()
+      assertEquals(0, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
       while(iterator.hasNext){
         val readResource = iterator.next
@@ -232,6 +233,233 @@ class PureBDBStorageTest extends TestCase{
       iterator.close
 
       assertTrue("Not all resource was accessed via iterator", raMap.size == 0)
+
+    }finally storage.close
+  }
+
+
+   def testIterator1 = {
+    val storage  = createStorage("1008")
+
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+
+    try{
+
+      val res0 = createResource
+      res0.metadata.put("pool", "pool0")
+      val ra0 = storage.add(res0)
+
+      val res1 = createResource
+      res1.metadata.put("pool", "pool1")
+      val ra1 = storage.add(res1)
+
+      val res2 = createResource
+      res2.metadata.put("pool", "pool0")
+      val ra2 = storage.add(res2)
+
+
+      val raMap = new HashMap[String, Resource]
+
+      raMap.put(ra0, res0)
+      raMap.put(ra2, res2)
+
+
+      val iterator = storage.iterator(fields=Map("pool" -> "pool0"))
+      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
+
+      assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
+
+      while(iterator.hasNext){
+        val readResource = iterator.next
+
+        raMap.get(readResource.address) match{
+          case None => assertFalse("Found resource that we did not save", false)
+          case Some(r) => {
+            compareResources(r, readResource)
+            raMap -= r.address
+          }
+        }
+      }
+
+      iterator.close
+
+      assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
+
+    }finally storage.close
+  }
+
+   def testIterator2 = {
+    val storage  = createStorage("1009")
+
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=true, multi=false, created=0l))
+
+    try{
+
+      val res0 = createResource
+      res0.systemMetadata.put("pool", "pool0")
+      val ra0 = storage.add(res0)
+
+      val res1 = createResource
+      res1.systemMetadata.put("pool", "pool1")
+      val ra1 = storage.add(res1)
+
+      val res2 = createResource
+      res2.systemMetadata.put("pool", "pool0")
+      val ra2 = storage.add(res2)
+
+
+      val raMap = new HashMap[String, Resource]
+
+      raMap.put(ra0, res0)
+      raMap.put(ra2, res2)
+
+
+      val iterator = storage.iterator(systemFields=Map("pool" -> "pool0"))
+      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
+
+      assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
+
+      while(iterator.hasNext){
+        val readResource = iterator.next
+
+        raMap.get(readResource.address) match{
+          case None => assertFalse("Found resource that we did not save", false)
+          case Some(r) => {
+            compareResources(r, readResource)
+            raMap -= r.address
+          }
+        }
+      }
+
+      iterator.close
+
+      assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
+
+    }finally storage.close
+  }
+
+   def testIterator3 = {
+    val storage  = createStorage("1010")
+
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system=true, multi=false, created=0l)) 
+
+    try{
+
+      val res0 = createResource
+      res0.metadata.put("pool", "pool0")
+      res0.systemMetadata.put("c3.pool", "pool0")
+      val ra0 = storage.add(res0)
+
+      val res1 = createResource
+      res1.metadata.put("pool", "pool0")
+      res1.systemMetadata.put("c3.pool", "pool1")
+      val ra1 = storage.add(res1)
+
+      val res2 = createResource
+      res2.metadata.put("pool", "pool0")
+      res2.systemMetadata.put("c3.pool", "pool0")
+      val ra2 = storage.add(res2)
+
+      val res4 = createResource
+      res4.metadata.put("pool", "pool1")
+      res4.systemMetadata.put("c3.pool", "pool0")
+      val ra4 = storage.add(res4)
+
+      val res5 = createResource
+      res5.systemMetadata.put("c3.pool", "pool0")
+      val ra5 = storage.add(res5)
+
+
+      val raMap = new HashMap[String, Resource]
+
+      raMap.put(ra0, res0)
+      raMap.put(ra2, res2)
+
+
+      val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
+      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
+
+      assertEquals(2, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
+
+      while(iterator.hasNext){
+        val readResource = iterator.next
+
+        raMap.get(readResource.address) match{
+          case None => assertFalse("Found resource that we did not save", false)
+          case Some(r) => {
+            compareResources(r, readResource)
+            raMap -= r.address
+          }
+        }
+      }
+
+      iterator.close
+
+      assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
+
+    }finally storage.close
+  }
+
+  def testIterator4 = {
+    val storage  = createStorage("1011")
+
+    //storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+    //storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system=true, multi=false, created=0l)) 
+
+    try{
+
+      val res0 = createResource
+      res0.metadata.put("pool", "pool0")
+      res0.systemMetadata.put("c3.pool", "pool0")
+      val ra0 = storage.add(res0)
+
+      val res1 = createResource
+      res1.metadata.put("pool", "pool0")
+      res1.systemMetadata.put("c3.pool", "pool1")
+      val ra1 = storage.add(res1)
+
+      val res2 = createResource
+      res2.metadata.put("pool", "pool0")
+      res2.systemMetadata.put("c3.pool", "pool0")
+      val ra2 = storage.add(res2)
+
+      val res4 = createResource
+      res4.metadata.put("pool", "pool1")
+      res4.systemMetadata.put("c3.pool", "pool0")
+      val ra4 = storage.add(res4)
+
+      val res5 = createResource
+      res5.systemMetadata.put("c3.pool", "pool0")
+      val ra5 = storage.add(res5)
+
+
+      val raMap = new HashMap[String, Resource]
+
+      raMap.put(ra0, res0)
+      raMap.put(ra2, res2)
+
+
+      val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
+      //iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
+
+      assertEquals(0, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
+
+      while(iterator.hasNext){
+        val readResource = iterator.next
+
+        raMap.get(readResource.address) match{
+          case None => assertFalse("Found resource that we did not save", false)
+          case Some(r) => {
+            compareResources(r, readResource)
+            raMap -= r.address
+          }
+        }
+      }
+
+      iterator.close
+
+      assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
     }finally storage.close
   }

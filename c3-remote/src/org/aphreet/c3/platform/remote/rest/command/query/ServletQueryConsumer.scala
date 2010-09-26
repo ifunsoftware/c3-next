@@ -36,33 +36,19 @@ import org.aphreet.c3.platform.resource.Resource
 import collection.mutable.HashMap
 import org.aphreet.c3.platform.query.QueryConsumer
 
-class ServletQueryConsumer(val writer: PrintWriter, val metadata:HashMap[String, String]) extends QueryConsumer {
+class ServletQueryConsumer(val writer: PrintWriter) extends QueryConsumer {
   var addressesWritten = 0
 
   override def addResource(resource: Resource) {
-    if (isResourceMatchQuery(resource)) {
-      writer.println(resource.address)
+    writer.println(resource.address)
 
-      addressesWritten = addressesWritten + 1
+    addressesWritten = addressesWritten + 1
 
-      if (addressesWritten >= 100) {
-        writer.flush
-        addressesWritten = 0
-      }
+    if (addressesWritten >= 100) {
+      writer.flush
+      addressesWritten = 0
     }
-  }
 
-  def isResourceMatchQuery(resource: Resource):Boolean = {
-
-    if(metadata.isEmpty) return true
-
-    for((k, v) <- metadata){
-      resource.metadata.get(k) match {
-        case Some(x) => if(x != v) return false
-        case None => return false
-      }
-    }
-    true
   }
 
   override def close {

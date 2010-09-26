@@ -106,7 +106,10 @@ class StorageStub0(storageId:String) extends Storage{
 
   def size:Long = 0
 
-  def iterator:StorageIterator = null
+  def iterator(fields:Map[String,String],
+               systemFields:Map[String,String],
+               filter:Function1[Resource, Boolean]
+          ):StorageIterator = null
 
   def close = {}
 
@@ -116,5 +119,9 @@ class StorageStub0(storageId:String) extends Storage{
   def fullPath:Path = null
 
   def name:String = ""
+
+  def createIndex(index:StorageIndex) = {}
+
+  def removeIndex(index:StorageIndex) = {}
   
 }

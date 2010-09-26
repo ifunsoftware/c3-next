@@ -30,7 +30,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Commands, Command}
-import org.aphreet.c3.platform.remote.api.management.StorageDescription
+import org.aphreet.c3.platform.remote.api.management.{StorageIndexDescription, StorageDescription}
 
 object StorageCommands extends Commands{
 
@@ -39,7 +39,11 @@ object StorageCommands extends Commands{
     new DeleteStorageCommand,
     new SetStorageModeCommand,
     new ListStorageCommand,
-    new ListStorageTypesCommand
+    new ListStorageTypesCommand,
+    new ShowResourceCommand,
+    new ShowStorageCommand,
+    new CreateStorageIndexCommand,
+    new RemoveStorageIndexCommand
   )
 }
 
@@ -147,4 +151,75 @@ class ShowResourceCommand extends Command {
   }
 
   def name = List("show", "resource")
+}
+
+class ShowStorageCommand extends Command {
+
+  def execute = {
+    if(params.length < 1){
+      "Not enough params.\nUsage: show storage <storage id>"
+    }else{
+      val storages = management.listStorages.filter(_.id == params.head)
+
+      if(storages.size > 0){
+        val storage = storages(0)
+
+        "Storage:\n" +
+        "Id     : " + storage.id + "\n" +
+        "Sec ids: " + storage.ids.foldRight("")(_ + ", " + _) + "\n" +
+        "Type   : " + storage.storageType + "\n" +
+        "Path   : " + storage.path + "\n" +
+        "Mode   : " + storage.mode + "\n" +
+        "Res.cnt: " + storage.count + "\n" +
+        "Indexes:\n" +
+        storage.indexes.map(idx => {
+          idx.name + " (" + idx.fields.reduceRight(_ + ", " + _) + ") sys:" + idx.system + " mul:" + idx.multi + " date:" + idx.created
+        }).foldRight("")(_ + "\n" + _)
+
+      }else{
+        "Storage with id \"" + params.head + "\" is not found"
+      }
+    }
+  }
+
+  def name = List("show", "storage")
+}
+
+class CreateStorageIndexCommand extends Command {
+
+  def execute = {
+    if(params.length < 5){
+      "Not enough arguments.\nUsage: create storage index <storage id> <index name> <system?> <multi?> <field0> <field1> ..."
+    }else{
+      val indexParams = params.toArray
+
+      val id = indexParams(0)
+      val name = indexParams(1)
+      val system = indexParams(2) == "true"
+      val multi = indexParams(3) == "true"
+      val fields = params.drop(4).toArray
+
+
+      management.createIndex(id, name, fields, system, multi)
+      
+      "Index created"
+    }
+  }
+
+  def name = List("create", "storage", "index")
+
+}
+
+class RemoveStorageIndexCommand extends Command {
+
+  def execute = {
+    if(params.length < 2){
+      "Not enough arguments.\nUsage: remove storage index <storage id> <index name>"
+    }else{
+      management.removeIndex(params.head, params.tail.head)
+      "Index removed"
+    }
+  }
+
+  def name = List("remove", "storage", "index")
 }

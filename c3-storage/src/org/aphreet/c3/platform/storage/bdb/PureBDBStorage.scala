@@ -5,8 +5,11 @@ import org.aphreet.c3.platform.resource._
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
+import org.aphreet.c3.platform.storage.{StorageParams, StorageIndex}
 
-class PureBDBStorage(override val id: String, override val path: Path, override val config: BDBConfig) extends AbstractBDBStorage(id, path, config) {
+class PureBDBStorage(override val parameters: StorageParams,
+                     override val config: BDBConfig) extends AbstractBDBStorage(parameters, config) {
+
   override protected def storeData(resource: Resource, tx: Transaction) {
 
     if (resource.isVersioned) {
@@ -48,16 +51,6 @@ class PureBDBStorage(override val id: String, override val path: Path, override 
       }
 
       version.data = new LazyBDBDataWrapper(versionKey, database)
-
-      /*
-      val key = new DatabaseEntry(versionKey.getBytes)
-      val value = new DatabaseEntry()
-
-      if (database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS)
-        version.data = DataWrapper.wrap(value.getData)
-      else
-        throw new StorageException("Failed to get data from MutableBDBStorage, operation status is not SUCCESS for resource: " + resource.address + " and version: " + versionKey)
-      */
     }
   }
 

@@ -60,13 +60,13 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      StorageParams(storageId, List(), new Path(storagePath), storageName, RW("")))
+      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()))
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
     val configAccessor = createMock(classOf[StorageConfigAccessor])
     expect(configAccessor.load).andReturn(
-      List(StorageParams(storageId, List(), new Path(storagePath), storageName, RW("")))
+      List(StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()))
     ).atLeastOnce
     replay(configAccessor)
 

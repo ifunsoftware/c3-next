@@ -3,7 +3,6 @@ package org.aphreet.c3.platform.management.impl
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.storage.{StorageManager, Storage, StorageMode}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.storage.dispatcher.selector.size._
@@ -19,6 +18,7 @@ import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
 import java.util.{HashMap, Map => JMap}
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.volume.{Volume, VolumeManager}
+import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, StorageMode}
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
@@ -134,5 +134,13 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def statistics:Map[String,String] = statisticsManager.fullStatistics
 
   def listVolumes:List[Volume] = volumeManager.volumeList
+
+  def createIndex(id:String, index:StorageIndex) = {
+    storageManager.createIndex(id, index)
+  }
+
+  def removeIndex(id:String, name:String) = {
+    storageManager.removeIndex(id, name)
+  }
 
 }
