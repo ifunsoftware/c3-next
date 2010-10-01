@@ -6,13 +6,13 @@ import javax.jws.WebService
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
 trait PlatformManagementService {
 
+  def removeStorage(id:String)
+
   def listStorages:Array[StorageDescription]
 
   def listStorageTypes:Array[String]
 
   def createStorage(stType:String, path:String)
-
-  def removeStorage(id:String)
 
   def migrate(source:String, target:String)
 
@@ -28,7 +28,7 @@ trait PlatformManagementService {
 
   def setTaskMode(taskId:String, mode:String)
 
-  def listTypeMappigs:Array[TypeMapping]
+  def listTypeMappings:Array[TypeMapping]
 
   def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean)
 
@@ -55,4 +55,5 @@ trait PlatformManagementService {
   def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
 
   def removeIndex(id:String, name:String)
+
 }

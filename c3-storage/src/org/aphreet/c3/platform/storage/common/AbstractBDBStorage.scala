@@ -7,8 +7,8 @@ import java.io.File
 
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 import org.aphreet.c3.platform.storage.{StorageParams, StorageIndex, U, StorageIterator}
-import collection.mutable.HashMap
 import com.sleepycat.je._
+import collection.mutable.{HashSet, HashMap}
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
                                   val config:BDBConfig) extends AbstractStorage(parameters){
@@ -25,8 +25,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   val secondaryDatabases = new HashMap[String, SecondaryDatabase]
 
-  //Please, remove this in future!
-  private var isIteratorsUsed = false
+  val iterators = new HashSet[BDBStorageIterator]
+
 
   {
    open(config)
@@ -114,8 +114,21 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     if(this.mode.allowRead)
       mode = U(Constants.STORAGE_MODE_NONE)
 
-    //waiting for iterators to die
-    if(isIteratorsUsed) Thread.sleep(5000)
+
+    try{
+
+      log info "Closing iterators..."
+
+      val iteratorList = iterators.toList
+
+      for(iterator <- iteratorList){
+        iterator.close
+      }
+
+    }catch{
+      case e => log.error(e)
+    }
+
 
     for((name, secDb) <- secondaryDatabases){
       secDb.close
@@ -370,8 +383,21 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
   def iterator(fields:Map[String,String],
                systemFields:Map[String,String],
                filter:Function1[Resource, Boolean]):StorageIterator = {
-    isIteratorsUsed = true
-    new BDBStorageIterator(this, fields, systemFields, filter)
+
+    val iterator = new BDBStorageIterator(this, fields, systemFields, filter)
+
+    iterators.synchronized(
+      iterators += iterator
+    )
+
+    iterator
+
+  }
+
+  def removeIterator(iterator:BDBStorageIterator){
+    iterators.synchronized(
+      iterators -= iterator
+      )
   }
 
   def loadData(resource:Resource)

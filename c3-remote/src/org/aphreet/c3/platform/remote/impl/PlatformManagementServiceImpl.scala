@@ -40,17 +40,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.exception.{PlatformException, StorageException}
-import javax.jws.{WebMethod, WebService}
 import collection.JavaConversions._
 import org.springframework.stereotype.Component
+import javax.jws.{WebMethod, WebService}
+import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil._
+import org.springframework.web.context.support.SpringBeanAutowiringSupport
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
-class PlatformManagementServiceImpl extends PlatformManagementService{
+class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with PlatformManagementService{
 
-  private val log = LogFactory getLog getClass
-
-  private var managementEndpoint:PlatformManagementEndpoint = null
+  private var managementEndpoint:PlatformManagementEndpoint = _
 
   private var authenticationManager:AuthenticationManager = _
 
@@ -63,30 +63,59 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
     authenticationManager = manager
   }
 
+  def removeStorage(id:String) =
+    try{
+      managementEndpoint.removeStorage(id)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+
   def listStorages:Array[StorageDescription] =
-    catchAll(() => {
+    try{
       managementEndpoint.listStorages.map(storageToDescription(_)).toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def listStorageTypes:Array[String] =
-    catchAll(() => {
+    try{
       managementEndpoint.listStorageTypes.toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
 
   def createStorage(stType:String, path:String) =
-    catchAll(() => {managementEndpoint.createStorage(stType, path)})
-
-  def removeStorage(id:String) =
-    catchAll(() => {managementEndpoint.removeStorage(id)})
+   try{
+     managementEndpoint.createStorage(stType, path)
+   }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def migrate(source:String, target:String) =
-    catchAll(() => {
+    try{
       managementEndpoint.migrateFromStorageToStorage(source, target)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def setStorageMode(id:String, mode:String) =
-    catchAll(() => {
+   try{
       val storageMode = mode match {
         case "RW" => RW(STORAGE_MODE_USER)
         case "RO" => RO(STORAGE_MODE_USER)
@@ -94,36 +123,58 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
         case _ => throw new StorageException("No mode named " + mode)
       }
       managementEndpoint.setStorageMode(id, storageMode)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
 
   def setPlatformProperty(key:String, value:String) =
-    catchAll(() =>
+    try{
       managementEndpoint.setPlatformProperty(key, value)
-      )
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def platformProperties:Array[Pair] =
-    catchAll(() => {
+    try{
       (for(e <- asMap(managementEndpoint.getPlatformProperties))
         yield new Pair(e._1, e._2)).toSeq.toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def listTasks:Array[RemoteTaskDescription] =
-    catchAll(() =>
+    try{
       managementEndpoint.listTasks.map(fromLocalDescription(_)).toArray
-    )
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def listFinishedTasks:Array[RemoteTaskDescription] =
-    catchAll(() =>
+    try{
       managementEndpoint.listFinishedTasks.map(fromLocalDescription(_)).toArray
-    )
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
-  private def fromLocalDescription(descr:TaskDescription):RemoteTaskDescription = {
-    new RemoteTaskDescription(descr.id, descr.name, descr.state.name, descr.progress.toString)
-  }
 
   def setTaskMode(taskId:String, mode:String) =
-    catchAll(() => {
+    try{
       val state:TaskState = mode match {
         case "pause" => PAUSED
         case "resume"   => RUNNING
@@ -132,79 +183,144 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
       }
 
       managementEndpoint.setTaskMode(taskId, state)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
-  def listTypeMappigs:Array[TypeMapping] =
-    catchAll(() => {
+  def listTypeMappings:Array[TypeMapping] =
+    try{
       (for(entry <- managementEndpoint.listTypeMappings)
         yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean) =
-    catchAll(() => {
+    try{
       managementEndpoint.addTypeMapping((mimeType, storage, versioned.booleanValue))
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def removeTypeMapping(mimeType:String) =
-    catchAll(() =>
+    try{
       managementEndpoint.removeTypeMapping(mimeType)
-      )
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def listSizeMappings:Array[SizeMapping] =
-    catchAll(() => {
+    try{
       (for(entry <- managementEndpoint.listSizeMappings)
         yield new SizeMapping(entry._1, entry._2, entry._3)).toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean) =
-    catchAll(() => {
+    try{
       managementEndpoint.addSizeMapping((size.longValue, storage, versioned.booleanValue))
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def removeSizeMapping(size:java.lang.Long) =
-    catchAll(() => {
+    try{
       managementEndpoint.removeSizeMaping(size.longValue)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def listUsers:Array[UserDescription] =
-    catchAll(() => {
+    try{
       authenticationManager.list.map(e => new UserDescription(e.name, e.role.name, e.enabled)).toSeq.toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
 
   def addUser(name:String, password:String, role:String) = {
-    catchAll(() => {
+    try{
       authenticationManager.create(name, password, UserRole.fromString(role))
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
   def updateUser(name:String, password:String, role:String, enabled:java.lang.Boolean) = {
-    catchAll(() => {
+    try{
       authenticationManager.update(name, password, UserRole.fromString(role), enabled.booleanValue)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
   def deleteUser(name:String) = {
-    catchAll(() => {
+    try{
       authenticationManager.delete(name)
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
   def statistics:Array[Pair] = {
-    catchAll(() => {
+    try{
       (for((key,value) <- managementEndpoint.statistics)
         yield new Pair(key, value)).toSeq.toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
   def volumes:Array[VolumeDescription] = {
-    catchAll(() => {
+    try{
       (for(v <- managementEndpoint.listVolumes)
         yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
-    })
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
   def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) = {
-    catchAll(() => {
+    try{
       val idx = new StorageIndex(name,
                                  fields.toList,
                                  multi.booleanValue,
@@ -212,37 +328,23 @@ class PlatformManagementServiceImpl extends PlatformManagementService{
                                  System.currentTimeMillis)
       
       managementEndpoint.createIndex(id, idx)
-    })
-  }
-
-  def removeIndex(id:String, name:String) = {
-    catchAll(() => {
-      managementEndpoint.removeIndex(id, name)
-    })
-  }
-
-  private def catchAll[T](function:Function0[T]) : T = {
-    try{
-      function.apply
     }catch{
       case e => {
-        log.error(e)
+        e.printStackTrace
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  private def storageToDescription(storage:Storage):StorageDescription = {
-    new StorageDescription(storage.id,
-            storage.ids.toArray,
-            storage.getClass.getSimpleName,
-            storage.path.toString,
-            storage.mode.name + "(" + storage.mode.message + ")",
-            storage.count,
-            storage.params.indexes.map(indexToDescription(_)).toArray)
+  def removeIndex(id:String, name:String) = {
+    try{
+      managementEndpoint.removeIndex(id, name)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
   }
 
-  private def indexToDescription(index:StorageIndex):StorageIndexDescription = {
-    new StorageIndexDescription(index.name, index.multi, index.system, index.fields.toArray, index.created)
-  }
 }

@@ -40,7 +40,7 @@
             <scope>provided</scope>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>com.springsource.json</groupId>
             <artifactId>com.springsource.json</artifactId>
             <version>1.0.1.RELEASE</version>
@@ -73,6 +73,91 @@
             <artifactId>com.springsource.org.apache.commons.io</artifactId>
             <version>1.4.0</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.xml.ws</artifactId>
+            <version>2.1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.xml.bind</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.xml.bind.jaxb1</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.tools.xjc</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.xml.fastinfoset</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>com.springsource.org.jvnet.staxex</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.msv</groupId>
+            <artifactId>com.springsource.com.sun.msv.datatype</artifactId>
+            <version>0.0.0.20041122</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xml</groupId>
+            <artifactId>com.springsource.org.apache.xml.resolver</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.relaxng</groupId>
+            <artifactId>com.springsource.org.relaxng.datatype</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xerces</groupId>
+            <artifactId>com.springsource.org.apache.xerces</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xmlcommons</groupId>
+            <artifactId>com.springsource.org.apache.xmlcommons</artifactId>
+            <version>1.3.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>com.springsource.org.dom4j</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>com.springsource.com.sun.xml.stream.buffer</artifactId>
+            <version>0.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jvnet.mimepull</groupId>
+            <artifactId>com.springsource.org.jvnet.mimepull</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
     </dependencies>
@@ -117,6 +202,22 @@
                     <sourceDir>src</sourceDir>
                 </configuration>
             </plugin>
+            <!--
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>wsgen</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sei>org.aphreet.c3.platform.remote.impl.PlatformManagementServiceImpl</sei>
+                </configuration>
+            </plugin>
+            -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -138,6 +239,42 @@
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-a-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>
+                                ${project.build.directory}/${project.artifactId}-${project.version}.jar
+                            </file>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

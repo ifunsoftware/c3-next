@@ -37,10 +37,11 @@ import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.access.AccessManager
 import javax.jws.{WebService, WebMethod}
 import org.aphreet.c3.platform.resource.ResourceSerializer
+import org.springframework.web.context.support.SpringBeanAutowiringSupport
 
 @Component("platformAccessService")
 @WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
-class PlatformAccessServiceImpl extends PlatformAccessService{
+class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with PlatformAccessService{
 
   private var accessManager:AccessManager = _
 

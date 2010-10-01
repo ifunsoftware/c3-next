@@ -97,6 +97,10 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   def setPlatformProperty(key:String, value:String) = {
 
+    if(key == null || value == null){
+      throw new NullPointerException("Properties must be not-null")
+    }
+
     configManager ! SetPropertyMsg(key, value)
   }
   

@@ -44,7 +44,7 @@ object StorageCommands extends Commands{
     new ShowStorageCommand,
     new CreateStorageIndexCommand,
     new RemoveStorageIndexCommand
-  )
+    )
 }
 
 class AddStorageCommand extends Command{
@@ -104,13 +104,13 @@ class ListStorageCommand extends Command {
       desc.path)
 
   val header = "|         Type         |  ID  |    Mode    | Count  |              Path              |\n" +
-               "|----------------------|------|------------|--------|--------------------------------|\n"
+          "|----------------------|------|------------|--------|--------------------------------|\n"
   val footer = "|----------------------|------|------------|--------|--------------------------------|\n"
 
   def execute:String = {
 
     management.listStorages.map(s => format(s)).foldLeft(header)(_ + _) + footer
-    
+
   }
 
   def name = List("list", "storages")
@@ -164,17 +164,28 @@ class ShowStorageCommand extends Command {
       if(storages.size > 0){
         val storage = storages(0)
 
+        val storageIds = if(storage.ids != null){
+          storage.ids.foldRight("")(_ + ", " + _)
+        }else{
+          ""
+        }
+
+        val indexes = if(storage.indexes != null){
+          storage.indexes.map(idx => {
+            idx.name + " (" + idx.fields.reduceRight(_ + ", " + _) + ") sys:" + idx.system + " mul:" + idx.multi + " date:" + idx.created
+          }).foldRight("")(_ + "\n" + _)
+        }else{
+          ""
+        }
+
         "Storage:\n" +
-        "Id     : " + storage.id + "\n" +
-        "Sec ids: " + storage.ids.foldRight("")(_ + ", " + _) + "\n" +
-        "Type   : " + storage.storageType + "\n" +
-        "Path   : " + storage.path + "\n" +
-        "Mode   : " + storage.mode + "\n" +
-        "Res.cnt: " + storage.count + "\n" +
-        "Indexes:\n" +
-        storage.indexes.map(idx => {
-          idx.name + " (" + idx.fields.reduceRight(_ + ", " + _) + ") sys:" + idx.system + " mul:" + idx.multi + " date:" + idx.created
-        }).foldRight("")(_ + "\n" + _)
+                "Id     : " + storage.id + "\n" +
+                "Sec ids: " + storageIds + "\n" +
+                "Type   : " + storage.storageType + "\n" +
+                "Path   : " + storage.path + "\n" +
+                "Mode   : " + storage.mode + "\n" +
+                "Res.cnt: " + storage.count + "\n" +
+                "Indexes:\n" + indexes
 
       }else{
         "Storage with id \"" + params.head + "\" is not found"
@@ -201,7 +212,7 @@ class CreateStorageIndexCommand extends Command {
 
 
       management.createIndex(id, name, fields, system, multi)
-      
+
       "Index created"
     }
   }

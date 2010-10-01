@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-Version: 1.0.0
+Bundle-Name: C3 Remote Web Client
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.aphreet.c3.platform.remote.webclient
+Web-ContextPath: /c3-web

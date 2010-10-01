@@ -218,6 +218,8 @@ class PureBDBStorageTest extends TestCase{
       val iterator = storage.iterator()
       assertEquals(0, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
+      assertEquals(1, storage.asInstanceOf[PureBDBStorage].iterators.size)
+
       while(iterator.hasNext){
         val readResource = iterator.next
 
@@ -231,6 +233,8 @@ class PureBDBStorageTest extends TestCase{
       }
 
       iterator.close
+
+      assertEquals(0, storage.asInstanceOf[PureBDBStorage].iterators.size)
 
       assertTrue("Not all resource was accessed via iterator", raMap.size == 0)
 

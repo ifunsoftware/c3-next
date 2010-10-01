@@ -13,11 +13,11 @@ import org.aphreet.c3.platform.client.management.connection.ConnectionException
  */
 
 trait SpringWsAccessor {
-  def obtainWebService[T](url: String, user: String, password: String, service: String, namespace: String, port: String, clazz: Class[T]): T = {
+  def obtainWebService[T](url: String, user: String, password: String, service: String, namespace: String, port: String, clazz: Class[T], wsdlPath:String): T = {
     try {
       val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
       factory.setServiceInterface(clazz)
-      factory.setWsdlDocumentUrl(new URL(url + "/" + service + "?WSDL"))
+      factory.setWsdlDocumentUrl(new URL(url + "/" + wsdlPath + "?WSDL"))
       factory.setNamespaceUri(namespace)
       factory.setServiceName(service)
       factory.setUsername(user)

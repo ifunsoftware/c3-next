@@ -83,7 +83,7 @@ class ListTypeMappingCommand extends Command{
 
     val builder = new StringBuilder
 
-    for(mapping <- management.listTypeMappigs)
+    for(mapping <- management.listTypeMappings)
       builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
 
 

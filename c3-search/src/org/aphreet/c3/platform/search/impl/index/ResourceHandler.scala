@@ -29,46 +29,37 @@
  */
 package org.aphreet.c3.platform.search.impl.index
 
-import filter.ResourceFilter
 import org.aphreet.c3.platform.resource.Resource
-import collection.mutable.HashMap
-import org.apache.lucene.document.{Field, Document}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.aphreet.c3.platform.search.impl.common.Fields
+import org.aphreet.c3.search.ext.DocumentBuilderFactory
+import collection.JavaConversions._
+import org.apache.lucene.document.{Document, Field}
 
 
-class ResourceHandler(val resource:Resource, val filters:List[ResourceFilter]){
+class ResourceHandler(val resource:Resource,
+                      val meta:Map[String, String],
+                      val extracted:Map[String, String],
+                      val lang:String){
 
-  val fields = new HashMap[String, String]
-
-  {
-    for(filter <- filters if filter.support(resource)){
-      fields ++= filter.apply(resource, fields)
-    }
-
-  }
 
   def document:Document = {
 
-    val doc = new Document
+    val documentBuilder = DocumentBuilderFactory.createDocumentBuilder
 
-    fields.remove(Fields.ADDRESS)
+    val doc = documentBuilder.build(asMap(meta), asMap(extracted), lang)
 
     doc.add(new Field(Fields.ADDRESS, resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
-
-    fields.foreach(e => doc.add(new Field(e._1, e._2, Field.Store.YES, Field.Index.ANALYZED)))
 
     doc
   }
 
   def analyzer:Analyzer = {
-    fields.get(Fields.LANG) match {
-      case Some(lang) =>
-        if(lang == "ru") new RussianAnalyzer
-        else new StandardAnalyzer
-      case None => new StandardAnalyzer
-    }
+    
+    if(lang == "ru") new RussianAnalyzer
+    else new StandardAnalyzer
+
   }
 }

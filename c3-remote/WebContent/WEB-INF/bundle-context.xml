@@ -12,7 +12,6 @@
 
     <context:annotation-config />
 
-
     <context:component-scan base-package="org.aphreet.c3.platform.remote" />
     <context:component-scan base-package="org.aphreet.c3.platform.auth" />
 
@@ -30,6 +29,7 @@
         <property name="registryPort" value="1299" />
     </bean>
 
+<!--
     <bean id="serviceExporter" factory-bean="wsExporterFactory" factory-method="createExporter">
         <property name="port" value="${remote.serverport}"/>
         <property name="authenticator" ref="platformWSAuthenticator"/>
@@ -38,10 +38,10 @@
     <bean id="wsExporterFactory" class="org.aphreet.c3.platform.remote.ws.WSExporterFactory">
         <constructor-arg value="${remote.servertype}"/>
     </bean>
-
+    
     <context:property-placeholder properties-ref="configC3Properties"/>
 
     <osgi-compendium:cm-properties id="configC3Properties" persistent-id="c3"/>
-
+-->
 
 </beans>

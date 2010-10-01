@@ -31,13 +31,15 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
-import filter.{MetadataFilter, LanguageGuesserFilter, TextExtractorFilter}
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.store.{RAMDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
+import java.io.StringReader
+import org.aphreet.c3.platform.search.impl.common.Fields._
+import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 
 class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
   val log = LogFactory.getLog(getClass)
@@ -50,15 +52,14 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
 
   var lastDocumentTime: Long = System.currentTimeMillis
 
+  val textExtractor = new TextExtractor
+
+  val languageGuesser = LanguageGuesserUtil.createGuesser
+
   {
     createNewWriter
   }
 
-  val filters = List(
-    new MetadataFilter,
-    new TextExtractorFilter,
-    new LanguageGuesserFilter
-    )
 
   def createNewWriter = {
     if (writer != null) {
@@ -130,12 +131,35 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
 
   def indexResource(resource: Resource) = {
     log debug num + ": Indexing resource " + resource.address
-    val resourceHandler = new ResourceHandler(resource, filters)
+
+    val extractedMeta = textExtractor.extract(resource)
+    val metadata = Map[String, String]() ++ resource.metadata
+    val language = getLanguage(metadata, extractedMeta)
+
+    
+    val resourceHandler = new ResourceHandler(resource, metadata, extractedMeta, language)
+
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
 
     writer.addDocument(document, analyzer)
     log debug "Resource writen to tmp index (" + resource.address + ")"
+  }
+
+  def getLanguage(metadata:Map[String, String], extracted:Map[String, String]):String = {
+    var str:String = null
+
+    if(extracted.contains(CONTENT))
+      str = extracted.get(CONTENT).get
+    else if(metadata.contains(TITLE)){
+      str = metadata.get(TITLE).get
+    }
+
+    if(str != null){
+      languageGuesser.guessLanguage(new StringReader(str))
+    }else{
+      null
+    } 
   }
 }
 

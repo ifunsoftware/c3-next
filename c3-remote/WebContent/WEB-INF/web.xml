@@ -14,12 +14,27 @@
         <servlet-name>RestServlet</servlet-name>
     </filter-mapping>
 
+    <filter>
+        <filter-name>WSAuthFilter</filter-name>
+        <filter-class>org.aphreet.c3.platform.remote.ws.WSAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>WSAuthFilter</filter-name>
+        <servlet-name>RestServlet</servlet-name>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>WSAuthFilter</filter-name>
+        <servlet-name>WSService</servlet-name>
+    </filter-mapping>
+
     <servlet>
-        <description></description>
         <servlet-name>RestServlet</servlet-name>
         <servlet-class>org.aphreet.c3.platform.remote.rest.RestServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+
     <servlet-mapping>
         <servlet-name>RestServlet</servlet-name>
         <url-pattern>/resource/*</url-pattern>
@@ -35,13 +50,26 @@
         <url-pattern>/query</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>WSService</servlet-name>
+        <servlet-class>
+            com.sun.xml.ws.transport.http.servlet.WSServlet
+        </servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>WSService</servlet-name>
+        <url-pattern>/ws/*</url-pattern>
+    </servlet-mapping>
+
+
     <context-param>
         <param-name>contextClass</param-name>
         <param-value>
             org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext
         </param-value>
     </context-param>
-
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -59,6 +87,12 @@
     <listener>
         <listener-class>
             org.apache.commons.fileupload.servlet.FileCleanerCleanup
+        </listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>
+            com.sun.xml.ws.transport.http.servlet.WSServletContextListener
         </listener-class>
     </listener>
 

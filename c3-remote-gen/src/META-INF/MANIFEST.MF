@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-Version: 1.0.0
+Bundle-Name: C3 Remote Generated
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.aphreet.c3.platform.remote.gen
+Fragment-Host: org.aphreet.c3.platform.remote;bundle-version="1.0.0"
+

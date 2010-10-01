@@ -12,10 +12,12 @@
         <module>c3-remote-api</module>
         <module>c3-platform</module>
         <module>c3-remote</module>
+        <module>c3-remote-gen</module>
         <module>c3-storage</module>
         <module>c3-storage-file</module>
         <module>c3-search</module>
         <module>c3-client</module>
+        <module>c3-remote-webclient</module>
     </modules>
 
     <properties>
@@ -230,10 +232,35 @@
                                 <phase>install</phase>
                                 <configuration>
                                     <tasks>
-                                        <copy file="${basedir}/c3.plan" toDir="${installPath}/plan" overwrite="true"
+                                        <copy file="${basedir}/config/c3.plan" toDir="${installPath}/plan" overwrite="true"
                                               failonerror="false"/>
-                                        <copy file="${basedir}/c3.properties" toDir="${installPath}/jars"
+                                        <copy file="${basedir}/config/c3.properties" toDir="${installPath}/jars"
                                               overwrite="true" failonerror="false"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>development</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>plan</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy file="${basedir}/config/c3-web.plan" toDir="${artPath}/../../pickup" overwrite="true"
+                                              failonerror="false"/>
                                     </tasks>
                                 </configuration>
                                 <goals>

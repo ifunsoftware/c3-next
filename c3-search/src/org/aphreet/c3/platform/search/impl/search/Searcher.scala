@@ -41,6 +41,7 @@ import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.common.Fields._
+import org.aphreet.c3.search.ext.SearchStrategyFactory
 
 
 class Searcher(val indexPath: Path) extends Actor{
@@ -75,68 +76,19 @@ class Searcher(val indexPath: Path) extends Actor{
 
   def search(sourceQuery: String): List[SearchResultEntry] = {
 
-    val analyzer = new StandardAnalyzer
+    val searchStrategy = SearchStrategyFactory.createSearchStrategy;
 
-    val query = new QueryParser(CONTENT, analyzer).parse(sourceQuery)
-
-    log debug "query: " + query.toString
-
-    val searcher = getSearcher
-
-    val topDocs = searcher.search(query, 30)
-
+    val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0)
 
     var results:List[SearchResultEntry] = List()
 
-
-    for (scoreDoc <- topDocs.scoreDocs) {
-      val score = scoreDoc.score
-
-      val docNum = scoreDoc.doc
-
-      val document = searcher.doc(docNum)
-
-      val address = document.get(ADDRESS)
-      val contents = document.get(CONTENT)
-
-      log debug "Document contents: " + contents
-
-
-      val fragments = if(contents != null)
-        fragmentsWithHighlightedTerms(analyzer, query, CONTENT, contents, 5, 100)
-      else
-        Array("")
-
-      results = new SearchResultEntry(address, score, fragments) :: results
-
+    for(e <- found){
+      results = new SearchResultEntry(e.address, e.score, e.fragments) :: results
     }
 
     log debug "results: " + results.toString
 
     results
-  }
-
-  /**
-   * @author Nicholas Hrycan
-   *
-   */
-  def fragmentsWithHighlightedTerms(analyzer:Analyzer,
-                                    query:Query,
-                                    fieldName:String,
-                                    fieldContents:String,
-                                    fragmentNumber:Int,
-                                    fragmentSize:Int):Array[String] = {
-
-    val stream = TokenSources.getTokenStream(fieldName, fieldContents, analyzer)
-    val scorer = new SpanScorer(query, fieldName, new CachingTokenFilter(stream))
-
-    val fragmenter = new SimpleSpanFragmenter(scorer, fragmentSize)
-
-    val highlighter = new Highlighter(scorer)
-    highlighter.setTextFragmenter(fragmenter)
-    highlighter.setMaxDocCharsToAnalyze(java.lang.Integer.MAX_VALUE)
-
-    highlighter.getBestFragments(stream, fieldContents, fragmentNumber)
   }
 
 

@@ -33,6 +33,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   private var isEmptyIterator = false
 
+  private var closed = false
+
   var disableFunctionFilter = false
 
   {
@@ -201,6 +203,10 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
     while (!resultFound) {
 
+      if(closed){
+        throw new StorageException("Iterator was closed")
+      }
+
       if (!storage.mode.allowRead) {
         this.close
         throw new StorageException("Storage " + storage.id + " is not readable")
@@ -270,6 +276,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   def close = {
     try {
 
+      closed = true
+
       if(secCursors != null){
         for(secCursor <- secCursors){
           secCursor.close
@@ -289,6 +297,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       }
     } catch {
       case e: DatabaseException => e.printStackTrace
+    } finally {
+      storage.removeIterator(this)
     }
   }
 

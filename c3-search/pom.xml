@@ -57,6 +57,12 @@
             <version>1.0.541</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-search-ext</artifactId>
+            <version>1.0.592</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -166,6 +172,12 @@
                                 <artifactItem>
                                     <groupId>org.aphreet.c3</groupId>
                                     <artifactId>language-guesser</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.aphreet.c3</groupId>
+                                    <artifactId>c3-search-ext</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

@@ -106,13 +106,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
   @PostConstruct
   def init {
 
-    configManager ! RegisterMsg(this)
-
     if (indexPath != null) {
       initialize
     } else {
       log warn "Index path is not set. Waiting for property to appear"
     }
+
+    configManager ! RegisterMsg(this)
   }
 
   def initialize() {
