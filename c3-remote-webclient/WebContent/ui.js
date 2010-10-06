@@ -1,13 +1,6 @@
 
-var proxy = new Ext.data.HttpProxy(new Ext.data.Connection({
-    url: '/c3-remote/ws/management',
-    method: 'POST',
-    defaultHeaders: {
-        'Content-Type': 'text/xml;charset="utf-8"',
-        'Authorization': 'Basic YWRtaW46cGFzc3dvcmQ='
-    }
-}));
-    // create the data store
+var proxy = new Ext.data.HttpProxy(createDefaultConnection());
+
 var platformPropertiesStore = new Ext.data.WSStore({
     reader: new Ext.data.XmlReader(
         {
@@ -27,8 +20,7 @@ var platformPropertiesStore = new Ext.data.WSStore({
     }),
     proxy: proxy,
     baseParams:{
-        methodName:'platformProperties',
-        methodParams:[]
+        methodName:'platformProperties'
     },
     autoLoad:true,
     autoSave:false,
@@ -46,12 +38,32 @@ var storageStore = new Ext.data.WSStore({
     }),
     proxy: proxy,
     baseParams:{
-        methodName:'listStorages',
-        methodParams:[]
+        methodName:'listStorages'
     },
     autoLoad:true,
    /* listeners:{
-        load: function(store, records, options){
+        load:function(store, records, options){
+            alert(records);
+        }
+    }*/
+});
+
+var storageTypesStore = new Ext.data.WSStore({
+    reader: new Ext.data.XmlReader(
+        {
+            record: "return",
+        },
+        StorageType
+    ),
+    writer: new Ext.data.XmlWriter({
+    }),
+    proxy: proxy,
+    baseParams:{
+        methodName:'listStorageTypes'
+    },
+    autoLoad:false,
+   /* listeners:{
+        load:function(store, records, options){
             alert(records);
         }
     }*/
@@ -61,7 +73,7 @@ Ext.onReady(function(){
 
     var storageColumnModel = new Ext.grid.ColumnModel({
         defaults: {
-            sortable: true // columns are not sortable by default
+            sortable: true
         },
         columns: [
             {
@@ -99,44 +111,140 @@ Ext.onReady(function(){
         store: storageStore,
         title:'Storages',
         cm:storageColumnModel,
-      //  frame: true,
         listeners: {
             rowdblclick: function(obj, index, e){
-                alert(storageStore.getAt(index).stId);  
+
+                var row = storageStore.getAt(index)
+
+                var win = new Ext.Window({
+                    title:'Storage ',// + row.data.stId,
+                    renderTo:Ext.getBody(),
+                    width:350,
+                    height:220,
+                    border:false,
+                    layout:'table',
+                    layoutConfig:{
+                        columns:2
+                    },
+                    items:[
+                        {html:'Id'},
+                        {html:row.data.stId},
+                        {html:'Type'},
+                        {html:row.data.storageType},
+                        {html:'Path'},
+                        {html:row.data.path},
+                        {html:'Count'},
+                        {html:row.data.count},
+                        {html:'Mode'},
+                        {html:'RW'}
+                    ]
+                    
+                })
+
+                win.show();
             }
         },
-        //height:300,
-        autoDestroy:false
+        tbar: [{
+                text: 'Refresh',
+                handler : function(){
+                    storageStore.load({})
+                }
+            },
+            {
+                text: 'Add',
+                handler : function(){
+
+                    var win = new Ext.Window({
+                        title:'Add Storage',
+                        renderTo:Ext.getBody(),
+                        width:420,
+                        height:220,
+                        border:false,
+                        layout:'fit',
+                        items:[{
+                            xtype:'form',
+                            labelWidth:60,
+                            frame:true,
+                            items:[
+                                {
+                                    id:'form_storage_type',
+                                    fieldLabel:'Type',
+                                    xtype:'combo',
+                                    allowBlank : false,
+                                    valueField:'name',
+                                    displayField:'name',
+                                    store: storageTypesStore,
+                                    triggerAction: 'all',
+                                    editable:false
+                                },
+                                {
+                                    id: 'form_storage_path',
+                                    fieldLabel:'Path',
+                                    xtype:'textfield',
+                                    anchor:'-18',
+                                    allowBlank : false,
+                                }
+                            ],
+                            buttons:[
+                                {
+                                    text:'Send',
+                                    handler:function(b, event){
+                                        var storageType = Ext.getCmp('form_storage_type').getValue()
+                                        var storagePath = Ext.getCmp('form_storage_path').getValue()
+
+                                        if(storageType && storagePath){
+
+                                            ManagementCreateStorage(storageType, storagePath,
+                                                function(resp, opts){
+                                                    storageStore.load();
+                                                    win.close();
+                                                },
+                                                function(resp, opts){
+                                                    alert("Error!")
+                                                }
+                                            )
+                                        }
+                                    }
+                                },
+                                {
+                                    text:'Cancel',
+                                    handler:function(b, event){
+                                        win.close();
+                                    }
+                                }
+                            ]
+                        }]
+                    });
+                    win.show();
+                }
+            }]
     });
 
-            var item2 = new Ext.Panel({
-                title: 'Content mappings',
-                html: 'empty panel',
-            });
+    var accordion = new Ext.Panel({
+        title: 'Storage',
+        layout:'accordion',
+        defaults:{layout:'fit', border:true},
+        layoutConfig:{animate:true},
+        items: [
+            storageGrid,
+            {
+                title:'Content mappings',
+                html: 'empty panel'
+            },
+            {
+                title:'Volumes',
+                html: 'empty panel'
+            }
+        ]
 
-            var item3 = new Ext.Panel({
-                title: 'Volumes',
-                html: 'empty panel',
-            });
-
-            var accordion = new Ext.Panel({
-                title: 'Storage',
-                layout:'accordion',
-                defaults:{layout:'fit'},
-                items: [storageGrid, item2, item3],
-                layoutConfig:{animate:true}
-            });
+    });
 
 
-
-
-    // shorthand alias
     var fm = Ext.form;
 
     var cm = new Ext.grid.ColumnModel({
-        // specify any defaults for each column
         defaults: {
-            sortable: true // columns are not sortable by default           
+            sortable: true
         },
         columns: [
             {
@@ -186,7 +294,6 @@ Ext.onReady(function(){
         region:'center',
         activeTab: 0,
         frame:true,
-        //defaults:{autoHeight: true},
         items:[
             grid,
             accordion

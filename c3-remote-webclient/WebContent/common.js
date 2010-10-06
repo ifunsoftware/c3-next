@@ -1,3 +1,62 @@
+Ext.data.Types.C3ARRAY = {
+    convert: function(v, data) {
+
+        var fieldName = ''
+
+        if(this.mapping){
+            fieldName = this.mapping
+        }else{
+            fieldName = this.name
+        }
+
+        var result = new Array()
+
+        var nodes = data.childNodes
+
+        for(var i=0; i<nodes.length; i++){
+
+            var currNode = nodes[i]
+
+            if(currNode.nodeName == fieldName){
+                if(currNode.childNodes.length < 2){
+                    //array of strings
+                    result.push(currNode.textContent)
+                }else{
+                    var obj = new Object()
+
+                    for(var j=0; j<currNode.childNodes.length; j++){
+                        var childNodeName = currNode.childNodes[j].nodeName
+                        var childNodeValue = currNode.childNodes[j].textContent
+                        obj[childNodeName] = childNodeValue
+                    }
+                    result.push(obj)
+                }
+            }
+        }
+
+        return result;
+    },
+
+    sortType: function(v){
+        //return v[0];
+        return '';
+    },
+
+    type: 'C3Array'
+};
+
+Ext.data.Types.C3PLAIN = {
+    convert: function(v, data) {
+        return data.textContent;
+    },
+
+    sortType: function(v){
+        return v;
+    },
+
+    type: 'C3Plain'
+};
+
 Ext.data.WSStore = Ext.extend(Ext.data.Store, {
 
     constructor: function(config){
@@ -59,16 +118,43 @@ Ext.data.WSStore = Ext.extend(Ext.data.Store, {
     }
 });
 
+function getDefaultHeaders(){
+    return {
+        'Content-Type': 'text/xml;charset="utf-8"',
+        'Authorization': 'Basic YWRtaW46cGFzc3dvcmQ='
+    }
+}
+
+function createDefaultConnection(){
+    return new Ext.data.Connection({
+        url: '/c3-remote/ws/management',
+        method: 'POST',
+        defaultHeaders: getDefaultHeaders()
+    })
+}
+
 function createXmlForMethod(methodName, parameters){
     var requestBody = '<?xml version="1.0" ?><S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/"><S:Body>' +
 		'<ns2:' + methodName + ' xmlns:ns2="remote.c3.aphreet.org">'
 
-
-		for(var i=0; i<parameters.length; i++){
-		    requestBody = requestBody + '<arg' + i + '>' + parameters[i] + '</arg' + i + '>'
-		}
+    if(parameters){
+        for(var i=0; i<parameters.length; i++){
+            requestBody = requestBody + '<arg' + i + '>' + parameters[i] + '</arg' + i + '>'
+        }
+    }
 
     requestBody = requestBody + '</ns2:' + methodName + '></S:Body></S:Envelope>';
 
     return requestBody;
+}
+
+function ManagementCreateStorage(type, path, success, failure){
+
+    var requestBody = createXmlForMethod("createStorage", [type, path])
+
+    createDefaultConnection().request({
+        xmlData:requestBody,
+        success:success,
+        failure:failure
+    })
 }
