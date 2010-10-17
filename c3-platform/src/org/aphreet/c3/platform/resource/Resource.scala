@@ -1,3 +1,33 @@
+/**
+ * Copyright (c) 2010, Mikhail Malygin
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the IFMO nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.aphreet.c3.platform.resource
 
 import scala.collection.mutable.{HashMap, Map, Buffer, ArrayBuffer}
@@ -6,23 +36,46 @@ import java.util.Date
 
 import com.twmacinta.util.{MD5, MD5InputStream}
 import java.io._
-import org.aphreet.c3.platform.common.JSONFormatter
-import com.springsource.json.writer.JSONWriterImpl
 
+/**
+ * Resource is an object that can be stored in the system.
+ * Contains metadata, system metadata and array of versions
+ */
 class Resource {
 
+  /**
+   * Unique resource identifier. Assigned to resource after resource store
+   */
   var address:String = null
 
+  /**
+   * Resource create data
+   */
   var createDate = new Date
 
+  /**
+   * Map with user metadata
+   */
   var metadata = new HashMap[String, String]
 
+  /**
+   * Map with system metadata
+   */
   var systemMetadata = new HashMap[String, String]
 
+  /**
+   * Array of versions
+   */
   var versions = new ArrayBuffer[ResourceVersion]
 
+  /**
+   * Flag indicates if we need to store version history of this resource
+   */
   var isVersioned = false
 
+  /**
+   * This method tries to return mime-type of resource
+   */
   def mimeType:String = {
     if(metadata != null){
       metadata.get(Resource.MD_CONTENT_TYPE) match{
@@ -39,6 +92,10 @@ class Resource {
     return Resource.MD_CONTENT_TYPE_DEFAULT
   }
 
+  /**
+   * Triggers checksum update in all not persisted resource versions
+   * @see ResourceVersion
+   */
   def calculateCheckSums = {
     if(!this.isVersioned){
       versions(0).calculateHash
@@ -47,6 +104,9 @@ class Resource {
     }
   }
 
+  /**
+   * Add new version to the resource
+   */
   def addVersion(version:ResourceVersion){
     if(!isVersioned){
       versions.clear
@@ -54,6 +114,11 @@ class Resource {
     versions += version
   }
 
+  /**
+   * Serialize resource to byte array
+   * Method simply writes all fields, metadata, system metadata to byte array.
+   * Than it writes all versions to byte array (except data)
+   */
   def toByteArray:Array[Byte] = {
 
     def writeDate(value:Date, dataOs:DataOutputStream) = {
@@ -122,6 +187,10 @@ class Resource {
 
 object Resource {
 
+  /**
+   * Last 8 bytes in the serialized resource version 1. If after deserializing them do not match
+   * resource is considered to be broken
+   */
   val STOP_SEQ : Long = 107533894376158093L
 
   val MD_CONTENT_TYPE = "content.type"
@@ -130,8 +199,18 @@ object Resource {
   val MD_POOL = "c3.pool"
   val MD_TAGS = "c3.tags"
   val MD_USER = "c3.user"
+
+  /**
+   * String encoding for metadata storing
+   */
+
   val MD_ENCODING = "UTF-8"
-  
+
+  /**
+   * Deserialize resource from byte array.
+   * Performs hashsum check or sequence end check.
+   * @throws ResourceException
+   */
   def fromByteArray(bytes:Array[Byte]):Resource = {
 
     def readString(dataIs:DataInputStream, version:Int):String = {
