@@ -40,12 +40,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.{Set => JSet}
 import org.aphreet.c3.platform.config._
-import org.aphreet.c3.platform.common.Path
-
 import actors.Actor._
 import javax.annotation.{PreDestroy, PostConstruct}
 import collection.mutable.{HashMap, HashSet}
 import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
+import org.aphreet.c3.platform.common.{Constants, Path}
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
@@ -96,6 +95,22 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
     configAccessor.configDirectory = configDir
 
+    //before actor start verify that systemId property exists in config
+    //if no, create new one
+
+    val config = configAccessor.load
+
+    config.get(Constants.C3_SYSTEM_ID) match{
+      case None => {
+        log info "Generating new system id"
+        configAccessor.store(
+          config + ((Constants.C3_SYSTEM_ID, new java.util.Random().nextInt.toString))
+        )
+      }
+      case Some(x) => log info "Found systemId " + x
+    }
+
+    
     //Starting listening for events
     log info "Starting config manager actor"
     this.start

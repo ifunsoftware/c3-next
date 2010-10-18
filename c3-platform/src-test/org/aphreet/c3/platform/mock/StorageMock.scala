@@ -16,7 +16,7 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
 
   def id:String = mockId
 
-  def add(resource:Resource):String = AddressGenerator.addressForStorage(mockId)
+  def add(resource:Resource):String = AddressGenerator.addressForStorage(mockId, 123)
 
   def get(ra:String):Option[Resource] = null
 

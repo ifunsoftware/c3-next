@@ -37,8 +37,9 @@ import org.aphreet.c3.platform.storage.impl.{StorageManagerImpl, StorageConfigAc
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.mock.StorageMock
-import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageFactory, RW, StorageParams}
+import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.common.{Constants, Path}
 
 class StorageManagerTestCase extends TestCase{
 
@@ -60,7 +61,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()))
+      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()), 123123)
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -70,12 +71,20 @@ class StorageManagerTestCase extends TestCase{
     ).atLeastOnce
     replay(configAccessor)
 
+    val configManager = createMock(classOf[PlatformConfigManager])
+    expect(configManager.getPlatformProperties).andReturn(
+        Map(Constants.C3_SYSTEM_ID -> "123123")
+        ).atLeastOnce
+    replay(configManager)
 
     val storageManager = new StorageManagerImpl
     
     storageManager.setConfigAccessor(configAccessor)
     storageManager.setVolumeManager(volumeManager)
     storageManager.setStorageDispatcher(storageDispatcher)
+    storageManager.setPlatformConfigManager(configManager)
+
+    storageManager.init
 
 
     storageManager.registerFactory(storageFactory)
@@ -86,6 +95,7 @@ class StorageManagerTestCase extends TestCase{
     verify(configAccessor)
     verify(volumeManager)
     verify(storageDispatcher)
+    verify(configManager)
   }
 
   

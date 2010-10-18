@@ -20,18 +20,18 @@ abstract class AbstractStorageFactory extends StorageFactory{
   def setStorageManager(_manager:StorageManager) = {storageManager = _manager}
   
   
-  def createStorage(params:StorageParams):Storage = {
-    val storage = createNewStorage(params)
+  def createStorage(params:StorageParams, systemId:Int):Storage = {
+    val storage = createNewStorage(params, systemId)
     
     storage.mode = params.mode
     
     createdStorages + storage
     storage
   }
-  
+
   def storages:Set[Storage] = createdStorages
   
-  protected def createNewStorage(params:StorageParams):Storage
+  protected def createNewStorage(params:StorageParams, systemId:Int):Storage
   
   @PostConstruct
   def init = {

@@ -6,7 +6,7 @@ trait StorageFactory {
   
   def storages:Set[Storage]
   
-  def createStorage(params:StorageParams):Storage
+  def createStorage(params:StorageParams, systemId:Int):Storage
   
   def name:String
   

@@ -11,7 +11,8 @@ import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
 import org.aphreet.c3.platform.storage.{StorageParams, StorageIndex}
 
 class FileBDBStorage(override val parameters:StorageParams,
-                     override val config:BDBConfig) extends AbstractBDBStorage(parameters, config) {
+                     override val systemId:Int,
+                     override val config:BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
 
   var dataPath : File = null
 

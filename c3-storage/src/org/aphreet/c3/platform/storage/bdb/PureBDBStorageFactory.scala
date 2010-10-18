@@ -7,9 +7,9 @@ import org.aphreet.c3.platform.storage.common.AbstractBDBStorageFactory
 @Component
 class PureBDBStorageFactory extends AbstractBDBStorageFactory{
 
-  protected def createNewStorage(params:StorageParams):Storage = {
+  protected def createNewStorage(params:StorageParams, systemId:Int):Storage = {
     
-    val storage = new PureBDBStorage(params, bdbConfig)
+    val storage = new PureBDBStorage(params, systemId, bdbConfig)
     storage.ids = params.secIds
     storage
     

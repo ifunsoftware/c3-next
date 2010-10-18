@@ -21,11 +21,6 @@
 
     <filter-mapping>
         <filter-name>WSAuthFilter</filter-name>
-        <servlet-name>RestServlet</servlet-name>
-    </filter-mapping>
-
-    <filter-mapping>
-        <filter-name>WSAuthFilter</filter-name>
         <servlet-name>WSService</servlet-name>
     </filter-mapping>
 

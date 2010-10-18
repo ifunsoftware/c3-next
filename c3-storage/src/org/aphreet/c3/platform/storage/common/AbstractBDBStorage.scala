@@ -11,7 +11,8 @@ import com.sleepycat.je._
 import collection.mutable.{HashSet, HashMap}
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
-                                  val config:BDBConfig) extends AbstractStorage(parameters){
+                                  override val systemId:Int,
+                                  val config:BDBConfig) extends AbstractStorage(parameters, systemId){
 
   protected var env : Environment = null
 

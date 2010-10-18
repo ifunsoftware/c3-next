@@ -27,18 +27,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.common
 
-object Constants {
+package org.aphreet.c3.platform.test.unit
 
-  val C3_PLATFORM_HOME:String = "c3.platform.home"
+import org.aphreet.c3.platform.resource.AddressGenerator
+import junit.framework.{Assert, TestCase}
 
-  val C3_SYSTEM_ID:String = "c3.platform.id"
- 
-  val STORAGE_MODE_NONE = ""
-  val STORAGE_MODE_USER = "user"
-  val STORAGE_MODE_MIGRATION = "migration"
-  val STORAGE_MODE_CAPACITY = "capacity"
-  val STORAGE_MODE_MAINTAIN = "MAINTAIN"
-  
+class AddressGeneratorTestCase extends TestCase {
+
+  def testAddressGeneration = {
+
+    val systemId:Int = 0xAFAFBDFD
+    val storageId = "1234"
+
+    val address = AddressGenerator.addressForStorage(storageId, systemId)
+
+    val expectedEnd = systemId.toHexString.toLowerCase + "-" + storageId
+
+    Assert.assertTrue("Address does not end with systemid-storageid", address.endsWith(expectedEnd))
+  }
 }

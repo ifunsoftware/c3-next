@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.AddressGenerator
 import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageParams}
 
-abstract class AbstractStorage(val parameters:StorageParams) extends Storage{
+abstract class AbstractStorage(val parameters:StorageParams, val systemId:Int) extends Storage{
 
   protected var counter:Thread = null
 
@@ -27,10 +27,10 @@ abstract class AbstractStorage(val parameters:StorageParams) extends Storage{
   }
 
   def generateName:String = {
-    var address = AddressGenerator.addressForStorage(id)
+    var address = AddressGenerator.addressForStorage(id, systemId)
     
     while(isAddressExists(address)){
-      address = AddressGenerator.addressForStorage(id)
+      address = AddressGenerator.addressForStorage(id, systemId)
     }
     
     address

@@ -35,8 +35,19 @@ object AddressGenerator {
 
   val RESOURCE_ADDRESS_LENGTH = 41
 
-  def addressForStorage(id:String):String = {
-    UUID.randomUUID.toString + "-" + id
+  def addressForStorage(id:String, systemId:Int):String = {
+
+    val uuid = UUID.randomUUID
+
+    val mostSignificantBits = uuid.getMostSignificantBits
+    var leastSignificantBits = uuid.getLeastSignificantBits
+
+    val mask:Long = 0xFFFFFFFF00000000l
+
+    leastSignificantBits = (leastSignificantBits & mask) + systemId
+
+
+    new UUID(mostSignificantBits, leastSignificantBits).toString + "-" + id
   }
 
   def storageForAddress(address:String):String = {

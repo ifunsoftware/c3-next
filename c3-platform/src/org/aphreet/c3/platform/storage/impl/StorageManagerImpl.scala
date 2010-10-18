@@ -13,9 +13,11 @@ import org.aphreet.c3.platform.storage.volume.VolumeManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.exception.{StorageException, StorageNotFoundException}
 import java.io.File
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.config.PlatformConfigManager
+import javax.annotation.PostConstruct
+import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -32,6 +34,10 @@ class StorageManagerImpl extends StorageManager{
 
   var volumeManager : VolumeManager = null
 
+  var platformConfigManager:PlatformConfigManager = null
+
+  var systemId:Int = 0
+
   @Autowired
   def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}
 
@@ -40,6 +46,17 @@ class StorageManagerImpl extends StorageManager{
 
   @Autowired
   def setStorageDispatcher(dispatcher:StorageDispatcher) = {storageDispatcher = dispatcher}
+
+  @Autowired
+  def setPlatformConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+
+  @PostConstruct
+  def init{
+    platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
+      case Some(value) => systemId = value.toInt
+      case None => throw new ConfigurationException("Failed to get systemId from params")
+    }
+  }
 
   def registerFactory(factory:StorageFactory) = {
     factories.synchronized{
@@ -87,7 +104,7 @@ class StorageManagerImpl extends StorageManager{
 
         log info "Creating new storage with id: " + stId
 
-        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE), List()))
+        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE), List()), systemId)
 
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
@@ -228,7 +245,7 @@ class StorageManagerImpl extends StorageManager{
 
       if(param.storageType.equals(factory.name)){
         log info "Restoring existent storage: " + param.toString
-        registerStorage(factory.createStorage(param))
+        registerStorage(factory.createStorage(param, systemId))
       }
     }
   }
