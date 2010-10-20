@@ -104,6 +104,14 @@ class Resource {
     }
   }
 
+  def verifyCheckSums = {
+    if(!this.isVersioned){
+      versions(0).verifyCheckSum
+    }else{
+      versions.filter(!_.persisted).foreach(_.verifyCheckSum)
+    }
+  }
+
   /**
    * Add new version to the resource
    */

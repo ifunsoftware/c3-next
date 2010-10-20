@@ -41,6 +41,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.twmacinta.util</groupId>
+            <artifactId>md5</artifactId>
+            <version>1.0.539</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.springsource.json</groupId>
             <artifactId>com.springsource.json</artifactId>
             <version>1.0.1.RELEASE</version>
@@ -72,6 +79,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>com.springsource.org.apache.commons.io</artifactId>
             <version>1.4.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
+            <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -202,23 +216,6 @@
                     <sourceDir>src</sourceDir>
                 </configuration>
             </plugin>
-            <!--
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>wsgen</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sei>org.aphreet.c3.platform.remote.impl.PlatformManagementServiceImpl</sei>
-                </configuration>
-            </plugin>
-            -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -308,6 +305,12 @@
                                 <artifactItem>
                                     <groupId>org.apache.commons</groupId>
                                     <artifactId>com.springsource.org.apache.commons.fileupload</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.commons</groupId>
+                                    <artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

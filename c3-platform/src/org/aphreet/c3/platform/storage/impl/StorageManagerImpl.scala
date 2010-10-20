@@ -195,6 +195,28 @@ class StorageManagerImpl extends StorageManager{
 
   }
 
+  def addSecondaryId(id:String, secondaryId:String) = {
+    val storageParams = configAccessor.load
+
+    val idExists = storageParams
+            .filter(p => p.id == secondaryId || p.secIds.contains(secondaryId)).isEmpty
+
+    if(!idExists){
+
+      storages.get(id) match{
+        case Some(s) => {
+          s.ids = secondaryId :: s.ids
+          updateStorageParams(s)
+          log debug "Appended new secondary id " + secondaryId + " to storage with id " + id
+        }
+        case None => throw new StorageException("Storage with id" + id + " is not exist")
+      }
+
+    }else{
+      throw new StorageException("Specified id already exists")
+    }
+  }
+
   private def registerStorage(storage:Storage){
     storages.put(storage.id, storage)
 

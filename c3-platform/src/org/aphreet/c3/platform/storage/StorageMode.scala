@@ -44,15 +44,25 @@ case class U(val msg:String) extends StorageMode("U", msg){
 
 
 object StorageModeParser{
-	
-  def valueOf(name:String):StorageMode = valueOf(name, "")
-  
+
   def valueOf(name:String, message:String):StorageMode = {
     name match {
       case "RW" => RW(message)
       case "RO" => RO(message)
       case "U" => U(message)
       case _ => throw new StorageException("No such mode " + name)
+    }
+  }
+
+  def valueOf(mode:String):StorageMode = {
+
+    val parts = mode.split("\\(", 2)
+    if(parts.size == 2){
+      val modeName = parts(0)
+      val modeValue = parts(1).replaceFirst("\\)$", "")
+      valueOf(modeName, modeValue)
+    }else{
+      throw new StorageException("Can't parse " + mode)
     }
   }
 }

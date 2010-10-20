@@ -147,4 +147,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     storageManager.removeIndex(id, name)
   }
 
+  def addStorageSecondaryId(id:String, secId:String) = {
+    storageManager.addSecondaryId(id, secId)
+  }
+
 }

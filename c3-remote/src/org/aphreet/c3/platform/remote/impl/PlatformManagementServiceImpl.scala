@@ -45,6 +45,7 @@ import org.springframework.stereotype.Component
 import javax.jws.{WebMethod, WebService}
 import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil._
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.aphreet.c3.platform.remote.replication.ReplicationManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -54,6 +55,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   private var authenticationManager:AuthenticationManager = _
 
+  private var replicationManager:ReplicationManager = _
+
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint)
   = {managementEndpoint = endPoint}
@@ -61,6 +64,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setAuthenticationManager(manager:AuthenticationManager) = {
     authenticationManager = manager
+  }
+
+  @Autowired
+  private def setReplicationManager(manager:ReplicationManager) = {
+    replicationManager = manager
   }
 
   def removeStorage(id:String) =
@@ -339,6 +347,28 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def removeIndex(id:String, name:String) = {
     try{
       managementEndpoint.removeIndex(id, name)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def addStorageSecondaryId(id:String, secId:String) = {
+    try{
+      managementEndpoint.addStorageSecondaryId(id, secId)
+    }catch{
+      case e=> {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def registerReplicationSource(host:ReplicationHost) = {
+    try{
+      replicationManager.registerReplicationSource(host)
     }catch{
       case e => {
         e.printStackTrace

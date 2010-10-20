@@ -27,74 +27,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
+package org.aphreet.c3.platform.remote.test.replication
 
-import java.util.Date
+import junit.framework.TestCase
+import junit.framework.Assert._
+import java.io.File
+import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationSourcesConfigAccessor
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 
-import scala.collection.mutable.HashMap
+class ReplicationConfigAccessorTestCase extends TestCase {
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+  var testDir:File = null
 
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
+  override def setUp{
+    testDir = new File(System.getProperty("user.home"), "c3_int_test")
+    testDir.mkdirs
+  }
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
-
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
-
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
-
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
-
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
+  override def tearDown{
+    def delDir(directory:File) {
+      if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
+      directory.delete
     }
-
-    builder.toString
+    delDir(testDir)
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
+  def testConfigPersistence = {
 
-  def calculateHash = {
-    systemMetadata.put(RESOURCE_VERSION_HASH, data.hash)
+    val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1"),
+                     "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2"))
+
+    val configManager = new PlatformConfigManagerImpl
+    configManager.configDir = testDir
+
+    val accessor = new ReplicationSourcesConfigAccessor
+    accessor.setConfigManager(configManager)
+
+    val fileName = "c3-replication-sources.json"
+
+    accessor.storeConfig(config, new File(testDir, fileName))
+
+    val readConfig = accessor.loadConfig(new File(testDir, fileName))
+    
+    assertEquals(config, readConfig)
+
   }
-
-  def verifyCheckSum = {
-    systemMetadata.get(RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
-  }
-
 }

@@ -136,16 +136,17 @@ abstract class DataWrapper {
   
 }
 
-/**
- * DataWrapper implementation that incapsulates file
- */
-class FileDataWrapper(val file:File) extends DataWrapper{
+abstract class AbstractFileDataWrapper extends DataWrapper{
+
+  lazy val file:File = getFile
+
+  def getFile:File
 
   def inputStream = new FileInputStream(file)
-  
+
   def writeTo(channel:WritableByteChannel) = {
     val fileChannel = new FileInputStream(file).getChannel
-    
+
     try{
       fileChannel.transferTo(0, file.length, channel)
     }finally{
@@ -161,10 +162,10 @@ class FileDataWrapper(val file:File) extends DataWrapper{
       logger.warn("Trying to write file to itself, skipping")
     }
   }
-  
+
   def stringValue:String = {
     val out = new ByteArrayOutputStream
-    
+
     this writeTo out
 
     new String(out.toByteArray)
@@ -175,6 +176,15 @@ class FileDataWrapper(val file:File) extends DataWrapper{
   def length:Long = file.length
 
   def mimeType:String = top(MimeUtil.getMimeTypes(file))
+
+}
+
+/**
+ * DataWrapper implementation that incapsulates file
+ */
+class FileDataWrapper(val existentFile:File) extends AbstractFileDataWrapper{
+
+  override def getFile:File = existentFile
   
 }
 

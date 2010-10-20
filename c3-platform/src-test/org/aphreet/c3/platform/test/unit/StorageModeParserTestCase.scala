@@ -27,74 +27,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
 
-import java.util.Date
+package org.aphreet.c3.platform.test.unit
 
-import scala.collection.mutable.HashMap
+import junit.framework.TestCase
+import junit.framework.Assert._
+import org.aphreet.c3.platform.storage.{RW, RO, StorageModeParser}
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+class StorageModeParserTestCase extends TestCase {
 
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
+  def testComplexParse = {
+    val modeStr = "RO(capacity)"
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
+    val mode = StorageModeParser.valueOf(modeStr)
 
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
+    assertEquals(RO("capacity"), mode)
 
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
+    val modeStr2 = "RW()"
+    val mode2 = StorageModeParser.valueOf(modeStr2)
 
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
-
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
-    }
-
-    builder.toString
+    assertEquals(RW(""), mode2)
   }
-
-  def setData(_data:DataWrapper) = {data = _data}
-
-  def calculateHash = {
-    systemMetadata.put(RESOURCE_VERSION_HASH, data.hash)
-  }
-
-  def verifyCheckSum = {
-    systemMetadata.get(RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
-  }
-
 }

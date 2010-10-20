@@ -97,7 +97,7 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
             if (force)
               createNewWriter
             else {
-              //More than 30 seconds we
+              //More than 30 seconds between resources
               if (System.currentTimeMillis - lastDocumentTime > 30 * 1000)
                 createNewWriter
             }

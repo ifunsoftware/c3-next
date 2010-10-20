@@ -56,4 +56,9 @@ trait PlatformManagementService {
 
   def removeIndex(id:String, name:String)
 
+  def addStorageSecondaryId(id:String, secId:String)
+  
+  def registerReplicationSource(host:ReplicationHost)
+
+
 }

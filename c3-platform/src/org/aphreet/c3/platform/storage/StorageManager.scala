@@ -30,4 +30,5 @@ trait StorageManager {
 
   def removeIndex(id:String, name:String)
 
+  def addSecondaryId(id:String, secondaryId:String)
 }
