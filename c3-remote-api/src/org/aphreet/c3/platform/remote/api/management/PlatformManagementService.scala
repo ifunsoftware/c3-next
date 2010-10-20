@@ -60,5 +60,6 @@ trait PlatformManagementService {
   
   def registerReplicationSource(host:ReplicationHost)
 
+  def establishReplication(host:String, username:String, password:String)
 
 }
