@@ -83,4 +83,31 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     assertEquals(newParams, accessor.load.head) 
     
   }
+
+  def testIdCheck = {
+
+    val config  = List(
+      StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
+        List(
+          new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
+          )),
+      StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
+        List(
+          new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
+          new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
+        ))
+    )
+
+    val idNotExists = config
+            .filter(p => p.id == "55" || p.secIds.contains("55")).isEmpty
+
+    assertTrue(idNotExists)
+
+    assertFalse(config
+            .filter(p => p.id == "11" || p.secIds.contains("11")).isEmpty)
+
+    assertFalse(config
+                .filter(p => p.id == "33" || p.secIds.contains("33")).isEmpty)
+
+  }
 }

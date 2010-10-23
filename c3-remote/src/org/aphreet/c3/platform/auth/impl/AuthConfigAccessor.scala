@@ -60,7 +60,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
   def defaultConfig:Map[String, User] = {
     val map = new HashMap[String, User]
 
-    map.put("admin", User("admin", "5f4dcc3b5aa765d61d8327deb882cf99", MANAGEMENT, true))
+    map.put("admin", User("admin", "password", MANAGEMENT, true))
     map.put("anonymous", User("anonymous", "", ACCESS, false))
 
     map

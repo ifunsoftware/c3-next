@@ -20,4 +20,6 @@
 
     <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
+    <reference id="storageService" interface="org.aphreet.c3.platform.storage.StorageManager"/>
+    
 </beans:beans>  

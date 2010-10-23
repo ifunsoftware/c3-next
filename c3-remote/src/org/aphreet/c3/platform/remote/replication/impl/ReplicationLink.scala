@@ -30,81 +30,90 @@
 
 package org.aphreet.c3.platform.remote.replication.impl
 
-import actors.Actor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import actors.remote.{RemoteActor, Node}
 import org.aphreet.c3.platform.resource.Resource
 import com.twmacinta.util.MD5
-import org.aphreet.c3.platform.remote.replication.{ReplicateDelete, ReplicateUpdate, ReplicateAdd}
+import actors.{AbstractActor, Actor}
+import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
+import org.aphreet.c3.platform.remote.replication._
 
 class ReplicationLink(val host:ReplicationHost) extends Actor{
 
   val log = LogFactory getLog getClass
 
-  val remoteActor = {
+  def isStarted:Boolean = started
+
+  private var started = false
+
+
+  override def act{
+
+    val calculator = new ReplicationSignatureCalculator(host)
+
     log info "Establishing replication link to " + host.systemId
 
     val port = ReplicationConstants.REPLICATION_PORT
 
     val peer = Node(host.hostname, port)
 
-    val sink = RemoteActor.select(peer, 'ReplicationActor)
+    val remoteActor = RemoteActor.select(peer, 'ReplicationActor)
 
-    link(sink)
+    link(remoteActor)
 
-    sink
-  }
+    started = true
 
-  override def act{
     loop{
       react{
-        case _ => //do nothing here
+
+        case ResourceAddedMsg(resource) => {
+          val bytes = resource.toByteArray
+
+          remoteActor ! ReplicateAddMsg(bytes, calculator.calculate(bytes))
+        }
+
+        case ReplicateAddAckMsg(address, signature) => {
+
+        }
+
+
+
+        case ResourceUpdatedMsg(resource) => {
+          val bytes = resource.toByteArray
+
+          remoteActor ! ReplicateUpdateMsg(bytes, calculator.calculate(bytes))
+        }
+
+        case ReplicateUpdateAckMsg(address, signature) => {
+
+        }
+
+
+
+        case ResourceDeletedMsg(address) => {
+          remoteActor ! ReplicateDeleteMsg(address, calculator.calculate(address))
+        }
+
+        case ReplicateDeleteAckMsg(address, signature) => {
+          if(calculator.verify(address, signature)){
+
+          }
+        }
+
+
+        case DestroyMsg => {
+          log info "Destroying replication link to " + host.toString 
+          unlink(remoteActor)
+          this.exit
+        }
       }
     }
   }
 
-  def replicateAdd(resource:Resource) = {
-
-    val bytes = resource.toByteArray
-
-    val signature = getSignature(bytes)
-
-    remoteActor ! ReplicateAdd(bytes, signature)
-
-  }
-
-  def replicateUpdate(resource:Resource) = {
-    val bytes = resource.toByteArray
-
-    val signature = getSignature(bytes)
-
-    remoteActor ! ReplicateUpdate(bytes, signature)
-  }
-
-  def replicateDelete(address:String) = {
-
-    val bytes = address.getBytes("UTF-8")
-
-    val signature = getSignature(bytes)
-
-    remoteActor ! ReplicateDelete(address, signature)
-  }
-
-  def getSignature(data:Array[Byte]):String = {
-
-    val md5 = new MD5
-    md5.Update(data)
-    md5.Update(host.systemId)
-    md5.Update(host.key)
-    md5.Final
-
-    md5.asHex
-  }
-
-
   def close{
     log info "Closing replication link"
-    unlink(remoteActor)
+    this ! DestroyMsg
   }
 }

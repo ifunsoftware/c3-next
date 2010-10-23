@@ -198,10 +198,10 @@ class StorageManagerImpl extends StorageManager{
   def addSecondaryId(id:String, secondaryId:String) = {
     val storageParams = configAccessor.load
 
-    val idExists = storageParams
+    val idNotExists = storageParams
             .filter(p => p.id == secondaryId || p.secIds.contains(secondaryId)).isEmpty
 
-    if(!idExists){
+    if(idNotExists){
 
       storages.get(id) match{
         case Some(s) => {

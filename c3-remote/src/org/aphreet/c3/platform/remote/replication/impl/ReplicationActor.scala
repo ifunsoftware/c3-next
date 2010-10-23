@@ -30,12 +30,10 @@
 
 package org.aphreet.c3.platform.remote.replication.impl
 
-import actors.Actor
 import actors.remote.RemoteActor._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.remote.replication.{ReplicateUpdate, ReplicateDelete, ReplicateAdd}
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.storage.StorageManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,6 +41,8 @@ import com.twmacinta.util.MD5
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.remote.replication._
+import actors.{OutputChannel, Actor}
 
 @Component
 @Scope("singleton")
@@ -64,9 +64,6 @@ class ReplicationActor extends Actor{
     this.config = config
 
     this.start
-
-    alive(ReplicationConstants.REPLICATION_PORT)
-    register('ReplicationActor, this)
   }
 
   def updateConfig(config:Map[String, ReplicationHost]) = {
@@ -74,83 +71,129 @@ class ReplicationActor extends Actor{
   }
 
   override def act{
+
+    alive(ReplicationConstants.REPLICATION_PORT)
+    register('ReplicationActor, this)
+
     while(true){
       receive{
-        case DestroyMsg => this.exit
-        case ReplicateAdd(resource, signature) => replicateAdd(resource, signature)
-        case ReplicateUpdate(resource, signature) => replicateUpdate(resource, signature)
-        case ReplicateDelete(address, signature) => replicateDelete(address, signature)
+        case DestroyMsg => {
+          log info "DestoryMsg received. Stopping"
+          this.exit
+        }
+
+        case ReplicateAddMsg(resource, signature) =>
+          replicateAdd(resource, signature, sender)
+
+        case ReplicateUpdateMsg(resource, signature) =>
+          replicateUpdate(resource, signature, sender)
+
+        case ReplicateDeleteMsg(address, signature) =>
+          replicateDelete(address, signature, sender)
       }
     }
   }
 
-  private def replicateAdd(bytes:Array[Byte], signature:String){
-
+  private def replicateAdd(bytes:Array[Byte], signature:ReplicationSignature, sender:OutputChannel[Any]){
 
     log debug "Replicating incoming add"
     try{
       val host = checkSignature(bytes, signature)
 
-      if(host != null){
-        val resource = Resource.fromByteArray(bytes)
-        fillWithData(resource, host.hostname)
-
-        val storage = storageManager.storageForResource(resource)
-
-        if(storage.mode.allowWrite){
-          resource.verifyCheckSums
-          storage.put(resource)
-        }
-      }else{
+      if(host == null){
         log debug "Signature check failed"
+        return
       }
+
+      val resource = Resource.fromByteArray(bytes)
+
+      val storage = storageManager.storageForResource(resource)
+
+      if(!storage.mode.allowWrite){
+        log debug "Failed to replicate resource, storage is not writtable"
+        return
+      }
+
+      fillWithData(resource, host.hostname)
+      resource.verifyCheckSums
+      storage.put(resource)
+
+      val calculator = new ReplicationSignatureCalculator(host)
+
+      sender ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
+
     }catch{
       case e => log.error("Failed to replicate add", e)
     }
   }
 
-  private def replicateUpdate(bytes:Array[Byte], signature:String){
+  private def replicateUpdate(bytes:Array[Byte], signature:ReplicationSignature, sender:OutputChannel[Any]){
 
     log debug "Replicating incoming update"
 
     try{
       val host = checkSignature(bytes, signature)
-      if(host != null){
-        val resource = Resource.fromByteArray(bytes)
-        fillWithData(resource, host.hostname)
 
-        val storage = storageManager.storageForResource(resource)
+      if(host == null){
+        log debug "Signature check failed"
+        return
+      }
 
-        if(storage.mode.allowWrite){
+      val resource = Resource.fromByteArray(bytes)
 
-          storage.get(resource.address) match{
-            case Some(r) => {
-              compareUpdatedResource(resource, r)
-              resource.verifyCheckSums              
-              storage.update(resource)
-            }
-            case None => {
-              resource.verifyCheckSums
-              storage.put(resource)
-            }
-          }
+      val storage = storageManager.storageForResource(resource)
 
+      if(!storage.mode.allowWrite){
+        log warn "Failed to store resource, storage is not writable"
+        return
+      }
+
+      fillWithData(resource, host.hostname)
+
+
+      storage.get(resource.address) match{
+        case Some(r) => {
+          compareUpdatedResource(resource, r)
+          resource.verifyCheckSums
+          storage.update(resource)
         }
-      }else log debug "Signature check failed"
+        case None => {
+          resource.verifyCheckSums
+          storage.put(resource)
+        }
+      }
+
+      val calculator = new ReplicationSignatureCalculator(host)
+
+      sender ! ReplicateUpdateAckMsg(resource.address, calculator.calculate(resource.address))
+
     }catch{
       case e => log.error("Failed to replicate update", e)
     }
   }
 
-  private def replicateDelete(address:String, signature:String){
+  private def replicateDelete(address:String, signature:ReplicationSignature, sender:OutputChannel[Any]){
     try{
-      if(checkSignature(address.getBytes("UTF-8"), signature) != null){
-        val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
 
-        if(storage.mode.allowWrite){
-          storage.delete(address)
-        }
-      }else log debug "Signature check failed"
+      val host = checkSignature(address.getBytes("UTF-8"), signature)
+
+      if(host == null){
+        log debug "Signature check failed"
+        return
+      }
+
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
+
+      if(storage.mode.allowWrite){
+        storage.delete(address)
+
+        val calculator = new ReplicationSignatureCalculator(host)
+
+        sender ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
+      }else{
+        log warn "Failed to replicate delete, storage is not writable"
+      }
+
 
     }catch{
       case e => log.error("Failed to replicate update", e)
@@ -185,39 +228,17 @@ class ReplicationActor extends Actor{
     }
   }
 
-  private def checkSignature(bytes:Array[Byte], signature:String):ReplicationHost = {
+  private def checkSignature(bytes:Array[Byte], signature:ReplicationSignature):ReplicationHost = {
 
-    val parts = signature.split(":", 2)
-
-    if(parts.length != 2) return null
-
-    val remoteSystemId = parts(0)
-    val receivedHash = parts(1)
-
-    val host = config.get(remoteSystemId) match {
+    ReplicationSignatureCalculator.foundAndVerify(bytes, signature, config) match{
       case Some(host) => host
       case None => null
-    }
-
-    if(host == null) return null
-
-    val md5 = new MD5
-    md5.Update(bytes)
-    md5.Update(host.systemId)
-    md5.Update(host.key)
-    md5.Final
-
-    val calculatedHash = md5.asHex
-
-    if(receivedHash == calculatedHash){
-      host
-    }else{
-      null
     }
   }
 
   @PreDestroy
   def destroy{
+    log info "Stopping ReplicationActor..."
     this ! DestroyMsg
   }
 }

@@ -54,7 +54,10 @@ class StorageSynchronizer{
       val mode = StorageModeParser.valueOf(remoteStorage.mode)
 
       remoteIdsSet += remoteStorage.id
-      remoteIdsSet ++= remoteStorage.ids.toList
+
+      if(remoteStorage.ids != null){
+        remoteIdsSet ++= remoteStorage.ids.toList
+      }
 
       if(mode.allowWrite){
 
@@ -82,7 +85,10 @@ class StorageSynchronizer{
       }
 
       idBuffer += localStorage.id
-      idBuffer ++= localStorage.ids
+
+      if(localStorage.ids != null){
+        idBuffer ++= localStorage.ids
+      }
 
     }
 

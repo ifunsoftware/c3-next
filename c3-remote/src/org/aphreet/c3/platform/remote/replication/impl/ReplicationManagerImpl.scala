@@ -45,8 +45,6 @@ import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDe
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.access.{AccessManager, ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.common.msg.{UnregisterListenerMsg, RegisterListenerMsg, DestroyMsg}
-import actors.AbstractActor
-import actors.remote.{RemoteActor, Node}
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -138,7 +136,8 @@ class ReplicationManagerImpl extends ReplicationManager{
         case ResourceAddedMsg(resource) => {
           try{
             for((id, link) <- remoteReplicationActors){
-              link.replicateAdd(resource)
+              if(!link.isStarted) link.start
+              link ! ResourceAddedMsg(resource)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
@@ -148,7 +147,8 @@ class ReplicationManagerImpl extends ReplicationManager{
         case ResourceUpdatedMsg(resource) => {
           try{
             for((id, link) <- remoteReplicationActors){
-              link.replicateUpdate(resource)
+              if(!link.isStarted) link.start
+              link ! ResourceUpdatedMsg(resource)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
@@ -157,7 +157,8 @@ class ReplicationManagerImpl extends ReplicationManager{
         case ResourceDeletedMsg(address) => {
           try{
             for((id, link) <- remoteReplicationActors){
-              link.replicateDelete(address)
+              if(!link.isStarted) link.start
+              link ! ResourceDeletedMsg(address)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
@@ -249,6 +250,7 @@ class ReplicationManagerImpl extends ReplicationManager{
   }
 
   private def registerReplicationTarget(host:ReplicationHost) = {
+
     targetsConfigAccessor.update(config => config + ((host.systemId, host)))
     currentTargetConfig = targetsConfigAccessor.load
 
@@ -257,9 +259,11 @@ class ReplicationManagerImpl extends ReplicationManager{
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
   }
 
+
   private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
     try {
       val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
+      factory.setBeanClassLoader(getClass.getClassLoader)
       factory.setServiceInterface(classOf[PlatformManagementService])
       factory.setWsdlDocumentUrl(new URL("http://" + host + ":" + ReplicationConstants.HTTP_PORT + "/c3-remote/ws/management?WSDL"))
       factory.setNamespaceUri("remote.c3.aphreet.org")

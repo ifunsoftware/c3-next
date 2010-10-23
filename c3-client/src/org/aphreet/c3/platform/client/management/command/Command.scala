@@ -2,8 +2,11 @@ package org.aphreet.c3.platform.client.management.command
 
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
+import java.io.{InputStreamReader, BufferedReader}
 
 abstract class Command{
+
+  val reader = new BufferedReader(new InputStreamReader(System.in))
 
   var params:List[String] = List()
   
@@ -14,6 +17,11 @@ abstract class Command{
   def execute():String
   
   def name:List[String]
+
+  def readInput:String = reader.readLine
+
+  def writeString(line:String) = print(line)
+
 }
 
 abstract class Commands{

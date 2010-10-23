@@ -42,6 +42,3 @@ trait ReplicationManager extends Actor {
   def registerReplicationSource(host:ReplicationHost)
 }
 
-case class ReplicateAdd(resource:Array[Byte], signature:String)
-case class ReplicateUpdate(resource:Array[Byte], signature:String)
-case class ReplicateDelete(address:String, signature:String)
