@@ -51,6 +51,7 @@ class StatisticsManagerImpl extends StatisticsManager{
 
   @PreDestroy
   def destroy{
+    log info "Stopping Statistics manager"
     this ! DestroyMsg
   }
 
@@ -76,7 +77,10 @@ class StatisticsManagerImpl extends StatisticsManager{
             }
           }
         }
-        case DestroyMsg => this.exit
+        case DestroyMsg => {
+          log info "Statistics Manager's actor stopped"
+          this.exit
+        }
       }
     }
   }

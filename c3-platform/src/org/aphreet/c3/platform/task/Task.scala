@@ -7,7 +7,8 @@ abstract class Task extends Runnable{
   val log = LogFactory getLog getClass
   
   val id = name + "-" + System.currentTimeMillis
-  
+
+  private var shouldStopFlag = false
   
   private val SLEEP_ON_PAUSE_INTERVAL = 5000
   
@@ -24,6 +25,8 @@ abstract class Task extends Runnable{
 
     taskState = RUNNING
 
+    log.info(id + " started")
+
     try{
       preStart
       while(!shouldStop && !Thread.currentThread.isInterrupted){
@@ -33,6 +36,7 @@ abstract class Task extends Runnable{
       }
       postComplete
       taskState = FINISHED
+      log.info(id + " stopped")
     }catch{
       case e => {
         taskState = CRASHED
@@ -53,7 +57,7 @@ abstract class Task extends Runnable{
 
   protected def canStart:Boolean = true
   
-  def shouldStop:Boolean = false
+  def shouldStop:Boolean = shouldStopFlag
   
   def name:String = getClass.getSimpleName
   
@@ -65,6 +69,7 @@ abstract class Task extends Runnable{
   
   def stop = {
     Thread.currentThread.interrupt
+    shouldStopFlag = true
     taskState = INTERRUPTED
   }
   

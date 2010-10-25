@@ -75,7 +75,9 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
         }
 
         case ReplicateAddAckMsg(address, signature) => {
-
+          if(calculator.verify(address, signature)){
+            
+          }
         }
 
 
@@ -87,7 +89,9 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
         }
 
         case ReplicateUpdateAckMsg(address, signature) => {
+          if(calculator.verify(address, signature)){
 
+          }
         }
 
 

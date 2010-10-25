@@ -185,7 +185,11 @@ class ReplicationActor extends Actor{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
 
       if(storage.mode.allowWrite){
-        storage.delete(address)
+
+        storage.get(address) match {
+          case Some(r) => storage.delete(address)
+          case None =>
+        }
 
         val calculator = new ReplicationSignatureCalculator(host)
 

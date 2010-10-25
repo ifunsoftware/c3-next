@@ -58,7 +58,9 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     log info "Waiting for 3 minutes to get system in state"
   }
 
-  override def canStart:Boolean = System.currentTimeMillis > startTime
+  override def canStart:Boolean = {
+    System.currentTimeMillis > startTime || shouldStop || Thread.currentThread.isInterrupted
+  }
 
   override def preStart = {
     log info "Starting BackgroundIndexTask"
@@ -124,7 +126,12 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     } else {
       log debug "All storages have been checked, sleeping for an hour"
       storagesToIndex = storageManager.listStorages
-      Thread.sleep(1000 * 60 * 60)
+
+      val newStartTime = System.currentTimeMillis + 1000 * 60 * 60
+
+      while(System.currentTimeMillis < newStartTime){
+        Thread.sleep(10 * 1000)
+      }
     }
   }
 

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ "$VIRGO_HOME" == "" ]; then
+	echo "VIRGO_HOME is not set"
+	exit 1
+fi;
+
+if [ "$VIRGO_USER" == "" ]; then
+	echo "VIRGO_USER is not set"
+	exit 1
+fi;
+
+if [ "$TIKA_NAME" == "" ]; then
+	echo "TIKA_NAME is not set"
+	exit 1
+fi;
+
+if [ "$TIKA_HOME" == "" ]; then
+	echo "TIKA_HOME is not set"
+	exit 1
+fi;
+
+TIKA_PATH="$TIKA_HOME""$TIKA_NAME"
+
+case $1 in
+	start)
+	echo "Starting Spring DM Server"
+	su - $VIRGO_USER -c $VIRGO_HOME"bin/startup.sh >/dev/null 2>&1 &"
+	su - $VIRGO_USER -c "java -jar $TIKA_PATH >/dev/null 2>&1 &"
+	;;
+	stop)
+	echo "Stopping Spring DM Server"
+	"$VIRGO_HOME""bin/shutdown.sh"
+	java -jar $TIKA_PATH stop
+	;;
+	*)
+	echo "Usage virgoctl start|stop"
+	;;
+esac

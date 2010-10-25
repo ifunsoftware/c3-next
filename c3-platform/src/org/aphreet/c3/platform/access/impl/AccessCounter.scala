@@ -78,7 +78,10 @@ class AccessCounter extends Actor{
           statisticsManger ! IncreaseStatisticsMsg("c3.access.created", 1)
         }
 
-        case DestroyMsg => this.exit
+        case DestroyMsg =>{
+          log info "AccessCounter actor stopped"
+          this.exit
+        }
       }
     }
   }

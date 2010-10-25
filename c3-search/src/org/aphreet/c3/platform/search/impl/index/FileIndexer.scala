@@ -82,11 +82,12 @@ class FileIndexer(val path:Path) extends Actor{
         case DestroyMsg => {
           try{
             indexWriter.close
-            log info "IndexWriter closed"
-            this.exit
           }catch{
             case e => log.warn("Failed to close index", e)
             throw e
+          }finally {
+            log info "IndexWriter closed"
+            this.exit
           }
         }
       }

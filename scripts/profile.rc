@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export C3_BUILD_SERVER="build:4you@build.aphreet.org"
+#export C3_BUILD_SERVER=c3b:3333
+export VIRGO_USER='aphreet'
+export VIRGO_HOME='/opt/local/virgo/'
+export TIKA_HOME='/opt/local/tika/'
+export TIKA_NAME='c3-tika-impl-1.0.*.jar'

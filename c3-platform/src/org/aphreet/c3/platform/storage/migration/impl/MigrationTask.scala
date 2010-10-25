@@ -3,6 +3,7 @@ package org.aphreet.c3.platform.storage.migration.impl
 import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.task.Task
+
 class MigrationTask(val source:Storage, val target:Storage, val manager:StorageManager) extends Task{
 
   var iterator:StorageIterator = _

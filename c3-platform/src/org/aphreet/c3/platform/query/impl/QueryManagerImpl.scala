@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component
 
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.query._
-import javax.annotation.PostConstruct
+import javax.annotation.{PreDestroy, PostConstruct}
 
 @Component("queryManager")
 class QueryManagerImpl extends QueryManager{
@@ -73,6 +73,11 @@ class QueryManagerImpl extends QueryManager{
         iterator.close
       }
     } 
+  }
+
+  @PreDestroy
+  def destroy{
+    log info "Stopping QueryManager"
   }
 
 }

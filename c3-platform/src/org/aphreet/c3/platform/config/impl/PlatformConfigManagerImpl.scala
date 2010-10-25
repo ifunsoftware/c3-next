@@ -125,6 +125,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   @PreDestroy
   def destroy = {
+    log info "Stopping PlatformConfigManager"
     this ! DestroyMsg
   }
 
@@ -198,8 +199,8 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
         }
 
         case DestroyMsg => {
-          log info "Stopping config manager actor..."
-          exit
+          log info "Stopped config manager actor"
+          this.exit
         }
       }
     }

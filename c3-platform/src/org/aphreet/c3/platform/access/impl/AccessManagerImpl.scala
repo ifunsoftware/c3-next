@@ -190,7 +190,10 @@ class AccessManagerImpl extends AccessManager{
           accessListeners = accessListeners - actor
           log debug accessListeners.toString
 
-        case DestroyMsg => this.exit
+        case DestroyMsg => {
+          log info "AccessManager actor stopped"
+          this.exit
+        }
       }
     }
   }
