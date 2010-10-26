@@ -28,42 +28,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication
+package org.aphreet.c3.platform.remote.client
 
-case class ReplicationSignature(val systemId:String, val hash:String)
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.remote.api.RemoteException
+import org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean
+import java.net.URL
+import org.aphreet.c3.platform.remote.HttpHost
 
-abstract class ReplicationMsg(val signature:ReplicationSignature){
+object ManagementConnectionFactory{
+
+  def connect(host:HttpHost):PlatformManagementService = {
+
+    try {
+      val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
+      factory.setBeanClassLoader(getClass.getClassLoader)
+      factory.setServiceInterface(classOf[PlatformManagementService])
+      factory.setWsdlDocumentUrl(new URL(host.getServer + "/c3-remote/ws/management?WSDL"))
+      factory.setNamespaceUri("remote.c3.aphreet.org")
+      factory.setServiceName("ManagementService")
+
+      if(host.user != null && host.password != null){
+        factory.setUsername(host.user)
+        factory.setPassword(host.password)
+      }
+      
+      factory.setPortName("PlatformManagementServiceImplPort")
+      factory.setMaintainSession(true)
+      factory.afterPropertiesSet
+
+      factory.getObject.asInstanceOf[PlatformManagementService]
+    } catch {
+      case e: javax.xml.ws.WebServiceException => {
+        throw new RemoteException("Failed to connect to remote host" + e.getMessage)
+      }
+    }
+
+  }
 
 }
-
-case class ReplicateAddMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-
-case class ReplicateDeleteMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateAddAckMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateDeleteAckMsg(
-            val address:String, 
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)

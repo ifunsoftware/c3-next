@@ -28,42 +28,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication
+package org.aphreet.c3.platform.remote
 
-case class ReplicationSignature(val systemId:String, val hash:String)
-
-abstract class ReplicationMsg(val signature:ReplicationSignature){
+object RemoteConstants{
+  
+  val HTTP_PORT = 7373
+  val HTTPS_PORT = 7374
+  val REPLICATION_PORT = 7375
 
 }
-
-case class ReplicateAddMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-
-case class ReplicateDeleteMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateAddAckMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateDeleteAckMsg(
-            val address:String, 
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)

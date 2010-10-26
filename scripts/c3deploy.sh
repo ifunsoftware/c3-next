@@ -22,12 +22,16 @@ wget http://$C3_BUILD_SERVER/builds/c3/$REVISION/c3-all-1.0.$REVISION.zip
 unzip c3-all-1.0.$REVISION.zip
 
 $VIRGO_CTL stop
-sleep 5
+sleep 10
 
 rm -rf $VIRGO_HOME/repository/usr/*
-rm $VIRGO_HOME/pickup/c3.plan
+rm $VIRGO_HOME/pickup/c3*.plan
+
 cp jars/* $VIRGO_HOME/repository/usr
+chown -c $VIRGO_USER $VIRGO_HOME/repository/usr/*
+
 cp plan/c3.plan $VIRGO_HOME/pickup
+chown -c $VIRGO_USER $VIRGO_HOME/pickup/*
 
 rm -rf /tmp/c3-tmp
 

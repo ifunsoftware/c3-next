@@ -43,6 +43,7 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
 import actors.{OutputChannel, Actor}
+import org.aphreet.c3.platform.remote.{HttpHost, RemoteConstants}
 
 @Component
 @Scope("singleton")
@@ -72,7 +73,7 @@ class ReplicationActor extends Actor{
 
   override def act{
 
-    alive(ReplicationConstants.REPLICATION_PORT)
+    alive(RemoteConstants.REPLICATION_PORT)
     register('ReplicationActor, this)
 
     while(true){
@@ -139,7 +140,7 @@ class ReplicationActor extends Actor{
         return
       }
 
-      val resource = Resource.fromByteArray(bytes)
+      val resource:Resource = Resource.fromByteArray(bytes)
 
       val storage = storageManager.storageForResource(resource)
 
@@ -165,7 +166,9 @@ class ReplicationActor extends Actor{
 
       val calculator = new ReplicationSignatureCalculator(host)
 
-      sender ! ReplicateUpdateAckMsg(resource.address, calculator.calculate(resource.address))
+      val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
+      
+      sender ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
 
     }catch{
       case e => log.error("Failed to replicate update", e)
@@ -227,7 +230,7 @@ class ReplicationActor extends Actor{
   private def fillWithData(resource:Resource, host:String) = {
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(host, resource.address, i)
+      val data = new RemoteSystemDataWrapper(HttpHost(host, true), resource.address, i)
       version.data = data
     }
   }

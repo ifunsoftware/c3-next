@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#export JAVA_HOME=/path/to/jvm
+
 export C3_BUILD_SERVER="build:4you@build.aphreet.org"
 #export C3_BUILD_SERVER=c3b:3333
 export VIRGO_USER='aphreet'

@@ -23,16 +23,21 @@ fi;
 TIKA_PATH="$TIKA_HOME""$TIKA_NAME"
 
 case $1 in
+
 	start)
 	echo "Starting Spring DM Server"
 	su - $VIRGO_USER -c $VIRGO_HOME"bin/startup.sh >/dev/null 2>&1 &"
 	su - $VIRGO_USER -c "java -jar $TIKA_PATH >/dev/null 2>&1 &"
 	;;
+
 	stop)
 	echo "Stopping Spring DM Server"
 	"$VIRGO_HOME""bin/shutdown.sh"
 	java -jar $TIKA_PATH stop
+	sleep 10
+	echo "Done"
 	;;
+
 	*)
 	echo "Usage virgoctl start|stop"
 	;;

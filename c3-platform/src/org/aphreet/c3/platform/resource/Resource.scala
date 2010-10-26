@@ -122,6 +122,14 @@ class Resource {
     versions += version
   }
 
+  def lastUpdateDate:Date = {
+    if(versions.isEmpty){
+      createDate
+    }else{
+      versions.last.date
+    }
+  }
+
   /**
    * Serialize resource to byte array
    * Method simply writes all fields, metadata, system metadata to byte array.

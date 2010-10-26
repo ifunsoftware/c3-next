@@ -34,12 +34,12 @@ import java.nio.channels.Channels
 import java.io._
 import org.apache.commons.httpclient.methods.GetMethod
 import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.resource.{AbstractFileDataWrapper}
 import org.apache.commons.httpclient.{HttpClient, HttpStatus}
+import org.aphreet.c3.platform.remote.HttpHost
 
 
-class RemoteSystemDataWrapper(val host:String, val address:String, val version:Int) extends AbstractFileDataWrapper{
+class RemoteSystemDataWrapper(val host:HttpHost, val address:String, val version:Int) extends AbstractFileDataWrapper{
 
   private var created = false
 
@@ -51,7 +51,7 @@ class RemoteSystemDataWrapper(val host:String, val address:String, val version:I
 
     created = true
 
-    val getMethod = new GetMethod("http://" + host + ":" + HTTP_PORT + "/c3-remote/resource/" + address + "/data/" + version)
+    val getMethod = new GetMethod(host.getServer + "/c3-remote/resource/" + address + "/data/" + version)
 
     try{
       val status = (new HttpClient()).executeMethod(getMethod)

@@ -45,6 +45,8 @@ import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDe
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.access.{AccessManager, ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.common.msg.{UnregisterListenerMsg, RegisterListenerMsg, DestroyMsg}
+import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
+import org.aphreet.c3.platform.remote.HttpHost
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -118,6 +120,10 @@ class ReplicationManagerImpl extends ReplicationManager{
 
     accessManager ! RegisterListenerMsg(this)
 
+    val thread = new Thread(new QueueMaintainer(this))
+    thread.setDaemon(true)
+    thread.start
+
     log info "Replicationg manager started"
   }
 
@@ -164,6 +170,23 @@ class ReplicationManagerImpl extends ReplicationManager{
             case e => log.error("Failed to replicate resource", e)
           }
         }
+
+        case QueuedTasks => {
+          log debug "Getting list of queued resources"
+          for((id, link) <- remoteReplicationActors){
+            if(link.isStarted){
+              link ! QueuedTasks
+            }
+          }
+        }
+
+        case QueuedTasksReply(entries) => {
+          log debug "Got list of queued resources"
+          log warn "Don't know what to do with failed replication tasks"
+        }
+        
+
+
         case DestroyMsg => {
           this.exit
           for((id, link) <- remoteReplicationActors){
@@ -261,25 +284,35 @@ class ReplicationManagerImpl extends ReplicationManager{
 
 
   private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
-    try {
-      val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
-      factory.setBeanClassLoader(getClass.getClassLoader)
-      factory.setServiceInterface(classOf[PlatformManagementService])
-      factory.setWsdlDocumentUrl(new URL("http://" + host + ":" + ReplicationConstants.HTTP_PORT + "/c3-remote/ws/management?WSDL"))
-      factory.setNamespaceUri("remote.c3.aphreet.org")
-      factory.setServiceName("ManagementService")
-      factory.setUsername(user)
-      factory.setPassword(password)
-      factory.setPortName("PlatformManagementServiceImplPort")
-      factory.setMaintainSession(true)
-      factory.afterPropertiesSet
-
-      factory.getObject.asInstanceOf[PlatformManagementService]
-    } catch {
-      case e: javax.xml.ws.WebServiceException => {
-        throw new ConfigurationException("Failed to connect to remote host" + e.getMessage)
-      }
-    }
+    ManagementConnectionFactory.connect(HttpHost(host, true, user, password))
   }
 
+}
+
+class QueueMaintainer(manager:ReplicationManager) extends Runnable{
+
+  val log = LogFactory getLog getClass
+
+  val TEN_MINUTES = 1000 * 60 * 10
+
+  override def run{
+    log info "Starting Replication Queue mantainer"
+
+    while(!Thread.currentThread.isInterrupted){
+      val wakeUpTime = System.currentTimeMillis + TEN_MINUTES
+
+      while(!Thread.currentThread.isInterrupted &&
+               wakeUpTime - System.currentTimeMillis > 0){
+        Thread.sleep(5 * 1000)
+      }
+
+      log debug "Getting replication queue"
+
+      manager ! QueuedTasks
+
+    }
+
+    log info "Stopping Replication Queue mantainer"
+
+  }
 }

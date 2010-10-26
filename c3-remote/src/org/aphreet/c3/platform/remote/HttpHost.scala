@@ -1,4 +1,6 @@
-package org.aphreet.c3.platform.remote.replication.impl
+package org.aphreet.c3.platform.remote
+
+import org.apache.commons.codec.binary.Base64
 
 /**
  * Copyright (c) 2010, Mikhail Malygin
@@ -30,10 +32,13 @@ package org.aphreet.c3.platform.remote.replication.impl
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-object ReplicationConstants{
+case class HttpHost(val hostname:String, val secure:Boolean = true, val user:String = null, val password:String = null){
 
-  val HTTP_PORT = 7373
-  val HTTPS_PORT = 7374
-  val REPLICATION_PORT = 7375
-  
+  def getServer:String =
+    if(secure){
+      "https://" + hostname + ":" + RemoteConstants.HTTPS_PORT
+    }else{
+      "http://" + hostname + ":" + RemoteConstants.HTTP_PORT
+    }
+
 }
