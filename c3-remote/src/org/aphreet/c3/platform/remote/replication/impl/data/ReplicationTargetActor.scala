@@ -67,6 +67,7 @@ class ReplicationTargetActor extends Actor{
 
   var iterator:Iterator[ReplicationTargetWorker] = null
 
+  var secureDataConnection = false
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
@@ -74,6 +75,10 @@ class ReplicationTargetActor extends Actor{
   @Autowired
   def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
 
+  def setUseSecureDataConnection(use:Boolean) = {
+    secureDataConnection = use
+    workers.foreach(_.useSecureDataConnection = secureDataConnection)
+  }
 
   def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int) = {
 
@@ -86,6 +91,7 @@ class ReplicationTargetActor extends Actor{
     for(i <- 1 to WORKERS_COUNT){
       val worker = new ReplicationTargetWorker(storageManager)
       worker.startWithConfig(this.config)
+      worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers
     }
 

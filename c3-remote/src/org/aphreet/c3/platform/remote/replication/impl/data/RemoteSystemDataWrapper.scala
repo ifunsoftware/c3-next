@@ -39,7 +39,7 @@ import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
 import com.twmacinta.util.MD5
-class RemoteSystemDataWrapper(val host:ReplicationHost, val address:String, val version:Int) extends AbstractFileDataWrapper{
+class RemoteSystemDataWrapper(val host:ReplicationHost, val secure:Boolean, val address:String, val version:Int) extends AbstractFileDataWrapper{
 
   private var created = false
 
@@ -53,7 +53,7 @@ class RemoteSystemDataWrapper(val host:ReplicationHost, val address:String, val 
 
     val requestUri = "/c3-remote/resource/" + address + "/data/" + version
 
-    val getMethod = new GetMethod(host.httpServerString(true) + requestUri)
+    val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 
     addAuthHeader(getMethod, requestUri, host.httpDataUser, host.httpDataPassword)
 

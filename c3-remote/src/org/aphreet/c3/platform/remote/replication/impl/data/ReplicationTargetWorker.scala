@@ -44,6 +44,8 @@ class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
 
   var config:Map[String, ReplicationHost] = Map()
 
+  var useSecureDataConnection = false
+
   def startWithConfig(config:Map[String, ReplicationHost]) = {
 
     log info "Starting replication worker"
@@ -212,7 +214,7 @@ class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
   private def fillWithData(resource:Resource, replicationHost:ReplicationHost) = {
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(replicationHost, resource.address, i)
+      val data = new RemoteSystemDataWrapper(replicationHost, useSecureDataConnection, resource.address, i)
       version.data = data
     }
   }

@@ -63,6 +63,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   val HTTPS_PORT_KEY = "c3.remote.https.port"
   val REPLICATION_PORT_KEY = "c3.remote.replication.port"
   val REPLICATION_QUEUE_KEY = "c3.remote.replication.queue"
+  val REPLICATION_SECURE_KEY = "c3.remote.replication.secure_data"
 
   private val DEFAULT_REPLICATION_PORT = 7375
 
@@ -85,7 +86,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   private var currentTargetConfig = Map[String, ReplicationHost]()
 
   private var currentSourceConfig = Map[String, ReplicationHost]()
-
 
   var replicationQueuePath:Path = null
 
@@ -136,7 +136,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
           if(replicationQueuePath != null)
             new ReplicationQueueSerializer(replicationQueuePath).store(optimizeReplicationQueue(entries), host)
-          
+
         }
 
         case DestroyMsg => {
@@ -197,7 +197,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       val file = replicationQueuePath.file
 
       if(file.isDirectory){
-         file.list
+        file.list
       }else{
         throw new ConfigurationException("Replication queue path is file")
       }
@@ -313,9 +313,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   private def createLocalPropertyRetriever:Function1[String, String] = {
     ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
-        case Some(value) => value
-        case None => throw new ConfigurationException("Failed to get property " + key)
-      })
+      case Some(value) => value
+      case None => throw new ConfigurationException("Failed to get property " + key)
+    })
   }
 
   private def createRemotePropertyRetriever(remoteProperties:Array[Pair]):Function1[String, String] = {
@@ -344,11 +344,26 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   override def defaultValues:Map[String, String] =
     Map(HTTP_PORT_KEY -> "7373",
-        HTTPS_PORT_KEY -> "7374",
-        REPLICATION_PORT_KEY -> DEFAULT_REPLICATION_PORT.toString,
-        REPLICATION_QUEUE_KEY -> "")
+      HTTPS_PORT_KEY -> "7374",
+      REPLICATION_PORT_KEY -> DEFAULT_REPLICATION_PORT.toString,
+      REPLICATION_QUEUE_KEY -> "",
+      REPLICATION_SECURE_KEY -> "false")
 
   override def propertyChanged(event:PropertyChangeEvent) = {
+
+    event.name match {
+      case REPLICATION_SECURE_KEY =>
+        if(event.newValue.isEmpty){
+          replicationQueuePath = null
+        }else{
+          replicationQueuePath = new Path(event.newValue)
+        }
+
+      case REPLICATION_QUEUE_KEY =>
+        localReplicationActor.setUseSecureDataConnection(event.newValue == true)
+      case _ =>
+        log warn "To get new port config working system restart is required"
+    }
 
     if(event.name == REPLICATION_QUEUE_KEY){
       log info "Setting new replication queue path"
@@ -362,7 +377,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-//--------------------------------------------------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------------------------------------------------//
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
@@ -396,7 +411,7 @@ class QueueMaintainer(manager:ReplicationManager) extends Runnable{
       val wakeUpTime = System.currentTimeMillis + TEN_MINUTES
 
       while(!Thread.currentThread.isInterrupted &&
-               wakeUpTime - System.currentTimeMillis > 0){
+              wakeUpTime - System.currentTimeMillis > 0){
         Thread.sleep(5 * 1000)
       }
 
