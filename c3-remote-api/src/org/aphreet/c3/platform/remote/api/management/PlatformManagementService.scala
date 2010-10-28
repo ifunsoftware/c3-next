@@ -62,4 +62,8 @@ trait PlatformManagementService {
 
   def establishReplication(host:String, username:String, password:String)
 
+  def removeReplicationTarget(id:String)
+
+  def listReplicationTargets:Array[ReplicationHost]
+
 }

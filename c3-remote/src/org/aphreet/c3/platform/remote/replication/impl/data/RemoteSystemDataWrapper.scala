@@ -35,11 +35,11 @@ import java.io._
 import org.apache.commons.httpclient.methods.GetMethod
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.resource.{AbstractFileDataWrapper}
-import org.apache.commons.httpclient.{HttpClient, HttpStatus}
 import org.aphreet.c3.platform.remote.HttpHost
-
-
-class RemoteSystemDataWrapper(val host:HttpHost, val address:String, val version:Int) extends AbstractFileDataWrapper{
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
+import com.twmacinta.util.MD5
+class RemoteSystemDataWrapper(val host:ReplicationHost, val address:String, val version:Int) extends AbstractFileDataWrapper{
 
   private var created = false
 
@@ -51,7 +51,11 @@ class RemoteSystemDataWrapper(val host:HttpHost, val address:String, val version
 
     created = true
 
-    val getMethod = new GetMethod(host.getServer + "/c3-remote/resource/" + address + "/data/" + version)
+    val requestUri = "/c3-remote/resource/" + address + "/data/" + version
+
+    val getMethod = new GetMethod(host.httpServerString(true) + requestUri)
+
+    addAuthHeader(getMethod, requestUri, host.httpDataUser, host.httpDataPassword)
 
     try{
       val status = (new HttpClient()).executeMethod(getMethod)
@@ -73,6 +77,20 @@ class RemoteSystemDataWrapper(val host:HttpHost, val address:String, val version
     }
 
     file
+  }
+
+  def addAuthHeader(method:HttpMethodBase, resource:String, username:String, key:String) = {
+    if(username != "anonymous"){
+
+      val strToHash = username + key + resource
+
+      val md5 = new MD5
+      md5.Update(strToHash.getBytes)
+
+      val hash = MD5.asHex(md5.Final)
+      val header = new Header("C3Auth", username + ":" + hash)
+      method.addRequestHeader(header)
+    }
   }
 
   override def finalize{

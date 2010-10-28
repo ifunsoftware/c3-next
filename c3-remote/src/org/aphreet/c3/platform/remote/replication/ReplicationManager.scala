@@ -35,10 +35,18 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 
 trait ReplicationManager extends Actor {
 
+  def listFailedReplicationQueues:Array[String]
+
+  def showFailedReplicationQueue(index:Int):Array[String]
+
+  def retryFailedReplicationQueue(index:Int)
+
   def establishReplication(host:String, user:String, password:String)
 
-  def cancelReplication(ip:String)
+  def cancelReplication(id:String)
 
   def registerReplicationSource(host:ReplicationHost)
+
+  def listReplicationTargets:Array[ReplicationHost]
 }
 

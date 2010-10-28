@@ -388,4 +388,25 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+  def removeReplicationTarget(id:String) = {
+    try{
+      replicationManager.cancelReplication(id)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def listReplicationTargets:Array[ReplicationHost] = {
+    try{
+      replicationManager.listReplicationTargets
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 }

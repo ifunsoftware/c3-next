@@ -38,10 +38,10 @@ import actors.Actor
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.remote.replication._
-import org.aphreet.c3.platform.remote.RemoteConstants
 import collection.mutable.{HashSet, HashMap}
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 
-class ReplicationLink(val host:ReplicationHost) extends Actor{
+class ReplicationLink(val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
 
   val log = LogFactory getLog getClass
 
@@ -59,13 +59,11 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
     log info "Establishing replication link to " + host.systemId
 
-    val port = RemoteConstants.REPLICATION_PORT
+    val port = host.replicationPort.intValue
 
     val peer = Node(host.hostname, port)
 
     val remoteActor = RemoteActor.select(peer, 'ReplicationActor)
-
-    link(remoteActor)
 
     started = true
 
@@ -77,6 +75,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
           remoteActor ! ReplicateAddMsg(bytes, calculator.calculate(bytes))
 
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.add." + host.systemId, 1l)
+
           if(log.isTraceEnabled)
             log trace "Adding RAE to queue " + resource.address
 
@@ -86,6 +86,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
         case ReplicateAddAckMsg(address, signature) => {
           if(calculator.verify(address, signature)){
             queue -= ReplicationAddEntry(address)
+
+            statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.add." + host.systemId, 1l)
 
             if(log.isTraceEnabled)
               log trace "Removing RAE from queue " + address
@@ -99,6 +101,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
           remoteActor ! ReplicateUpdateMsg(bytes, calculator.calculate(bytes))
 
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.update." + host.systemId, 1l)
+
           val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
 
           if(log.isTraceEnabled)
@@ -110,6 +114,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
         case ReplicateUpdateAckMsg(address, timestamp, signature) => {
           if(calculator.verify(address, signature)){
+
+            statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.update." + host.systemId, 1l)
 
             if(log.isTraceEnabled)
               log trace "Removing RUE from queue " + address
@@ -123,6 +129,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
         case ResourceDeletedMsg(address) => {
           remoteActor ! ReplicateDeleteMsg(address, calculator.calculate(address))
 
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.delete." + host.systemId, 1l)
+
           if(log.isTraceEnabled)
             log trace "Adding RDE to queue " + address
 
@@ -131,6 +139,8 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
         case ReplicateDeleteAckMsg(address, signature) => {
           if(calculator.verify(address, signature)){
+
+            statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.delete." + host.systemId, 1l)
 
             if(log.isTraceEnabled)
               log trace "Removing RDE from queue " + address
@@ -148,13 +158,13 @@ class ReplicationLink(val host:ReplicationHost) extends Actor{
 
           queue --= set
 
-          sender ! QueuedTasksReply(set)
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.queued." + host.systemId, set.size)
 
+          sender ! QueuedTasksReply(set, host)
         }
 
         case DestroyMsg => {
           log info "Destroying replication link to " + host.toString
-          unlink(remoteActor)
           this.exit
         }
       }
@@ -174,4 +184,4 @@ case class ReplicationUpdateEntry(val address:String, val timestamp:java.lang.Lo
 case class ReplicationDeleteEntry(val address:String) extends ReplicationEntry
 
 object QueuedTasks
-case class QueuedTasksReply(val set:HashSet[ReplicationEntry])
+case class QueuedTasksReply(val set:HashSet[ReplicationEntry], host:ReplicationHost)

@@ -32,10 +32,15 @@ package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
 
+import org.aphreet.c3.platform.remote.api.management.Pair
+
 object ReplicationCommands extends Commands {
 
   def instances = List(
-      new AddReplicationTarget
+      new AddReplicationTarget,
+      new RemoveReplicationTarget,
+      new ListReplicationTargets,
+      new PrepareForReplication
   )
   
 }
@@ -55,4 +60,81 @@ class AddReplicationTarget extends Command {
   }
 
   def name:List[String] = List("add", "replication", "target")
+}
+
+class RemoveReplicationTarget extends Command {
+
+  def execute:String = {
+    if(params.size < 1){
+      "Not enough params.\nUsage: remove replication target <systemid>"
+    }else{
+      management.removeReplicationTarget(params.head)
+      "Done"
+    }
+  }
+
+  def name:List[String] = List("remove", "replication", "target")
+}
+
+class ListReplicationTargets extends Command {
+
+  def execute:String = {
+    val targets = management.listReplicationTargets
+
+    val header = "|        ID       |              Host              |\n" +
+                 "|-----------------|--------------------------------|\n"
+
+    val footer = "|-----------------|--------------------------------|\n"
+
+    targets.map(e => (String.format("| %-17s | %32s |\n", e.systemId, e.hostname))).foldLeft(header)(_ + _) + footer
+
+  }
+
+  def name:List[String] = List("list", "replication", "targets")
+}
+
+class PrepareForReplication extends Command {
+
+  def getValue(array:Array[Pair], key:String):String = {
+    array.filter(_.key == key).headOption match {
+      case Some(value) => value.value
+      case None => ""
+    }
+  }
+
+  def setProperty(key:String, value:String) = {
+    if(!value.isEmpty)
+      //println("Setting " + key + " to " + value)
+      management.setPlatformProperty(key, value)
+  }
+
+  def execute:String = {
+
+    val properties = management.platformProperties
+
+    print("Public hostname [" + getValue(properties, "c3.public.hostname") + "]: ")
+    val hostname = readInput.trim
+
+    print("HTTP port [" + getValue (properties, "c3.remote.http.port") + "]: ")
+    val httpPort = readInput.trim
+
+    print("HTTPS port [" + getValue (properties, "c3.remote.https.port") + "]: ")
+    val httpsPort = readInput.trim
+
+    print("Replication port [" + getValue (properties, "c3.remote.replication.port") + "]: ")
+    val replicationPort = readInput.trim
+
+    print("Replication queue path [" + getValue (properties, "c3.remote.replication.queue") + "]: ")
+    val queue = readInput.trim
+
+    setProperty("c3.public.hostname", hostname)
+    setProperty("c3.remote.http.port", httpPort)
+    setProperty("c3.remote.https.port", httpsPort)
+    setProperty("c3.remote.replication.port", replicationPort)
+    setProperty("c3.remote.replication.queue", queue)
+
+    "Done"
+  }
+
+  def name:List[String] = List("prepare for replication")
 }

@@ -44,5 +44,12 @@ case class ReplicationHost(
         ) extends java.io.Serializable{
 
   def this() = this(null, null, null, null, null, null, null, null)
-  
+
+  def httpServerString(secure:Boolean) = {
+    if(secure){
+      "https://" + hostname + ":" + httpsPort
+    }else{
+      "http://" + hostname + ":" + httpPort
+    }
+  }
 }

@@ -43,6 +43,7 @@ import javax.annotation._
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.statistics.StatisticsManager
 
 
 @Component
@@ -57,8 +58,13 @@ class ReplicationSourceActor extends Actor {
 
   var manager:ReplicationManager = null
 
+  var statisticsManager:StatisticsManager = null
+
   @Autowired
   def setAccessManager(manager:AccessManager) = {accessManager = manager}
+
+  @Autowired
+  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
 
   def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager) = {
 
@@ -67,7 +73,7 @@ class ReplicationSourceActor extends Actor {
     this.manager = manager
 
     for((id, host) <- config) {
-      remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(host)))
+      remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(host, statisticsManager)))
     }
 
     accessManager ! RegisterListenerMsg(this)
@@ -112,6 +118,25 @@ class ReplicationSourceActor extends Actor {
           }
         }
 
+        case ReplicateAddAckMsg(address, sign) => {
+          remoteReplicationActors.get(sign.systemId) match {
+            case Some(link) => link ! ReplicateAddAckMsg(address, sign)
+            case None =>
+          }
+        }
+
+        case ReplicateUpdateAckMsg(address, timestamp, sign) =>
+          remoteReplicationActors.get(sign.systemId) match {
+            case Some(link) => link ! ReplicateUpdateAckMsg(address, timestamp, sign)
+            case None =>
+          }
+
+        case ReplicateDeleteAckMsg(address, sign) =>
+          remoteReplicationActors.get(sign.systemId) match {
+            case Some(link) => link ! ReplicateDeleteAckMsg(address, sign)
+            case None =>
+          }
+
         case QueuedTasks => {
           log debug "Getting list of queued resources"
           for((id, link) <- remoteReplicationActors){
@@ -121,8 +146,8 @@ class ReplicationSourceActor extends Actor {
           }
         }
 
-        case QueuedTasksReply(entries) => {
-          manager ! QueuedTasksReply(entries)
+        case QueuedTasksReply(entries, host) => {
+          manager ! QueuedTasksReply(entries, host)
         }
 
         case DestroyMsg => {
@@ -144,7 +169,7 @@ class ReplicationSourceActor extends Actor {
   }
 
   def addReplicationTarget(host:ReplicationHost) = {
-    remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(host)))
+    remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(host, statisticsManager)))
   }
 
   def removeReplicationTarget(remoteSystemId:String) = {

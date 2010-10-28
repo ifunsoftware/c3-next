@@ -28,12 +28,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote
+package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-object RemoteConstants{
-  
-  val HTTP_PORT = 7373
-  val HTTPS_PORT = 7374
-  val REPLICATION_PORT = 7375
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import java.io.{FileWriter, BufferedWriter, File}
+import org.aphreet.c3.platform.remote.replication.impl.data.{ReplicationDeleteEntry, ReplicationUpdateEntry, ReplicationAddEntry, ReplicationEntry}
+import collection.mutable.HashMap
 
+class ReplicationQueueSerializer(val directory:Path){
+
+  def store(queue:HashMap[String, ReplicationEntry], host:ReplicationHost) = {
+
+    directory.file.mkdirs
+
+    val fileName = System.currentTimeMillis + "-" + host.systemId
+
+    val file = new File(directory.file, fileName)
+
+    val writer = new BufferedWriter(new FileWriter(file))
+
+    try{
+
+      for((key, entry) <- queue){
+        writer.write(serializeEntry(entry))
+        writer.write("\n")
+      }
+
+    }finally {
+      writer.close
+    }
+  }
+
+  def serializeEntry(entry:ReplicationEntry):String = {
+    val string = entry match {
+      case ReplicationAddEntry(address) => address + " add"
+      case ReplicationUpdateEntry(address, timestamp) => address + " update " + timestamp
+      case ReplicationDeleteEntry(address) => address + " delete"
+    }
+
+    string
+  }
 }

@@ -42,16 +42,18 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
+import org.aphreet.c3.platform.common.{Path, Constants}
+import queue.ReplicationQueueSerializer
+import java.io.File
+import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
+import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -60,6 +62,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   val HTTP_PORT_KEY = "c3.remote.http.port"
   val HTTPS_PORT_KEY = "c3.remote.https.port"
   val REPLICATION_PORT_KEY = "c3.remote.replication.port"
+  val REPLICATION_QUEUE_KEY = "c3.remote.replication.queue"
+
+  private val DEFAULT_REPLICATION_PORT = 7375
 
   val log = LogFactory getLog getClass
 
@@ -82,13 +87,20 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   private var currentSourceConfig = Map[String, ReplicationHost]()
 
 
+  var replicationQueuePath:Path = null
+
   @PostConstruct
   def init{
 
     log info "Starting replication manager..."
 
+    val replicationPort = platformConfigManager.getPlatformProperties.get(REPLICATION_PORT_KEY) match{
+      case Some(x) => x.toInt
+      case None => DEFAULT_REPLICATION_PORT
+    }
+
     currentSourceConfig = sourcesConfigAccessor.load
-    localReplicationActor.startWithConfig(currentSourceConfig)
+    localReplicationActor.startWithConfig(currentSourceConfig, replicationPort)
 
     currentTargetConfig = targetsConfigAccessor.load
     sourceReplicationActor.startWithConfig(currentTargetConfig, this)
@@ -97,12 +109,16 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     this.start
 
+    platformConfigManager ! RegisterMsg(this)
+
     log info "Replicationg manager started"
   }
 
   @PreDestroy
   def destroy{
     log info "Destroying ReplicationManager"
+
+    platformConfigManager ! UnregisterMsg(this)
 
     this ! DestroyMsg
   }
@@ -115,9 +131,12 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           sourceReplicationActor ! QueuedTasks
         }
 
-        case QueuedTasksReply(entries) => {
+        case QueuedTasksReply(entries, host) => {
           log debug "Got list of queued resources"
-          log warn "Don't know what to do with failed replication tasks"
+
+          if(replicationQueuePath != null)
+            new ReplicationQueueSerializer(replicationQueuePath).store(optimizeReplicationQueue(entries), host)
+          
         }
 
         case DestroyMsg => {
@@ -126,6 +145,78 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
       }
     }
+  }
+
+  private def optimizeReplicationQueue(queue:HashSet[ReplicationEntry]):HashMap[String, ReplicationEntry] = {
+    val map = new HashMap[String, ReplicationEntry]
+
+    for(entry <- queue){
+      entry match {
+        case ReplicationAddEntry(address) => {
+          map.get(address) match{
+            case Some(existentEntry) => //something already exists, it does not matter what is it
+            case None => map + ((address, entry))
+          }
+        }
+
+
+        case ReplicationUpdateEntry(address, timestamp) => {
+          map.get(address) match{
+            case Some(existentEntry) => {
+              existentEntry match {
+
+                case ReplicationAddEntry(address) => map + ((address, entry)) //override resource add
+
+                case ReplicationUpdateEntry(address, existentTimestamp) => {
+                  if(timestamp.longValue > existentTimestamp.longValue){
+                    map + ((address, entry))
+                  }
+                }
+
+                case ReplicationDeleteEntry(address) => //do nothing
+              }
+            }
+            case None => map + ((address, entry))
+          }
+        }
+
+
+
+        case ReplicationDeleteEntry(address) => {
+          map + ((address, entry)) //We don't care about what was before delete ;-)
+        }
+      }
+    }
+
+    map
+  }
+
+  def listFailedReplicationQueues:Array[String] = {
+    if(replicationQueuePath != null){
+
+      val file = replicationQueuePath.file
+
+      if(file.isDirectory){
+         file.list
+      }else{
+        throw new ConfigurationException("Replication queue path is file")
+      }
+
+    }else{
+      throw new ConfigurationException("Replication queue path is not set")
+    }
+  }
+
+  def showFailedReplicationQueue(index:Int):Array[String] = {
+    throw new PlatformException("Is not implemented yet")
+  }
+
+  def retryFailedReplicationQueue(index:Int) = {
+    throw new PlatformException("Is not implemented yet")
+  }
+
+  def listReplicationTargets:Array[ReplicationHost] = {
+    currentTargetConfig.values.toArray
   }
 
   /**
@@ -240,7 +331,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
     log info "Connecting to remote system..."
-    val service = ManagementConnectionFactory.connect(HttpHost(host, true, user, password))
+    val service = ManagementConnectionFactory.connect(HttpHost(host, user, password))
     log info "Done"
     service
   }
@@ -254,10 +345,21 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   override def defaultValues:Map[String, String] =
     Map(HTTP_PORT_KEY -> "7373",
         HTTPS_PORT_KEY -> "7374",
-        REPLICATION_PORT_KEY -> "7375")
+        REPLICATION_PORT_KEY -> DEFAULT_REPLICATION_PORT.toString,
+        REPLICATION_QUEUE_KEY -> "")
 
   override def propertyChanged(event:PropertyChangeEvent) = {
-    log warn "To get new port config working system restart is required"
+
+    if(event.name == REPLICATION_QUEUE_KEY){
+      log info "Setting new replication queue path"
+      if(event.newValue.isEmpty){
+        replicationQueuePath = null
+      }else{
+        replicationQueuePath = new Path(event.newValue)
+      }
+    }else{
+      log warn "To get new port config working system restart is required"
+    }
   }
 
 //--------------------------------------------------------------------------------------------------------------------//

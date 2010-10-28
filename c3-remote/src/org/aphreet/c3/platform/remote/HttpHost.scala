@@ -33,22 +33,4 @@ import org.apache.commons.codec.binary.Base64
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-class HttpHost(_host:String, user:String, password:String){
-
-  val httpConnectionString = _host
-
-  def getServer:String = host
-}
-
-class ReplicationHttpHost(val replicationHost:ReplicationHost, secure:Boolean)
-        extends HttpHost(replicationHost.hostname,
-                         replicationHost.httpDataUser,
-                         replicationHost.httpDataPassword){
-
-  override def getServer:String =
-    if(secure){
-      "https://" + replicationHost.hostname + ":" + replicationHost.httpsPort
-    }else{
-      "http://" + replicationHost.hostname + ":" + replicationHost.httpPort
-    } 
-}
+case class HttpHost(val name:String, val user:String, val password:String)

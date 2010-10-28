@@ -44,7 +44,7 @@ object ManagementConnectionFactory{
       val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
       factory.setBeanClassLoader(getClass.getClassLoader)
       factory.setServiceInterface(classOf[PlatformManagementService])
-      factory.setWsdlDocumentUrl(new URL(host.getServer + "/c3-remote/ws/management?WSDL"))
+      factory.setWsdlDocumentUrl(new URL(host.name + "/c3-remote/ws/management?WSDL"))
       factory.setNamespaceUri("remote.c3.aphreet.org")
       factory.setServiceName("ManagementService")
 

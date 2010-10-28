@@ -21,5 +21,7 @@
     <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
     <reference id="storageService" interface="org.aphreet.c3.platform.storage.StorageManager"/>
-    
+
+    <reference id="statisticsService" interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
+
 </beans:beans>  
