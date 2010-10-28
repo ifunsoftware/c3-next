@@ -30,13 +30,19 @@
 package org.aphreet.c3.platform.remote.api.management
 
 import reflect.BeanProperty
+import java.lang.{Integer => JInt}
 
 case class ReplicationHost(
             @BeanProperty var systemId:String,
             @BeanProperty var hostname:String,
-            @BeanProperty var key:String
+            @BeanProperty var key:String,
+            @BeanProperty var httpPort:JInt,
+            @BeanProperty var httpsPort:JInt,
+            @BeanProperty var replicationPort:JInt,
+            @BeanProperty var httpDataUser:String,
+            @BeanProperty var httpDataPassword:String
         ) extends java.io.Serializable{
 
-  def this() = this(null, null, null)
+  def this() = this(null, null, null, null, null, null, null, null)
   
 }

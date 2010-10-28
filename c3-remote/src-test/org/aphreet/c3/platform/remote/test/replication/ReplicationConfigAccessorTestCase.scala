@@ -33,7 +33,7 @@ import junit.framework.TestCase
 import junit.framework.Assert._
 import java.io.File
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationSourcesConfigAccessor
+import org.aphreet.c3.platform.remote.replication.impl.config.ReplicationSourcesConfigAccessor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 
 class ReplicationConfigAccessorTestCase extends TestCase {
@@ -55,8 +55,8 @@ class ReplicationConfigAccessorTestCase extends TestCase {
 
   def testConfigPersistence = {
 
-    val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1"),
-                     "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2"))
+    val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1", "7373", "7374", "7375", "user1", "password1"),
+                     "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2", "7373", "7374", "7375", "user2", "password2"))
 
     val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir

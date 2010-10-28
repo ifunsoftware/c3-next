@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication.impl
+package org.aphreet.c3.platform.remote.replication.impl.config
 
 import org.aphreet.c3.platform.remote.api.management.StorageDescription
 import org.aphreet.c3.platform.storage.{StorageModeParser, Storage}

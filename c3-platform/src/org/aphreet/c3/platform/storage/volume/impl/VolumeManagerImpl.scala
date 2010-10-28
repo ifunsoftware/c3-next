@@ -109,9 +109,6 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
     data
   }
 
-  def listeningForProperties:Array[String] =
-    Array(WATERMARKS)
-
   def defaultValues:Map[String,String] =
     Map(WATERMARKS -> "50000000,100000000")
 

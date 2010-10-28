@@ -29,32 +29,44 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
-import org.aphreet.c3.platform.remote.replication.ReplicationManager
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.StorageManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean
-import java.net.URL
-import org.aphreet.c3.platform.exception.ConfigurationException
+import data._
+import config._
 import collection.mutable.{HashSet, HashMap}
-import org.apache.commons.logging.LogFactory
+
+import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.aphreet.c3.platform.common.Constants
-import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDescription, PlatformManagementService}
+
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.access.{AccessManager, ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg}
-import org.aphreet.c3.platform.common.msg.{UnregisterListenerMsg, RegisterListenerMsg, DestroyMsg}
-import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
+
+import org.apache.commons.logging.LogFactory
+
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.Constants
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.remote.HttpHost
+import org.aphreet.c3.platform.remote.api.management._
+import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
+import org.aphreet.c3.platform.remote.replication.ReplicationManager
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 
 @Component("replicationManager")
 @Scope("singleton")
-class ReplicationManagerImpl extends ReplicationManager{
+class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener{
+
+  val HTTP_PORT_KEY = "c3.remote.http.port"
+  val HTTPS_PORT_KEY = "c3.remote.https.port"
+  val REPLICATION_PORT_KEY = "c3.remote.replication.port"
 
   val log = LogFactory getLog getClass
 
-  var localReplicationActor:ReplicationActor = null
+
+  var localReplicationActor:ReplicationTargetActor = null
+
+  var sourceReplicationActor:ReplicationSourceActor = null
 
   var platformConfigManager:PlatformConfigManager = null
 
@@ -64,35 +76,10 @@ class ReplicationManagerImpl extends ReplicationManager{
 
   var targetsConfigAccessor:ReplicationTargetsConfigAccessor = null
 
-  var accessManager:AccessManager = null
 
+  private var currentTargetConfig = Map[String, ReplicationHost]()
 
-  var systemId = ""
-
-  var currentTargetConfig:Map[String, ReplicationHost] = Map()
-
-  var currentSourceConfig:Map[String, ReplicationHost] = Map()
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
-
-  @Autowired
-  def setSourcesConfigAccessor(accessor:ReplicationSourcesConfigAccessor) = {sourcesConfigAccessor = accessor}
-
-  @Autowired
-  def setTargetsConfigAccessor(accessor:ReplicationTargetsConfigAccessor) = {targetsConfigAccessor = accessor}
-
-  @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
-
-  @Autowired
-  def setLocalReplicationActor(actor:ReplicationActor) = {localReplicationActor = actor}
-
-  @Autowired
-  def setAccessManager(manager:AccessManager) = {accessManager = manager}
-
-
-  var remoteReplicationActors = Map[String, ReplicationLink]()
+  private var currentSourceConfig = Map[String, ReplicationHost]()
 
 
   @PostConstruct
@@ -100,29 +87,15 @@ class ReplicationManagerImpl extends ReplicationManager{
 
     log info "Starting replication manager..."
 
-    platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
-      case Some(value) => systemId = value
-      case None => throw new ConfigurationException("Failed to get current system id")
-    }
-
-
     currentSourceConfig = sourcesConfigAccessor.load
     localReplicationActor.startWithConfig(currentSourceConfig)
 
     currentTargetConfig = targetsConfigAccessor.load
+    sourceReplicationActor.startWithConfig(currentTargetConfig, this)
 
-    for((id, host) <- currentTargetConfig) {
-      remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(host)))
-    }
+    runQueueMaintainer
 
-
-    log info "Registering accessManager listener..."
-
-    accessManager ! RegisterListenerMsg(this)
-
-    val thread = new Thread(new QueueMaintainer(this))
-    thread.setDaemon(true)
-    thread.start
+    this.start
 
     log info "Replicationg manager started"
   }
@@ -131,69 +104,25 @@ class ReplicationManagerImpl extends ReplicationManager{
   def destroy{
     log info "Destroying ReplicationManager"
 
-    accessManager ! UnregisterListenerMsg(this)
-
     this ! DestroyMsg
   }
 
   override def act{
     loop{
       react{
-        case ResourceAddedMsg(resource) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceAddedMsg(resource)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
-
-        }
-        case ResourceUpdatedMsg(resource) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceUpdatedMsg(resource)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
-        }
-        case ResourceDeletedMsg(address) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceDeletedMsg(address)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
-        }
-
         case QueuedTasks => {
           log debug "Getting list of queued resources"
-          for((id, link) <- remoteReplicationActors){
-            if(link.isStarted){
-              link ! QueuedTasks
-            }
-          }
+          sourceReplicationActor ! QueuedTasks
         }
 
         case QueuedTasksReply(entries) => {
           log debug "Got list of queued resources"
           log warn "Don't know what to do with failed replication tasks"
         }
-        
-
 
         case DestroyMsg => {
+          log info "RemoteManagerActor stopped"
           this.exit
-          for((id, link) <- remoteReplicationActors){
-            link.close
-          }
-
-          remoteReplicationActors = Map()
         }
       }
     }
@@ -208,59 +137,26 @@ class ReplicationManagerImpl extends ReplicationManager{
    */
   def establishReplication(host:String, user:String, password:String) = {
 
-    val localHostName = platformConfigManager.getPlatformProperties.get(Constants.C3_PUBLIC_HOSTNAME) match{
-      case Some(x) => x
-      case None => throw new ConfigurationException("Can't esablish replication until public hostname is not set")
-    }
-    
-    log info "Connecting to remote system..."
-
     val managementService = getManagementService(host, user, password)
 
-    log info "Done"
+    val secret = System.currentTimeMillis.toString
 
-    val options = managementService.platformProperties.filter(_.key == Constants.C3_SYSTEM_ID)
 
-    if(options.isEmpty){
-      throw new ConfigurationException("Failed to get remote system id")
-    }
+    val localReplicationHost = createLocalReplicationHost(secret)
 
-    val remoteSystemId = options.head.value
+    val remoteReplicationHost = createRemoteReplicationHost(managementService, secret)
 
-    val remoteStorages = managementService.listStorages.toList
-    val localStorages = storageManager.listStorages
+    syncStorageConfigurations(managementService)
 
-    log info "Comparing storage configuration..."
-
-    val additionalIds = new StorageSynchronizer().getAdditionalIds(remoteStorages, localStorages)
-
-    log info "Done"
-
-    log info "Applying configuration changes..."
-
-    for((id, secId) <- additionalIds){
-      managementService.addStorageSecondaryId(id, secId)
-    }
-
-    log info "Done"
-    
-    //TODO change this in future
-    val key = System.currentTimeMillis.toString
-
-    managementService.registerReplicationSource(new ReplicationHost(systemId, localHostName, key))
-
-    registerReplicationTarget(new ReplicationHost(remoteSystemId, host, key))
+    managementService.registerReplicationSource(localReplicationHost)
+    this.registerReplicationTarget(remoteReplicationHost)
   }
 
   def cancelReplication(id:String) = {
     targetsConfigAccessor.update(config => config - id)
     currentTargetConfig = targetsConfigAccessor.load
 
-    val link = remoteReplicationActors.get(id).get
-
-    remoteReplicationActors = remoteReplicationActors - id
-
-    link.close
+    sourceReplicationActor.removeReplicationTarget(id)
   }
 
   def registerReplicationSource(host:ReplicationHost) = {
@@ -277,16 +173,112 @@ class ReplicationManagerImpl extends ReplicationManager{
     targetsConfigAccessor.update(config => config + ((host.systemId, host)))
     currentTargetConfig = targetsConfigAccessor.load
 
-    remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(host)))
+    sourceReplicationActor.addReplicationTarget(host)
 
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
   }
 
+  private def syncStorageConfigurations(managementService:PlatformManagementService) = {
+    val remoteStorages = managementService.listStorages.toList
+    val localStorages = storageManager.listStorages
 
-  private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
-    ManagementConnectionFactory.connect(HttpHost(host, true, user, password))
+    log info "Comparing storage configuration..."
+
+    val additionalIds = new StorageSynchronizer().getAdditionalIds(remoteStorages, localStorages)
+
+    log info "Done"
+
+    log info "Applying configuration changes..."
+
+    for((id, secId) <- additionalIds){
+      managementService.addStorageSecondaryId(id, secId)
+    }
+
+    log info "Done"
   }
 
+  private def createLocalReplicationHost(secret:String):ReplicationHost = {
+    createReplicationHost(createLocalPropertyRetriever, secret)
+  }
+
+  private def createRemoteReplicationHost(service:PlatformManagementService, secret:String):ReplicationHost = {
+
+    val platformProperties = service.platformProperties
+
+    createReplicationHost(createRemotePropertyRetriever(platformProperties), secret)
+  }
+
+  private def createReplicationHost(propertyRetriever:Function1[String, String], secret:String):ReplicationHost = {
+
+    val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
+    val systemHost = propertyRetriever(Constants.C3_PUBLIC_HOSTNAME)
+    val httpPort = propertyRetriever(HTTP_PORT_KEY).toInt
+    val httpsPort = propertyRetriever(HTTPS_PORT_KEY).toInt
+    val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
+    val secretKey = secret
+
+    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort, "anonymous", "")
+  }
+
+  private def createLocalPropertyRetriever:Function1[String, String] = {
+    ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
+        case Some(value) => value
+        case None => throw new ConfigurationException("Failed to get property " + key)
+      })
+  }
+
+  private def createRemotePropertyRetriever(remoteProperties:Array[Pair]):Function1[String, String] = {
+    ((key:String) => {
+      val options = remoteProperties.filter(_.key == key)
+      if(options.isEmpty){
+        throw new ConfigurationException("Failed to get remote system id")
+      }
+
+      options.head.value
+    })
+  }
+
+  private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
+    log info "Connecting to remote system..."
+    val service = ManagementConnectionFactory.connect(HttpHost(host, true, user, password))
+    log info "Done"
+    service
+  }
+
+  def runQueueMaintainer = {
+    val thread = new Thread(new QueueMaintainer(this))
+    thread.setDaemon(true)
+    thread.start
+  }
+
+  override def defaultValues:Map[String, String] =
+    Map(HTTP_PORT_KEY -> "7373",
+        HTTPS_PORT_KEY -> "7374",
+        REPLICATION_PORT_KEY -> "7375")
+
+  override def propertyChanged(event:PropertyChangeEvent) = {
+    log warn "To get new port config working system restart is required"
+  }
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+  @Autowired
+  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+
+  @Autowired
+  def setSourcesConfigAccessor(accessor:ReplicationSourcesConfigAccessor) = {sourcesConfigAccessor = accessor}
+
+  @Autowired
+  def setTargetsConfigAccessor(accessor:ReplicationTargetsConfigAccessor) = {targetsConfigAccessor = accessor}
+
+  @Autowired
+  def setConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+
+  @Autowired
+  def setLocalReplicationActor(actor:ReplicationTargetActor) = {localReplicationActor = actor}
+
+  @Autowired
+  def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
 }
 
 class QueueMaintainer(manager:ReplicationManager) extends Runnable{

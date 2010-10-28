@@ -7,6 +7,8 @@ trait SPlatformPropertyListener extends PlatformPropertyListener{
 
   def defaultValues:Map[String, String]
   
-  def defaultPropertyValues:JMap[String, String] = JavaConversions.asMap(defaultValues)
+  override def defaultPropertyValues:JMap[String, String] = JavaConversions.asMap(defaultValues)
+
+  override def listeningForProperties:Array[String] = defaultValues.keys.toArray
   
 }

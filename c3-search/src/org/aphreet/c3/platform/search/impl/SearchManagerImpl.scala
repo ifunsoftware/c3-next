@@ -230,7 +230,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
     MAX_TMP_INDEX_SIZE -> "100"
     )
 
-  def listeningForProperties: Array[String] = Array(
+  override def listeningForProperties: Array[String] = Array(
     INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE
     )
 

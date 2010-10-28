@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication.impl
+package org.aphreet.c3.platform.remote.replication.impl.data
 
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import com.twmacinta.util.MD5

@@ -1,5 +1,6 @@
 package org.aphreet.c3.platform.remote
 
+import api.management.ReplicationHost
 import org.apache.commons.codec.binary.Base64
 
 /**
@@ -32,13 +33,22 @@ import org.apache.commons.codec.binary.Base64
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-case class HttpHost(val hostname:String, val secure:Boolean = true, val user:String = null, val password:String = null){
+class HttpHost(_host:String, user:String, password:String){
 
-  def getServer:String =
+  val httpConnectionString = _host
+
+  def getServer:String = host
+}
+
+class ReplicationHttpHost(val replicationHost:ReplicationHost, secure:Boolean)
+        extends HttpHost(replicationHost.hostname,
+                         replicationHost.httpDataUser,
+                         replicationHost.httpDataPassword){
+
+  override def getServer:String =
     if(secure){
-      "https://" + hostname + ":" + RemoteConstants.HTTPS_PORT
+      "https://" + replicationHost.hostname + ":" + replicationHost.httpsPort
     }else{
-      "http://" + hostname + ":" + RemoteConstants.HTTP_PORT
-    }
-
+      "http://" + replicationHost.hostname + ":" + replicationHost.httpPort
+    } 
 }

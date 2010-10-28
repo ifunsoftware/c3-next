@@ -55,10 +55,6 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
       BDB_CONFIG_CACHE_PERCENT -> "20"
       )
 
-  def listeningForProperties:Array[String] =
-    Array(BDB_CONFIG_CACHE_PERCENT, BDB_CONFIG_TX_NO_SYNC, BDB_CONFIG_TX_WRITE_NO_SYNC)
-
-
   def propertyChanged(event: PropertyChangeEvent) = {
 
     def updateStorageParams {

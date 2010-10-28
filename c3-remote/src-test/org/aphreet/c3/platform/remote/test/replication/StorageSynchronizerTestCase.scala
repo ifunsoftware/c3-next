@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.remote.api.management.StorageDescription
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage._
-import org.aphreet.c3.platform.remote.replication.impl.{StorageSynchronizerException, StorageSynchronizer}
+import org.aphreet.c3.platform.remote.replication.impl.config.{StorageSynchronizerException, StorageSynchronizer}
 
 class StorageSynchronizerTestCase extends TestCase {
 
