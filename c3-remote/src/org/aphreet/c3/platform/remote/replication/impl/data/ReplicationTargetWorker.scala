@@ -37,8 +37,9 @@ import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.remote.replication.{ReplicateAddAckMsg, ReplicateDeleteAckMsg, ReplicateUpdateAckMsg, ReplicationSignature}
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.{AbstractActor, Actor}
+import org.aphreet.c3.platform.access._
 
-class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager) extends Actor {
+class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessManager:AccessManager) extends Actor {
 
   val log = LogFactory getLog getClass
 
@@ -94,7 +95,9 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
       fillWithData(resource, host)
 
-      val storage = storageManager.storageForResource(resource)
+      val storageId = AddressGenerator.storageForAddress(resource.address)
+
+      val storage = storageManager.storageForId(storageId)
 
       if(!storage.mode.allowWrite){
         log debug "Failed to replicate resource, storage is not writtable"
@@ -108,6 +111,8 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
       val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
       target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
+
+      accessManager ! ResourceAddedMsg(resource)
 
     }catch{
       case e => log.error("Failed to replicate add", e)
@@ -145,10 +150,15 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
           compareUpdatedResource(resource, r)
           resource.verifyCheckSums
           storage.update(resource)
+
+          accessManager ! ResourceUpdatedMsg(resource)
+
         }
         case None => {
           resource.verifyCheckSums
           storage.put(resource)
+
+          accessManager ! ResourceAddedMsg(resource)
         }
       }
 
@@ -185,6 +195,8 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
         val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
         target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
+
+        accessManager ! ResourceDeletedMsg(address)
       }else{
         log warn "Failed to replicate delete, storage is not writable"
       }

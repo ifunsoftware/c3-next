@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
 import actors.{AbstractActor, OutputChannel, Actor}
 import actors.remote.{RemoteActor, Node}
+import org.aphreet.c3.platform.access.AccessManager
 
 @Component
 @Scope("singleton")
@@ -52,6 +53,7 @@ class ReplicationTargetActor extends Actor{
 
   val WORKERS_COUNT = 8
 
+  var accessManager:AccessManager = null
 
   var storageManager:StorageManager = null
 
@@ -75,6 +77,9 @@ class ReplicationTargetActor extends Actor{
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
 
   @Autowired
+  def setAccessManager(manager:AccessManager) = {accessManager = manager}
+
+  @Autowired
   def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
 
   def setUseSecureDataConnection(use:Boolean) = {
@@ -93,7 +98,7 @@ class ReplicationTargetActor extends Actor{
     this.config = config
 
     for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager)
+      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessManager)
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers

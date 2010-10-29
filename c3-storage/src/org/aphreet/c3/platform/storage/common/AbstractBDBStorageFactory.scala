@@ -42,9 +42,11 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
   override def destroy = {
     log info "Pre destroy callback invoked"
 
-    configManager ! UnregisterMsg(this)
-
-    super.destroy
+    try{
+      configManager ! UnregisterMsg(this)
+    }finally{
+      super.destroy
+    }
   }
 
 

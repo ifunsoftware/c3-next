@@ -117,9 +117,7 @@ class AccessManagerImpl extends AccessManager{
       resource.calculateCheckSums
       val ra = storage.add(resource)
 
-      accessListeners.foreach{
-        _ ! ResourceAddedMsg(resource)
-      }
+      this ! ResourceAddedMsg(resource)
 
       ra
     }else{
@@ -134,9 +132,7 @@ class AccessManagerImpl extends AccessManager{
         resource.calculateCheckSums
         val ra = storage.update(resource)
 
-        accessListeners.foreach{
-          _ ! ResourceUpdatedMsg(resource)
-        }
+        this ! ResourceUpdatedMsg(resource)
 
         ra
 
@@ -155,9 +151,7 @@ class AccessManagerImpl extends AccessManager{
       if(storage.mode.allowWrite){
         storage delete ra
 
-        accessListeners.foreach {
-          _ ! ResourceDeletedMsg(ra)
-        }
+        this ! ResourceDeletedMsg(ra)
       }
 
       else
@@ -172,10 +166,10 @@ class AccessManagerImpl extends AccessManager{
       react{
         case UpdateMetadataMsg(address, metadata) =>{
           try{
-          val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
-          if(storage != null){
-            storage.appendSystemMetadata(address, metadata)
-          }
+            val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
+            if(storage != null){
+              storage.appendSystemMetadata(address, metadata)
+            }
           }catch{
             case e=> log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
@@ -189,6 +183,24 @@ class AccessManagerImpl extends AccessManager{
           log debug "Unregistering listener " + actor.toString
           accessListeners = accessListeners - actor
           log debug accessListeners.toString
+
+        case ResourceAddedMsg(resource) => {
+          accessListeners.foreach{
+            _ ! ResourceAddedMsg(resource)
+          }
+        }
+
+        case ResourceUpdatedMsg(resource) => {
+          accessListeners.foreach{
+            _ ! ResourceUpdatedMsg(resource)
+          }
+        }
+
+        case ResourceDeletedMsg(address) => {
+          accessListeners.foreach {
+            _ ! ResourceDeletedMsg(address)
+          }
+        }
 
         case DestroyMsg => {
           log info "AccessManager actor stopped"
@@ -211,5 +223,5 @@ class AccessManagerImpl extends AccessManager{
 
   def defaultValues:Map[String,String] =
     Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
-  
+
 }
