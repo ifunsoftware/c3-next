@@ -123,8 +123,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   def destroy{
     log info "Destroying ReplicationManager"
 
-    platformConfigManager ! UnregisterMsg(this)
-
     this ! DestroyMsg
   }
 
@@ -145,8 +143,12 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
 
         case DestroyMsg => {
-          log info "RemoteManagerActor stopped"
-          this.exit
+          try{
+            platformConfigManager ! UnregisterMsg(this)
+          }finally{
+            log info "RemoteManagerActor stopped"
+            this.exit
+          }
         }
       }
     }

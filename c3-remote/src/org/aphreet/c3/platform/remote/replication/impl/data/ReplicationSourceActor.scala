@@ -159,6 +159,8 @@ class ReplicationSourceActor extends Actor {
 
             remoteReplicationActors = Map()
 
+            accessManager ! UnregisterListenerMsg(this)
+            
           }finally{
             log info "ReplicationSourceActor stopped"
             this.exit

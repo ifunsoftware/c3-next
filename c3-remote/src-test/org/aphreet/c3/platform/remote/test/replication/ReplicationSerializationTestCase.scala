@@ -28,40 +28,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication
+package org.aphreet.c3.platform.remote.test.replication
 
-case class ReplicationSignature(val systemId:String, val hash:String)
+import org.aphreet.c3.platform.remote.replication.{ReplicationSignature, ReplicateAddAckMsg}
+import junit.framework.{Assert, TestCase}
+import java.io.{ByteArrayInputStream, ObjectInputStream, ObjectOutputStream, ByteArrayOutputStream}
 
-class ReplicationMsg(val signature:ReplicationSignature) extends java.io.Serializable
+class ReplicationSerializationTestCase extends TestCase {
 
-case class ReplicateAddMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+  def testSerialization = {
 
-case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+    val message = ReplicateAddAckMsg("address", ReplicationSignature("ssss", "ssss"))
 
+    val bos = new ByteArrayOutputStream
 
-case class ReplicateDeleteMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+    val oos = new ObjectOutputStream(bos)
 
-case class ReplicateAddAckMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+    oos.writeObject(message)
 
-case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+    val bytes = bos.toByteArray
 
-case class ReplicateDeleteAckMsg(
-            val address:String, 
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+    val bis = new ByteArrayInputStream(bytes)
+
+    val ois = new ObjectInputStream(bis)
+
+    val messageRead = ois.readObject
+
+    Assert.assertEquals(message, messageRead)
+
+  }
+
+}
