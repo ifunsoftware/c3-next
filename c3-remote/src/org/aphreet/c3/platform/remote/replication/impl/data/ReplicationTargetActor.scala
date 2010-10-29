@@ -173,6 +173,8 @@ class ReplicationTargetActor extends Actor{
       case None =>
     }
 
+    log info "Creating remote actor for id " + id
+
     val host = config.get(id) match {
       case Some(h) => h
       case None => null
@@ -190,6 +192,7 @@ class ReplicationTargetActor extends Actor{
 
       remoteActor
     }else{
+      log info "Can't find replication config for id " + id
       null
     }
   }

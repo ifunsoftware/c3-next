@@ -40,23 +40,26 @@ class ReplicationQueueSerializer(val directory:Path){
 
   def store(queue:HashMap[String, ReplicationEntry], host:ReplicationHost) = {
 
-    directory.file.mkdirs
+    if(queue.size > 0){
 
-    val fileName = System.currentTimeMillis + "-" + host.systemId
+      directory.file.mkdirs
 
-    val file = new File(directory.file, fileName)
+      val fileName = System.currentTimeMillis + "-" + host.systemId
 
-    val writer = new BufferedWriter(new FileWriter(file))
+      val file = new File(directory.file, fileName)
 
-    try{
+      val writer = new BufferedWriter(new FileWriter(file))
 
-      for((key, entry) <- queue){
-        writer.write(serializeEntry(entry))
-        writer.write("\n")
+      try{
+
+        for((key, entry) <- queue){
+          writer.write(serializeEntry(entry))
+          writer.write("\n")
+        }
+
+      }finally {
+        writer.close
       }
-
-    }finally {
-      writer.close
     }
   }
 
