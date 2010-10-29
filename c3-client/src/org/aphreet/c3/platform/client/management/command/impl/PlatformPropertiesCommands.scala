@@ -85,15 +85,15 @@ class ListPlatformPropertiesCommand extends Command{
 
 class ListStatisticsCommand extends Command{
 
-  val header = "|               Key              |      Value      |\n" +
-               "|--------------------------------|-----------------|\n"
+  val header = "|                    Key                   |      Value      |\n" +
+               "|------------------------------------------|-----------------|\n"
 
-  val footer = "|--------------------------------|-----------------|\n"
+  val footer = "|------------------------------------------|-----------------|\n"
 
   def execute:String = {
 
     management.statistics
-      .map(e => (String.format("| %-30s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer
+      .map(e => (String.format("| %-40s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer
     
   }
 

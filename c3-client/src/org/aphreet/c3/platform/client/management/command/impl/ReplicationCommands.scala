@@ -86,7 +86,7 @@ class ListReplicationTargets extends Command {
 
     val footer = "|-----------------|--------------------------------|\n"
 
-    targets.map(e => (String.format("| %-17s | %32s |\n", e.systemId, e.hostname))).foldLeft(header)(_ + _) + footer
+    targets.map(e => (String.format("| %-15s | %-30s |\n", e.systemId, e.hostname))).foldLeft(header)(_ + _) + footer
 
   }
 

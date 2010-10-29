@@ -54,6 +54,7 @@ import queue.ReplicationQueueSerializer
 import java.io.File
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
+import actors.remote.RemoteActor
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -91,6 +92,10 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   @PostConstruct
   def init{
+
+    //Overriding classLoader
+    RemoteActor.classLoader = getClass.getClassLoader
+
 
     log info "Starting replication manager..."
 

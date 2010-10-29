@@ -34,12 +34,12 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import actors.remote.{RemoteActor, Node}
 import org.aphreet.c3.platform.resource.Resource
-import actors.Actor
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import actors.{AbstractActor, Actor}
 
 class ReplicationLink(val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
 
@@ -73,8 +73,9 @@ class ReplicationLink(val host:ReplicationHost, val statisticsManager:Statistics
         case ResourceAddedMsg(resource) => {
           val bytes = resource.toByteArray
 
-          remoteActor ! ReplicateAddMsg(bytes, calculator.calculate(bytes))
 
+          sendRemoteMessage(remoteActor, ReplicateAddMsg(bytes, calculator.calculate(bytes)))
+          
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.add." + host.systemId, 1l)
 
           if(log.isTraceEnabled)
@@ -99,7 +100,7 @@ class ReplicationLink(val host:ReplicationHost, val statisticsManager:Statistics
         case ResourceUpdatedMsg(resource) => {
           val bytes = resource.toByteArray
 
-          remoteActor ! ReplicateUpdateMsg(bytes, calculator.calculate(bytes))
+          sendRemoteMessage(remoteActor, ReplicateUpdateMsg(bytes, calculator.calculate(bytes)))
 
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.update." + host.systemId, 1l)
 
@@ -127,7 +128,8 @@ class ReplicationLink(val host:ReplicationHost, val statisticsManager:Statistics
 
 
         case ResourceDeletedMsg(address) => {
-          remoteActor ! ReplicateDeleteMsg(address, calculator.calculate(address))
+
+          sendRemoteMessage(remoteActor, ReplicateDeleteMsg(address, calculator.calculate(address)))
 
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.delete." + host.systemId, 1l)
 
@@ -168,6 +170,14 @@ class ReplicationLink(val host:ReplicationHost, val statisticsManager:Statistics
           this.exit
         }
       }
+    }
+  }
+
+  private def sendRemoteMessage(actor:AbstractActor, message:Any){
+    try{
+      actor ! message
+    }catch{
+      case e => log error ("Failed to send message ", e)
     }
   }
 
