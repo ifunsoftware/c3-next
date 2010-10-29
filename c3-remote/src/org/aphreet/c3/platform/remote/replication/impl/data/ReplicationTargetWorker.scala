@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.remote.replication.{ReplicateAddAckMsg, Replicate
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.{AbstractActor, Actor}
 
-class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
+class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager) extends Actor {
 
   val log = LogFactory getLog getClass
 
@@ -103,7 +103,7 @@ class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
       resource.verifyCheckSums
       storage.put(resource)
 
-      val calculator = new ReplicationSignatureCalculator(host)
+      val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
       target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
 
@@ -148,7 +148,7 @@ class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
         }
       }
 
-      val calculator = new ReplicationSignatureCalculator(host)
+      val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
       val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
 
@@ -178,7 +178,7 @@ class ReplicationTargetWorker(val storageManager:StorageManager) extends Actor {
           case None =>
         }
 
-        val calculator = new ReplicationSignatureCalculator(host)
+        val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
         target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
       }else{

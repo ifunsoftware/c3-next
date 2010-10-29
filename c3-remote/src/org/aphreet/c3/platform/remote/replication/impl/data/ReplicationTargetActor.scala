@@ -69,6 +69,8 @@ class ReplicationTargetActor extends Actor{
 
   var secureDataConnection = false
 
+  var localSystemId:String = _
+
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
 
@@ -80,16 +82,18 @@ class ReplicationTargetActor extends Actor{
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
   }
 
-  def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int) = {
+  def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) = {
 
     log info "Starting replication actor..."
+
+    this.localSystemId = localSystemId
 
     this.replicationPort = replicationPort
 
     this.config = config
 
     for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(storageManager)
+      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager)
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers

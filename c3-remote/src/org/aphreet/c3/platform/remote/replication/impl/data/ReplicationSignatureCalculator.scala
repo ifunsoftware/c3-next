@@ -34,18 +34,18 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import com.twmacinta.util.MD5
 import org.aphreet.c3.platform.remote.replication.ReplicationSignature
 
-class ReplicationSignatureCalculator(val host:ReplicationHost){
+class ReplicationSignatureCalculator(val localSystemId:String, val host:ReplicationHost){
 
   def calculate(bytes:Array[Byte]):ReplicationSignature = {
 
     val md5 = new MD5
     md5.Update(bytes)
-    md5.Update(host.systemId)
+    md5.Update(localSystemId)
     md5.Update(host.key)
     md5.Final
 
 
-    ReplicationSignature(host.systemId, md5.asHex)
+    ReplicationSignature(localSystemId, md5.asHex)
   }
 
   def calculate(string:String):ReplicationSignature =
@@ -75,7 +75,7 @@ object ReplicationSignatureCalculator{
 
     hosts.get(signature.systemId) match {
       case Some(host) =>
-        if(new ReplicationSignatureCalculator(host).verify(bytes, signature)){
+        if(new ReplicationSignatureCalculator(null, host).verify(bytes, signature)){
           Some(host)
         }else{
           None

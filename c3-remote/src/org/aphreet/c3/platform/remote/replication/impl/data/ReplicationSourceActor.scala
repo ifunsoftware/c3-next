@@ -60,20 +60,23 @@ class ReplicationSourceActor extends Actor {
 
   var statisticsManager:StatisticsManager = null
 
+  var localSystemId:String = _
+
   @Autowired
   def setAccessManager(manager:AccessManager) = {accessManager = manager}
 
   @Autowired
   def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
 
-  def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager) = {
+  def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager, localSystemId:String) = {
 
     log info "Starting ReplicationSourceActor..."
 
     this.manager = manager
+    this.localSystemId = localSystemId
 
     for((id, host) <- config) {
-      remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(host, statisticsManager)))
+      remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(localSystemId, host, statisticsManager)))
     }
 
     accessManager ! RegisterListenerMsg(this)
@@ -171,7 +174,7 @@ class ReplicationSourceActor extends Actor {
   }
 
   def addReplicationTarget(host:ReplicationHost) = {
-    remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(host, statisticsManager)))
+    remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(localSystemId, host, statisticsManager)))
   }
 
   def removeReplicationTarget(remoteSystemId:String) = {

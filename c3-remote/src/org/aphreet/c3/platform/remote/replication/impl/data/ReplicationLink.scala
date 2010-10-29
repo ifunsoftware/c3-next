@@ -41,7 +41,7 @@ import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.{AbstractActor, Actor}
 
-class ReplicationLink(val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
+class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
 
   val log = LogFactory getLog getClass
 
@@ -55,7 +55,7 @@ class ReplicationLink(val host:ReplicationHost, val statisticsManager:Statistics
 
   override def act{
 
-    val calculator = new ReplicationSignatureCalculator(host)
+    val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
     log info "Establishing replication link to " + host.systemId
 

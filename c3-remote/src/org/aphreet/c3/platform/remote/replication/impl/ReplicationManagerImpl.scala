@@ -104,11 +104,16 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       case None => DEFAULT_REPLICATION_PORT
     }
 
+    val localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
+      case Some(x) => x
+      case None => throw new ConfigurationException("Local system ID is not found")
+    }
+
     currentSourceConfig = sourcesConfigAccessor.load
-    localReplicationActor.startWithConfig(currentSourceConfig, replicationPort)
+    localReplicationActor.startWithConfig(currentSourceConfig, replicationPort, localSystemId)
 
     currentTargetConfig = targetsConfigAccessor.load
-    sourceReplicationActor.startWithConfig(currentTargetConfig, this)
+    sourceReplicationActor.startWithConfig(currentTargetConfig, this, localSystemId)
 
     runQueueMaintainer
 
