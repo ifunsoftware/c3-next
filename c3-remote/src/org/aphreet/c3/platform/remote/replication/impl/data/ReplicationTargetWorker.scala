@@ -92,6 +92,8 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
       val resource = Resource.fromByteArray(bytes)
 
+      fillWithData(resource, host)
+
       val storage = storageManager.storageForResource(resource)
 
       if(!storage.mode.allowWrite){
@@ -99,7 +101,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
         return
       }
 
-      fillWithData(resource, host)
+
       resource.verifyCheckSums
       storage.put(resource)
 
@@ -126,7 +128,9 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
       val resource:Resource = Resource.fromByteArray(bytes)
 
-      val storage = storageManager.storageForResource(resource)
+      val storageId = AddressGenerator.storageForAddress(resource.address)
+      
+      val storage = storageManager.storageForId(storageId)
 
       if(!storage.mode.allowWrite){
         log warn "Failed to store resource, storage is not writable"
