@@ -25,7 +25,7 @@ abstract class AbstractStorageFactory extends StorageFactory{
     
     storage.mode = params.mode
     
-    createdStorages + storage
+    createdStorages += storage
     storage
   }
 
