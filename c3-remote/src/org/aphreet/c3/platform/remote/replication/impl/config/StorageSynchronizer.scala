@@ -35,7 +35,18 @@ import org.aphreet.c3.platform.storage.{StorageModeParser, Storage}
 import org.aphreet.c3.platform.exception.StorageException
 import collection.mutable.{ArrayBuffer, HashSet, HashMap}
 
-class StorageSynchronizer{
+
+/*        .==.        .==.          
+         //`^\\      //^`\\
+        // ^ ^\(\__/)/^ ^^\\
+       //^ ^^ ^/6  6\ ^^ ^ \\
+      //^ ^^ ^/( .. )\^ ^ ^ \\
+     // ^^ ^/\| v""v |/\^ ^ ^\\
+    // ^^/\/ /  `~~`  \ \/\^ ^\\
+    -----------------------------
+*/
+
+class StorageSynchronizer {
 
   /**
    * Compare storages from this and other machines and
@@ -105,7 +116,7 @@ class StorageSynchronizer{
       if(remoteBuffer.isEmpty){
         throw new StorageSynchronizerException("Can't find remote storage to store data from local " + localType)
       }
-      
+
       var iterator = remoteBuffer.iterator
 
       for(localId <- idsBuffer){

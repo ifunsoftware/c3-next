@@ -28,57 +28,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication.impl.data.queue
+package org.aphreet.c3.platform.access
 
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
-import java.io.{FileWriter, BufferedWriter, File}
-import org.aphreet.c3.platform.remote.replication.impl.data.{ReplicationDeleteEntry, ReplicationUpdateEntry, ReplicationAddEntry, ReplicationEntry}
-import collection.mutable.HashMap
-import org.apache.commons.logging.LogFactory
+import actors.Actor
 
-class ReplicationQueueSerializer(val directory:Path){
-
-  val log = LogFactory getLog getClass
-
-  def store(queue:HashMap[String, ReplicationEntry], host:ReplicationHost) = {
-
-    log debug "Storring replication queue"
-
-    if(queue.size > 0){
-      log trace "Queue has entries"
-
-      directory.file.mkdirs
-
-      val fileName = System.currentTimeMillis + "-" + host.systemId
-
-      val file = new File(directory.file, fileName)
-
-      val writer = new BufferedWriter(new FileWriter(file))
-
-      try{
-
-        for((key, entry) <- queue){
-          writer.write(serializeEntry(entry))
-          writer.write("\n")
-        }
-        log debug "Store done"
-
-      }finally {
-        writer.close
-      }
-    }else{
-      log debug "Queue don't have any entries"
-    }
-  }
-
-  def serializeEntry(entry:ReplicationEntry):String = {
-    val string = entry match {
-      case ReplicationAddEntry(address) => address + " add"
-      case ReplicationUpdateEntry(address, timestamp) => address + " update " + timestamp
-      case ReplicationDeleteEntry(address) => address + " delete"
-    }
-
-    string
-  }
+trait AccessMediator extends Actor{
+  
 }

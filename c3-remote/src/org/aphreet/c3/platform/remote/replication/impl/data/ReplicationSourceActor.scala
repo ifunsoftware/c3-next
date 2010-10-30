@@ -54,7 +54,7 @@ class ReplicationSourceActor extends Actor {
 
   val log = LogFactory getLog getClass
 
-  var accessManager:AccessManager = null
+  var accessMediator:AccessMediator = null
 
   var manager:ReplicationManager = null
 
@@ -63,7 +63,7 @@ class ReplicationSourceActor extends Actor {
   var localSystemId:String = _
 
   @Autowired
-  def setAccessManager(manager:AccessManager) = {accessManager = manager}
+  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
   @Autowired
   def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
@@ -79,7 +79,7 @@ class ReplicationSourceActor extends Actor {
       remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(localSystemId, host, statisticsManager)))
     }
 
-    accessManager ! RegisterListenerMsg(this)
+    accessMediator ! RegisterListenerMsg(this)
 
     this.start
 
@@ -162,7 +162,7 @@ class ReplicationSourceActor extends Actor {
 
             remoteReplicationActors = Map()
 
-            accessManager ! UnregisterListenerMsg(this)
+            accessMediator ! UnregisterListenerMsg(this)
             
           }finally{
             log info "ReplicationSourceActor stopped"

@@ -70,7 +70,7 @@ class TextExtractor{
 
     }catch{
       case e=> log.warn("Failed to extract document content: " + e.getMessage)
-               log.debug("Cause: ", e)
+               log.trace("Cause: ", e)
                tikaProvider = null
                Map()
     }finally {

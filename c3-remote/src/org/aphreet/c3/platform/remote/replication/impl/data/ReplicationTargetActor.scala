@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
 import actors.{AbstractActor, OutputChannel, Actor}
 import actors.remote.{RemoteActor, Node}
-import org.aphreet.c3.platform.access.AccessManager
+import org.aphreet.c3.platform.access.AccessMediator
 
 @Component
 @Scope("singleton")
@@ -53,7 +53,7 @@ class ReplicationTargetActor extends Actor{
 
   val WORKERS_COUNT = 8
 
-  var accessManager:AccessManager = null
+  var accessMediator:AccessMediator = null
 
   var storageManager:StorageManager = null
 
@@ -77,7 +77,7 @@ class ReplicationTargetActor extends Actor{
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
 
   @Autowired
-  def setAccessManager(manager:AccessManager) = {accessManager = manager}
+  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
   @Autowired
   def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
@@ -89,7 +89,7 @@ class ReplicationTargetActor extends Actor{
 
   def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) = {
 
-    log info "Starting replication actor..."
+    log info "Starting ReplicationTargetActor..."
 
     this.localSystemId = localSystemId
 
@@ -98,7 +98,7 @@ class ReplicationTargetActor extends Actor{
     this.config = config
 
     for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessManager)
+      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator)
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers
@@ -107,6 +107,8 @@ class ReplicationTargetActor extends Actor{
     iterator = workers.iterator
 
     this.start
+
+    log info "ReplicationTargetActor started"
   }
 
   def updateConfig(config:Map[String, ReplicationHost]) = {

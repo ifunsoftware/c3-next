@@ -75,9 +75,9 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       try {
         if (iterator.hasNext) {
           val resource = iterator.next
-          log debug "Checking resource " + resource.address
+          log trace "Checking resource " + resource.address
           if (shouldIndex(resource)) {
-            log debug "Resource " + resource.address + " should be indexed"
+            log trace "Resource " + resource.address + " should be indexed"
             searchManager ! BackgroundIndexMsg(resource)
           }
         } else {

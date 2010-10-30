@@ -65,6 +65,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   var accessManager: AccessManager = _
 
+  var accessMediator: AccessMediator = _
+
   var configManager: PlatformConfigManager = _
 
   var taskManager: TaskManager = _
@@ -90,6 +92,9 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
+
+  @Autowired
+  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
   @Autowired
   def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
@@ -128,12 +133,12 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
       ramIndexers = new RamIndexer(fileIndexer, 1) :: ramIndexers
       ramIndexers = new RamIndexer(fileIndexer, 2) :: ramIndexers
-      
+
 
       ramIndexers.foreach(_.start)
 
       this.start
-      accessManager ! RegisterListenerMsg(this)
+      accessMediator ! RegisterListenerMsg(this)
 
 
       indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
@@ -165,9 +170,6 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
     }
 
     log info "Destroying SearchManager"
-    accessManager ! UnregisterListenerMsg(this)
-
-    configManager ! UnregisterMsg(this)
 
     for(ramIndexer <- ramIndexers){
       val exitValue = ramIndexer !? DestroyMsg
@@ -208,9 +210,17 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
         case ResourceIndexedMsg(address) =>
           accessManager ! UpdateMetadataMsg(address, Map("indexed" -> new Date().getTime.toString))
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
+
         case DestroyMsg =>
           log info "Destroying SearchManager actor"
-          this.exit
+          try{
+
+            accessMediator ! UnregisterListenerMsg(this)
+            configManager ! UnregisterMsg(this)
+          
+          }finally{
+            this.exit
+          }
       }
     }
   }
@@ -288,7 +298,7 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 
     while(!Thread.currentThread.isInterrupted){
       try{
-      Thread.sleep(1000 * 60)
+        Thread.sleep(1000 * 60)
       }catch{
         case e:InterruptedException =>
           log info "Thread interrupted"

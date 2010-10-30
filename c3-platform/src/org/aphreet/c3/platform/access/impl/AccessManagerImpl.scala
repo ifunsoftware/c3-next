@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.access.impl
 
 import org.aphreet.c3.platform.exception._
-import org.aphreet.c3.platform.management.PropertyChangeEvent
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
 
@@ -41,23 +40,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 
-import collection.immutable.{Set, HashSet}
 import org.aphreet.c3.platform.access._
-import actors.Actor
-import actors.Actor._
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
 
 @Component("accessManager")
-class AccessManagerImpl extends AccessManager{
+class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
 
   var storageManager:StorageManager = _
 
-  var accessListeners:Set[Actor] = new HashSet
+  var accessMediator:AccessMediator = _
 
   val log = LogFactory.getLog(getClass)
 
@@ -74,6 +71,9 @@ class AccessManagerImpl extends AccessManager{
 
   @Autowired
   def setStorageManager(manager:StorageManager) = {storageManager = manager}
+
+  @Autowired
+  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
   def get(ra:String):Resource = {
     try{
@@ -117,7 +117,7 @@ class AccessManagerImpl extends AccessManager{
       resource.calculateCheckSums
       val ra = storage.add(resource)
 
-      this ! ResourceAddedMsg(resource)
+      accessMediator ! ResourceAddedMsg(resource)
 
       ra
     }else{
@@ -132,7 +132,7 @@ class AccessManagerImpl extends AccessManager{
         resource.calculateCheckSums
         val ra = storage.update(resource)
 
-        this ! ResourceUpdatedMsg(resource)
+        accessMediator ! ResourceUpdatedMsg(resource)
 
         ra
 
@@ -151,7 +151,7 @@ class AccessManagerImpl extends AccessManager{
       if(storage.mode.allowWrite){
         storage delete ra
 
-        this ! ResourceDeletedMsg(ra)
+        accessMediator ! ResourceDeletedMsg(ra)
       }
 
       else
@@ -174,43 +174,9 @@ class AccessManagerImpl extends AccessManager{
             case e=> log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
         }
-
-        case RegisterListenerMsg(actor) =>
-          log debug "Registering listener " + actor.toString
-          accessListeners = accessListeners + actor
-          log debug accessListeners.toString
-        case UnregisterListenerMsg(actor) =>
-          log debug "Unregistering listener " + actor.toString
-          accessListeners = accessListeners - actor
-          log debug accessListeners.toString
-
-        case ResourceAddedMsg(resource) => {
-          accessListeners.foreach{
-            _ ! ResourceAddedMsg(resource)
-          }
-        }
-
-        case ResourceUpdatedMsg(resource) => {
-          accessListeners.foreach{
-            _ ! ResourceUpdatedMsg(resource)
-          }
-        }
-
-        case ResourceDeletedMsg(address) => {
-          accessListeners.foreach {
-            _ ! ResourceDeletedMsg(address)
-          }
-        }
-
-        case DestroyMsg => {
-          log info "AccessManager actor stopped"
-          this.exit
-        }
       }
     }
   }
-
-  def listeningForProperties:Array[String] = Array(MIME_DETECTOR_CLASS)
 
   def propertyChanged(event:PropertyChangeEvent) = {
 

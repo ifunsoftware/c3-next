@@ -40,6 +40,7 @@ import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.{AbstractActor, Actor}
+import tools.nsc.util.trace
 
 class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
 
@@ -49,7 +50,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
   private var started = false
 
-  val replicationTimeout = 1000 * 60 * 10
+  val replicationTimeout = 1000 * 60 * 5
 
   private val queue = new HashMap[ReplicationEntry, Long]
 
@@ -75,7 +76,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
 
           sendRemoteMessage(remoteActor, ReplicateAddMsg(bytes, calculator.calculate(bytes)))
-          
+
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.add." + host.systemId, 1l)
 
           if(log.isTraceEnabled)
@@ -156,13 +157,22 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
           val set = new HashSet[ReplicationEntry]
 
-          queue.filter(System.currentTimeMillis - _._2 > replicationTimeout).foreach(set += _._1)
+          set ++= queue.filter(System.currentTimeMillis.longValue - _._2.longValue > replicationTimeout).map(e => e._1)
 
-          queue --= set
+          if(!set.isEmpty){
 
-          statisticsManager ! IncreaseStatisticsMsg("c3.replication.queued." + host.systemId, set.size)
+            queue --= set
 
-          sender ! QueuedTasksReply(set, host)
+            if(log.isTraceEnabled)
+              log.trace("Returning queue: " + set.toString)
+
+            statisticsManager ! IncreaseStatisticsMsg("c3.replication.queued." + host.systemId, set.size)
+
+            sender ! QueuedTasksReply(set, host)
+          }else{
+            if(log.isTraceEnabled)
+              log.trace("Replication queue is empty for id " + host.systemId) 
+          }
         }
 
         case DestroyMsg => {

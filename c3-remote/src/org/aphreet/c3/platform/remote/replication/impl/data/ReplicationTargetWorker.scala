@@ -39,7 +39,7 @@ import org.aphreet.c3.platform.storage.StorageManager
 import actors.{AbstractActor, Actor}
 import org.aphreet.c3.platform.access._
 
-class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessManager:AccessManager) extends Actor {
+class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessMediator:AccessMediator) extends Actor {
 
   val log = LogFactory getLog getClass
 
@@ -112,7 +112,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
       target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
 
-      accessManager ! ResourceAddedMsg(resource)
+      accessMediator ! ResourceAddedMsg(resource)
 
     }catch{
       case e => log.error("Failed to replicate add", e)
@@ -151,14 +151,14 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
           resource.verifyCheckSums
           storage.update(resource)
 
-          accessManager ! ResourceUpdatedMsg(resource)
+          accessMediator ! ResourceUpdatedMsg(resource)
 
         }
         case None => {
           resource.verifyCheckSums
           storage.put(resource)
 
-          accessManager ! ResourceAddedMsg(resource)
+          accessMediator ! ResourceAddedMsg(resource)
         }
       }
 
@@ -196,7 +196,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
         target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
 
-        accessManager ! ResourceDeletedMsg(address)
+        accessMediator ! ResourceDeletedMsg(address)
       }else{
         log warn "Failed to replicate delete, storage is not writable"
       }

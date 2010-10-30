@@ -12,6 +12,8 @@
        interface="org.aphreet.c3.platform.search.SearchManager" />
 
 	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
+
+    <reference id="accessMediatorService" interface="org.aphreet.c3.platform.access.AccessMediator"/>    
 	
 	<reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 

@@ -23,6 +23,9 @@
 
     <service id="accessService" ref="accessManager"
        interface="org.aphreet.c3.platform.access.AccessManager"/>
+
+    <service id="accessMediatorService" ref="accessMediator"
+       interface="org.aphreet.c3.platform.access.AccessMediator"/>
        
     <service id="managementService" ref="platformManagementEndpoint"
        interface="org.aphreet.c3.platform.management.PlatformManagementEndpoint"/>

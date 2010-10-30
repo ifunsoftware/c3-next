@@ -55,6 +55,7 @@ import java.io.File
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 import actors.remote.RemoteActor
+import tools.nsc.util.trace
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -142,9 +143,17 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         case QueuedTasksReply(entries, host) => {
           log debug "Got list of queued resources"
 
-          if(replicationQueuePath != null)
-            new ReplicationQueueSerializer(replicationQueuePath).store(optimizeReplicationQueue(entries), host)
+          if(replicationQueuePath != null){
 
+            val optimizedQueue = optimizeReplicationQueue(entries)
+            if(log.isTraceEnabled)
+              log.trace("Optimized queue: " + optimizedQueue.toString)
+
+            new ReplicationQueueSerializer(replicationQueuePath).store(optimizedQueue, host)
+
+          }else{
+            log warn "Replication queue path is not set. Queue will be lost!"
+          }
         }
 
         case DestroyMsg => {
@@ -167,7 +176,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         case ReplicationAddEntry(address) => {
           map.get(address) match{
             case Some(existentEntry) => //something already exists, it does not matter what is it
-            case None => map + ((address, entry))
+            case None => map += ((address, entry))
           }
         }
 
@@ -181,21 +190,21 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
                 case ReplicationUpdateEntry(address, existentTimestamp) => {
                   if(timestamp.longValue > existentTimestamp.longValue){
-                    map + ((address, entry))
+                    map += ((address, entry))
                   }
                 }
 
                 case ReplicationDeleteEntry(address) => //do nothing
               }
             }
-            case None => map + ((address, entry))
+            case None => map += ((address, entry))
           }
         }
 
 
 
         case ReplicationDeleteEntry(address) => {
-          map + ((address, entry)) //We don't care about what was before delete ;-)
+          map += ((address, entry)) //We don't care about what was before delete ;-)
         }
       }
     }
@@ -414,7 +423,7 @@ class QueueMaintainer(manager:ReplicationManager) extends Runnable{
 
   val log = LogFactory getLog getClass
 
-  val TEN_MINUTES = 1000 * 60 * 10
+  val TEN_MINUTES = 1000 * 60 * 5
 
   override def run{
     log info "Starting Replication Queue mantainer"

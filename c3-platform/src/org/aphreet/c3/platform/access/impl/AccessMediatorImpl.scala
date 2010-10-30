@@ -27,72 +27,75 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.access.impl
 
-import actors.Actor
-import actors.Actor._
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg.{RegisterListenerMsg, UnregisterListenerMsg, DestroyMsg}
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.access._
+import actors.Actor
+import collection.mutable.HashSet
+import org.aphreet.c3.platform.common.msg.{UnregisterListenerMsg, RegisterListenerMsg, DestroyMsg}
+import org.aphreet.c3.platform.access.{ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg, AccessMediator}
+import org.springframework.stereotype.Component
+import org.springframework.context.annotation.Scope
 
-@Component
-class AccessCounter extends Actor{
+@Component("accessMediator")
+@Scope("singleton")
+class AccessMediatorImpl extends AccessMediator {
 
-  val log = LogFactory.getLog(getClass)
+  val log = LogFactory getLog getClass
 
-  var accessMediator:AccessMediator = _
+  var accessListeners = new HashSet[Actor]
 
-  var statisticsManger:StatisticsManager = _
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManger = manager}
-
-  {
+  @PostConstruct
+  def init {
+    log info "Starting access mediator"
     this.start
   }
 
-  @PostConstruct
-  def init{
-    log info "Starting AccessCounter"
-    accessMediator ! RegisterListenerMsg(this)
-  }
-
-  @PreDestroy
-  def destroy{
-    log info "Stopping AccessCounter"
-    accessMediator ! UnregisterListenerMsg(this)
-    this ! DestroyMsg
-  }
-
-  def act{
+  override def act {
     loop{
       react{
-        case ResourceAddedMsg(resource) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.created", 1)
-        }
-
-        case ResourceUpdatedMsg(resource) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.updated", 1)
-        }
-
-        case ResourceDeletedMsg(address) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.deleted", 1)
-        }
-
-        case DestroyMsg =>{
-          log info "AccessCounter actor stopped"
+        case DestroyMsg => {
+          log info "AccessMediator stopped"
           this.exit
         }
 
-        case _ => log warn "Ignorring wrong message"
+        case RegisterListenerMsg(actor) =>
+          log debug "Registering listener " + actor.toString
+          accessListeners = accessListeners + actor
+          log debug accessListeners.toString
+        
+        case UnregisterListenerMsg(actor) =>
+          log debug "Unregistering listener " + actor.toString
+          accessListeners = accessListeners - actor
+          log debug accessListeners.toString
+
+        case ResourceAddedMsg(resource) => {
+          accessListeners.foreach{
+            _ ! ResourceAddedMsg(resource)
+          }
+        }
+
+        case ResourceUpdatedMsg(resource) => {
+          accessListeners.foreach{
+            _ ! ResourceUpdatedMsg(resource)
+          }
+        }
+
+        case ResourceDeletedMsg(address) => {
+          accessListeners.foreach {
+            _ ! ResourceDeletedMsg(address)
+          }
+        }
       }
     }
+
+  }
+
+  @PreDestroy
+  def destroy {
+    log info "Stopping access mediator..."
+    this ! DestroyMsg
   }
 }
