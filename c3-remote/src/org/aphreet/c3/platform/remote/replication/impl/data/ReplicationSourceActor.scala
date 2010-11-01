@@ -45,7 +45,6 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.statistics.StatisticsManager
 
-
 @Component
 @Scope("singleton")
 class ReplicationSourceActor extends Actor {
@@ -153,6 +152,14 @@ class ReplicationSourceActor extends Actor {
           manager ! QueuedTasksReply(entries, host)
         }
 
+
+        case NewStorageIdMsg(id, storageType) => {
+          for((id, link) <- remoteReplicationActors){
+            if(!link.isStarted) link.start
+            link ! NewStorageIdMsg(id, storageType)
+          }
+        }
+
         case DestroyMsg => {
 
           try{
@@ -163,7 +170,7 @@ class ReplicationSourceActor extends Actor {
             remoteReplicationActors = Map()
 
             accessMediator ! UnregisterListenerMsg(this)
-            
+
           }finally{
             log info "ReplicationSourceActor stopped"
             this.exit

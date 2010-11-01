@@ -3,8 +3,9 @@ package org.aphreet.c3.platform.storage
 import dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.Path
+import actors.Actor
 
-trait StorageManager {
+trait StorageManager extends Actor{
 
   def registerFactory(factory:StorageFactory)
   
@@ -32,3 +33,6 @@ trait StorageManager {
 
   def addSecondaryId(id:String, secondaryId:String)
 }
+
+case class StorageCreatedMsg(val params:StorageParams)
+case class StorageIdCreatedMsg(val storageId:String, val storageType:String)

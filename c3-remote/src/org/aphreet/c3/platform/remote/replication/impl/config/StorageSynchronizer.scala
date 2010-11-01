@@ -137,6 +137,25 @@ class StorageSynchronizer {
     result
 
   }
+
+  def getAdditionalId(storages:List[Storage], secondaryId:String, storageType:String):Option[String] = {
+
+    val idNotExists = storages.filter(s => s.ids.contains(secondaryId) || s.id == secondaryId).isEmpty
+
+    if(idNotExists){
+
+      storages.filter(s => (s.name == storageType
+              && s.mode.allowWrite))
+              .sortWith((s1, s2) => s1.ids.size < s2.ids.size).toList.headOption match {
+
+        case Some(s) => Some(s.id)
+        case None => throw new StorageSynchronizerException("Can't find remote storage to store data from local " + storageType)
+      }
+    }else{
+      None
+    }
+
+  }
 }
 
 class StorageSynchronizerException(override val message:String, override val cause:Throwable) extends StorageException(message, cause){

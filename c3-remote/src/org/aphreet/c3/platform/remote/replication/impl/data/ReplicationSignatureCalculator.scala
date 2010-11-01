@@ -84,4 +84,18 @@ object ReplicationSignatureCalculator{
     }
 
   }
+
+  def foundAndVerify(data:String, signature:ReplicationSignature, hosts:Map[String, ReplicationHost]):Option[ReplicationHost] = {
+
+    hosts.get(signature.systemId) match {
+      case Some(host) =>
+        if(new ReplicationSignatureCalculator(null, host).verify(data, signature)){
+          Some(host)
+        }else{
+          None
+        }
+      case None => None
+    }
+
+  }
 }

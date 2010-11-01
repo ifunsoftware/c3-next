@@ -128,6 +128,66 @@ class StorageSynchronizerTestCase extends TestCase {
     assertTrue(result.contains(("b111", "d111")))
   }
 
+  def testAddId1 = {
+
+    val localStorages = List(
+      st("c111", List("c222", "c333", "c444"), "PureBDBStorage"),
+      st("d111", List("d222", "d333"), "PureBDBStorage"),
+      st("e111", List("d222"), "FileBDBStorage")
+    )
+
+    val primaryId = new StorageSynchronizer().getAdditionalId(localStorages, "faaa", "PureBDBStorage")
+
+    assertEquals(Some("d111"), primaryId)
+
+  }
+
+  def testAddId2 = {
+
+    val localStorages = List(
+      st("c111", List("c222", "c333", "faaa"), "PureBDBStorage"),
+      st("d111", List("d222", "d333"), "PureBDBStorage"),
+      st("e111", List("d222"), "FileBDBStorage")
+    )
+
+    val primaryId = new StorageSynchronizer().getAdditionalId(localStorages, "faaa", "PureBDBStorage")
+
+    assertEquals(None, primaryId)
+
+  }
+
+  def testAddId3 = {
+
+    val localStorages = List(
+      st("c111", List("c222", "c333"), "PureBDBStorage"),
+      st("d111", List("d222", "d333"), "PureBDBStorage"),
+      st("e111", List("d222", "faaa"), "FileBDBStorage")
+    )
+
+    val primaryId = new StorageSynchronizer().getAdditionalId(localStorages, "faaa", "PureBDBStorage")
+
+    assertEquals(None, primaryId)
+
+  }
+
+  def testAddId4 = {
+
+    val localStorages = List(
+      st("c111", List("c222", "c333"), "PureBDBStorage"),
+      st("d111", List("d222", "d333"), "PureBDBStorage"),
+      st("e111", List("d222"), "PureBDBStorage")
+    )
+
+    try{
+      val primaryId = new StorageSynchronizer().getAdditionalId(localStorages, "faaa", "FileBDBStorage")
+      assertTrue("Exception must be here", false)
+    }catch{
+      case e:StorageSynchronizerException => assertTrue(true)
+    }
+
+  }
+
+
   def sd(id:String, ids:List[String], name:String, mode:StorageMode):StorageDescription = {
     val descr = new StorageDescription()
     descr.id = id

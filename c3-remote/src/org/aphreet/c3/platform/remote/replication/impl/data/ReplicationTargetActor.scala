@@ -163,6 +163,9 @@ class ReplicationTargetActor extends Actor{
         case ReplicateDeleteAckMsg(address, signature) =>
           sourceReplicationActor ! ReplicateDeleteAckMsg(address, signature)
 
+        case ReplicateNewStorageIdMsg(storageId, storageType, signature) => {
+          getNextWorker ! ReplicateNewStorageIdMsg(storageId, storageType, signature)
+        }
       }
     }
   }

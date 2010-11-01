@@ -27,47 +27,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-package org.aphreet.c3.platform.remote.replication
-
-case class ReplicationSignature(val systemId:String, val hash:String)
-
-class ReplicationMsg(val signature:ReplicationSignature) extends java.io.Serializable
+import actors.Actor
 
 
-case class ReplicateNewStorageIdMsg(val storageId:String,
-                                  val storageType:String,
-                                  override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+class ReplicationQueueConsumer extends Actor {
 
-case class ReplicateAddMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+  var wantStop = false
 
-case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-
-case class ReplicateDeleteMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateAddAckMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateDeleteAckMsg(
-            val address:String, 
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+  def act{
+    loop{
+      react{
+        case _ => None
+      }
+    }
+  }
+}

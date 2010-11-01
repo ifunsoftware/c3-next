@@ -34,10 +34,11 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
-import org.aphreet.c3.platform.remote.replication.{ReplicateAddAckMsg, ReplicateDeleteAckMsg, ReplicateUpdateAckMsg, ReplicationSignature}
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.{AbstractActor, Actor}
 import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.remote.replication.impl.config._
 
 class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessMediator:AccessMediator) extends Actor {
 
@@ -69,6 +70,8 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
         case ProcessUpdateMsg(bytes, sign, target) => replicateUpdate(bytes, sign, target)
 
         case ProcessDeleteMsg(address, sign, target) => replicateDelete(address, sign, target)
+
+        case ReplicateNewStorageIdMsg(storageId, storageType, signature) =>
 
         case DestroyMsg => {
           log info "Stopping replication worker"
@@ -207,6 +210,28 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
     }
   }
 
+  private def addNewStorageId(id:String, storageType:String, signature:ReplicationSignature) = {
+
+    if(checkSignature(id + storageType, signature) != null){
+
+     val storages = storageManager.listStorages
+
+     try{
+        new StorageSynchronizer().getAdditionalId(storages, id, storageType) match {
+          case Some(primaryId) => storageManager.addSecondaryId(primaryId, id)
+          case None =>
+        }
+     }catch{
+       case e:StorageSynchronizerException => log error ("Failed to add id " + id, e)
+     }
+
+    }else{
+      log warn "Ignoring new storageId due to wrong signature"
+    }
+
+
+  }
+
   private def compareUpdatedResource(incomeResource:Resource, storedResource:Resource) = {
 
     for(i <- 0 to incomeResource.versions.length - 1){
@@ -238,6 +263,14 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
   private def checkSignature(bytes:Array[Byte], signature:ReplicationSignature):ReplicationHost = {
 
     ReplicationSignatureCalculator.foundAndVerify(bytes, signature, config) match{
+      case Some(host) => host
+      case None => null
+    }
+  }
+
+  private def checkSignature(data:String, signature:ReplicationSignature):ReplicationHost = {
+
+    ReplicationSignatureCalculator.foundAndVerify(data, signature, config) match{
       case Some(host) => host
       case None => null
     }

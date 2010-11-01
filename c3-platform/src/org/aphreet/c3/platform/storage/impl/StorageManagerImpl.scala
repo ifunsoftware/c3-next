@@ -16,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
+import actors.Actor
+import actors.Actor._
+import org.aphreet.c3.platform.common.msg.{DestroyMsg, UnregisterListenerMsg, RegisterListenerMsg}
+import javax.annotation.{PreDestroy, PostConstruct}
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -38,6 +41,8 @@ class StorageManagerImpl extends StorageManager{
 
   var systemId:Int = 0
 
+  var listeners = Set[Actor]()
+
   @Autowired
   def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}
 
@@ -52,9 +57,47 @@ class StorageManagerImpl extends StorageManager{
 
   @PostConstruct
   def init{
+
+    log info "Starting StorageManager"
+
     platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(value) => systemId = value.toInt
       case None => throw new ConfigurationException("Failed to get systemId from params")
+    }
+
+    this.start
+
+    log info "StorageManager started"
+  }
+
+  @PreDestroy
+  def destroy{
+    log info "Stopping StorageManager..."
+    this ! DestroyMsg
+  }
+
+  def act{
+    loop{
+      receive{
+        case RegisterListenerMsg(listener) => {
+          log debug "Registering listener " + listener
+          listeners = listeners - listener
+
+          log.trace("Listeners: " + listeners)
+
+        }
+        case UnregisterListenerMsg(listener) => {
+          log debug "Unregistering listener " + listener
+          listeners = listeners + listener
+
+          log.trace("Listeners: " + listeners)
+        }
+
+        case DestroyMsg => {
+          log info "StorageManager stopped"
+          this.exit
+        }
+      }
     }
   }
 
@@ -112,6 +155,8 @@ class StorageManagerImpl extends StorageManager{
 
     registerStorage(storage)
     addStorageToParams(storage)
+
+    listeners.foreach(_ ! StorageCreatedMsg(storage.params))
   }
 
 
@@ -196,24 +241,30 @@ class StorageManagerImpl extends StorageManager{
   }
 
   def addSecondaryId(id:String, secondaryId:String) = {
-    val storageParams = configAccessor.load
 
-    val idNotExists = storageParams
-            .filter(p => p.id == secondaryId || p.secIds.contains(secondaryId)).isEmpty
+    this.synchronized{
+      val storageParams = configAccessor.load
 
-    if(idNotExists){
+      val idNotExists = storageParams
+              .filter(p => p.id == secondaryId || p.secIds.contains(secondaryId)).isEmpty
 
-      storages.get(id) match{
-        case Some(s) => {
-          s.ids = secondaryId :: s.ids
-          updateStorageParams(s)
-          log debug "Appended new secondary id " + secondaryId + " to storage with id " + id
+      if(idNotExists){
+
+        storages.get(id) match{
+          case Some(s) => {
+            s.ids = secondaryId :: s.ids
+            updateStorageParams(s)
+            log debug "Appended new secondary id " + secondaryId + " to storage with id " + id
+
+            listeners.foreach(_ ! StorageIdCreatedMsg(secondaryId, s.params.storageType))
+
+          }
+          case None => throw new StorageException("Storage with id" + id + " is not exist")
         }
-        case None => throw new StorageException("Storage with id" + id + " is not exist")
-      }
 
-    }else{
-      throw new StorageException("Specified id already exists")
+      }else{
+        throw new StorageException("Specified id already exists")
+      }
     }
   }
 

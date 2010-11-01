@@ -47,7 +47,6 @@ import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
-import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.common.{Path, Constants}
 import queue.ReplicationQueueSerializer
@@ -56,6 +55,7 @@ import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationExcept
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 import actors.remote.RemoteActor
 import tools.nsc.util.trace
+import org.aphreet.c3.platform.storage.{StorageIdCreatedMsg, StorageParams, StorageCreatedMsg, StorageManager}
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -122,6 +122,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     platformConfigManager ! RegisterMsg(this)
 
+    storageManager ! RegisterListenerMsg(this)
+
     log info "Replicationg manager started"
   }
 
@@ -156,9 +158,21 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           }
         }
 
+        case StorageCreatedMsg(params:StorageParams) => {
+          log info "StorageCreateMsg received:" +  params
+          sourceReplicationActor ! NewStorageIdMsg(params.id, params.storageType)
+        }
+
+        case StorageIdCreatedMsg(storageId:String, storageType:String) => {
+          log info "Received StorageIdCreatedMsg"
+          sourceReplicationActor ! NewStorageIdMsg(storageId, storageType)
+        }
+
         case DestroyMsg => {
           try{
             platformConfigManager ! UnregisterMsg(this)
+
+            storageManager ! UnregisterListenerMsg(this)
           }finally{
             log info "RemoteManagerActor stopped"
             this.exit

@@ -28,46 +28,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.replication
+package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-case class ReplicationSignature(val systemId:String, val hash:String)
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.remote.replication.impl.data.ReplicationEntry
+import actors.Actor
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 
-class ReplicationMsg(val signature:ReplicationSignature) extends java.io.Serializable
-
-
-case class ReplicateNewStorageIdMsg(val storageId:String,
-                                  val storageType:String,
-                                  override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateAddMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
-case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+class ReplicationQueueStorage(val path:Path) {
 
 
-case class ReplicateDeleteMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
 
-case class ReplicateAddAckMsg(
-            val address:String,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
 
-case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+  def add(entries:Set[ReplicationEntry], host:ReplicationHost) = {
 
-case class ReplicateDeleteAckMsg(
-            val address:String, 
-            override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
+  }
+
+  def replayQueue(consumer:ReplicationQueueConsumer) = {
+
+  }
+
+  def close = {
+
+  }
+
+}
+
+case class ReplicationTask(val systemId:String, val action:String, val timestamp:Long)

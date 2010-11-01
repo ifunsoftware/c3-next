@@ -40,7 +40,6 @@ import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.{AbstractActor, Actor}
-import tools.nsc.util.trace
 
 class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
 
@@ -175,6 +174,15 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           }
         }
 
+        case NewStorageIdMsg(storageId, storageType) => {
+          log info "Sending NewStorageIdMsg to " + host.systemId
+
+          val signature = calculator.calculate(storageId + storageType)
+
+          sendRemoteMessage(remoteActor, ReplicateNewStorageIdMsg(storageId, storageType, signature))
+
+        }
+
         case DestroyMsg => {
           log info "Destroying replication link to " + host.toString
           this.exit
@@ -205,3 +213,4 @@ case class ReplicationDeleteEntry(val address:String) extends ReplicationEntry
 
 object QueuedTasks
 case class QueuedTasksReply(val set:HashSet[ReplicationEntry], host:ReplicationHost)
+case class NewStorageIdMsg(val storageId:String, val storageType:String)
