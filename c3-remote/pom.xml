@@ -41,6 +41,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.sleepycat.je</groupId>
+            <artifactId>com.springsource.com.sleepycat.je</artifactId>
+            <version>3.3.87</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.twmacinta.util</groupId>
             <artifactId>md5</artifactId>
             <version>1.0.539</version>

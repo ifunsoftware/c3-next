@@ -27,20 +27,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-import actors.Actor
+package org.aphreet.c3.platform.remote.replication
 
+import org.aphreet.c3.platform.exception.PlatformException
 
-class ReplicationQueueConsumer extends Actor {
+class ReplicationException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
 
-  var wantStop = false
+  def this(message:String) = this(message, null)
 
-  def act{
-    loop{
-      react{
-        case _ => None
-      }
-    }
-  }
+  def this() = this(null, null)
+
+  def this(cause:Throwable) = this(null, cause)
+
 }

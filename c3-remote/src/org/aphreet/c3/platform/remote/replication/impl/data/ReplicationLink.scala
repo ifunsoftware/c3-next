@@ -51,7 +51,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
   val replicationTimeout = 1000 * 60 * 5
 
-  private val queue = new HashMap[ReplicationEntry, Long]
+  private val queue = new HashMap[ReplicationTask, Long]
 
   override def act{
 
@@ -81,12 +81,12 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           if(log.isTraceEnabled)
             log trace "Adding RAE to queue " + resource.address
 
-          queue += ((ReplicationAddEntry(resource.address), System.currentTimeMillis))
+          queue += ((ReplicationTask(host.systemId, resource.address, AddAction), System.currentTimeMillis))
         }
 
         case ReplicateAddAckMsg(address, signature) => {
           if(calculator.verify(address, signature)){
-            queue -= ReplicationAddEntry(address)
+            queue -= ReplicationTask(host.systemId, address, AddAction)
 
             statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.add." + host.systemId, 1l)
 
@@ -109,7 +109,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           if(log.isTraceEnabled)
             log trace "Adding RUE from queue " + resource.address
 
-          queue += ((ReplicationUpdateEntry(resource.address, timestamp), System.currentTimeMillis))
+          queue += ((ReplicationTask(host.systemId, resource.address, UpdateAction(timestamp.longValue)), System.currentTimeMillis))
 
         }
 
@@ -121,7 +121,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
             if(log.isTraceEnabled)
               log trace "Removing RUE from queue " + address
 
-            queue -= ReplicationUpdateEntry(address, timestamp)
+            queue -= ReplicationTask(host.systemId, address, UpdateAction(timestamp.longValue))
           }
         }
 
@@ -136,7 +136,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           if(log.isTraceEnabled)
             log trace "Adding RDE to queue " + address
 
-          queue += ((ReplicationDeleteEntry(address), System.currentTimeMillis))
+          queue += ((ReplicationTask(host.systemId, address, DeleteAction), System.currentTimeMillis))
         }
 
         case ReplicateDeleteAckMsg(address, signature) => {
@@ -147,14 +147,14 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
             if(log.isTraceEnabled)
               log trace "Removing RDE from queue " + address
 
-            queue -= ReplicationDeleteEntry(address)
+            queue -= ReplicationTask(host.systemId, address, DeleteAction)
           }
         }
 
         case QueuedTasks => {
           log debug "Retrieving queued tasks"
 
-          val set = new HashSet[ReplicationEntry]
+          val set = new HashSet[ReplicationTask]
 
           set ++= queue.filter(System.currentTimeMillis.longValue - _._2.longValue > replicationTimeout).map(e => e._1)
 
@@ -167,7 +167,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
             statisticsManager ! IncreaseStatisticsMsg("c3.replication.queued." + host.systemId, set.size)
 
-            sender ! QueuedTasksReply(set, host)
+            sender ! QueuedTasksReply(set)
           }else{
             if(log.isTraceEnabled)
               log.trace("Replication queue is empty for id " + host.systemId) 
@@ -205,12 +205,6 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
   }
 }
 
-trait ReplicationEntry
-
-case class ReplicationAddEntry(val address:String) extends ReplicationEntry
-case class ReplicationUpdateEntry(val address:String, val timestamp:java.lang.Long) extends ReplicationEntry
-case class ReplicationDeleteEntry(val address:String) extends ReplicationEntry
-
 object QueuedTasks
-case class QueuedTasksReply(val set:HashSet[ReplicationEntry], host:ReplicationHost)
+case class QueuedTasksReply(val set:HashSet[ReplicationTask])
 case class NewStorageIdMsg(val storageId:String, val storageType:String)

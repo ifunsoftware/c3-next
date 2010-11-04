@@ -48,5 +48,7 @@ trait ReplicationManager extends Actor {
   def registerReplicationSource(host:ReplicationHost)
 
   def listReplicationTargets:Array[ReplicationHost]
+
+  def replayReplicationQueue
 }
 

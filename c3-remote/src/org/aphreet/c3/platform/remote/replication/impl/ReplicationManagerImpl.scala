@@ -46,16 +46,17 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
-import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.common.{Path, Constants}
-import queue.ReplicationQueueSerializer
 import java.io.File
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
 import actors.remote.RemoteActor
+import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
 import tools.nsc.util.trace
 import org.aphreet.c3.platform.storage.{StorageIdCreatedMsg, StorageParams, StorageCreatedMsg, StorageManager}
+import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.task.TaskManager
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -80,6 +81,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   var storageManager:StorageManager = null
 
+  var taskManager:TaskManager = null
+
   var sourcesConfigAccessor:ReplicationSourcesConfigAccessor = null
 
   var targetsConfigAccessor:ReplicationTargetsConfigAccessor = null
@@ -90,6 +93,10 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   private var currentSourceConfig = Map[String, ReplicationHost]()
 
   var replicationQueuePath:Path = null
+
+  var replicationQueueStorage:ReplicationQueueStorage = null
+
+  var isTaskRunning = false
 
   @PostConstruct
   def init{
@@ -142,16 +149,13 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           sourceReplicationActor ! QueuedTasks
         }
 
-        case QueuedTasksReply(entries, host) => {
+        case QueuedTasksReply(tasks) => {
           log debug "Got list of queued resources"
 
-          if(replicationQueuePath != null){
+          if(replicationQueueStorage != null){
 
-            val optimizedQueue = optimizeReplicationQueue(entries)
-            if(log.isTraceEnabled)
-              log.trace("Optimized queue: " + optimizedQueue.toString)
+            replicationQueueStorage.add(tasks)
 
-            new ReplicationQueueSerializer(replicationQueuePath).store(optimizedQueue, host)
 
           }else{
             log warn "Replication queue path is not set. Queue will be lost!"
@@ -180,50 +184,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
       }
     }
-  }
-
-  private def optimizeReplicationQueue(queue:HashSet[ReplicationEntry]):HashMap[String, ReplicationEntry] = {
-    val map = new HashMap[String, ReplicationEntry]
-
-    for(entry <- queue){
-      entry match {
-        case ReplicationAddEntry(address) => {
-          map.get(address) match{
-            case Some(existentEntry) => //something already exists, it does not matter what is it
-            case None => map += ((address, entry))
-          }
-        }
-
-
-        case ReplicationUpdateEntry(address, timestamp) => {
-          map.get(address) match{
-            case Some(existentEntry) => {
-              existentEntry match {
-
-                case ReplicationAddEntry(address) => map + ((address, entry)) //override resource add
-
-                case ReplicationUpdateEntry(address, existentTimestamp) => {
-                  if(timestamp.longValue > existentTimestamp.longValue){
-                    map += ((address, entry))
-                  }
-                }
-
-                case ReplicationDeleteEntry(address) => //do nothing
-              }
-            }
-            case None => map += ((address, entry))
-          }
-        }
-
-
-
-        case ReplicationDeleteEntry(address) => {
-          map += ((address, entry)) //We don't care about what was before delete ;-)
-        }
-      }
-    }
-
-    map
   }
 
   def listFailedReplicationQueues:Array[String] = {
@@ -392,6 +352,11 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           replicationQueuePath = null
         }else{
           replicationQueuePath = new Path(event.newValue)
+          if(replicationQueueStorage != null){
+            replicationQueueStorage.close
+          }
+
+          replicationQueueStorage = new ReplicationQueueStorage(replicationQueuePath)
         }
 
       case REPLICATION_QUEUE_KEY =>
@@ -412,6 +377,21 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
+  override def replayReplicationQueue = {
+    this.synchronized{
+      if(isTaskRunning) throw new ReplicationException("Task already started")
+      if(replicationQueueStorage != null){
+        val task = new ReplicationQueueReplayTask(this, storageManager, replicationQueueStorage, sourceReplicationActor)
+
+        taskManager.submitTask(task)
+        isTaskRunning = true
+        log info "Replay task submitted"
+      }else{
+        throw new ReplicationException("Replication queue storage is not initialized")
+      }
+    }
+  }
+
   //--------------------------------------------------------------------------------------------------------------------//
 
   @Autowired
@@ -425,6 +405,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   @Autowired
   def setConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+
+  @Autowired
+  def setTaskManager(manager:TaskManager) = {taskManager = manager}
 
   @Autowired
   def setLocalReplicationActor(actor:ReplicationTargetActor) = {localReplicationActor = actor}

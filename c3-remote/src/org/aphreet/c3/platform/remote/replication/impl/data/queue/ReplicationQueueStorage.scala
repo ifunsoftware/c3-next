@@ -30,28 +30,171 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.remote.replication.impl.data.ReplicationEntry
 import actors.Actor
+import collection.Set
+
+import java.io._
+
+import com.sleepycat.je._
+import org.apache.commons.logging.LogFactory
+
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.exception.PlatformException
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.impl.data._
+import org.aphreet.c3.platform.remote.replication.ReplicationException
 
 class ReplicationQueueStorage(val path:Path) {
 
+  val log = LogFactory getLog getClass
 
+  protected var env : Environment = null
 
+  protected var database : Database = null
 
-  def add(entries:Set[ReplicationEntry], host:ReplicationHost) = {
-
+  {
+    open
   }
 
-  def replayQueue(consumer:ReplicationQueueConsumer) = {
+  private def open {
+    log info "Opening ReplicationQueueDB..."
 
+    val envConfig = new EnvironmentConfig
+    envConfig setAllowCreate true
+    envConfig setSharedCache false
+    envConfig setTransactional true
+    envConfig setTxnNoSync true
+    envConfig setTxnWriteNoSync true
+
+    val storagePathFile = path.file
+    if(!storagePathFile.exists){
+      storagePathFile.mkdirs
+    }
+
+    env = new Environment(storagePathFile, envConfig)
+
+    val dbConfig = new DatabaseConfig
+    dbConfig setAllowCreate true
+    dbConfig setTransactional true
+    database = env.openDatabase(null, "ReplicationQueueDB", dbConfig)
+
+    log info "ReplicationQueueDB opened"
   }
+
+  def add(tasks:Set[ReplicationTask]) = {
+    for(task <- tasks){
+      try{
+        val key = new DatabaseEntry(task.getKeyBytes)
+        val value = new DatabaseEntry()
+
+        val status = database.get(null, key, value, LockMode.DEFAULT)
+
+        status match {
+          case OperationStatus.SUCCESS => {
+            val queuedAction = ReplicationAction.fromBytes(value.getData)
+
+            if(task.action.isStronger(queuedAction)){
+              value.setData(task.action.toBytes)
+              if(database.putNoDupData(null, key, value) != OperationStatus.SUCCESS){
+                log warn "Can't put task to queue " + task
+              }
+            }
+
+          }
+
+          case OperationStatus.NOTFOUND => {
+            value.setData(task.action.toBytes)
+            if(database.putNoDupData(null, key, value) != OperationStatus.SUCCESS){
+              log warn "Can't put task to queue " + task
+            }
+          }
+        }
+
+
+      }catch{
+        case e => log error ("Can't add entry to database", e)
+      }
+    }
+  }
+
+  def iterator:ReplicationQueueIterator = new ReplicationQueueIterator(database)
 
   def close = {
 
+    log info "Closing ReplicationQueueDB..."
+
+    if(database != null){
+      database.close
+      database = null
+    }
+
+    if(env != null){
+      env.cleanLog;
+      env.close
+      env = null
+    }
+
+    log info "ReplicationQueueDB closed"
   }
 
 }
 
-case class ReplicationTask(val systemId:String, val action:String, val timestamp:Long)
+class ReplicationQueueIterator(val database:Database) extends java.util.Iterator[ReplicationTask]{
+
+
+  val cursor = database.openCursor(null, null)
+
+  override def hasNext:Boolean = {
+
+    val next = findNextTask
+
+    goBack
+
+    next match {
+      case Some(task) => true
+      case None => false
+    }
+
+  }
+
+  override def next:ReplicationTask = {
+    findNextTask match {
+      case Some(task) => task
+      case None => null
+    }
+  }
+
+  override def remove = {
+    if(cursor.delete != OperationStatus.SUCCESS){
+      throw new ReplicationException("Failed to remove task from queue") 
+    }
+  }
+
+  private def findNextTask:Option[ReplicationTask] = {
+
+    val key = new DatabaseEntry
+    val value = new DatabaseEntry
+
+
+    if (cursor.getNext(key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+      Some(ReplicationTask.fromByteArrays(key.getData, value.getData))
+    } else {
+      None
+    }
+  }
+
+  private def goBack = {
+
+    val key = new DatabaseEntry
+    val value = new DatabaseEntry
+
+    cursor.getPrev(key, value, LockMode.DEFAULT)
+  }
+
+  def close = {
+    cursor.close
+  }
+
+}
+
+

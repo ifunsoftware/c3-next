@@ -39,11 +39,12 @@ import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation._
+import javax.annotation.{PostConstruct, PreDestroy}
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.statistics.StatisticsManager
+import org.aphreet.c3.platform.resource.Resource
 
 @Component
 @Scope("singleton")
@@ -148,8 +149,8 @@ class ReplicationSourceActor extends Actor {
           }
         }
 
-        case QueuedTasksReply(entries, host) => {
-          manager ! QueuedTasksReply(entries, host)
+        case QueuedTasksReply(tasks) => {
+          manager ! QueuedTasksReply(tasks)
         }
 
 
@@ -157,6 +158,34 @@ class ReplicationSourceActor extends Actor {
           for((id, link) <- remoteReplicationActors){
             if(!link.isStarted) link.start
             link ! NewStorageIdMsg(id, storageType)
+          }
+        }
+
+        case ReplicationReplayAdd(resource, systemId) => {
+          remoteReplicationActors.get(systemId) match{
+            case Some(link) =>
+              if(!link.isStarted) link.start
+              link ! ResourceAddedMsg(resource)
+            case None => log.warn("Failed to replay add, host does not exist " + systemId)
+          }
+
+        }
+
+        case ReplicationReplayUpdate(resource, systemId) => {
+          remoteReplicationActors.get(systemId) match{
+            case Some(link) =>
+              if(!link.isStarted) link.start
+              link ! ResourceUpdatedMsg(resource)
+            case None => log.warn("Failed to replay update, host does not exist " + systemId)
+          }
+        }
+
+        case ReplicationReplayDelete(address, systemId) => {
+          remoteReplicationActors.get(systemId) match{
+            case Some(link) =>
+              if(!link.isStarted) link.start
+              link ! ResourceDeletedMsg(address)
+            case None => log.warn("Failed to replay delete, host does not exist " + systemId)
           }
         }
 
@@ -197,4 +226,10 @@ class ReplicationSourceActor extends Actor {
     log info "Stopping ReplicationSourceActor..."
     this ! DestroyMsg
   }
+
 }
+
+case class ReplicationReplayAdd(val resource:Resource, val systemId:String)
+case class ReplicationReplayDelete(val address:String, val systemId:String)
+case class ReplicationReplayUpdate(val resource:Resource, val systemId:String)
+
