@@ -409,4 +409,15 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
   }
+
+  def replayReplicationQueue = {
+    try{
+      replicationManager.replayReplicationQueue
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 }

@@ -66,4 +66,6 @@ trait PlatformManagementService {
 
   def listReplicationTargets:Array[ReplicationHost]
 
+  def replayReplicationQueue
+
 }

@@ -40,7 +40,8 @@ object ReplicationCommands extends Commands {
       new AddReplicationTarget,
       new RemoveReplicationTarget,
       new ListReplicationTargets,
-      new PrepareForReplication
+      new PrepareForReplication,
+      new ReplayReplicationQueueCommand
   )
   
 }
@@ -136,5 +137,16 @@ class PrepareForReplication extends Command {
     "Done"
   }
 
-  def name:List[String] = List("prepare for replication")
+  def name:List[String] = List("prepare", "for", "replication")
+}
+
+class ReplayReplicationQueueCommand extends Command {
+
+  override def execute:String = {
+    management.replayReplicationQueue
+    "Task submitted"
+  }
+
+  def name:List[String] = List("replay", "replication", "queue")
+
 }
