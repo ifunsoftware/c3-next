@@ -143,42 +143,15 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
       indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
 
-
-
       indexScheduler.start
-
-
     }
   }
 
   @PreDestroy
   def destroy {
-
-    try{
-      indexScheduler.interrupt
-    }catch{
-      case e => log.warn("Exception while interrupting scheduler", e)
-    }
-
-    if(indexerTaskId != null){
-      taskManager.stopTask(indexerTaskId)
-    }
-
-    if(searcher != null){
-      searcher.close
-      searcher = null
-    }
-
     log info "Destroying SearchManager"
 
-    for(ramIndexer <- ramIndexers){
-      val exitValue = ramIndexer !? DestroyMsg
-      log debug "Exit value for indexer is " + exitValue
-    }
-
-    fileIndexer ! DestroyMsg
     this ! DestroyMsg
-
   }
 
   def search(query: String): List[SearchResultEntry] = {
@@ -208,8 +181,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           statisticsManager ! IncreaseStatisticsMsg("c3.search.background", 1)
 
         case ResourceIndexedMsg(address) =>
-          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> new Date().getTime.toString))
+          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString))
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
+
+        case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
+          None
 
         case DestroyMsg =>
           log info "Destroying SearchManager actor"
@@ -217,7 +193,30 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
             accessMediator ! UnregisterListenerMsg(this)
             configManager ! UnregisterMsg(this)
-          
+
+
+            try{
+              indexScheduler.interrupt
+            }catch{
+              case e => log.warn("Exception while interrupting scheduler", e)
+            }
+
+            if(indexerTaskId != null){
+              taskManager.stopTask(indexerTaskId)
+            }
+
+            if(searcher != null){
+              searcher.close
+              searcher = null
+            }
+
+            for(ramIndexer <- ramIndexers){
+              val exitValue = ramIndexer !? DestroyMsg
+              log debug "Exit value for indexer is " + exitValue
+            }
+
+            fileIndexer ! DestroyMsg
+
           }finally{
             this.exit
           }
@@ -246,23 +245,33 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
   def propertyChanged(event: PropertyChangeEvent) {
     event.name match {
-      case INDEX_PATH =>
+      case INDEX_PATH => {
+        val newPath = new Path(event.newValue)
+
         if(indexPath == null){
-          indexPath = new Path(event.newValue)
+          indexPath = newPath
           initialize
         }else{
-          log warn "Search manager already initialized, new value will be used after system restart and all previous index will be lost!!!"
+
+          if(newPath != indexPath){
+            fileIndexer ! NewIndexPathMsg(newPath)
+            indexPath = newPath
+          }else{
+            log info "New index path is the same as existing"
+          }
         }
-
-
+      }
       case INDEXER_COUNT => {
         val newCount = Integer.parseInt(event.newValue)
 
         log info "Ignoring new indexer count " + newCount
 
-        /*if (ramIndexers.size < newCount) {
-          for (i <- 1 to newCount - ramIndexers.size) {
-            val indexer = new RamIndexer(fileIndexer)
+        if (ramIndexers.size < newCount) {
+
+          val indexersToAdd = newCount - ramIndexers.size
+
+          for (i <- 1 to indexersToAdd) {
+            val indexer = new RamIndexer(fileIndexer, i + ramIndexers.size)
             indexer.start
             ramIndexers = indexer :: ramIndexers
           }
@@ -272,13 +281,14 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           ramIndexers = ramIndexers.drop(dropCount)
 
           toStop.foreach(_ ! DestroyMsg)
-        }*/
+        } else{
+          log info "New index count is the same as current"
+        }
       }
 
       case MAX_TMP_INDEX_SIZE =>
         if (event.newValue != event.oldValue)
           ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
-      case _ =>
     }
   }
 
@@ -313,3 +323,4 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 }
 
 case class BackgroundIndexMsg(val resource:Resource)
+case class NewIndexPathMsg(path:Path)

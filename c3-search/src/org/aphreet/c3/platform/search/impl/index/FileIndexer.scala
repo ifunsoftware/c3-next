@@ -30,6 +30,7 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
+import actors.Actor._
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{Directory, FSDirectory}
@@ -39,15 +40,17 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
 import org.apache.lucene.index.{Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
+import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
 
-class FileIndexer(val path:Path) extends Actor{
+class FileIndexer(var indexPath:Path) extends Actor{
 
   val log = LogFactory.getLog(getClass)
 
   var searcher:Searcher = null
 
-  val indexWriter:IndexWriter = {
+  var indexWriter:IndexWriter = createWriter(indexPath)
 
+  private def createWriter(path:Path):IndexWriter = {
     log info "Creating IndexWriter"
 
     val directory = FSDirectory.getDirectory(path.file)
@@ -60,8 +63,8 @@ class FileIndexer(val path:Path) extends Actor{
   }
 
   def act{
-    while(true){
-      receive{
+    loop{
+      react{
         case MergeIndexMsg(directory) =>
           try{
             indexWriter.addIndexesNoOptimize(Array(directory))
@@ -78,6 +81,20 @@ class FileIndexer(val path:Path) extends Actor{
         case DeleteForUpdateMsg(resource) =>
           deleteResource(resource.address)
           sender ! IndexMsg(resource)
+
+        case NewIndexPathMsg(path) => {
+          try{
+            log info "Changing index path to " + path
+            indexPath = path
+            indexWriter.close
+            indexWriter = createWriter(indexPath)
+            log info "Index path changed"
+            searcher ! NewIndexPathMsg(path)
+            sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
+          }catch{
+            case e => "Failed to create new indexWriter"
+          }
+        }
 
         case DestroyMsg => {
           try{
@@ -108,3 +125,4 @@ class FileIndexer(val path:Path) extends Actor{
 case class MergeIndexMsg(val directory:Directory)
 case class DeleteMsg(address:String)
 case class DeleteForUpdateMsg(resource:Resource)
+case class UpdateIndexCreationTimestamp(time:Long)

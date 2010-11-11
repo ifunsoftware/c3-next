@@ -42,14 +42,15 @@ import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.search.ext.SearchStrategyFactory
+import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
 
 
-class Searcher(val indexPath: Path) extends Actor{
+class Searcher(var indexPath: Path) extends Actor{
 
   val log = LogFactory.getLog(getClass)
 
   var indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
-  
+
   def act{
     loop{
       react{
@@ -59,14 +60,25 @@ class Searcher(val indexPath: Path) extends Actor{
 
           indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
 
-          Thread.sleep(1000 * 5) //May be some threads still using old searcher
+          Thread.sleep(1000 * 5) //May be some threads is still using old searcher
 
           oldSearcher.close
         }
 
+        case NewIndexPathMsg(path) => {
+          log info "Changing index path to " + path
+          indexPath = path
+          this ! ReopenSearcher
+        }
+
         case DestroyMsg => {
           log info "Destroying searcher"
-          this.exit
+          try{
+            indexSearcher.close
+          }finally{
+            this.exit
+          }
+
         }
       }
     }
@@ -86,14 +98,14 @@ class Searcher(val indexPath: Path) extends Actor{
       results = new SearchResultEntry(e.address, e.score, e.fragments) :: results
     }
 
-    log debug "results: " + results.toString
+    if(log.isDebugEnabled)
+      log debug "results: " + results.toString
 
     results
   }
 
 
   def close {
-    indexSearcher.close
     this ! DestroyMsg
   }
 

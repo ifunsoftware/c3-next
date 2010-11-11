@@ -52,9 +52,7 @@ class Path (var path:String){
       
       newPath = driveLetter + path.substring(1)
     }
-    
-    
-    
+
     newPath.replaceAll("""\\+""", """/""").replaceFirst("/$","")
   }
   
@@ -69,9 +67,7 @@ class Path (var path:String){
     
     val thatPath = that.asInstanceOf[Path]
     
-    if(thatPath.correctPath != this.correctPath) return false
-    
-    true
+    thatPath.correctPath == this.correctPath
   }
   
   override def hashCode:Int = 

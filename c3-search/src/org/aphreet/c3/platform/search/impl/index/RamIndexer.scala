@@ -31,6 +31,7 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
+import actors.Actor._
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.store.{RAMDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
@@ -74,8 +75,8 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
 
 
   def act() {
-    while (true) {
-      receive {
+    loop {
+      react {
         case IndexMsg(resource) => {
           try {
 
@@ -122,9 +123,7 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
             }
             this.exit
           }
-
         }
-
       }
     }
   }
