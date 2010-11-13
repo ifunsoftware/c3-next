@@ -31,9 +31,10 @@ package org.aphreet.c3.platform.remote.replication
 
 import actors.Actor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.common.WatchedActor
 
 
-trait ReplicationManager extends Actor {
+trait ReplicationManager extends WatchedActor {
 
   def listFailedReplicationQueues:Array[String]
 

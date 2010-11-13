@@ -30,10 +30,10 @@
 package org.aphreet.c3.platform.access
 
 import org.aphreet.c3.platform.resource.Resource
-import actors.Actor
+import org.aphreet.c3.platform.common.WatchedActor
 
 
-trait AccessManager extends Actor{
+trait AccessManager extends WatchedActor{
 
   def get(ra:String):Resource
 

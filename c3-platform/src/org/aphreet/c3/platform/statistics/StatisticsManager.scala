@@ -30,10 +30,9 @@
 
 package org.aphreet.c3.platform.statistics
 
-import actors.Actor
+import org.aphreet.c3.platform.common.WatchedActor
 
-
-trait StatisticsManager extends Actor{
+trait StatisticsManager extends WatchedActor{
 
   def fullStatistics:Map[String, String]
 

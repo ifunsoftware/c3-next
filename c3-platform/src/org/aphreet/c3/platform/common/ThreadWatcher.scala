@@ -27,11 +27,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.common
 
-package org.aphreet.c3.platform.access
+import collection.mutable.HashSet
+import org.apache.commons.logging.LogFactory
 
-import org.aphreet.c3.platform.common.WatchedActor
+class ThreadWatcher
 
-trait AccessMediator extends WatchedActor{
-  
+object ThreadWatcher{
+
+  val log = LogFactory getLog classOf[ThreadWatcher]
+
+  val registeredThreads = new HashSet[AnyRef]
+
+  def +(any:AnyRef) = {
+    registeredThreads.synchronized{
+      registeredThreads += any
+      log trace "Registered " + any + ", total: " + registeredThreads.size
+    }
+  }
+
+  def -(any:AnyRef) = {
+    registeredThreads.synchronized{
+      registeredThreads -= any
+      log trace "Unregistered " + any + ", left: " + registeredThreads.size
+      if(log.isTraceEnabled)
+        log.trace("Left threads: " + registeredThreads.toString)
+    }
+  }
+
 }

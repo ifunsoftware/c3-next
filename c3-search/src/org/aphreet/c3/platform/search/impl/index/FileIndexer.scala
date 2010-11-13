@@ -34,15 +34,15 @@ import actors.Actor._
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{Directory, FSDirectory}
-import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
 import org.apache.lucene.index.{Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
 import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
+import org.aphreet.c3.platform.common.{WatchedActor, Path}
 
-class FileIndexer(var indexPath:Path) extends Actor{
+class FileIndexer(var indexPath:Path) extends WatchedActor{
 
   val log = LogFactory.getLog(getClass)
 

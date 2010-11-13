@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.storage.common
 
-import org.aphreet.c3.platform.common.Path
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.AddressGenerator
 import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageParams}
+import org.aphreet.c3.platform.common.{ThreadWatcher, Path}
 
 abstract class AbstractStorage(val parameters:StorageParams, val systemId:Int) extends Storage{
 
@@ -28,14 +28,14 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:Int) e
 
   def generateName:String = {
     var address = AddressGenerator.addressForStorage(id, systemId)
-    
+
     while(isAddressExists(address)){
       address = AddressGenerator.addressForStorage(id, systemId)
     }
-    
+
     address
   }
-  
+
   def isAddressExists(address:String):Boolean
 
   protected def updateObjectCount;
@@ -47,24 +47,30 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:Int) e
   class ObjectCounter(val storage:AbstractStorage) extends Runnable {
 
     override def run{
+      ThreadWatcher + this
       try{
-        Thread.sleep(60 * 1000)
-      }catch{
-        case e => {
-          log info "Object counter for storage " + storage.id + " interrupted on start"
-          return
-        }
-      }
-      while(!Thread.currentThread.isInterrupted){
-        storage.updateObjectCount        
+
         try{
           Thread.sleep(60 * 1000)
         }catch{
-          case e:InterruptedException => {
-            log.info("Object counter for storage " + storage.id + " has been interrupted")
+          case e => {
+            log info "Object counter for storage " + storage.id + " interrupted on start"
             return
           }
         }
+        while(!Thread.currentThread.isInterrupted){
+          storage.updateObjectCount
+          try{
+            Thread.sleep(60 * 1000)
+          }catch{
+            case e:InterruptedException => {
+              log.info("Object counter for storage " + storage.id + " has been interrupted")
+              return
+            }
+          }
+        }
+      }finally{
+        ThreadWatcher - this
       }
 
     }

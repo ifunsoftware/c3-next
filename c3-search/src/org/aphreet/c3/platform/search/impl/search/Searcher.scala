@@ -29,7 +29,6 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.search.SearchResultEntry
 import org.apache.lucene.search._
 import highlight._
@@ -43,9 +42,10 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.search.ext.SearchStrategyFactory
 import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
+import org.aphreet.c3.platform.common.{WatchedActor, Path}
 
 
-class Searcher(var indexPath: Path) extends Actor{
+class Searcher(var indexPath: Path) extends WatchedActor{
 
   val log = LogFactory.getLog(getClass)
 

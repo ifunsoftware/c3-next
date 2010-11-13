@@ -1,11 +1,11 @@
 package org.aphreet.c3.platform.storage.common
 
-import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.management.{PlatformManagementEndpoint, PropertyChangeEvent, SPlatformPropertyListener}
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U
 import org.aphreet.c3.platform.config._
+import org.aphreet.c3.platform.common.{ComponentGuard, Constants}
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,11 +42,11 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
   override def destroy = {
     log info "Pre destroy callback invoked"
 
-    try{
+    letItFall{
       configManager ! UnregisterMsg(this)
-    }finally{
-      super.destroy
     }
+
+    super.destroy
   }
 
 

@@ -7,8 +7,9 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PostConstruct, PreDestroy}
 import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.common.ComponentGuard
 
-abstract class AbstractStorageFactory extends StorageFactory{
+abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard{
 
   val log = LogFactory.getLog(getClass)
   
@@ -44,7 +45,10 @@ abstract class AbstractStorageFactory extends StorageFactory{
     log info "Stopping " + this.name + " storage factory"
     
     createdStorages.foreach(s => s.close)
-    storageManager.unregisterFactory(this)
+
+    letItFall{
+      storageManager.unregisterFactory(this)
+    }
     
     createdStorages.clear
   }

@@ -28,10 +28,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.access
+package org.aphreet.c3.platform.common
 
-import org.aphreet.c3.platform.common.WatchedActor
+import org.apache.commons.logging.LogFactory
+import org.springframework.osgi.service.importer.ServiceProxyDestroyedException
 
-trait AccessMediator extends WatchedActor{
-  
+trait ComponentGuard{
+
+  def letItFall(block: => Any):Unit = {
+    try{
+      block
+    }catch{
+      case e:ServiceProxyDestroyedException =>
+        ComponentGuard.log.info("LetItFall block in" + getClass.getSimpleName + ", service proxy destroyed")
+        if(ComponentGuard.log.isTraceEnabled){
+          ComponentGuard.log.trace("LetItFall block", e)
+        }
+      case e => ComponentGuard.log.debug("LetItFall block in: " + getClass.getSimpleName, e)
+    }
+  }
+}
+
+object ComponentGuard{
+
+  val log = LogFactory getLog classOf[ComponentGuard]
 }

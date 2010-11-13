@@ -47,7 +47,6 @@ import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
-import org.aphreet.c3.platform.common.{Path, Constants}
 import java.io.File
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
@@ -57,10 +56,11 @@ import tools.nsc.util.trace
 import org.aphreet.c3.platform.storage.{StorageIdCreatedMsg, StorageParams, StorageCreatedMsg, StorageManager}
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.task.TaskManager
+import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
 
 @Component("replicationManager")
 @Scope("singleton")
-class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener{
+class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
 
   val HTTP_PORT_KEY = "c3.remote.http.port"
   val HTTPS_PORT_KEY = "c3.remote.https.port"
@@ -173,14 +173,16 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
 
         case DestroyMsg => {
-          try{
+
+          letItFall{
             platformConfigManager ! UnregisterMsg(this)
 
             storageManager ! UnregisterListenerMsg(this)
-          }finally{
-            log info "RemoteManagerActor stopped"
-            this.exit
           }
+
+          log info "RemoteManagerActor stopped"
+          this.exit
+
         }
       }
     }
@@ -331,7 +333,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     service
   }
 
-  def runQueueMaintainer = {
+  private def runQueueMaintainer = {
     val thread = new Thread(new QueueMaintainer(this))
     thread.setDaemon(true)
     thread.start
@@ -423,23 +425,27 @@ class QueueMaintainer(manager:ReplicationManager) extends Runnable{
   val TEN_MINUTES = 1000 * 60 * 5
 
   override def run{
-    log info "Starting Replication Queue mantainer"
 
-    while(!Thread.currentThread.isInterrupted){
-      val wakeUpTime = System.currentTimeMillis + TEN_MINUTES
+    ThreadWatcher + this
+    try{
+      log info "Starting Replication Queue mantainer"
 
-      while(!Thread.currentThread.isInterrupted &&
-              wakeUpTime - System.currentTimeMillis > 0){
-        Thread.sleep(5 * 1000)
+      while(!Thread.currentThread.isInterrupted){
+        val wakeUpTime = System.currentTimeMillis + TEN_MINUTES
+
+        while(!Thread.currentThread.isInterrupted &&
+                wakeUpTime - System.currentTimeMillis > 0){
+          Thread.sleep(5 * 1000)
+        }
+
+        log debug "Getting replication queue"
+
+        manager ! QueuedTasks
+
       }
-
-      log debug "Getting replication queue"
-
-      manager ! QueuedTasks
-
+    }finally{
+      ThreadWatcher - this
+      log info "Stopping Replication Queue mantainer"
     }
-
-    log info "Stopping Replication Queue mantainer"
-
   }
 }

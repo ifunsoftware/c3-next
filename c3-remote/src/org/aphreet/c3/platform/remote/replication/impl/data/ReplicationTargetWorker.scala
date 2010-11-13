@@ -39,8 +39,9 @@ import actors.{AbstractActor, Actor}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
+import org.aphreet.c3.platform.common.WatchedActor
 
-class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessMediator:AccessMediator) extends Actor {
+class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessMediator:AccessMediator) extends WatchedActor {
 
   val log = LogFactory getLog getClass
 

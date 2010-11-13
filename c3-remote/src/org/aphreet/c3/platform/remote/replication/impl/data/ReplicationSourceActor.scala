@@ -45,10 +45,11 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
 
 @Component
 @Scope("singleton")
-class ReplicationSourceActor extends Actor {
+class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   private var remoteReplicationActors = Map[String, ReplicationLink]()
 
@@ -190,20 +191,18 @@ class ReplicationSourceActor extends Actor {
         }
 
         case DestroyMsg => {
-
-          try{
-            for((id, link) <- remoteReplicationActors){
-              link.close
-            }
-
-            remoteReplicationActors = Map()
-
-            accessMediator ! UnregisterListenerMsg(this)
-
-          }finally{
-            log info "ReplicationSourceActor stopped"
-            this.exit
+          for((id, link) <- remoteReplicationActors){
+            link.close
           }
+
+          remoteReplicationActors = Map()
+
+          letItFall{
+            accessMediator ! UnregisterListenerMsg(this)
+          }
+
+          log info "ReplicationSourceActor stopped"
+          this.exit
         }
       }
     }

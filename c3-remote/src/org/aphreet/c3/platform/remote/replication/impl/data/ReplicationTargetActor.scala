@@ -44,10 +44,11 @@ import org.aphreet.c3.platform.remote.replication._
 import actors.{AbstractActor, OutputChannel, Actor}
 import actors.remote.{RemoteActor, Node}
 import org.aphreet.c3.platform.access.AccessMediator
+import org.aphreet.c3.platform.common.WatchedActor
 
 @Component
 @Scope("singleton")
-class ReplicationTargetActor extends Actor{
+class ReplicationTargetActor extends WatchedActor{
 
   val log = LogFactory getLog getClass
 

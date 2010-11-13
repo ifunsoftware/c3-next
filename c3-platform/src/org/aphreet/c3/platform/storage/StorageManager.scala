@@ -2,10 +2,9 @@ package org.aphreet.c3.platform.storage
 
 import dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.common.Path
-import actors.Actor
+import org.aphreet.c3.platform.common.{WatchedActor, Path}
 
-trait StorageManager extends Actor{
+trait StorageManager extends WatchedActor{
 
   def registerFactory(factory:StorageFactory)
   

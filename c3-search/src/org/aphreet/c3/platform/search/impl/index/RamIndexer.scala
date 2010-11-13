@@ -41,8 +41,9 @@ import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 import java.io.StringReader
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
+import org.aphreet.c3.platform.common.WatchedActor
 
-class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends Actor {
+class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends WatchedActor {
   val log = LogFactory.getLog(getClass)
 
   var maxDocsCount: Int = 100

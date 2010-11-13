@@ -21,6 +21,7 @@ import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.{DestroyMsg, UnregisterListenerMsg, RegisterListenerMsg}
 import javax.annotation.{PreDestroy, PostConstruct}
+import collection.immutable.HashSet
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -41,7 +42,7 @@ class StorageManagerImpl extends StorageManager{
 
   var systemId:Int = 0
 
-  var listeners = Set[Actor]()
+  var listeners = new HashSet[Actor]
 
   @Autowired
   def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}

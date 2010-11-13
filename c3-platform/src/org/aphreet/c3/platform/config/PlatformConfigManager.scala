@@ -35,17 +35,13 @@ import collection.immutable.Map
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.management.PlatformPropertyListener
 import java.io.File
-import actors.Actor
+import org.aphreet.c3.platform.common.WatchedActor
 
 
 @Component
-trait PlatformConfigManager extends Actor{
+trait PlatformConfigManager extends WatchedActor{
 
  def configDir:File
-
- //def registerPropertyListener(listener:PlatformPropertyListener)
-
- //def unregisterPropertyListener(listener:PlatformPropertyListener)
 
  def getPlatformProperties:Map[String, String]
 

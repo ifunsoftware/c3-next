@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.task
 
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.ThreadWatcher
 
 abstract class Task extends Runnable{
 
@@ -17,6 +18,8 @@ abstract class Task extends Runnable{
   def state:TaskState = taskState
 
   override def run = {
+
+    ThreadWatcher + this
 
     while(!canStart){
       taskState = PENDING
@@ -41,9 +44,10 @@ abstract class Task extends Runnable{
       case e => {
         taskState = CRASHED
         log error e
-        e.printStackTrace
         postFailure
       }
+    }finally {
+      ThreadWatcher - this
     }
   }
   

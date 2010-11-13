@@ -60,7 +60,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   {
     log info "Starting AccessManager"
-    this.start
+    start
   }
 
   @PreDestroy
@@ -173,6 +173,10 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
           }catch{
             case e=> log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
+        }
+        case DestroyMsg => {
+          log info "Stopping AccessManagerActor"
+          exit
         }
       }
     }

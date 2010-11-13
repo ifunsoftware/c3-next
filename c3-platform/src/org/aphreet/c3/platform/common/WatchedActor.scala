@@ -1,3 +1,5 @@
+package org.aphreet.c3.platform.common
+
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -28,10 +30,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.access
+import actors.Actor
 
-import org.aphreet.c3.platform.common.WatchedActor
+trait WatchedActor extends Actor{
 
-trait AccessMediator extends WatchedActor{
-  
+  override def start = {
+    ThreadWatcher + this
+    super.start
+  }
+
+  override def exit = {
+    ThreadWatcher - this
+    super.exit
+  }
+
 }

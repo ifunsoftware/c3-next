@@ -39,7 +39,6 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.common.Path
 import java.util.Date
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
@@ -49,9 +48,10 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.common.{ComponentGuard, Path}
 
 @Component("searchManager")
-class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
+class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
 
   val INDEX_PATH = "c3.search.index.path"
 
@@ -191,19 +191,18 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
           log info "Destroying SearchManager actor"
           try{
 
-            accessMediator ! UnregisterListenerMsg(this)
-            configManager ! UnregisterMsg(this)
+            letItFall{
 
+              if(indexerTaskId != null){
+                taskManager.stopTask(indexerTaskId)
+              }
 
-            try{
-              indexScheduler.interrupt
-            }catch{
-              case e => log.warn("Exception while interrupting scheduler", e)
+              accessMediator ! UnregisterListenerMsg(this)
+              configManager ! UnregisterMsg(this)
             }
 
-            if(indexerTaskId != null){
-              taskManager.stopTask(indexerTaskId)
-            }
+
+            indexScheduler.interrupt
 
             if(searcher != null){
               searcher.close
@@ -249,11 +248,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
         val newPath = new Path(event.newValue)
 
         if(indexPath == null){
+          log info "Found path to store index: " + newPath.path
           indexPath = newPath
           initialize
         }else{
 
           if(newPath != indexPath){
+            log info "New path to store index set: " + newPath.path
             fileIndexer ! NewIndexPathMsg(newPath)
             indexPath = newPath
           }else{
@@ -263,8 +264,6 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
       }
       case INDEXER_COUNT => {
         val newCount = Integer.parseInt(event.newValue)
-
-        log info "Ignoring new indexer count " + newCount
 
         if (ramIndexers.size < newCount) {
 
@@ -282,7 +281,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener {
 
           toStop.foreach(_ ! DestroyMsg)
         } else{
-          log info "New index count is the same as current"
+          log info "New index count is the same as actual"
         }
       }
 

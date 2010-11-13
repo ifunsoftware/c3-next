@@ -40,8 +40,9 @@ import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.{AbstractActor, Actor}
+import org.aphreet.c3.platform.common.WatchedActor
 
-class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends Actor{
+class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends WatchedActor{
 
   val log = LogFactory getLog getClass
 
