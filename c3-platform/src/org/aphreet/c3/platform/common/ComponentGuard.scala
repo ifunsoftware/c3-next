@@ -40,7 +40,7 @@ trait ComponentGuard{
       block
     }catch{
       case e:ServiceProxyDestroyedException =>
-        ComponentGuard.log.info("LetItFall block in" + getClass.getSimpleName + ", service proxy destroyed")
+        ComponentGuard.log.info("LetItFall block in " + getClass.getSimpleName + ", service proxy destroyed")
         if(ComponentGuard.log.isTraceEnabled){
           ComponentGuard.log.trace("LetItFall block", e)
         }

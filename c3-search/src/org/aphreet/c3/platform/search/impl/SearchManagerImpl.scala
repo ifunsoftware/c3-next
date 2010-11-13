@@ -59,6 +59,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val MAX_TMP_INDEX_SIZE = "c3.search.index.max_size"
 
+  val INDEX_CREATE_TIMESTAMP = "c3.search.index.createTimestamp"
+
 
   val log = LogFactory.getLog(getClass)
 
@@ -89,6 +91,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   val indexScheduler = new SearchIndexScheduler(this)
 
   var indexerTaskId:String = null
+
+  var backgroundIndexTask:BackgroundIndexTask = null
+
+  var indexCreateTimestamp = 0l
 
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
@@ -140,8 +146,9 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       this.start
       accessMediator ! RegisterListenerMsg(this)
 
+      backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
-      indexerTaskId = taskManager.submitTask(new BackgroundIndexTask(storageManager, this))
+      indexerTaskId = taskManager.submitTask(backgroundIndexTask)
 
       indexScheduler.start
     }
@@ -185,7 +192,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
 
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
-          None
+          configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, time.toString)
 
         case DestroyMsg =>
           log info "Destroying SearchManager actor"
@@ -235,11 +242,12 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   def defaultValues: Map[String, String] = Map(
     INDEXER_COUNT -> "2",
-    MAX_TMP_INDEX_SIZE -> "100"
+    MAX_TMP_INDEX_SIZE -> "100",
+    INDEX_CREATE_TIMESTAMP -> "0"
     )
 
   override def listeningForProperties: Array[String] = Array(
-    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE
+    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP
     )
 
   def propertyChanged(event: PropertyChangeEvent) {
@@ -288,6 +296,12 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       case MAX_TMP_INDEX_SIZE =>
         if (event.newValue != event.oldValue)
           ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
+
+      case INDEX_CREATE_TIMESTAMP =>
+        log info "Index creation timestamp value: " + event.newValue 
+        indexCreateTimestamp = event.newValue.toLong
+        if(backgroundIndexTask != null)
+          backgroundIndexTask.indexCreateTimestamp = indexCreateTimestamp
     }
   }
 

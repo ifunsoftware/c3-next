@@ -6,13 +6,13 @@ import org.aphreet.c3.platform.common.ThreadWatcher
 abstract class Task extends Runnable{
 
   val log = LogFactory getLog getClass
-  
+
   val id = name + "-" + System.currentTimeMillis
 
   private var shouldStopFlag = false
-  
+
   private val SLEEP_ON_PAUSE_INTERVAL = 5000
-  
+
   private var taskState:TaskState = PENDING
 
   def state:TaskState = taskState
@@ -26,20 +26,23 @@ abstract class Task extends Runnable{
       Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
     }
 
-    taskState = RUNNING
-
-    log.info(id + " started")
-
     try{
-      preStart
-      while(!shouldStop && !Thread.currentThread.isInterrupted){
-        if(!isPaused){
-          step
-        }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+      if(!shouldStop && !Thread.currentThread.isInterrupted){
+        taskState = RUNNING
+        log.info(id + " started")
+        preStart
+        while(!shouldStop && !Thread.currentThread.isInterrupted){
+          if(!isPaused){
+            step
+          }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+        }
+        postComplete
+        taskState = FINISHED
+        log.info(id + " stopped")
+      }else{
+        taskState = INTERRUPTED
+        log.info(id + " interrupted") 
       }
-      postComplete
-      taskState = FINISHED
-      log.info(id + " stopped")
     }catch{
       case e => {
         taskState = CRASHED
@@ -50,39 +53,39 @@ abstract class Task extends Runnable{
       ThreadWatcher - this
     }
   }
-  
+
   protected def step;
-  
+
   protected def preStart = {};
-  
+
   protected def postComplete = {};
-  
+
   protected def postFailure = {}
 
   protected def canStart:Boolean = true
-  
+
   def shouldStop:Boolean = shouldStopFlag
-  
+
   def name:String = getClass.getSimpleName
-  
+
   def progress:Int = -1
 
   def description:TaskDescription = new TaskDescription(id, name, state, progress)
-  
+
   protected def isPaused:Boolean = {taskState == PAUSED}
-  
+
   def stop = {
     Thread.currentThread.interrupt
     shouldStopFlag = true
     taskState = INTERRUPTED
   }
-  
+
   def pause = {
     if(taskState == RUNNING){
       taskState = PAUSED
     }
   }
-  
+
   def resume = {
     if(taskState == PAUSED)
       taskState = RUNNING

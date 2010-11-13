@@ -39,7 +39,7 @@ import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import java.util.Date
 import org.aphreet.c3.platform.search.impl.BackgroundIndexMsg
 
-class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager) extends Task {
+class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager, var indexCreateTimestamp:Long) extends Task {
 
   //We suppose that it should take no more than hour for resource to be indexed
   val indexedTimeout: Long = 1000 * 60 * 60
@@ -109,9 +109,16 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       System.currentTimeMillis - date.getTime > indexedTimeout
     }
 
+    def isInPreviousIndex(indexedValue:String):Boolean = {
+      try{
+        indexedValue.toLong < indexCreateTimestamp
+      }catch{
+        case e => false
+      }
+    }
 
     resource.systemMetadata.get("indexed") match {
-      case Some(x) => false
+      case Some(x) => isInPreviousIndex(x)
       case None => isOutOfTimeout(resource.versions.last.date)
     }
   }

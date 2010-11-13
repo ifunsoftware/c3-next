@@ -349,7 +349,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   override def propertyChanged(event:PropertyChangeEvent) = {
 
     event.name match {
-      case REPLICATION_SECURE_KEY =>
+      case REPLICATION_QUEUE_KEY =>
         if(event.newValue.isEmpty){
           replicationQueuePath = null
         }else{
@@ -357,25 +357,14 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           if(replicationQueueStorage != null){
             replicationQueueStorage.close
           }
-
           replicationQueueStorage = new ReplicationQueueStorage(replicationQueuePath)
         }
 
-      case REPLICATION_QUEUE_KEY =>
-        localReplicationActor.setUseSecureDataConnection(event.newValue == true)
+      case REPLICATION_SECURE_KEY =>
+        localReplicationActor.setUseSecureDataConnection(event.newValue == "true")
+
       case _ =>
         log warn "To get new port config working system restart is required"
-    }
-
-    if(event.name == REPLICATION_QUEUE_KEY){
-      log info "Setting new replication queue path"
-      if(event.newValue.isEmpty){
-        replicationQueuePath = null
-      }else{
-        replicationQueuePath = new Path(event.newValue)
-      }
-    }else{
-      log warn "To get new port config working system restart is required"
     }
   }
 
