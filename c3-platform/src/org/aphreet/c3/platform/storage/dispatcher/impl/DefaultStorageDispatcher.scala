@@ -111,4 +111,41 @@ class DefaultStorageDispatcher extends StorageDispatcher {
       onlineList.drop(num).head
     }
   }
+
+  def selectOnlyOne(list:List[Storage]):Storage = {
+
+    val COUNT_WEIGHT = 1000l;
+    val CAPACITY_WEIGHT = 1000l;
+
+    var maxCount:Double = 0.0;
+    var minCapacity:Double = java.lang.Long.MAX_VALUE;
+
+    for(storage <- list){
+
+      if(maxCount < storage.count){
+        maxCount = storage.count
+      }
+
+      if(minCapacity > storage.volume.safeAvailable){
+        minCapacity = storage.volume.safeAvailable
+      }
+    }
+
+    var minWeight:Double = java.lang.Long.MAX_VALUE
+
+    var bestStorage:Storage = null
+
+
+    for(storage <- list){
+      val weight = storage.count/maxCount * COUNT_WEIGHT + minCapacity/storage.volume.safeAvailable * CAPACITY_WEIGHT
+
+      if(minWeight > weight){
+        minWeight = weight
+        bestStorage = storage
+      }
+    }
+
+    bestStorage
+  }
+  
 }

@@ -48,7 +48,7 @@ import org.aphreet.c3.platform.storage.volume.{VolumeManager, Volume}
 @Component
 class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
 
-  val WATERMARKS = "c3.platform.capacity.watermarks"
+  val LIMITS = "c3.platform.capacity.limits"
 
   val logger = LogFactory getLog getClass
 
@@ -110,25 +110,25 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
   }
 
   def defaultValues:Map[String,String] =
-    Map(WATERMARKS -> "50000000,100000000")
+    Map(LIMITS -> "50000000,100000000")
 
   def propertyChanged(event:PropertyChangeEvent) = {
 
-    val newWatermarks:Array[Long] = event.newValue.split(",").map(_.toLong)
+    val newLimits:Array[Long] = event.newValue.split(",").map(_.toLong)
 
-    val lowWatermark = newWatermarks(0)
-    val highWatermark = newWatermarks(1)
+    val lowLimit = newLimits(0)
+    val highLimit = newLimits(1)
 
-    if(lowWatermark >= 0 && highWatermark>= 0 && lowWatermark <= highWatermark){
+    if(lowLimit >= 0 && highLimit>= 0 && lowLimit <= highLimit){
 
       logger info "Updating volume watermark"
 
       for(volume <- volumes){
-        volume.setLowWatermark(lowWatermark)
-        volume.setHighWatermark(highWatermark)
+        volume.setLowLimit(lowLimit)
+        volume.setHighLimit(highLimit)
       }
 
-    }else throw new StorageException("Failed to update volume watermarks, wrong values")
+    }else throw new StorageException("Failed to update volume limits, wrong values")
 
   }
 

@@ -11,20 +11,20 @@ import org.apache.commons.logging.LogFactory
 
 class Volume(val mountPoint:String, var size:Long, var available:Long){
   
-  private var lowWatermark  = 100000000l;
+  private var lowLimit  = 100000000l;
   
-  private var highWatermark = 500000000l;
+  private var highLimit = 500000000l;
   
   val storages:Set[Storage] = new HashSet
   
-  def safeAvailable:Long = available - lowWatermark
+  def safeAvailable:Long = available - lowLimit
   
   def updateState(s:Long, a:Long){
     size = s;
     available = a;
     
-    val moveToRO = available < lowWatermark
-    var moveToRW = available > highWatermark
+    val moveToRO = available < lowLimit
+    var moveToRW = available > highLimit
     
     for(storage <- storages){
       if(moveToRO)
@@ -42,12 +42,12 @@ class Volume(val mountPoint:String, var size:Long, var available:Long){
     
   }
   
-  def setLowWatermark(value:Long) = {
-    lowWatermark = value
+  def setLowLimit(value:Long) = {
+    lowLimit = value
   }
   
-  def setHighWatermark(value:Long) = {
-    highWatermark = value
+  def setHighLimit(value:Long) = {
+    highLimit = value
   }
   
   override def toString:String = "Volume[" +mountPoint + " " + size + " " + available + "]"
