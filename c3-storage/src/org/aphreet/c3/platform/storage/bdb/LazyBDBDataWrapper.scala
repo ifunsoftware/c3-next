@@ -39,14 +39,13 @@ class LazyBDBDataWrapper(val key: String, val database: Database) extends Abstra
   lazy val loadedBytes: Array[Byte] = fetchBytesFromDb
 
   private def fetchBytesFromDb: Array[Byte] = {
-    val keyEntry = new DatabaseEntry(key.getBytes)
     val valueEntry = new DatabaseEntry()
 
-    val status = database.get(null, keyEntry, valueEntry, LockMode.DEFAULT)
+    val status = database.get(null, new DatabaseEntry(key.getBytes), valueEntry, LockMode.DEFAULT)
 
-    if (status == OperationStatus.SUCCESS) {
+    if (status == OperationStatus.SUCCESS)
       valueEntry.getData
-    } else
+    else
       throw new StorageException("Failed to load lazy data for key " + key + "; Operation status is " + status.toString)
 
   }
