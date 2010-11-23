@@ -21,6 +21,8 @@ class FileBDBStorage(override val parameters:StorageParams,
     if(!dataPath.exists) dataPath.mkdirs
   }
 
+  def name:String = FileBDBStorage.NAME
+
   override protected def storeData(resource:Resource){
 
     if(resource.isVersioned){
@@ -58,7 +60,7 @@ class FileBDBStorage(override val parameters:StorageParams,
         case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
       }
 
-      version.data = DataWrapper.wrap(getFileForRA(fileName))
+      version.data = DataWrapper.wrap(findFileForName(fileName))
     }
   }
 
@@ -76,7 +78,7 @@ class FileBDBStorage(override val parameters:StorageParams,
         version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
           case Some(name) => {
             try{
-              getFileForRA(name).delete
+              findFileForName(name).delete
             }catch{
               case e:IOException => throw new StorageException("Failed to delete file for ra: " + ra, e)
             }
@@ -89,46 +91,54 @@ class FileBDBStorage(override val parameters:StorageParams,
   }
 
 
-  def name:String = FileBDBStorage.NAME
 
-  private def createFile(ra:String):File = {
-    val file = getFullStoragePath(ra)
+  private def findFileForName(ra:String):File = {
+    val file = buildFileForName(ra)
+
+    if(!file.exists){
+        throw new StorageException("Can't find content with address :" + ra)
+    }
+    file
+  }
+
+  private def storeVersionData(name:String, version:ResourceVersion){
+
+    val targetTempFile = createTempFile(name)
+
+    val targetFile : File = createDataFile(name)
+
+    try{
+
+      version.data writeTo targetTempFile
+
+      targetTempFile.renameTo(targetFile)
+
+      //version.data writeTo targetFile
+      version.data = DataWrapper.wrap(targetFile)
+
+    }catch{
+      case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
+    }
+  }
+
+  private def createTempFile(name:String):File = {
+    createDataFile(name + "_" + System.currentTimeMillis)
+  }
+
+  private def createDataFile(name:String):File = {
+    val file = buildFileForName(name)
 
     file.getParentFile.mkdirs
 
     file
   }
 
-  private def getFullStoragePath(name:String):File = {
+  private def buildFileForName(name:String):File = {
     val dir0 = name charAt 0
     val dir1 = name charAt 1
     val dir2 = name charAt 2
 
     new File(dataPath, dir0 + File.separator + dir1 + File.separator + dir2 + File.separator + name)
-  }
-
-  private def getFileForRA(ra:String):File = {
-    var file = getFullStoragePath(ra)
-
-    if(!file.exists){
-      file = new File(dataPath, ra)
-      if(!file.exists){
-        throw new StorageException("Can't find content with address :" + ra)
-      }
-    }
-    file
-  }
-
-  private def storeVersionData(name:String, version:ResourceVersion){
-    val targetFile : File = createFile(name)
-
-    try{
-      version.data writeTo targetFile
-      version.data = DataWrapper.wrap(targetFile)
-
-    }catch{
-      case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)
-    }
   }
 }
 
