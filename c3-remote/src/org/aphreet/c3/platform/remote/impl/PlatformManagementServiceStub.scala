@@ -28,44 +28,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.client
+package org.aphreet.c3.platform.remote.impl
 
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
-import org.aphreet.c3.platform.remote.api.RemoteException
-import org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean
-import java.net.URL
-import org.aphreet.c3.platform.remote.HttpHost
-import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceStub
+import javax.jws.WebService
 
-object ManagementConnectionFactory{
+/**
+ * This trait is only for S2S usage. Since wsgen generates wrapper classes in package, where
+ * implementation is located, we can't use PlatformManagementService trait because it is in different
+ * package
+ */
 
-  def connect(host:HttpHost):PlatformManagementService = {
-
-    try {
-      val factory: JaxWsPortProxyFactoryBean = new JaxWsPortProxyFactoryBean
-      factory.setBeanClassLoader(getClass.getClassLoader)
-      factory.setServiceInterface(classOf[PlatformManagementServiceStub])
-      factory.setWsdlDocumentUrl(new URL(host.name + "/c3-remote/ws/management?WSDL"))
-      factory.setNamespaceUri("remote.c3.aphreet.org")
-      factory.setServiceName("ManagementService")
-
-      if(host.user != null && host.password != null){
-        factory.setUsername(host.user)
-        factory.setPassword(host.password)
-      }
-      
-      factory.setPortName("PlatformManagementServiceImplPort")
-      factory.setMaintainSession(true)
-      factory.afterPropertiesSet
-
-      factory.getObject.asInstanceOf[PlatformManagementServiceStub]
-    } catch {
-      case e: javax.xml.ws.WebServiceException => {
-        e.printStackTrace
-        throw new RemoteException("Failed to connect to remote host" + e.getMessage)
-      }
-    }
-
-  }
-
-}
+@WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
+trait PlatformManagementServiceStub extends PlatformManagementService

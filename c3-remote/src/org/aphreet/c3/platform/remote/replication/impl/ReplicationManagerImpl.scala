@@ -227,7 +227,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val managementService = getManagementService(host, user, password)
 
-    val secret = System.currentTimeMillis.toString
+    val secret = System.currentTimeMillis.toString //TODO replace this
 
 
     val localReplicationHost = createLocalReplicationHost(secret)
