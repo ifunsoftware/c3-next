@@ -40,13 +40,12 @@ class WSAuthFilter extends Filter {
 
   var authManager:AuthenticationManager = _
 
-  override def init(config:FilterConfig){
-
-    authManager =
-            ContextLoader.getCurrentWebApplicationContext.
+  private def getAuthManager:AuthenticationManager = {
+    ContextLoader.getCurrentWebApplicationContext.
                     getBean("authenticationManager", classOf[AuthenticationManager])
-
   }
+
+  override def init(config:FilterConfig){}
 
   override def destroy{}
 
@@ -74,6 +73,10 @@ class WSAuthFilter extends Filter {
         if(array.length == 2){
           val user = array(0)
           val password = array(1)
+
+          if(authManager == null){
+            authManager = getAuthManager
+          }
 
           authOk = authManager.authManagement(user, password) != null
         }

@@ -39,6 +39,7 @@ import org.aphreet.c3.platform.auth.{ACCESS, AuthenticationManager}
 class HttpCommand(val req:HttpServletRequest, val resp:HttpServletResponse)
         extends Command(req.getRequestURI, req.getContextPath){
 
+  
   var authManager:AuthenticationManager = _
 
   lazy val currentUser:String = getCurrentUser
@@ -97,4 +98,10 @@ object HttpCommand{
 
   val AUTH_HEADER = "C3Auth"
 
+}
+
+object HttpConstants{
+
+  val AUTH_HEADER = "C3Auth"
+  
 }

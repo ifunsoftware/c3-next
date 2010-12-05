@@ -18,7 +18,7 @@ import com.twmacinta.util.MD5
 
 class C3HttpAccessor(val host:String, val username:String, val key:String){
 
-  val requestUri = "/c3-remote/resource/"
+  val requestUri = "/c3-remote/rest/resource/"
   val url = host + requestUri
 
   val httpClient = new HttpClient
