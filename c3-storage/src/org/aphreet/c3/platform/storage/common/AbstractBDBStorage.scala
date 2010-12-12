@@ -43,6 +43,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     envConfig setCachePercent bdbConfig.cachePercent
     envConfig setTxnNoSync bdbConfig.txNoSync
     envConfig setTxnWriteNoSync bdbConfig.txWriteNoSync
+    envConfig setLockTimeout 0
 
     val storagePathFile = new File(storagePath, "metadata")
     if(!storagePathFile.exists){
