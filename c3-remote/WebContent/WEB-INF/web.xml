@@ -11,7 +11,7 @@
 
     <filter-mapping>
         <filter-name>CharacterFilter</filter-name>
-        <servlet-name>RestServlet</servlet-name>
+        <servlet-name>DispatcherServlet</servlet-name>
     </filter-mapping>
 
     <filter>
@@ -25,38 +25,12 @@
     </filter-mapping>
 
     <servlet>
-        <servlet-name>RestServlet</servlet-name>
-        <servlet-class>org.aphreet.c3.platform.remote.rest.RestServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/resource/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/search/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>RestServlet</servlet-name>
-        <url-pattern>/query</url-pattern>
-    </servlet-mapping>
-
-
-    <servlet>
         <servlet-name>DispatcherServlet</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>/WEB-INF/bundle-context.xml /WEB-INF/bundle-services.xml</param-value>
-        </init-param>
-        <init-param>
-            <param-name>contextClass</param-name>
-            <param-value>org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext</param-value>
+            <param-value>/WEB-INF/rest-servlet.xml</param-value>
         </init-param>
     </servlet>
 
@@ -78,7 +52,19 @@
         <url-pattern>/ws/*</url-pattern>
     </servlet-mapping>
 
-<!--
+
+    <listener>
+        <listener-class>
+            org.apache.commons.fileupload.servlet.FileCleanerCleanup
+        </listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>
+            com.sun.xml.ws.transport.http.servlet.WSServletContextListener
+        </listener-class>
+    </listener>
+
     <context-param>
         <param-name>contextClass</param-name>
         <param-value>
@@ -92,22 +78,12 @@
             /WEB-INF/bundle-services.xml
         </param-value>
     </context-param>
-        <listener>
-            <listener-class>
-                org.springframework.web.context.ContextLoaderListener
-            </listener-class>
-        </listener>
-    -->
-    <listener>
-        <listener-class>
-            org.apache.commons.fileupload.servlet.FileCleanerCleanup
-        </listener-class>
-    </listener>
 
     <listener>
         <listener-class>
-            com.sun.xml.ws.transport.http.servlet.WSServletContextListener
+            org.springframework.web.context.ContextLoaderListener
         </listener-class>
     </listener>
+
 
 </web-app>

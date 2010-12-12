@@ -3,7 +3,7 @@ Bundle-Version: 1.0.0
 Bundle-Name: C3 Remote
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.remote
-Web-ContextPath: /c3-remote
+Web-ContextPath: /
 Import-Bundle: scala-library;version="[2.8.0,2.9.0)",
  com.springsource.com.sleepcat.je;version="[3.3.87,3.3.87]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",

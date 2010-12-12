@@ -40,7 +40,7 @@ class WSConnectionProvider(val host:String, val user:String, val password:String
   {
     val versionService = obtainWebService(host, user, password, "RemoteApiService", "remote.c3.aphreet.org",
                                       "RemoteApiServiceImplPort", classOf[RemoteApiService],
-                                      "c3-remote/ws/remote")
+                                      "ws/remote")
 
     val serviceApiVersion = versionService.getVersion
 
@@ -56,7 +56,7 @@ class WSConnectionProvider(val host:String, val user:String, val password:String
   def management:PlatformManagementService =
     obtainWebService(host, user, password, "ManagementService", "remote.c3.aphreet.org",
                                       "PlatformManagementServiceImplPort", classOf[PlatformManagementService],
-                                      "c3-remote/ws/management")
+                                      "ws/management")
 
 
 
@@ -64,7 +64,7 @@ class WSConnectionProvider(val host:String, val user:String, val password:String
   def access:PlatformAccessService =
     obtainWebService(host, user, password, "AccessService", "remote.c3.aphreet.org",
                                   "PlatformAccessServiceImplPort", classOf[PlatformAccessService],
-                                  "c3-remote/ws/access")
+                                  "ws/access")
 
 
 }
