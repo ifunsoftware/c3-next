@@ -28,38 +28,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.rest.command
+package org.aphreet.c3.platform.remote.rest
 
+import collection.mutable.HashMap
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.{RequestMethod, RequestMapping}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.aphreet.c3.platform.exception.{StorageIsNotWritableException, ResourceNotFoundException}
-import org.aphreet.c3.platform.remote.rest.{ResourceRequest, Command}
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.auth.exception.AuthFailedException
+import org.aphreet.c3.platform.query.QueryManager
+import org.springframework.beans.factory.annotation.Autowired
+import query.RestQueryConsumer
+
+@Controller
+class QueryController{
+
+  var queryManager:QueryManager = _
+
+  @Autowired
+  def setQueryManager(manager:QueryManager) = {queryManager = manager}
+
+  @RequestMapping(value =  Array("/query"),
+                  method = Array(RequestMethod.GET))
+  def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
 
 
-class DeleteCommand(override val req:HttpServletRequest, override val resp:HttpServletResponse)
-  extends HttpCommand(req, resp){
+    val map = new HashMap[String, String]
 
-  override def execute{
-    try{
+    val enum = req.getParameterNames
 
-      if(query != null && requestType == ResourceRequest){
-
-        val resource = accessManager.get(query)
-
-        resource.systemMetadata.get(Resource.MD_USER) match {
-          case Some(u) => if(u != currentUser) throw new AuthFailedException
-          case None =>
-        }
-
-        accessManager.delete(query)
-        ok
-      }else badRequest
-      
-    }catch{
-      case e:ResourceNotFoundException => notFound
-      case e:StorageIsNotWritableException => forbidden
+    while (enum.hasMoreElements) {
+      val key: String = enum.nextElement.asInstanceOf[String]
+      val value: String = req.getParameter(key)
+      map.put(key, value)
     }
-  }
 
+    val consumer = new RestQueryConsumer(resp.getWriter)
+
+    queryManager.executeQuery(Map[String, String]() ++ map, Map(), consumer)
+    resp.flushBuffer
+
+  }
 }

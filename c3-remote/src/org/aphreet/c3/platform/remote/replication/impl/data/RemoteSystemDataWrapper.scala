@@ -52,7 +52,7 @@ class RemoteSystemDataWrapper(val host:ReplicationHost, val secure:Boolean, val 
 
     created = true
 
-    val requestUri = "/c3-remote/resource/" + address + "/data/" + version
+    val requestUri = "/rest/resource/" + address + "/data/" + version
 
     val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 

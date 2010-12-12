@@ -27,33 +27,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.ws
+package org.aphreet.c3.platform.remote.rest.query
 
-import org.aphreet.c3.platform.auth._
-import org.springframework.stereotype.Component
-import com.sun.net.httpserver.{HttpPrincipal, Authenticator, HttpExchange, BasicAuthenticator}
-import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.query.QueryConsumer
+import java.io.PrintWriter
 
-@Component
-class PlatformWSAuthenticator extends BasicAuthenticator("C3WS") {
+class RestQueryConsumer(val writer: PrintWriter) extends QueryConsumer {
+  var addressesWritten = 0
 
-  var authManager:AuthenticationManager = _
+  override def addResource(resource: Resource) {
+    writer.println(resource.address)
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+    addressesWritten = addressesWritten + 1
 
-  override def authenticate(exchange:HttpExchange):Authenticator.Result = {
-    val uri:String = exchange.getRequestURI.toString
+    if (addressesWritten >= 100) {
+      writer.flush
+      addressesWritten = 0
+    }
 
-    if(uri.matches("/[A-Za-z]+\\?WSDL") && exchange.getRequestMethod.toLowerCase == "get"){
-      new Authenticator.Success(new HttpPrincipal("wsdl-reader","ok"))  
-    }else super.authenticate(exchange)
   }
 
-  override def checkCredentials(username:String, password:String):Boolean = {
-
-    val user = authManager.authManagement(username, password)
-    
-    user != null
+  override def close {
+    writer.close
   }
 }

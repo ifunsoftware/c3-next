@@ -58,6 +58,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   @PostConstruct
   def init {
+    log info "Starting AuthManager"
     users ++= configAccessor.load
   }
 

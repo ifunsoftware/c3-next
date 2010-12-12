@@ -46,29 +46,52 @@ import javax.jws.{WebMethod, WebService}
 import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil._
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
+import org.springframework.web.context.ContextLoader
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
 class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with PlatformManagementService{
 
-  private var managementEndpoint:PlatformManagementEndpoint = _
+  private var _managementEndpoint:PlatformManagementEndpoint = _
 
-  private var authenticationManager:AuthenticationManager = _
+  private var _authenticationManager:AuthenticationManager = _
 
-  private var replicationManager:ReplicationManager = _
+  private var _replicationManager:ReplicationManager = _
 
   @Autowired
-  private def setManagementEndpoint(endPoint:PlatformManagementEndpoint)
-  = {managementEndpoint = endPoint}
+  private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) = {
+    _managementEndpoint = endPoint
+  }
 
   @Autowired
   private def setAuthenticationManager(manager:AuthenticationManager) = {
-    authenticationManager = manager
+    _authenticationManager = manager
   }
 
   @Autowired
   private def setReplicationManager(manager:ReplicationManager) = {
-    replicationManager = manager
+    _replicationManager = manager
+  }
+
+  private def managementEndpoint:PlatformManagementEndpoint = {
+    if(_managementEndpoint == null){
+      _managementEndpoint = ContextLoader.getCurrentWebApplicationContext.getBean("managementService", classOf[PlatformManagementEndpoint])
+    }
+    _managementEndpoint
+  }
+
+  private def authenticationManager:AuthenticationManager = {
+    if(_authenticationManager == null){
+      _authenticationManager = ContextLoader.getCurrentWebApplicationContext.getBean("authenticationManager", classOf[AuthenticationManager])
+    }
+    _authenticationManager
+  }
+
+  private def replicationManager:ReplicationManager = {
+    if(_replicationManager == null){
+      _replicationManager = ContextLoader.getCurrentWebApplicationContext.getBean("replicationManager", classOf[ReplicationManager])
+    }
+    _replicationManager
   }
 
   def removeStorage(id:String) =

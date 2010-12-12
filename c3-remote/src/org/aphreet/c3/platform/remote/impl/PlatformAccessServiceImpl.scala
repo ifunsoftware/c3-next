@@ -38,15 +38,23 @@ import org.aphreet.c3.platform.access.AccessManager
 import javax.jws.{WebService, WebMethod}
 import org.aphreet.c3.platform.resource.ResourceSerializer
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.springframework.web.context.ContextLoader
 
 @Component("platformAccessService")
 @WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
 class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with PlatformAccessService{
 
-  private var accessManager:AccessManager = _
+  private var _accessManager:AccessManager = _
 
   @Autowired
-  private def setAccessManager(manager:AccessManager) = {accessManager = manager}
+  private def setAccessManager(manager:AccessManager) = {_accessManager = manager}
+
+  private def accessManager:AccessManager = {
+    if(_accessManager == null){
+      _accessManager = ContextLoader.getCurrentWebApplicationContext.getBean("accessService", classOf[AccessManager])
+    }
+    _accessManager
+  }
 
   def getResourceAsString(ra:String):String = {
     try{

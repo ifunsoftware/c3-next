@@ -2,9 +2,13 @@ package org.aphreet.c3.platform.remote.ws
 
 import javax.servlet._
 import http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import com.sun.org.apache.xml.internal.security.utils.Base64
+import org.springframework.beans.factory.annotation.Autowired
+import org.apache.commons.logging.LogFactory
+import org.springframework.web.context.{WebApplicationContext, ContextLoader}
+import org.springframework.web.servlet.support.RequestContextUtils
+import org.springframework.web.context.support.{WebApplicationContextUtils, SpringBeanAutowiringSupport}
 
 /**
  * Copyright (c) 2010, Mikhail Malygin
@@ -36,20 +40,33 @@ import com.sun.org.apache.xml.internal.security.utils.Base64
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-class WSAuthFilter extends Filter {
+class WSAuthFilter extends Filter{
 
-  var authManager:AuthenticationManager = _
+  val log = LogFactory getLog getClass
 
-  private def getAuthManager:AuthenticationManager = {
-    ContextLoader.getCurrentWebApplicationContext.
-                    getBean("authenticationManager", classOf[AuthenticationManager])
+  var authManager:AuthenticationManager = null
+
+  @Autowired
+  def setAuthManager(manager:AuthenticationManager) = {
+    authManager = manager
+    log info "AuthManager setter invoked"
   }
 
-  override def init(config:FilterConfig){}
+  var filterConfig:FilterConfig = _
+
+
+  override def init(config:FilterConfig){
+    filterConfig = config
+  }
 
   override def destroy{}
 
   override def doFilter(request: ServletRequest, response: ServletResponse, chain:FilterChain) {
+
+    if(authManager == null){
+      log info "Processing Autowired.."
+      SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this)
+    }
 
     var authOk = false
 
@@ -74,10 +91,6 @@ class WSAuthFilter extends Filter {
           val user = array(0)
           val password = array(1)
 
-          if(authManager == null){
-            authManager = getAuthManager
-          }
-
           authOk = authManager.authManagement(user, password) != null
         }
       }catch{
@@ -91,9 +104,6 @@ class WSAuthFilter extends Filter {
       response.asInstanceOf[HttpServletResponse].setStatus(HttpServletResponse.SC_UNAUTHORIZED)
       response.asInstanceOf[HttpServletResponse].setHeader("WWW-Authenticate", "Basic realm=\"Secure Area\"")
     }
-
-
-
   }
 
 }

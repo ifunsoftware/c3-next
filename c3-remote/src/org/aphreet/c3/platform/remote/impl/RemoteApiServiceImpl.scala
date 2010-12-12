@@ -42,19 +42,19 @@ import org.springframework.web.context.ContextLoader
 @WebService(serviceName="RemoteApiService", targetNamespace="remote.c3.aphreet.org")
 class RemoteApiServiceImpl extends SpringBeanAutowiringSupport with RemoteApiService{
 
-  private var versionManager:VersionManager = null
+  private var _versionManager:VersionManager = null
 
   @Autowired
-  private def setVersionManager(manager:VersionManager) = {versionManager = manager}
+  private def setVersionManager(manager:VersionManager) = {_versionManager = manager}
 
-  private def getVersionManager:VersionManager = {
-    if(versionManager != null) versionManager
-    else{
-      ContextLoader.getCurrentWebApplicationContext.getBean("versionService", classOf[VersionManager])
+  private def versionManager:VersionManager = {
+    if(_versionManager == null){
+      _versionManager = ContextLoader.getCurrentWebApplicationContext.getBean("versionService", classOf[VersionManager])
     }
+    _versionManager
   }
 
-  def getVersion:String = getVersionManager.listC3Modules.get("org.aphreet.c3.platform.remote.api") match {
+  def getVersion:String = versionManager.listC3Modules.get("org.aphreet.c3.platform.remote.api") match {
     case Some(v) => v
     case None => "Unknown"
   }

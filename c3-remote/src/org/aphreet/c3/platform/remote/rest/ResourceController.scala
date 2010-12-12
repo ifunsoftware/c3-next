@@ -84,7 +84,7 @@ class ResourceController extends ServletContextAware{
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
   def getResource(@PathVariable address:String,
-                  @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -99,7 +99,7 @@ class ResourceController extends ServletContextAware{
   @RequestMapping(value =  Array("/{address}/metadata"),
                   method = Array(RequestMethod.GET))
   def getResourceMetadata(@PathVariable address:String,
-                  @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -114,7 +114,7 @@ class ResourceController extends ServletContextAware{
   @RequestMapping(value =  Array("/{address}/data"),
                   method = Array(RequestMethod.GET))
   def getResourceData(@PathVariable address:String,
-                  @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -128,7 +128,7 @@ class ResourceController extends ServletContextAware{
                   method = Array(RequestMethod.GET))
   def getResourceDataVersion(@PathVariable("address") address:String,
                   @PathVariable("version") version:Int,
-                  @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -198,7 +198,7 @@ class ResourceController extends ServletContextAware{
 
 
   @RequestMapping(method = Array(RequestMethod.POST))
-  def saveResource(@RequestHeader(value = "C3Auth", required = false) authHeader:String,
+  def saveResource(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                    request:HttpServletRequest,
                    response:HttpServletResponse) =
   {
@@ -217,7 +217,7 @@ class ResourceController extends ServletContextAware{
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.PUT))
   def updateResource(@PathVariable address:String,
-                     @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                     @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) =
 
@@ -304,7 +304,7 @@ class ResourceController extends ServletContextAware{
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.DELETE))
   def deleteResource(@PathVariable address:String,
-                     @RequestHeader(value = "C3Auth", required = false) authHeader:String,
+                     @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) = {
 
