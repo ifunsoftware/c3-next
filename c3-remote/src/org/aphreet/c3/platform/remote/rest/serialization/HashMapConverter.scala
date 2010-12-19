@@ -27,77 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
+package org.aphreet.c3.platform.remote.rest.serialization
 
-import java.util.Date
+import java.lang.{Class => JClass}
+import com.thoughtworks.xstream.converters.{UnmarshallingContext, MarshallingContext, Converter}
+import com.thoughtworks.xstream.io.{HierarchicalStreamReader, HierarchicalStreamWriter}
+import collection.mutable.HashMap
 
-import scala.collection.mutable.HashMap
+class HashMapConverter extends Converter{
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
+  override def canConvert(clazz:JClass[_]):Boolean = {
+    clazz.equals(classOf[HashMap[String, String]])
+  }
 
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
 
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
+  override def marshal(value:java.lang.Object, writer:HierarchicalStreamWriter ,
+                       context:MarshallingContext) = {
+    val map = value.asInstanceOf[HashMap[String, String]]
 
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
+    for((k, v) <- map){
 
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
+      writer.startNode("element")
+      writer.startNode("key")
+      writer.setValue(k)
+      writer.endNode
+      writer.startNode("value")
+      writer.setValue(v)
+      writer.endNode
+      writer.endNode
     }
 
-    builder.toString
+
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
-
-  def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
+  override def unmarshal(reader:HierarchicalStreamReader, context:UnmarshallingContext):java.lang.Object = {
+    throw new RuntimeException("This method is not implemented")
   }
-
-  def verifyCheckSum = {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
-  }
-
-}
-
-object ResourceVersion{
-
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
 }

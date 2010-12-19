@@ -161,13 +161,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     this ! DestroyMsg
   }
 
-  def search(query: String): List[SearchResultEntry] = {
+  def search(query: String): Array[SearchResultEntry] = {
 
     log debug "Search called with query: " + query
 
     if(searcher == null){
       log debug "Searcher is null"
-      List()
+      new Array[SearchResultEntry](0)
     }
     else searcher.search(query)
   }

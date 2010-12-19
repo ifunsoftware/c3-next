@@ -27,77 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
+package org.aphreet.c3.platform.remote.rest.serialization
 
-import java.util.Date
+import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter
+import com.thoughtworks.xstream.mapper.Mapper
+import java.lang.{Class => JClass}
+import com.thoughtworks.xstream.converters.{UnmarshallingContext, MarshallingContext, Converter}
+import com.thoughtworks.xstream.io.{HierarchicalStreamReader, HierarchicalStreamWriter}
+import collection.mutable.ArrayBuffer
 
-import scala.collection.mutable.HashMap
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+class ArrayBufferConverter(val mMapper:Mapper) extends AbstractCollectionConverter(mMapper){
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
-
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
-
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
-
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
-
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
-    }
-
-    builder.toString
+  override def canConvert(clazz:JClass[_]):Boolean = {
+    clazz.equals(classOf[ArrayBuffer[_]])
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
 
-  def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
-  }
+  override def marshal(value:java.lang.Object, writer:HierarchicalStreamWriter ,
+                       context:MarshallingContext) = {
+    val buffer = value.asInstanceOf[ArrayBuffer[_]]
 
-  def verifyCheckSum = {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
+    for(e <- buffer){
+      writeItem(e, context, writer);
     }
   }
 
-}
+  override def unmarshal(reader:HierarchicalStreamReader, context:UnmarshallingContext):java.lang.Object = {
+    throw new RuntimeException("This method is not implemented")
+  }
 
-object ResourceVersion{
-
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
 }

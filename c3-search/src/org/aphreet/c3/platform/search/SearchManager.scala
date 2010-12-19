@@ -34,7 +34,7 @@ import org.aphreet.c3.platform.common.WatchedActor
 
 trait SearchManager extends WatchedActor{
 
-  def search(query:String):List[SearchResultEntry]
+  def search(query:String):Array[SearchResultEntry]
 
   def flushIndexes
   

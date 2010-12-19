@@ -32,45 +32,43 @@ package org.aphreet.c3.platform.remote.rest
 
 import org.aphreet.c3.platform.search.SearchManager
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.web.bind.annotation.{RequestMethod, PathVariable, RequestMapping}
 import org.aphreet.c3.platform.common.JSONFormatter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
-
+import response.{ResultWriterSelector, SearchResult, JsonResultWriter, XmlResultWriter}
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
 
 @Controller
 @RequestMapping(Array("/search"))
 class SearchController{
 
+  var writerSelector:ResultWriterSelector = _
+
   var searchManager:SearchManager = _
 
   @Autowired
-  def setSearchManager(manager:SearchManager) = {searchManager = manager}
+  def setSearchManager(manager:SearchManager) = {
+    searchManager = manager
+  }
+
+
+  @Autowired
+  def setResultWriterSelector(selector:ResultWriterSelector) = {
+    writerSelector = selector
+  }
 
 
   @RequestMapping(value =  Array("/{query}"),
                   method = Array(RequestMethod.GET))
   def search(@PathVariable query:String,
+             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
              resp:HttpServletResponse){
 
     val results = searchManager.search(query)
 
     resp.setStatus(HttpServletResponse.SC_OK)
-    resp.setContentType("text/plain")
-    resp.setCharacterEncoding("UTF-8")
 
-    val buffer = new StringBuffer
-
-    buffer.append("{resources:[")
-
-    for(entry <- results){
-      buffer.append(entry.toJSON).append(",")
-    }
-    buffer.append("]}")
-
-    resp.getOutputStream.write(JSONFormatter.format(buffer.toString).getBytes("UTF-8"))
-
-    resp.flushBuffer
-
+    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
+    
   }
 }

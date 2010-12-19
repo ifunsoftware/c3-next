@@ -53,11 +53,13 @@ import javax.servlet.ServletContext
 
 import collection.mutable.HashMap
 import org.springframework.web.context.ServletContextAware
-
+import response.{ResultWriterSelector, ResourceResult, JsonResultWriter, XmlResultWriter}
 
 @Controller
 @RequestMapping(Array("/resource"))
 class ResourceController extends ServletContextAware{
+
+  var writerSelector:ResultWriterSelector = _
 
   var accessManager:AccessManager = _
 
@@ -80,11 +82,17 @@ class ResourceController extends ServletContextAware{
     servletContext = context
   }
 
+  @Autowired
+  def setResultWriterSelector(selector:ResultWriterSelector) = {
+    writerSelector = selector
+  }
+  
 
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
   def getResource(@PathVariable address:String,
                   @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -92,7 +100,7 @@ class ResourceController extends ServletContextAware{
 
     val showSystem = request.getParameter("system") != null
 
-    sendResourceMetadata(address, currentUser, showSystem, response)
+    sendResourceMetadata(address, contentType, currentUser, showSystem, response)
   }
 
 
@@ -100,6 +108,7 @@ class ResourceController extends ServletContextAware{
                   method = Array(RequestMethod.GET))
   def getResourceMetadata(@PathVariable address:String,
                   @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+                  @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
@@ -108,7 +117,7 @@ class ResourceController extends ServletContextAware{
 
     val showSystem = request.getParameter("system") != null
 
-    sendResourceMetadata(address, currentUser, showSystem, response)
+    sendResourceMetadata(address, contentType, currentUser, showSystem, response)
   }
 
   @RequestMapping(value =  Array("/{address}/data"),
@@ -174,28 +183,17 @@ class ResourceController extends ServletContextAware{
     }
   }
 
-  def sendResourceMetadata(address:String, username:String, system:Boolean, resp:HttpServletResponse) = {
+  def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
 
     val resource = accessManager.get(address)
 
-    val str = ResourceSerializer.toJSON(resource, system)
-
-    resp.reset
     resp.setStatus(HttpServletResponse.SC_OK)
-    resp.setContentType("text/plain")
-    resp.setCharacterEncoding("UTF-8")
 
-    val bytes = str.getBytes("UTF-8")
+    writerSelector.selectWriterForType(contentType).writeResponse(new ResourceResult(resource), resp)
 
-    resp.setContentLength(bytes.length)
-
-    resp.getOutputStream.write(bytes)
-
-    resp.flushBuffer
   }
 
-
-
+  
 
   @RequestMapping(method = Array(RequestMethod.POST))
   def saveResource(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,

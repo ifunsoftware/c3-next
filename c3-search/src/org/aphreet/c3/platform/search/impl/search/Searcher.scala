@@ -86,16 +86,21 @@ class Searcher(var indexPath: Path) extends WatchedActor{
 
   def getSearcher:IndexSearcher = indexSearcher
 
-  def search(sourceQuery: String): List[SearchResultEntry] = {
+  def search(sourceQuery: String): Array[SearchResultEntry] = {
 
     val searchStrategy = SearchStrategyFactory.createSearchStrategy;
 
     val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0)
 
-    var results:List[SearchResultEntry] = List()
+    val results = new Array[SearchResultEntry](found.size)
+
+    var i = 0
 
     for(e <- found){
-      results = new SearchResultEntry(e.address, e.score, e.fragments) :: results
+
+      results(i) = new SearchResultEntry(e.address, e.score, e.fragments)
+
+      i = i +1
     }
 
     if(log.isDebugEnabled)

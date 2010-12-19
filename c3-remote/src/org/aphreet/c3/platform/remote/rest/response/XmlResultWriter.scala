@@ -27,77 +27,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
 
-import java.util.Date
+package org.aphreet.c3.platform.remote.rest.response
 
-import scala.collection.mutable.HashMap
+import com.thoughtworks.xstream.XStream
+import javax.servlet.http.HttpServletResponse
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+class XmlResultWriter(val stream:XStream) extends ResultWriter{
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
+  def writeResponse(result:Result, response:HttpServletResponse){
 
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
+    response.setCharacterEncoding("UTF-8")
+    response.setContentType("application/xml")
 
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
+    response.getWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
 
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
+    stream.toXML(result, response.getWriter)
 
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
-    }
-
-    builder.toString
+    response.flushBuffer
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
-
-  def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
-  }
-
-  def verifyCheckSum = {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
-  }
-
-}
-
-object ResourceVersion{
-
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
 }

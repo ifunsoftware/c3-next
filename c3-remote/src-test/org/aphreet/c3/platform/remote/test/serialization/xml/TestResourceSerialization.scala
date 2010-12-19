@@ -27,77 +27,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
+package org.aphreet.c3.platform.remote.test.serialization.xml
 
-import java.util.Date
+import junit.framework.TestCase
+import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
+import org.aphreet.c3.platform.remote.rest.serialization.XStreamFactory
+import org.aphreet.c3.platform.remote.rest.response.ResourceResult
 
-import scala.collection.mutable.HashMap
+class TestResourceSerialization extends TestCase{
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+  def testResourceSerialization = {
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
+    val resource = new Resource
+    resource.address = "my_resource_address"
+    resource.metadata.put("md_key", "sdsd")
+    resource.metadata.put("md_key2", "md\"value2")
 
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
+    val version = new ResourceVersion
+    version.data = DataWrapper.wrap("string")
+    version.systemMetadata.put("sys_key", "sys_value")
 
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
+    resource.addVersion(version)
 
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
+    val xStream = new XStreamFactory().createXMLStream
 
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
+    //println(xStream.toXML(new ResourceResult(resource)))
 
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
-    }
-
-    builder.toString
   }
-
-  def setData(_data:DataWrapper) = {data = _data}
-
-  def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
-  }
-
-  def verifyCheckSum = {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
-  }
-
-}
-
-object ResourceVersion{
-
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
 }

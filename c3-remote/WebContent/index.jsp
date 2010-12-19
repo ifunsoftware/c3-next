@@ -10,11 +10,15 @@
 </head>
 <body>
 
-<form action="/c3-remote/rest/resource/" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+<form action="/rest/resource/" method="post" enctype="multipart/form-data" accept-charset="utf-8">
     <table>
         <tr>
             <td>Data:</td>
             <td><input type="file" name="data"/></td>
+        </tr>
+        <tr>
+            <td>MD:</td>
+            <td><input type="text" name="md0"/></td>
         </tr>
     </table>
     <br/>

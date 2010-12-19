@@ -27,77 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.resource
 
-import java.util.Date
+package org.aphreet.c3.platform.remote.rest.serialization
 
-import scala.collection.mutable.HashMap
+import com.thoughtworks.xstream.XStream
+import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
+import com.thoughtworks.xstream.io.xml.DomDriver
+import org.aphreet.c3.platform.search.SearchResultEntry
+import org.aphreet.c3.platform.remote.rest.response.{SearchResult, ResourceResult, Error}
 
-/**
- * Representation of the resource version
- *
- */
-class ResourceVersion{
+class XStreamFactory{
 
-  /**
-   * Version create data
-   */
-  var date:Date = new Date
-
-  /**
-   * Reserved for future.
-   */
-  var revision:Int = 0
-
-  /**
-   * System metadata of the version
-   */
-  var systemMetadata = new HashMap[String, String]
-
-  /**
-   * Version's data
-   */
-  var data:DataWrapper = null
-
-  /**
-   * Flag indicates if resource has been written to storage
-   */
-  var persisted = false;
-  
-  override def toString:String = {
-    val builder = new StringBuilder
-
-    builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
-    builder.append("\n\tMetadata:")
-
-    for((key, value) <- systemMetadata){
-      builder.append("\n\t\t").append(key).append(" => ").append(value)
-    }
-
-    builder.toString
+  def createXMLStream:XStream = {
+    configureXStream(new XStream(new DomDriver("UTF-8")))
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
-
-  def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
+  def createJSONStream:XStream = {
+    configureXStream(new XStream(new JettisonMappedXmlDriver))
   }
 
-  def verifyCheckSum = {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
-      case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
-      }
-      case None => throw new ResourceException("Checksum verification failed")
-    }
+  private def configureXStream(xStream:XStream):XStream = {
+    xStream.registerConverter(new HashMapConverter)
+    xStream.registerConverter(new ArrayBufferConverter(xStream.getMapper))
+
+    xStream.alias("resource", classOf[Resource]);
+    xStream.alias("version", classOf[ResourceVersion])
+    xStream.alias("error", classOf[Error])
+    xStream.alias("entry", classOf[SearchResultEntry])
+    xStream.alias("result", classOf[ResourceResult])
+    xStream.alias("result", classOf[SearchResult])
+
+
+    xStream.omitField(classOf[ResourceVersion], "data")
+    xStream.omitField(classOf[ResourceVersion], "revision")
+    xStream.omitField(classOf[ResourceVersion], "persisted")
+    xStream
   }
-
-}
-
-object ResourceVersion{
-
-  /**
-   * The name of the field in the system metadata that store data's MD5 hash
-   */
-  val RESOURCE_VERSION_HASH = "c3.data.md5"
 }

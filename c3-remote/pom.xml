@@ -181,6 +181,19 @@
             <version>1.1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>com.springsource.com.thoughtworks.xstream</artifactId>
+            <version>1.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>com.springsource.org.codehaus.jettison</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -318,6 +331,25 @@
                                 <artifactItem>
                                     <groupId>org.apache.commons</groupId>
                                     <artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.thoughtworks.xstream</groupId>
+                                    <artifactId>com.springsource.com.thoughtworks.xstream</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.xmlpull</groupId>
+                                    <artifactId>com.springsource.org.xmlpull</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <version>1.1.4.c</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.codehaus.jettison</groupId>
+                                    <artifactId>com.springsource.org.codehaus.jettison</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
