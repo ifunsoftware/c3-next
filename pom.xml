@@ -18,6 +18,7 @@
         <module>c3-search</module>
         <module>c3-client</module>
         <module>c3-remote-webclient</module>
+        <module>c3-test</module>
     </modules>
 
     <properties>
