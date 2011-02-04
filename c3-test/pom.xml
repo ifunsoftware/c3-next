@@ -44,14 +44,24 @@
             <version>1.0.539</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest</artifactId>
+            <version>1.0-for-scala-2.8.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <defaultGoal>package</defaultGoal>
         <sourceDirectory>src</sourceDirectory>
         <outputDirectory>bin</outputDirectory>
-        <testSourceDirectory>src-test</testSourceDirectory>
-        <testOutputDirectory>bin-test</testOutputDirectory>
 
         <resources>
             <resource>
@@ -71,7 +81,6 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>testCompile</goal>
                         </goals>
                     </execution>
                 </executions>
