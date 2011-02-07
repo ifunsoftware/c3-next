@@ -49,9 +49,7 @@ class HashMapConverter extends Converter{
     for((k, v) <- map){
 
       writer.startNode("element")
-      writer.startNode("key")
-      writer.setValue(k)
-      writer.endNode
+      writer.addAttribute("key", k)
       writer.startNode("value")
       writer.setValue(v)
       writer.endNode

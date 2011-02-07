@@ -33,7 +33,12 @@ package org.aphreet.c3.platform.remote.rest.response
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.SearchResultEntry
 
-class Result(val version:String)
+class Result(val version:String){
+
+  val namespace = "http://c3.aphreet.org/rest/1.0"
+  val schemeLocation = namespace + " http://c3-system.googlecode.com/files/rest.xsd"
+  val xsiScheme = "http://www.w3.org/2001/XMLSchema-instance"
+}
 
 class ResourceResult(override val version:String, val resource:Resource) extends Result(version) {
 

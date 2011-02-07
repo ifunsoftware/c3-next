@@ -51,7 +51,7 @@ class TestResourceSerialization extends TestCase{
 
     val xStream = new XStreamFactory().createXMLStream
 
-    //println(xStream.toXML(new ResourceResult(resource)))
+    println(xStream.toXML(new ResourceResult(resource)))
 
   }
 }

@@ -53,7 +53,7 @@ class ResultWriterSelector{
   def selectWriterForType(contentType:String):ResultWriter = {
 
     if(contentType == null){
-      jsonResultWriter
+      xmlResultWriter
     }else if(contentType == "xml"){
       xmlResultWriter
     }else if(contentType == "json"){

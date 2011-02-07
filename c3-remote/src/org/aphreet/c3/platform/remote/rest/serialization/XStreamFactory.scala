@@ -35,16 +35,16 @@ import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
 import org.aphreet.c3.platform.search.SearchResultEntry
-import org.aphreet.c3.platform.remote.rest.response.{SearchResult, ResourceResult, Error}
+import org.aphreet.c3.platform.remote.rest.response.{Result, SearchResult, ResourceResult, Error}
 
 class XStreamFactory{
 
   def createXMLStream:XStream = {
-    configureXStream(new XStream(new DomDriver("UTF-8")))
+    configureXMLStream(configureXStream(new XStream(new DomDriver("UTF-8"))))
   }
 
   def createJSONStream:XStream = {
-    configureXStream(new XStream(new JettisonMappedXmlDriver))
+    configureJSONStream(configureXStream(new XStream(new JettisonMappedXmlDriver)))
   }
 
   private def configureXStream(xStream:XStream):XStream = {
@@ -58,10 +58,42 @@ class XStreamFactory{
     xStream.alias("result", classOf[ResourceResult])
     xStream.alias("result", classOf[SearchResult])
 
+    xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
 
     xStream.omitField(classOf[ResourceVersion], "data")
     xStream.omitField(classOf[ResourceVersion], "revision")
     xStream.omitField(classOf[ResourceVersion], "persisted")
+    xStream
+  }
+
+  private def configureXMLStream(xStream:XStream):XStream = {
+
+    xStream.useAttributeFor(classOf[Result], "namespace")
+    xStream.useAttributeFor(classOf[Result], "schemeLocation")
+    xStream.useAttributeFor(classOf[Result], "xsiScheme")
+
+    xStream.aliasField("xmlns", classOf[Result], "namespace")
+    xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")
+    xStream.aliasField("xmlns:xsi", classOf[Result], "xsiScheme")
+
+    xStream.useAttributeFor(classOf[SearchResultEntry], "address")
+    xStream.useAttributeFor(classOf[SearchResultEntry], "score")
+
+    xStream.useAttributeFor(classOf[Resource], "address")
+    xStream.useAttributeFor(classOf[Resource], "createDate")
+
+    xStream.useAttributeFor(classOf[Resource], "isVersioned")
+
+    xStream.useAttributeFor(classOf[ResourceVersion], "date")
+
+    xStream
+  }
+
+  private def configureJSONStream(xStream:XStream):XStream = {
+    xStream.omitField(classOf[Result], "namespace")
+    xStream.omitField(classOf[Result], "schemeLocation")
+    xStream.omitField(classOf[Result], "xsiScheme")
+
     xStream
   }
 }

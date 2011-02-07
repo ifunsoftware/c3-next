@@ -43,8 +43,8 @@ class TestSearchSerialization extends TestCase{
     val result = Array(entry)
 
     val stream = new XStreamFactory().createXMLStream
-
-    //println(stream.toXML(new SearchResult(result)))
+    
+    println(stream.toXML(new SearchResult(result)))
 
   }
 }
