@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<result xmlns="http://c3.aphreet.org/rest/1.0"
-        xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <version>1.0</version>
-    <resource address="my_resource_address" createDate="2011-02-07 17:55:10.836 MSK" trackVersions="false">
+<p:response xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest_1_0.xsd">
+    <info version="1.0" status="OK"/>
+    <resource address="my_resource_address" createDate="2001-10-26T21:32:52" trackVersions="false">
         <metadata>
             <element key="md_key">
                 <value>sdsd</value>
             </element>
             <element key="md_key2">
-                <value>md&quot;value2</value>
+                <value></value>
             </element>
         </metadata>
-        <systemMetadata/>
         <versions>
-            <version date="2011-02-07 17:55:11.55 MSK">
+            <version date="2001-10-26T21:32:52">
                 <systemMetadata>
                     <element key="sys_key">
                         <value>sys_value</value>
@@ -23,4 +20,4 @@
             </version>
         </versions>
     </resource>
-</result>
+</p:response>

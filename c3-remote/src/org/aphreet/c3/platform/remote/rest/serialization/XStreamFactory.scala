@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
 import org.aphreet.c3.platform.search.SearchResultEntry
-import org.aphreet.c3.platform.remote.rest.response.{Result, SearchResult, ResourceResult, Error}
+import org.aphreet.c3.platform.remote.rest.response._
 
 class XStreamFactory{
 
@@ -53,10 +53,11 @@ class XStreamFactory{
 
     xStream.alias("resource", classOf[Resource]);
     xStream.alias("version", classOf[ResourceVersion])
-    xStream.alias("error", classOf[Error])
+    xStream.alias("response", classOf[Error])
     xStream.alias("entry", classOf[SearchResultEntry])
-    xStream.alias("result", classOf[ResourceResult])
-    xStream.alias("result", classOf[SearchResult])
+    xStream.alias("response", classOf[ResourceResult])
+    xStream.alias("response", classOf[SearchResult])
+    xStream.alias("info", classOf[ResultInfo])
 
     xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
 
@@ -71,6 +72,9 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[Result], "namespace")
     xStream.useAttributeFor(classOf[Result], "schemeLocation")
     xStream.useAttributeFor(classOf[Result], "xsiScheme")
+    xStream.useAttributeFor(classOf[ResultInfo], "version")
+    xStream.useAttributeFor(classOf[ResultInfo], "status")
+
 
     xStream.aliasField("xmlns", classOf[Result], "namespace")
     xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")

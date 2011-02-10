@@ -29,4 +29,8 @@
  */
 package org.aphreet.c3.platform.remote.rest.response
 
-class Error(override val version:String, val message:String) extends Result(version)
+class Error(override val info:ResultInfo, val message:String) extends Result(info){
+
+  def this(message:String) = this(new ResultInfo("1.0", "ERROR"), message)
+}
+

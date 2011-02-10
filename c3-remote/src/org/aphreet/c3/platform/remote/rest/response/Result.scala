@@ -33,22 +33,24 @@ package org.aphreet.c3.platform.remote.rest.response
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.SearchResultEntry
 
-class Result(val version:String){
+class Result(val info:ResultInfo){
 
   val namespace = "http://c3.aphreet.org/rest/1.0"
   val schemeLocation = namespace + " http://c3-system.googlecode.com/files/rest.xsd"
   val xsiScheme = "http://www.w3.org/2001/XMLSchema-instance"
 }
 
-class ResourceResult(override val version:String, val resource:Resource) extends Result(version) {
+class ResultInfo(val version:String, val status:String)
 
-  def this(resource:Resource) = this("1.0", resource)
+class ResourceResult(override val info:ResultInfo, val resource:Resource) extends Result(info) {
+
+  def this(resource:Resource) = this(new ResultInfo("1.0", "OK"), resource)
 
 }
 
-class SearchResult(override val version:String, val searchResults:Array[SearchResultEntry]) extends Result(version){
+class SearchResult(override val info:ResultInfo, val searchResults:Array[SearchResultEntry]) extends Result(info){
 
-  def this(searchResults:Array[SearchResultEntry]) = this("1.0", searchResults)
+  def this(searchResults:Array[SearchResultEntry]) = this(new ResultInfo("1.0", "OK"), searchResults)
 
 }
 

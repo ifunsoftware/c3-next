@@ -1,26 +1,39 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://c3.aphreet.org/rest/1.0"
-           xmlns="http://c3.aphreet.org/rest/1.0">
-
-    <xs:element name="result">
+           xmlns:p="http://c3.aphreet.org/rest/1.0" version="1.0">
+    
+    <xs:element name="response">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="version" type="xs:string"/>
-                <xs:element name="resource" type="resourceType" maxOccurs="1"/>
-                <xs:element name="searchResults" type="searchResultsType" maxOccurs="1"/>
+                <xs:element name="info">
+                    <xs:complexType>
+                        <xs:attribute name="version" type="xs:string" use="required"/>
+                        <xs:attribute name="status" use="required">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="OK"/>
+                                    <xs:enumeration value="ERROR"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="resource" type="p:resourceType" minOccurs="0"/>
+                <xs:element name="searchResults" type="p:searchResultsType" minOccurs="0"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
 
     <xs:complexType name="resourceType">
         <xs:sequence>
-            <xs:element name="metadata" type="metadataType" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="systemMetadata" type="metadataType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="metadata" type="p:metadataType"/>
+            <xs:element name="systemMetadata" type="p:metadataType" minOccurs="0"/>
             <xs:element name="versions">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="version" type="versionType"/>
+                        <xs:element name="version" type="p:versionType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -32,33 +45,33 @@
 
     <xs:complexType name="metadataType">
         <xs:sequence>
-            <xs:element name="element" type="elementType"/>
+            <xs:element name="element" type="p:elementType" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="elementType">
         <xs:sequence>
-            <xs:element name="value" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="value" type="xs:string"/>
         </xs:sequence>
         <xs:attribute name="key" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="versionType">
         <xs:sequence>
-            <xs:element name="systemMetadata" type="metadataType" maxOccurs="1"/>
+            <xs:element name="systemMetadata" type="p:metadataType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="date" type="xs:dateTime" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="searchResultsType">
         <xs:sequence>
-            <xs:element name="entry" type="searchResultEntryType"/>
+            <xs:element name="entry" type="p:searchResultEntryType"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="searchResultEntryType">
         <xs:sequence>
-            <xs:element name="fragments" minOccurs="1" maxOccurs="1">
+            <xs:element name="fragments">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="string" type="xs:string" minOccurs="1"/>
