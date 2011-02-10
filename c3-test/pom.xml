@@ -153,9 +153,6 @@
                                         <copy
                                                 file="${project.build.directory}/${project.build.finalName}.jar"
                                                 toDir="${installPath}/client" overwrite="true"/>
-                                        <copy todir="${installPath}/client">
-                                            <fileset dir="${basedir}/scripts"/>
-                                        </copy>
                                     </tasks>
                                 </configuration>
                                 <goals>
