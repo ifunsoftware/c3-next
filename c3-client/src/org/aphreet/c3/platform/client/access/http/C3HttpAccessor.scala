@@ -37,6 +37,7 @@ import java.io._
 import java.nio.ByteBuffer
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpStatus, HttpClient}
 import com.twmacinta.util.MD5
+import xml.XML
 
 class C3HttpAccessor(val host:String, val username:String, val key:String){
 
@@ -76,7 +77,13 @@ class C3HttpAccessor(val host:String, val username:String, val key:String){
     try{
       val status = httpClient.executeMethod(postMethod)
       status match {
-        case HttpStatus.SC_OK => postMethod.getResponseBodyAsString().replaceAll("\n", "")
+        case HttpStatus.SC_CREATED => {
+
+          val xml = XML.load(postMethod.getResponseBodyAsStream)
+
+          (xml \\ "uploaded")(0) \ "@address" text
+
+        }
         case _ => throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
       }
     }finally {

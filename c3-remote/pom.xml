@@ -194,6 +194,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.joda</groupId>
+            <artifactId>com.springsource.org.joda.time</artifactId>
+            <version>1.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -350,6 +357,12 @@
                                 <artifactItem>
                                     <groupId>org.codehaus.jettison</groupId>
                                     <artifactId>com.springsource.org.codehaus.jettison</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.joda</groupId>
+                                    <artifactId>com.springsource.org.joda.time</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

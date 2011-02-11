@@ -34,6 +34,7 @@ import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.resource._
+import org.aphreet.c3.platform.remote.rest.response._
 
 import org.apache.commons.io.FileCleaningTracker
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
@@ -53,13 +54,10 @@ import javax.servlet.ServletContext
 
 import collection.mutable.HashMap
 import org.springframework.web.context.ServletContextAware
-import response.{ResultWriterSelector, ResourceResult, JsonResultWriter, XmlResultWriter}
 
 @Controller
 @RequestMapping(Array("/resource"))
-class ResourceController extends ServletContextAware{
-
-  var writerSelector:ResultWriterSelector = _
+class ResourceController extends AbstractController with ServletContextAware{
 
   var accessManager:AccessManager = _
 
@@ -81,12 +79,6 @@ class ResourceController extends ServletContextAware{
   def setServletContext(context:ServletContext) = {
     servletContext = context
   }
-
-  @Autowired
-  def setResultWriterSelector(selector:ResultWriterSelector) = {
-    writerSelector = selector
-  }
-  
 
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
@@ -197,6 +189,7 @@ class ResourceController extends ServletContextAware{
 
   @RequestMapping(method = Array(RequestMethod.POST))
   def saveResource(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+                   @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                    request:HttpServletRequest,
                    response:HttpServletResponse) =
   {
@@ -208,7 +201,8 @@ class ResourceController extends ServletContextAware{
     executeDataUpload(resource, currentUser, request, response, () => {
       resource.systemMetadata.put(Resource.MD_USER, currentUser)
       val ra = accessManager.add(resource)
-      response.getWriter.println(ra)
+      response.setStatus(HttpServletResponse.SC_CREATED)
+      writerSelector.selectWriterForType(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
     })
 
   }
@@ -216,6 +210,7 @@ class ResourceController extends ServletContextAware{
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.PUT))
   def updateResource(@PathVariable address:String,
                      @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+                     @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) =
 
@@ -233,7 +228,7 @@ class ResourceController extends ServletContextAware{
 
     executeDataUpload(resource, currentUser, request, response, () => {
       val ra = accessManager.update(resource)
-      response.getWriter.println(ra + "@" + resource.versions.length)
+      writerSelector.selectWriterForType(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
     })
 
   }

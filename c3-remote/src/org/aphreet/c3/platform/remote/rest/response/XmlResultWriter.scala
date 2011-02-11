@@ -43,8 +43,6 @@ class XmlResultWriter(val stream:XStream) extends ResultWriter{
     response.getWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
 
     stream.toXML(result, response.getWriter)
-
-    response.flushBuffer
   }
 
 }

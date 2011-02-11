@@ -40,8 +40,6 @@ class JsonResultWriter(val stream:XStream) extends ResultWriter{
     response.setContentType("application/json")
 
     stream.toXML(result, response.getWriter)
-
-    response.flushBuffer
   }
 
 }

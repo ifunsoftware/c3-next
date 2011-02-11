@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,22 +29,20 @@
  */
 package org.aphreet.c3.platform.remote.test.serialization.xml
 
-import junit.framework.TestCase
-import org.aphreet.c3.platform.search.SearchResultEntry
-import org.aphreet.c3.platform.remote.rest.serialization.XStreamFactory
-import org.aphreet.c3.platform.remote.rest.response.SearchResult
+import org.xml.sax.{SAXParseException, ErrorHandler}
+import junit.framework.Assert
 
-class TestSearchSerialization extends TestCase{
+class JunitErrorHandler extends ErrorHandler{
 
-  def testSearchSerialization{
+  override def warning(e:SAXParseException){
+    Assert.assertTrue(e.getMessage, false)
+  }
 
-    val entry = new SearchResultEntry("address", 0.12f, Array("sdfdf", "sdfsdf", "sdfdsfdsfsdf"))
+  override def error(e:SAXParseException){
+    Assert.assertTrue(e.getMessage, false)
+  }
 
-    val result = Array(entry)
-
-    val stream = new XStreamFactory().createXMLStream
-    
-    println(stream.toXML(new SearchResult(result)))
-
+  override def fatalError(e:SAXParseException){
+    Assert.assertTrue(e.getMessage, false)
   }
 }

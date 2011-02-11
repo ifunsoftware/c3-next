@@ -36,6 +36,7 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
 import org.aphreet.c3.platform.search.SearchResultEntry
 import org.aphreet.c3.platform.remote.rest.response._
+import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
 
 class XStreamFactory{
 
@@ -50,16 +51,20 @@ class XStreamFactory{
   private def configureXStream(xStream:XStream):XStream = {
     xStream.registerConverter(new HashMapConverter)
     xStream.registerConverter(new ArrayBufferConverter(xStream.getMapper))
+    xStream.registerConverter(new ISO8601DateConverter)
 
     xStream.alias("resource", classOf[Resource]);
     xStream.alias("version", classOf[ResourceVersion])
-    xStream.alias("response", classOf[Error])
+    xStream.alias("p:response", classOf[ErrorResult])
     xStream.alias("entry", classOf[SearchResultEntry])
-    xStream.alias("response", classOf[ResourceResult])
-    xStream.alias("response", classOf[SearchResult])
+    xStream.alias("p:response", classOf[ResourceResult])
+    xStream.alias("p:response", classOf[SearchResult])
+    xStream.alias("p:response", classOf[UploadResult])
     xStream.alias("info", classOf[ResultInfo])
 
+    xStream.aliasField("uploaded", classOf[UploadResult], "address")
     xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
+    xStream.aliasField("error", classOf[ErrorResult], "errorDescription")
 
     xStream.omitField(classOf[ResourceVersion], "data")
     xStream.omitField(classOf[ResourceVersion], "revision")
@@ -74,9 +79,12 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[Result], "xsiScheme")
     xStream.useAttributeFor(classOf[ResultInfo], "version")
     xStream.useAttributeFor(classOf[ResultInfo], "status")
+    xStream.useAttributeFor(classOf[ResourceAddress], "address")
+    xStream.useAttributeFor(classOf[ResourceAddress], "version")
 
 
-    xStream.aliasField("xmlns", classOf[Result], "namespace")
+
+    xStream.aliasField("xmlns:p", classOf[Result], "namespace")
     xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")
     xStream.aliasField("xmlns:xsi", classOf[Result], "xsiScheme")
 

@@ -21,7 +21,20 @@
                 </xs:element>
                 <xs:element name="resource" type="p:resourceType" minOccurs="0"/>
                 <xs:element name="searchResults" type="p:searchResultsType" minOccurs="0"/>
-                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="error" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="message" type="xs:string"/>
+                            <xs:element name="exception" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="uploaded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="address" type="xs:string"/>
+                        <xs:attribute name="version" type="xs:int"/>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -74,7 +87,7 @@
             <xs:element name="fragments">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="string" type="xs:string" minOccurs="1"/>
+                        <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

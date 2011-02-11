@@ -40,9 +40,7 @@ import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, Pa
 
 @Controller
 @RequestMapping(Array("/search"))
-class SearchController{
-
-  var writerSelector:ResultWriterSelector = _
+class SearchController extends AbstractController{
 
   var searchManager:SearchManager = _
 
@@ -50,13 +48,6 @@ class SearchController{
   def setSearchManager(manager:SearchManager) = {
     searchManager = manager
   }
-
-
-  @Autowired
-  def setResultWriterSelector(selector:ResultWriterSelector) = {
-    writerSelector = selector
-  }
-
 
   @RequestMapping(value =  Array("/{query}"),
                   method = Array(RequestMethod.GET))

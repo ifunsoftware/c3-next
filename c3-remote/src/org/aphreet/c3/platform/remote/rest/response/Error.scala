@@ -27,10 +27,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.remote.rest.response
 
-class Error(override val info:ResultInfo, val message:String) extends Result(info){
+import java.io.{PrintWriter, StringWriter}
 
-  def this(message:String) = this(new ResultInfo("1.0", "ERROR"), message)
+class ErrorResult(override val info:ResultInfo, val errorDescription:ErrorDescription) extends Result(info){
+
+  def this(errorDescription:ErrorDescription) = this(new ResultInfo("1.0", "ERROR"), errorDescription)
+
 }
+
+class ErrorDescription(val message:String, val exception:String){
+
+  def this(message:String) = this(message, "")
+
+  def this(message:String, e:Throwable) = this(message, {
+    val writer = new StringWriter
+
+    e.printStackTrace(new PrintWriter(writer))
+
+    val result = writer.toString
+
+    writer.close
+
+    result
+  })
+
+  private def buildDescriptionFromException(e:Throwable):String = {
+
+    val writer = new StringWriter
+
+    e.printStackTrace(new PrintWriter(writer))
+
+    val result = writer.toString
+
+    writer.close
+
+    result
+  }
+
+}
+
 

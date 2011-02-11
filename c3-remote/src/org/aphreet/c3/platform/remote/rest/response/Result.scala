@@ -54,3 +54,10 @@ class SearchResult(override val info:ResultInfo, val searchResults:Array[SearchR
 
 }
 
+class UploadResult(override val info:ResultInfo, val address:ResourceAddress) extends Result(info){
+
+  def this(address:ResourceAddress) = this(new ResultInfo("1.0", "OK"), address)
+}
+
+
+case class ResourceAddress(val address:String, val version:Int)
