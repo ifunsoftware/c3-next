@@ -41,7 +41,7 @@ import java.io.{StringReader, FileInputStream, File}
 import javax.xml.validation.SchemaFactory
 import org.aphreet.c3.platform.remote.rest.response._
 import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
-import org.aphreet.c3.platform.search.SearchResultEntry
+import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
 
 class TestXmlSerialization extends TestCase{
 
@@ -82,7 +82,9 @@ class TestXmlSerialization extends TestCase{
   }
 
   def testSearch{
-    val entry = new SearchResultEntry("address", 0.12f, Array("sdfdf", "sdfsdf", "sdfdsfdsfsdf"))
+    val entry = SearchResultElement("address", 0.12f,
+      Array(SearchResultFragment("content", Array("qwe", "qweqwe", "qwewqe")),
+            SearchResultFragment("name", Array("sdfsdf"))))
 
     val result = Array(entry)
 
@@ -91,6 +93,8 @@ class TestXmlSerialization extends TestCase{
     val output = xStream.toXML(new SearchResult(result))
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
+
+    println(xml)
 
     verifyXml(xml)
   }
@@ -109,10 +113,10 @@ class TestXmlSerialization extends TestCase{
 
   def verifyXml(xml:String){
 
-    var file = new File("c3-remote/WebContent/rest_1_0.xsd")
+    var file = new File("c3-remote/support/rest_1_0.xsd")
 
     if(!file.exists){
-      file = new File("WebContent/rest_1_0.xsd")
+      file = new File("support/rest_1_0.xsd")
     }
 
     val factory = SAXParserFactory.newInstance

@@ -29,20 +29,15 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.aphreet.c3.platform.search.SearchResultEntry
 import org.apache.lucene.search._
-import highlight._
-import org.apache.lucene.queryParser.QueryParser
-import org.apache.lucene.analysis.{CachingTokenFilter, Analyzer}
-import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.search.ext.SearchStrategyFactory
 import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
+import org.aphreet.c3.platform.search.SearchResultElement
 
 
 class Searcher(var indexPath: Path) extends WatchedActor{
@@ -86,19 +81,19 @@ class Searcher(var indexPath: Path) extends WatchedActor{
 
   def getSearcher:IndexSearcher = indexSearcher
 
-  def search(sourceQuery: String): Array[SearchResultEntry] = {
+  def search(sourceQuery: String): Array[SearchResultElement] = {
 
     val searchStrategy = SearchStrategyFactory.createSearchStrategy;
 
     val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0)
 
-    val results = new Array[SearchResultEntry](found.size)
+    val results = new Array[SearchResultElement](found.size)
 
     var i = 0
 
     for(e <- found){
 
-      results(i) = new SearchResultEntry(e.address, e.score, e.fragments)
+      results(i) = SearchResultElement.fromEntry(e)
 
       i = i +1
     }

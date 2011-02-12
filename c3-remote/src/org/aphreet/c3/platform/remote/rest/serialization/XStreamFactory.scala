@@ -34,9 +34,9 @@ import com.thoughtworks.xstream.XStream
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
-import org.aphreet.c3.platform.search.SearchResultEntry
 import org.aphreet.c3.platform.remote.rest.response._
 import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
+import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement}
 
 class XStreamFactory{
 
@@ -56,11 +56,13 @@ class XStreamFactory{
     xStream.alias("resource", classOf[Resource]);
     xStream.alias("version", classOf[ResourceVersion])
     xStream.alias("p:response", classOf[ErrorResult])
-    xStream.alias("entry", classOf[SearchResultEntry])
+    xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("p:response", classOf[ResourceResult])
     xStream.alias("p:response", classOf[SearchResult])
     xStream.alias("p:response", classOf[UploadResult])
     xStream.alias("info", classOf[ResultInfo])
+
+    xStream.alias("fragment", classOf[SearchResultFragment])
 
     xStream.aliasField("uploaded", classOf[UploadResult], "address")
     xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
@@ -88,8 +90,10 @@ class XStreamFactory{
     xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")
     xStream.aliasField("xmlns:xsi", classOf[Result], "xsiScheme")
 
-    xStream.useAttributeFor(classOf[SearchResultEntry], "address")
-    xStream.useAttributeFor(classOf[SearchResultEntry], "score")
+    xStream.useAttributeFor(classOf[SearchResultElement], "address")
+    xStream.useAttributeFor(classOf[SearchResultElement], "score")
+    xStream.useAttributeFor(classOf[SearchResultFragment], "field")
+
 
     xStream.useAttributeFor(classOf[Resource], "address")
     xStream.useAttributeFor(classOf[Resource], "createDate")

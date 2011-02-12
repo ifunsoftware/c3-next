@@ -87,7 +87,20 @@
             <xs:element name="fragments">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="fragment" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="foundStrings">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                                <xs:attribute name="field" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

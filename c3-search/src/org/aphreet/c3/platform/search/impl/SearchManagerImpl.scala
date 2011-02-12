@@ -42,13 +42,13 @@ import org.aphreet.c3.platform.common.msg._
 import java.util.Date
 import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
-import org.aphreet.c3.platform.search.{SearchResultEntry, SearchManager}
 import search.Searcher
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.{ComponentGuard, Path}
+import org.aphreet.c3.platform.search.{SearchResultElement, SearchManager}
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
@@ -161,13 +161,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     this ! DestroyMsg
   }
 
-  def search(query: String): Array[SearchResultEntry] = {
+  def search(query: String): Array[SearchResultElement] = {
 
     log debug "Search called with query: " + query
 
     if(searcher == null){
       log debug "Searcher is null"
-      new Array[SearchResultEntry](0)
+      new Array[SearchResultElement](0)
     }
     else searcher.search(query)
   }

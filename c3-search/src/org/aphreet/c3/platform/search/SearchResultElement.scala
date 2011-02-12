@@ -1,17 +1,12 @@
-package org.aphreet.c3.platform.search.test
-
-import org.aphreet.c3.platform.search.SearchResultEntry
-import org.aphreet.c3.platform.common.JSONFormatter
-import junit.framework.{Assert, TestCase}
-
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -34,49 +29,29 @@ import junit.framework.{Assert, TestCase}
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-class ResultTestEntryTestCase extends TestCase{
+package org.aphreet.c3.platform.search
 
-  def testResults = {
+import scala.collection.JavaConversions._
+import org.aphreet.c3.search.ext.SearchResultEntry
 
-    val entry1 = new SearchResultEntry("asdasdasd", 0.2f, Array("1234", "324234", "234234"))
-    val entry2 = new SearchResultEntry("asdasdasd", 0.2f, Array("1234", "324234", "234234"))
+case class SearchResultElement(val address:String,
+                             val score:Float,
+                             val fragments:Array[SearchResultFragment]){
 
-    val results = List(entry1, entry2)
+}
 
-    val buffer = new StringBuffer
+case class SearchResultFragment(val field:String, val foundStrings:Array[String])
 
-    buffer.append("{resources:[")
 
-    for(entry <- results){
-      buffer.append(entry.toJSON).append(",")
-    }
-    buffer.append("]}")
+object SearchResultElement{
 
-    val expected = """{
-	resources: [
-		{
-			address: "asdasdasd",
-			score: 0.20,
-			fragments: [
-				"1234",
-				"324234",
-				"234234"
-			]
-		},
-		{
-			address: "asdasdasd",
-			score: 0.20,
-			fragments: [
-				"1234",
-				"324234",
-				"234234"
-			]
-		},
-		
-	]
-}"""
-
-    Assert.assertEquals(expected, JSONFormatter.format(buffer.toString))
+  def fromEntry(entry:SearchResultEntry):SearchResultElement = {
+    
+    new SearchResultElement(
+      entry.address,
+      entry.score,
+      asMap(entry.fragments).filter(e => !e._1.isEmpty).map(e => new SearchResultFragment(e._1, e._2)).toArray)
 
   }
+
 }

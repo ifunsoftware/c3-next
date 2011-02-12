@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.remote.rest.response
 
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.search.SearchResultEntry
+import org.aphreet.c3.platform.search.SearchResultElement
 
 class Result(val info:ResultInfo){
 
@@ -48,9 +48,9 @@ class ResourceResult(override val info:ResultInfo, val resource:Resource) extend
 
 }
 
-class SearchResult(override val info:ResultInfo, val searchResults:Array[SearchResultEntry]) extends Result(info){
+class SearchResult(override val info:ResultInfo, val searchResults:Array[SearchResultElement]) extends Result(info){
 
-  def this(searchResults:Array[SearchResultEntry]) = this(new ResultInfo("1.0", "OK"), searchResults)
+  def this(searchResults:Array[SearchResultElement]) = this(new ResultInfo("1.0", "OK"), searchResults)
 
 }
 
