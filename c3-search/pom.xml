@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-search-ext</artifactId>
-            <version>1.0.655</version>
+            <version>1.0.658</version>
         </dependency>
 
     </dependencies>
@@ -79,6 +79,7 @@
                 <includes>
                     <include>META-INF/spring/*.xml</include>
                     <include>META-INF/trigrams/*.tri</include>
+                    <include>META-INF/search/*.properties</include>
                 </includes>
             </resource>
             <resource>

@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.search.impl
 import actors.Actor._
 
 import background.BackgroundIndexTask
+import common.SearchConfigurationUtil
 import index._
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
@@ -76,6 +77,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   var storageManager: StorageManager = _
 
   var statisticsManager: StatisticsManager = _
+
+  val configuration = SearchConfigurationUtil.createSearchConfiguration
 
 
   var fileIndexer: FileIndexer = null
@@ -131,14 +134,14 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
       fileIndexer = new FileIndexer(indexPath)
 
-      searcher = new Searcher(indexPath)
+      searcher = new Searcher(indexPath, configuration)
       fileIndexer.searcher = searcher
       searcher.start
 
       fileIndexer.start
 
-      ramIndexers = new RamIndexer(fileIndexer, 1) :: ramIndexers
-      ramIndexers = new RamIndexer(fileIndexer, 2) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, configuration, 1) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, configuration, 2) :: ramIndexers
 
 
       ramIndexers.foreach(_.start)
@@ -278,7 +281,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           val indexersToAdd = newCount - ramIndexers.size
 
           for (i <- 1 to indexersToAdd) {
-            val indexer = new RamIndexer(fileIndexer, i + ramIndexers.size)
+            val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size)
             indexer.start
             ramIndexers = indexer :: ramIndexers
           }

@@ -42,8 +42,10 @@ import java.io.StringReader
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 
-class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends WatchedActor {
+class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfiguration, num: Int) extends WatchedActor {
+
   val log = LogFactory.getLog(getClass)
 
   var maxDocsCount: Int = 100
@@ -58,8 +60,12 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends WatchedActor {
 
   val languageGuesser = LanguageGuesserUtil.createGuesser
 
+  var documentBuilderFactory:DocumentBuilderFactory = _
+
   {
     createNewWriter
+
+    documentBuilderFactory = new DocumentBuilderFactory(configuration)
   }
 
 
@@ -137,7 +143,7 @@ class RamIndexer(val fileIndexer: FileIndexer, num: Int) extends WatchedActor {
     val language = getLanguage(metadata, extractedMeta)
 
     
-    val resourceHandler = new ResourceHandler(resource, metadata, extractedMeta, language)
+    val resourceHandler = new ResourceHandler(documentBuilderFactory, resource, metadata, extractedMeta, language)
 
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer

@@ -34,13 +34,20 @@ import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.search.ext.SearchStrategyFactory
 import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.search.ext.{SearchConfiguration, SearchStrategyFactory}
 
 
-class Searcher(var indexPath: Path) extends WatchedActor{
+class Searcher(var indexPath: Path, val configuration:SearchConfiguration) extends WatchedActor{
+
+  var searchStrategyFactory:SearchStrategyFactory = _
+
+  {
+    searchStrategyFactory = new SearchStrategyFactory(configuration)
+  }
+
 
   val log = LogFactory.getLog(getClass)
 
@@ -83,7 +90,7 @@ class Searcher(var indexPath: Path) extends WatchedActor{
 
   def search(sourceQuery: String): Array[SearchResultElement] = {
 
-    val searchStrategy = SearchStrategyFactory.createSearchStrategy;
+    val searchStrategy = searchStrategyFactory.createSearchStrategy;
 
     val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0)
 

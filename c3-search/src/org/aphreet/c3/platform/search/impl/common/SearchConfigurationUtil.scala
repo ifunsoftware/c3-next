@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
+
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -27,40 +28,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.search.impl.index
 
-import org.aphreet.c3.platform.resource.Resource
-import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.analysis.ru.RussianAnalyzer
-import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.search.ext.DocumentBuilderFactory
-import collection.JavaConversions._
-import org.apache.lucene.document.{Document, Field}
+package org.aphreet.c3.platform.search.impl.common
 
+import org.aphreet.c3.search.ext.SearchConfiguration
+import java.util.Properties
+import org.apache.commons.logging.LogFactory
 
-class ResourceHandler(val factory:DocumentBuilderFactory,
-                      val resource:Resource,
-                      val meta:Map[String, String],
-                      val extracted:Map[String, String],
-                      val lang:String){
+object SearchConfigurationUtil{
 
+  val log = LogFactory.getLog("org.aphreet.c3.search.impl.common.SearchConfigurationUtil")
 
-  def document:Document = {
+  def createSearchConfiguration:SearchConfiguration = {
 
-    val documentBuilder = factory.createDocumentBuilder
+    val configuration = new SearchConfiguration
 
-    val doc = documentBuilder.build(asMap(meta), asMap(extracted), lang)
+    val resource = getClass.getClassLoader.getResource("/META-INF/search/weights.properties")
 
-    doc.add(new Field(Fields.ADDRESS, resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
+    log info resource.toString
 
-    doc
-  }
+    val is = resource.openStream
 
-  def analyzer:Analyzer = {
-    
-    if(lang == "ru") new RussianAnalyzer
-    else new StandardAnalyzer
+    val properties = new Properties
+    properties.load(is)
 
+    log info "Loaded search configuration"
+
+    val it  = properties.keySet.iterator
+
+    val map = new java.util.HashMap[String, String]
+
+    while(it.hasNext){
+      val key = it.next.asInstanceOf[String]
+      val value = properties.getProperty(key)
+      map.put(key, value)
+    }
+
+    configuration.loadFieldWeight(map)
+
+    configuration
   }
 }
