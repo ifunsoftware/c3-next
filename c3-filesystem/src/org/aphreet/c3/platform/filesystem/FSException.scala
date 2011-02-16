@@ -28,20 +28,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package org.aphreet.c3.platform.filesystem
 
-import org.aphreet.c3.platform.resource.{DataWrapper, Resource}
+import org.aphreet.c3.platform.exception.PlatformException
 
-trait FSManager{
+class FSException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
 
-  def getNode(path:String):Node
+  def this(message:String) = this(message, null)
 
-  def updateFile(path:String, data:DataWrapper, metadata:Map[String, String])
+  def this() = this(null, null)
 
-  def deleteNode(path:String)
-
-  def createFile(path:String, name:String, resource:Resource)
-
-  def createDirectory(path:String, name:String)
+  def this(cause:Throwable) = this(null, cause)
 }
