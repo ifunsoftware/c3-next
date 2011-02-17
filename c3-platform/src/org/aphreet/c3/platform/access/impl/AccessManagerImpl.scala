@@ -76,6 +76,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
   def get(ra:String):Resource = {
+
+    if(log.isDebugEnabled){
+      log.debug("Getting resource with address: " + ra)
+    }
+
     try{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
 
@@ -94,6 +99,10 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   def add(resource:Resource):String = {
+
+    if(log.isDebugEnabled){
+      log.debug("Adding new resources")
+    }
 
     val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
       case None => resource.versions(0).data.mimeType
@@ -119,6 +128,10 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
       accessMediator ! ResourceAddedMsg(resource)
 
+      if(log.isDebugEnabled){
+        log.debug("Resource added: " + ra)
+      }
+
       ra
     }else{
       throw new StorageNotFoundException("Failed to find storage for resource")
@@ -126,6 +139,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   def update(resource:Resource):String = {
+
+    if(log.isDebugEnabled){
+      log.debug("Updating resource with address: " + resource.address)
+    }
+
     try{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
       if(storage.mode.allowWrite){
@@ -145,6 +163,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   def delete(ra:String) = {
+
+    if(log.isDebugEnabled){
+      log.debug("Deleting resource with address: " + ra)
+    }
+
     try{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
 
@@ -159,6 +182,45 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }catch{
       case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
     }
+  }
+
+  def lock(ra:String) = {
+
+    if(log.isDebugEnabled){
+      log.debug("Locking address: " + ra)
+    }
+
+    try{
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+
+      if(storage.mode.allowWrite)
+        storage.lock(ra)
+      else
+        throw new StorageIsNotWritableException(storage.id)
+
+    }catch{
+      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
+    }
+  }
+
+  def unlock(ra:String) = {
+
+    if(log.isDebugEnabled){
+      log.debug("Unlocking address: " + ra)
+    }
+
+    try{
+      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+
+      if(storage.mode.allowWrite)
+        storage.lock(ra)
+      else
+        throw new StorageIsNotWritableException(storage.id)
+
+    }catch{
+      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
+    }
+
   }
 
   def act{
@@ -183,6 +245,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   def propertyChanged(event:PropertyChangeEvent) = {
+
+    log info "Received new value for mime detector: " + event.newValue
 
     if(event.oldValue != null){
       MimeUtil unregisterMimeDetector event.oldValue

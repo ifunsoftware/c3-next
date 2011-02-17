@@ -107,7 +107,10 @@ class StorageStub extends Storage{
   def delete(ra:String) = {}
   
   def put(resource:Resource) = {}
-  
+
+  def lock(ra:String) = {}
+
+  def unlock(ra:String) = {}
   
   def params:StorageParams = null
   

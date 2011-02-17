@@ -29,68 +29,13 @@
  */
 package org.aphreet.c3.platform.config.impl
 
-import org.aphreet.c3.platform.common.JSONFormatter
-
-import java.io.{File, StringWriter}
-
-import scala.collection.immutable.Map
-import scala.collection.JavaConversions
-
-import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl
 import org.aphreet.c3.platform.config._
 
 import org.springframework.stereotype.Component
 
 @Component
-class PlatformConfigAccessor extends ConfigAccessor[Map[String, String]] {
-  var configDirectory: File = _
-
-
-  def configDir: File = configDirectory
+class PlatformConfigAccessor extends MapBasedConfigAccessor {
 
   def configFileName: String = "c3-platform-config.json"
-
-
-  def defaultConfig: Map[String, String] = Map()
-
-  def loadConfig(configFile: File): Map[String, String] = {
-    var map = Map[String, String]()
-
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
-
-    for (key <- JavaConversions.asSet(node.getKeys)) {
-      val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
-      map = map + ((key, value))
-    }
-
-    map
-  }
-
-  def storeConfig(map: Map[String, String], configFile: File) = {
-
-    this.synchronized {
-      val swriter = new StringWriter()
-
-      try {
-        val writer = new JSONWriterImpl(swriter)
-
-        writer.`object`
-
-        map.foreach((e: (String, String)) => writer.key(e._1).value(e._2))
-
-        writer.endObject
-
-        swriter.flush
-
-        val result = JSONFormatter.format(swriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        swriter.close
-      }
-    }
-  }
 
 }

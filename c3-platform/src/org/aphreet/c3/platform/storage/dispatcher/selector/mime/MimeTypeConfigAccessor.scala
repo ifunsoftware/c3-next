@@ -41,7 +41,8 @@ class MimeTypeConfigAccessor extends SelectorConfigAccessor[String]{
     	"image/*" -> ("FileBDBStorage", false),
     	"application/png" -> ("FileBDBStorage", false),
       "application/x-c3-wiki" -> ("PureBDBStroage", true),
-      "application/x-c3-ref" -> ("PureBDBStorage", false)
+      "application/x-c3-ref" -> ("PureBDBStorage", false),
+      "application/x-c3-directory" -> ("PureBDBStorage", false)
     )
 
   override def configFileName:String = "c3-mime-types.json"

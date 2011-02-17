@@ -1,5 +1,3 @@
-package org.aphreet.c3.platform.filesystem
-
 /**
  * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
@@ -30,13 +28,21 @@ package org.aphreet.c3.platform.filesystem
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import org.aphreet.c3.platform.exception.PlatformException
 
-class FSException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
+package org.aphreet.c3.platform.filesystem.impl
 
-  def this(message:String) = this(message, null)
+import org.aphreet.c3.platform.config.MapBasedConfigAccessor
+import org.springframework.stereotype.Component
 
-  def this() = this(null, null)
+object FSConfigAccessor{
 
-  def this(cause:Throwable) = this(null, cause)
+  val ROOT_ADDRESS = "root.address"
+  
+}
+
+@Component
+class FSConfigAccessor extends MapBasedConfigAccessor{
+
+  def configFileName: String = "c3-fs-config.json"
+  
 }

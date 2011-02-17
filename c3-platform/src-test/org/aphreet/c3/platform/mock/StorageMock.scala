@@ -41,6 +41,10 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
 
   def close = {}
 
+  def lock(ra:String) = {}
+
+  def unlock(ra:String) = {}
+
 
   def path:Path = new Path(mockPath)
 

@@ -1,5 +1,3 @@
-package org.aphreet.c3.platform.filesystem
-
 /**
  * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
@@ -30,13 +28,8 @@ package org.aphreet.c3.platform.filesystem
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import org.aphreet.c3.platform.exception.PlatformException
+package org.aphreet.c3.platform.filesystem.test
 
-class FSException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
-
-  def this(message:String) = this(message, null)
-
-  def this() = this(null, null)
-
-  def this(cause:Throwable) = this(null, cause)
+class FileManagerTestCase{
+  
 }

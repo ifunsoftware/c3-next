@@ -42,7 +42,11 @@ trait AccessManager extends WatchedActor{
   def update(resource:Resource):String
 
   def delete(ra:String)
-  
+
+  def lock(ra:String)
+
+  def unlock(ra:String)
+
 }
 
 case class ResourceAddedMsg(val resource:Resource)

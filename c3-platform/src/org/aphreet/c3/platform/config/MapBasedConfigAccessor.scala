@@ -1,14 +1,11 @@
-package org.aphreet.c3.platform.filesystem
-
 /**
- * Copyright (c) 2011, Mikhail Malygin
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -30,13 +27,66 @@ package org.aphreet.c3.platform.filesystem
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import org.aphreet.c3.platform.exception.PlatformException
 
-class FSException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
+package org.aphreet.c3.platform.config
 
-  def this(message:String) = this(message, null)
+import org.aphreet.c3.platform.common.JSONFormatter
 
-  def this() = this(null, null)
+import java.io.{File, StringWriter}
 
-  def this(cause:Throwable) = this(null, cause)
+import scala.collection.immutable.Map
+import scala.collection.JavaConversions
+
+import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
+import com.springsource.json.writer.JSONWriterImpl
+
+abstract class MapBasedConfigAccessor extends ConfigAccessor[Map[String, String]] {
+
+  var configDirectory: File = _
+
+  
+  def configDir: File = configDirectory
+
+
+  def defaultConfig: Map[String, String] = Map()
+
+  def loadConfig(configFile: File): Map[String, String] = {
+    var map = Map[String, String]()
+
+    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
+
+    for (key <- JavaConversions.asSet(node.getKeys)) {
+      val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
+      map = map + ((key, value))
+    }
+
+    map
+  }
+
+  def storeConfig(map: Map[String, String], configFile: File) = {
+
+    this.synchronized {
+      val swriter = new StringWriter()
+
+      try {
+        val writer = new JSONWriterImpl(swriter)
+
+        writer.`object`
+
+        map.foreach((e: (String, String)) => writer.key(e._1).value(e._2))
+
+        writer.endObject
+
+        swriter.flush
+
+        val result = JSONFormatter.format(swriter.toString)
+
+        writeToFile(result, configFile)
+
+      } finally {
+        swriter.close
+      }
+    }
+  }
+
 }

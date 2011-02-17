@@ -48,9 +48,13 @@ object Node{
 
   val NODE_TYPE_FIELD = "c3.fs.nodetype"
 
+  val NODE_PARENT_FIELD = "c3.fs.parent"
+
   val NODE_TYPE_FILE = "file"
 
   val NODE_TYPE_DIR = "directory"
+
+  val DIRECTORY_CONTENT_TYPE = "application/x-c3-directory"
 
   def fromResource(resource:Resource):Node = {
     resource.systemMetadata.get(NODE_TYPE_FIELD) match {
@@ -160,7 +164,13 @@ object Directory{
   def emptyDirectory(name:String):Directory = {
     val resource = new Resource
     resource.systemMetadata.put(Node.NODE_TYPE_FIELD, Node.NODE_TYPE_DIR)
-    resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
+
+    if(name != null){
+      resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
+    }
+
+    resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
+    resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
 
     resource.isVersioned = false
 

@@ -63,10 +63,14 @@ abstract class Storage {
 
   /**
    * Just put resource to storage without generating new resource address
-   * resource must already have resource address
-   * This method will igonre persisted flag in ResourceVersion
+   * Resource must already have resource address
+   * This method ignores persisted flag in ResourceVersion
    */
   def put(resource:Resource)
+
+  def lock(ra:String)
+
+  def unlock(ra:String)
 
   /**
    * Append specified map to system metadata of the specified resource

@@ -30,7 +30,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
 
   {
-   open(config)
+    open(config)
   }
 
   def open(bdbConfig:BDBConfig) {
@@ -83,11 +83,11 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
   }
 
   def createIndex(index:StorageIndex){
-     val secConfig = new SecondaryConfig
-     secConfig setAllowCreate true
-     secConfig setTransactional true
-     secConfig setSortedDuplicates true
-     secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+    val secConfig = new SecondaryConfig
+    secConfig setAllowCreate true
+    secConfig setTransactional true
+    secConfig setSortedDuplicates true
+    secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
 
     val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
 
@@ -156,10 +156,10 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
   def count:Long = objectCount;
 
   override protected def updateObjectCount = {
-    log trace "Updating object count" 
+    log trace "Updating object count"
     val cnt = database.count
     this.synchronized{
-      objectCount = cnt  
+      objectCount = cnt
     }
 
   }
@@ -254,7 +254,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           res.address = ra
           res
         }else throw new ResourceNotFoundException(
-            "Failed to get resource with address " + ra + " Operation status " + status.toString)
+          "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
 
       //Replacing metadata
@@ -340,7 +340,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     val tx = env.beginTransaction(null, null)
 
-      try{
+    try{
 
       //Obtaining actual version of resource and locking it for write
       val savedResource:Resource = {
@@ -353,7 +353,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           res.address = ra
           res
         }else throw new ResourceNotFoundException(
-            "Failed to get resource with address " + ra + " Operation status " + status.toString)
+          "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
       //Appending system metadata
       savedResource.systemMetadata ++= metadata
@@ -374,11 +374,76 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     }
   }
 
+  def lock(ra:String){
+    val key = new DatabaseEntry(ra.getBytes)
+    val value = new DatabaseEntry()
+
+    val tx = env.beginTransaction(null, null)
+
+    try{
+      val status = database.get(tx, key, value, LockMode.RMW)
+      if(status == OperationStatus.SUCCESS){
+        val res = Resource.fromByteArray(value.getData)
+        res.systemMetadata.get(Resource.SMD_LOCK) match{
+          case Some(x) => throw new StorageException("Failed to obtain lock")
+          case None =>
+        }
+
+        res.systemMetadata.put(Resource.SMD_LOCK, System.currentTimeMillis.toString)
+
+        value.setData(res.toByteArray)
+
+        database.put(tx, key, value)
+
+        tx.commit
+      }else{
+        throw new ResourceNotFoundException(
+          "Failed to get resource with address " + ra + " Operation status " + status.toString)
+      }
+    }catch{
+      case e => {
+        tx.abort
+        throw e
+      }
+    }
+  }
+
+  def unlock(ra:String){
+    val key = new DatabaseEntry(ra.getBytes)
+    val value = new DatabaseEntry()
+
+    val tx = env.beginTransaction(null, null)
+
+    try{
+      val status = database.get(tx, key, value, LockMode.RMW)
+      if(status == OperationStatus.SUCCESS){
+        val res = Resource.fromByteArray(value.getData)
+
+
+        res.systemMetadata.remove(Resource.SMD_LOCK)
+        
+        value.setData(res.toByteArray)
+
+        database.put(tx, key, value)
+
+        tx.commit
+      }else{
+        throw new ResourceNotFoundException(
+          "Failed to get resource with address " + ra + " Operation status " + status.toString)
+      }
+    }catch{
+      case e => {
+        tx.abort
+        throw e
+      }
+    }
+  }
+
   def isAddressExists(address:String):Boolean = {
 
     val key = new DatabaseEntry(address.getBytes)
     val value = new DatabaseEntry()
-    
+
     database.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
@@ -399,18 +464,18 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
   def removeIterator(iterator:BDBStorageIterator){
     iterators.synchronized(
       iterators -= iterator
-      )
+    )
   }
 
   def loadData(resource:Resource)
 
-  
+
   protected def storeData(resource:Resource, tx:Transaction):Unit = storeData(resource)
 
   protected def storeData(resource:Resource):Unit = {}
 
   protected def deleteData(ra:String, tx:Transaction):Unit = deleteData(ra)
-  
+
   protected def deleteData(ra:String):Unit = {}
 
   protected def putData(resource:Resource):Unit = {}

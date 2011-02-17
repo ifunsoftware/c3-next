@@ -215,6 +215,7 @@ object Resource {
   val MD_POOL = "c3.pool"
   val MD_TAGS = "c3.tags"
   val MD_USER = "c3.user"
+  val SMD_LOCK = "c3.lock"
 
   /**
    * String encoding for metadata storing

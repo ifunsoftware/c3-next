@@ -34,17 +34,46 @@ package org.aphreet.c3.platform.filesystem.impl
 import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.resource.{ResourceVersion, DataWrapper, Resource}
+import org.aphreet.c3.platform.filesystem._
+import javax.annotation.PostConstruct
+import org.apache.commons.logging.LogFactory
 
 @Component
 class FSManagerImpl extends FSManager{
 
+  val log = LogFactory getLog getClass
+
   var accessManager:AccessManager = _
+
+  var configAccessor:FSConfigAccessor = _
+
+  var rootAddress:String = null
 
   @Autowired
   def setAccessManager(manager:AccessManager) = {accessManager = manager}
+
+  @Autowired
+  def setConfigAccessor(accessor:FSConfigAccessor) = {configAccessor = accessor}
+
+  @PostConstruct
+  def init{
+
+    log info "Starting Filesystem manager"
+
+    val map = configAccessor.load
+
+    map.get(FSConfigAccessor.ROOT_ADDRESS) match{
+      case Some(address) => {
+        rootAddress = address
+        log info "Found filesystem root address"
+      }
+      case None => {
+        log.warn("Filesystem root address is not found")
+      }
+    }
+  }
 
   def getNode(path:String):Node = {
     getFSNode(path)
@@ -69,16 +98,49 @@ class FSManagerImpl extends FSManager{
   }
 
   def deleteNode(path:String) = {
-    //getFSNode()
+
+    val components = getPathComponents(path)
+
+    val nodeToDelete = components.lastOption match{
+      case Some(x) => x
+      case None => throw new FSException("Can't remove root node")
+    }
+
+    val parentPath = path.replaceFirst(nodeToDelete + "$", "")
+
+
+    val node = getNode(path)
+
+    if(node.isDirectory){
+      val directory = node.asInstanceOf[Directory]
+      if(!directory.getChildren.isEmpty){
+        throw new FSException("Can't remove non-empty directory")
+      }
+    }
+
+    val parentNode = getNode(parentPath).asInstanceOf[Directory]
+
+    parentNode.removeChild(nodeToDelete)
+
+    accessManager.update(parentNode.resource)
+    accessManager.delete(node.resource.address)
   }
 
   def createFile(path:String, name:String, resource:Resource) = {
+
+    if(log.isDebugEnabled){
+      log.debug("Creating file " + name + " at path " + path)
+    }
 
     addNodeToDirectory(path, name, File.createFile(resource, name))
     
   }
 
   def createDirectory(path:String, name:String) = {
+
+    if(log.isDebugEnabled){
+      log.debug("Creating directory " + name + " at path " + path)
+    }
 
     addNodeToDirectory(path, name, Directory.emptyDirectory(name))
 
@@ -103,6 +165,8 @@ class FSManagerImpl extends FSManager{
       //refreshing directory instance
       directory = Node.fromResource(accessManager.get(directory.resource.address)).asInstanceOf[Directory]
 
+      node.resource.systemMetadata.put(Node.NODE_PARENT_FIELD, directory.resource.address)
+
       val newAddress = accessManager.add(node.resource)
 
       directory.addChild(NodeRef(name, newAddress))
@@ -117,11 +181,20 @@ class FSManagerImpl extends FSManager{
   }
 
   private def getFSNode(path:String):Node = {
-    val pathComponents = getPathComponents(path)
+
+    if(log.isDebugEnabled){
+      log.debug("Looking for node for path: " + path)
+    }
+
+    val pathComponents = getPathComponents(path).filter(_.length > 0)
 
     var resultNode:Node = getRoot
 
     for(directoryName <- pathComponents){
+
+      if(log.isTraceEnabled){
+        log.trace("Getting node: " + directoryName)
+      }
 
       if(!resultNode.isDirectory){
         throw new FSException("Found file, expected directory")
@@ -138,6 +211,10 @@ class FSManagerImpl extends FSManager{
 
     }
 
+    if(log.isDebugEnabled){
+      log.debug("Found node for path: " + path)
+    }
+
     resultNode
 
   }
@@ -147,6 +224,22 @@ class FSManagerImpl extends FSManager{
   }
 
   private def getRoot:Directory = {
-    null
+
+    if(rootAddress == null){
+       createNewRoot
+    }
+
+    Directory(accessManager.get(rootAddress))
+  }
+
+  private def createNewRoot = {
+
+    log info "Creating root directory"
+
+    val directory = Directory.emptyDirectory(null)
+
+    rootAddress = accessManager.add(directory.resource)
+
+    configAccessor.update(_ + ((FSConfigAccessor.ROOT_ADDRESS, rootAddress)))
   }
 }

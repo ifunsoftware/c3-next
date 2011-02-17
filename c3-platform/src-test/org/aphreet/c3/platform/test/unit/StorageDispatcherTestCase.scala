@@ -99,6 +99,9 @@ class StorageStub0(storageId:String) extends Storage{
 
   def put(resource:Resource) = {}
 
+  def lock(ra:String) = {}
+
+  def unlock(ra:String) = {}
 
   def params:StorageParams = null
 

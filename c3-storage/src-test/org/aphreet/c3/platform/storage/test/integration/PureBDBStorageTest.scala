@@ -13,7 +13,7 @@ import org.aphreet.c3.platform.common._
 import java.io.File
 
 import org.aphreet.c3.platform.storage.bdb.PureBDBStorage
-
+import org.aphreet.c3.platform.exception.StorageException
 
 class PureBDBStorageTest extends TestCase{
 
@@ -503,6 +503,35 @@ class PureBDBStorageTest extends TestCase{
       storage0.close
       storage1.close
     }
+
+  }
+
+  def testLock = {
+    val storage = createStorage("1012")
+
+    val resource = createResource
+
+    val address = storage.add(resource)
+
+    storage.lock(address)
+
+    try{
+      storage.lock(address)
+      assertTrue("Expected exception", false)
+    }catch{
+      case e:StorageException => //this is ok
+      case ex => assertTrue("Expected another exception", false)
+    }
+
+    storage.unlock(address)
+
+    try{
+      storage.lock(address)
+    }catch{
+      case e => assertTrue("Unexpected exception", false)
+    }
+
+    storage.unlock(address)
 
   }
 
