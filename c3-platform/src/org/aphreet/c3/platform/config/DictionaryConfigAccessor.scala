@@ -29,20 +29,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.filesystem.impl
+package org.aphreet.c3.platform.config
 
-import org.aphreet.c3.platform.config.MapBasedConfigAccessor
-import org.springframework.stereotype.Component
-
-object FSConfigAccessor{
-
-  val ROOT_ADDRESS = "root.address"
-  
-}
-
-@Component
-class FSConfigAccessor extends MapBasedConfigAccessor{
-
-  def configFileName: String = "c3-fs-config.json"
-  
-}
+trait DictionaryConfigAccessor extends ConfigAccessor[Map[String, String]]
