@@ -68,7 +68,7 @@ object Node{
   }
 }
 
-case class NodeRef(val name:String, val address:String)
+case class NodeRef(val name:String, val address:String, val leaf:Boolean)
 
 case class File(override val resource:Resource) extends Node(resource){
 
@@ -88,7 +88,7 @@ object File{
 
 case class Directory(override val resource:Resource) extends Node(resource){
 
-  private val children = new HashMap[String, String]
+  private val children = new HashMap[String, NodeRef]
 
   {
     readData
@@ -96,12 +96,12 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   override def isDirectory = true
 
-  def getChild(name:String):Option[String] = {
+  def getChild(name:String):Option[NodeRef] = {
     children.get(name)
   }
 
   def addChild(node:NodeRef) = {
-    children.put(node.name, node.address)
+    children.put(node.name, node)
 
     updateResource
   }
@@ -112,17 +112,17 @@ case class Directory(override val resource:Resource) extends Node(resource){
   }
 
   def getChildren:Array[NodeRef] = {
-    children.map(e => NodeRef(e._1, e._2)).toArray
+    children.values.toArray
   }
 
 
   protected def updateResource = {
     val version = new ResourceVersion
     version.data = getData(children)
-
+    resource.addVersion(version)
   }
 
-  private def getData(children:HashMap[String, String]):DataWrapper = {
+  private def getData(children:HashMap[String, NodeRef]):DataWrapper = {
 
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
@@ -130,8 +130,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
     dataOs.writeShort(0)
     dataOs.writeInt(children.size)
 
-    for((name, address) <- children){
-      dataOs.writeUTF(address)
+    for((name, nodeRef) <- children){
+      dataOs.writeUTF(nodeRef.address)
+      dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
     }
 
@@ -152,8 +153,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
       for(i <- 1 to count){
         val address = dataIn.readUTF
+        val leaf = dataIn.readBoolean
         val name = dataIn.readUTF
-        children.put(name, address)
+        children.put(name, NodeRef(name, address, leaf))
       }
     }
   }

@@ -235,6 +235,9 @@ case class StorageMock(val mockId:String, val secIds:List[String], val stName:St
 
   def close = {}
 
+  def lock(ra:String) = {}
+
+  def unlock(ra:String) = {}
 
   def path:Path = null
 

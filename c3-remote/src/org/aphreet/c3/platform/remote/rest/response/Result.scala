@@ -30,6 +30,7 @@
 
 package org.aphreet.c3.platform.remote.rest.response
 
+import fs.FSDirectory
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.SearchResultElement
 
@@ -59,5 +60,9 @@ class UploadResult(override val info:ResultInfo, val address:ResourceAddress) ex
   def this(address:ResourceAddress) = this(new ResultInfo("1.0", "OK"), address)
 }
 
+class DirectoryResult(override val info:ResultInfo, val directory:FSDirectory) extends Result(info){
+
+  def this(directory:FSDirectory) = this(new ResultInfo("1.0", "OK"), directory)
+}
 
 case class ResourceAddress(val address:String, val version:Int)

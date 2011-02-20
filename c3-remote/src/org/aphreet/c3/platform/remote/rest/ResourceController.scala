@@ -30,9 +30,7 @@
 package org.aphreet.c3.platform.remote.rest
 
 import org.aphreet.c3.platform.access.AccessManager
-import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
-import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.remote.rest.response._
 
@@ -61,20 +59,12 @@ class ResourceController extends AbstractController with ServletContextAware{
 
   var accessManager:AccessManager = _
 
-  var authManager:AuthenticationManager = _
-
   var servletContext:ServletContext = _
 
   @Autowired
   def setAccessManager(manager:AccessManager) = {
     accessManager = manager
   }
-
-  @Autowired
-  def setAuthenticationManager(manager:AuthenticationManager) = {
-    authManager = manager
-  }
-
 
   def setServletContext(context:ServletContext) = {
     servletContext = context
@@ -122,7 +112,9 @@ class ResourceController extends AbstractController with ServletContextAware{
 
     val currentUser = getCurrentUser(authHeader, request.getRequestURI)
 
-    sendResourceData(address, -1, currentUser, response)
+    val resource = accessManager.get(address)
+
+    sendResourceData(resource, -1, currentUser, response)
   }
 
   @RequestMapping(value =  Array("/{address}/data/{version}"),
@@ -136,43 +128,9 @@ class ResourceController extends AbstractController with ServletContextAware{
 
     val currentUser = getCurrentUser(authHeader, request.getRequestURI)
 
-    sendResourceData(address, version, currentUser, response)
-  }
-
-
-  def sendResourceData(address:String, versionNumber:Int, username:String, resp:HttpServletResponse) = {
-
     val resource = accessManager.get(address)
 
-    val version =
-      if(versionNumber == -1) resource.versions.size
-      else versionNumber
-
-    if(version > 0 && resource.versions.size >= version){
-
-      val resourceVersion = resource.versions(version - 1)
-
-      resp.reset
-      resp.setStatus(HttpServletResponse.SC_OK)
-      resp.setContentLength(resourceVersion.data.length.toInt)
-
-      resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
-        case Some(x) => resp.setContentType(x)
-        case None =>
-      }
-
-      val os = new BufferedOutputStream(resp.getOutputStream)
-
-      try {
-        resourceVersion.data.writeTo(os)
-      } finally {
-        os.close
-        resp.flushBuffer
-      }
-
-    }else{
-      throw new ResourceNotFoundException("Incorrect version number")
-    }
+    sendResourceData(resource, version, currentUser, response)
   }
 
   def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
@@ -311,35 +269,6 @@ class ResourceController extends AbstractController with ServletContextAware{
     }
 
     accessManager.delete(address)
-  }
-
-
-  private def getCurrentUser(authHeader:String, requestUri:String):String = {
-
-    if(authHeader != null){
-      val array = authHeader.split(":", 2)
-      if(array.length == 2){
-
-        val user = authManager.authAccess(array(0), array(1), requestUri)
-        if(user != null){
-          return user.name
-        }else{
-          throw new AuthFailedException("Incorrect key")
-        }
-
-      }else{
-        throw new AuthFailedException("Incorrect header format")
-      }
-    }else{
-
-      val anonymous = authManager.get("anonymous")
-
-      if(anonymous != null && anonymous.enabled)
-        return anonymous.name
-      else
-        throw new AuthFailedException("Anonymous is disabled")
-
-    }
   }
 
   def createDiskFileItemFactory: DiskFileItemFactory = {

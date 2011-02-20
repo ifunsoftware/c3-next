@@ -11,6 +11,7 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.storage" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.storage.file" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.search" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.filesystem" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote.gen" version="[1.0.0, 2.0.0)"/>
 

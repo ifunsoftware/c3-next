@@ -37,6 +37,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver
 import org.aphreet.c3.platform.remote.rest.response._
 import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
 import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement}
+import org.aphreet.c3.platform.filesystem.NodeRef
 
 class XStreamFactory{
 
@@ -56,11 +57,14 @@ class XStreamFactory{
     xStream.alias("resource", classOf[Resource]);
     xStream.alias("version", classOf[ResourceVersion])
     xStream.alias("p:response", classOf[ErrorResult])
-    xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("p:response", classOf[ResourceResult])
     xStream.alias("p:response", classOf[SearchResult])
     xStream.alias("p:response", classOf[UploadResult])
+    xStream.alias("p:response", classOf[DirectoryResult])
+    xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("info", classOf[ResultInfo])
+
+    xStream.alias("node", classOf[NodeRef])
 
     xStream.alias("fragment", classOf[SearchResultFragment])
 
@@ -83,6 +87,10 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[ResultInfo], "status")
     xStream.useAttributeFor(classOf[ResourceAddress], "address")
     xStream.useAttributeFor(classOf[ResourceAddress], "version")
+
+    xStream.useAttributeFor(classOf[NodeRef], "address")
+    xStream.useAttributeFor(classOf[NodeRef], "leaf")
+    xStream.useAttributeFor(classOf[NodeRef], "name")
 
 
 

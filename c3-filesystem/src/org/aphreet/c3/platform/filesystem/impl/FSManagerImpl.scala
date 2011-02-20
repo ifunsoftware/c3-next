@@ -40,7 +40,7 @@ import org.aphreet.c3.platform.filesystem._
 import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
 
-@Component
+@Component("fsManager")
 class FSManagerImpl extends FSManager{
 
   val log = LogFactory getLog getClass
@@ -169,7 +169,7 @@ class FSManagerImpl extends FSManager{
 
       val newAddress = accessManager.add(node.resource)
 
-      directory.addChild(NodeRef(name, newAddress))
+      directory.addChild(NodeRef(name, newAddress, !node.isDirectory))
 
       accessManager.update(directory.resource)
 
@@ -200,12 +200,12 @@ class FSManagerImpl extends FSManager{
         throw new FSException("Found file, expected directory")
       }
 
-      val address = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
+      val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
         case Some(a) => a
         case None => throw new FSException("Specified path does not exists")
       }
 
-      val resource = accessManager.get(address)
+      val resource = accessManager.get(nodeRef.address)
 
       resultNode = Node.fromResource(resource)
 

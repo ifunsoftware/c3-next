@@ -54,6 +54,13 @@
 
             <dependency>
                 <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-filesystem</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
                 <artifactId>c3-client</artifactId>
                 <version>${project.version}</version>
             </dependency>

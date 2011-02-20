@@ -28,8 +28,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.filesystem.test
+package org.aphreet.c3.platform.remote.rest
 
-class FileManagerTestCase{
-  
+import org.springframework.stereotype.Controller
+import org.springframework.beans.factory.annotation.Autowired
+import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, RequestMapping}
+import org.aphreet.c3.platform.filesystem.{Directory, FSManager}
+import response.fs.FSDirectory
+import response.{DirectoryResult, Result}
+
+@Controller
+@RequestMapping(Array("/fs"))
+class FSController extends AbstractController{
+
+  val baseUrl = "/rest/fs"
+
+  var filesystemManager:FSManager = _
+
+  @Autowired
+  def setFilesystemManager(manager:FSManager) = {filesystemManager = manager}
+
+  @RequestMapping(method = Array(RequestMethod.GET))
+  def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
+              @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+              request:HttpServletRequest,
+              response:HttpServletResponse){
+    
+    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+
+    val node = filesystemManager.getNode(fsPath)
+
+    if(node.isDirectory){
+      getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
+    }else{
+      sendResourceData(node.resource, -1, getCurrentUser(authHeader, request.getRequestURI), response)
+    }
+  }
 }
