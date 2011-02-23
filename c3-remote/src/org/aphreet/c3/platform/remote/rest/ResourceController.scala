@@ -29,46 +29,18 @@
  */
 package org.aphreet.c3.platform.remote.rest
 
-import org.aphreet.c3.platform.access.AccessManager
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.remote.rest.response._
 
-import org.apache.commons.io.FileCleaningTracker
-import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.fileupload.servlet.{ServletFileUpload, FileCleanerCleanup}
-import org.apache.commons.fileupload.FileItem
-
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
-import org.springframework.beans.factory.annotation.Autowired
-
-import java.util.UUID
-import java.io.{File, BufferedOutputStream}
 
 import javax.servlet.http._
-import javax.servlet.ServletContext
-
-
-import collection.mutable.HashMap
-import org.springframework.web.context.ServletContextAware
 
 @Controller
 @RequestMapping(Array("/resource"))
-class ResourceController extends AbstractController with ServletContextAware{
-
-  var accessManager:AccessManager = _
-
-  var servletContext:ServletContext = _
-
-  @Autowired
-  def setAccessManager(manager:AccessManager) = {
-    accessManager = manager
-  }
-
-  def setServletContext(context:ServletContext) = {
-    servletContext = context
-  }
+class ResourceController extends DataController{
 
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
@@ -191,67 +163,6 @@ class ResourceController extends AbstractController with ServletContextAware{
 
   }
 
-  def executeDataUpload(resource:Resource,
-                        currentUser:String,
-                        request:HttpServletRequest,
-                        response:HttpServletResponse,
-                        processUpload:Function0[Unit]) =
-  {
-
-    if(ServletFileUpload.isMultipartContent(request)){
-
-      val factory = createDiskFileItemFactory
-
-      val upload = new ServletFileUpload(factory)
-
-      val iterator = upload.parseRequest(request).iterator
-
-      val metadata = new HashMap[String, String]
-
-      var data:DataWrapper = null
-      var tmpFile:File = null
-
-      while (iterator.hasNext) {
-        val item = iterator.next.asInstanceOf[FileItem]
-
-        if (item.isFormField){
-          val value = item.getString("UTF-8") //correct string in UTF-16
-          metadata.put(item.getFieldName, value)
-        }else{
-
-          if(data != null){
-            throw new WrongRequestException("Too many data fields")
-          }
-
-          if (item.isInMemory) {
-            data = DataWrapper.wrap(item.get)
-          } else {
-            tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
-            item.write(tmpFile)
-            data = DataWrapper.wrap(tmpFile)
-          }
-        }
-
-      }
-
-      try {
-        val version = new ResourceVersion
-        version.data = data
-
-        resource.metadata ++= metadata
-        resource.addVersion(version)
-
-        processUpload()
-
-      } finally {
-        if (tmpFile != null) tmpFile.delete
-      }
-
-    }else{
-      throw new WrongRequestException("Multipart request expected")
-    }
-  }
-
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.DELETE))
   def deleteResource(@PathVariable address:String,
@@ -269,15 +180,6 @@ class ResourceController extends AbstractController with ServletContextAware{
     }
 
     accessManager.delete(address)
-  }
-
-  def createDiskFileItemFactory: DiskFileItemFactory = {
-    val fileCleaningTacker: FileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(servletContext)
-
-    val factory = new DiskFileItemFactory()
-    factory.setFileCleaningTracker(fileCleaningTacker)
-
-    factory
   }
 
 }

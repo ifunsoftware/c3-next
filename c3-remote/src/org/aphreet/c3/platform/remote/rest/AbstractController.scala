@@ -35,27 +35,16 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
-import org.springframework.web.bind.annotation.{ResponseStatus, RequestHeader, ExceptionHandler}
-import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.{ExceptionHandler}
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
-import java.io.BufferedOutputStream
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.auth.AuthenticationManager
 
 class AbstractController{
-
-  var authManager:AuthenticationManager = _
 
   var writerSelector:ResultWriterSelector = _
 
   @Autowired
   def setResultWriterSelector(selector:ResultWriterSelector) = {
     writerSelector = selector
-  }
-  
-  @Autowired
-  def setAuthenticationManager(manager:AuthenticationManager) = {
-    authManager = manager
   }
 
   @ExceptionHandler(Array(classOf[Exception]))
@@ -94,66 +83,5 @@ class AbstractController{
 
   protected def getResultWriter(expectedType:String):ResultWriter = {
     writerSelector.selectWriterForType(expectedType)
-  }
-
-  def sendResourceData(resource:Resource, versionNumber:Int, username:String, resp:HttpServletResponse) = {
-
-    val version =
-      if(versionNumber == -1) resource.versions.size
-      else versionNumber
-
-    if(version > 0 && resource.versions.size >= version){
-
-      val resourceVersion = resource.versions(version - 1)
-
-      resp.reset
-      resp.setStatus(HttpServletResponse.SC_OK)
-      resp.setContentLength(resourceVersion.data.length.toInt)
-
-      resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
-        case Some(x) => resp.setContentType(x)
-        case None =>
-      }
-
-      val os = new BufferedOutputStream(resp.getOutputStream)
-
-      try {
-        resourceVersion.data.writeTo(os)
-      } finally {
-        os.close
-        resp.flushBuffer
-      }
-
-    }else{
-      throw new ResourceNotFoundException("Incorrect version number")
-    }
-  }
-
-  def getCurrentUser(authHeader:String, requestUri:String):String = {
-
-    if(authHeader != null){
-      val array = authHeader.split(":", 2)
-      if(array.length == 2){
-
-        val user = authManager.authAccess(array(0), array(1), requestUri)
-        if(user != null){
-          return user.name
-        }else{
-          throw new AuthFailedException("Incorrect key")
-        }
-
-      }else{
-        throw new AuthFailedException("Incorrect header format")
-      }
-    }else{
-
-      val anonymous = authManager.get("anonymous")
-
-      if(anonymous != null && anonymous.enabled)
-        return anonymous.name
-      else
-        throw new AuthFailedException("Anonymous is disabled")
-
-    }
   }
 }

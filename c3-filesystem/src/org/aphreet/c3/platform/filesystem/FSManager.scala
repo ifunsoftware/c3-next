@@ -37,8 +37,6 @@ trait FSManager{
 
   def getNode(path:String):Node
 
-  def updateFile(path:String, data:DataWrapper, metadata:Map[String, String])
-
   def deleteNode(path:String)
 
   def createFile(path:String, resource:Resource)

@@ -79,24 +79,6 @@ class FSManagerImpl extends FSManager{
     getFSNode(path)
   }
 
-  def updateFile(path:String, data:DataWrapper, metadata:Map[String, String]) = {
-    val node = getFSNode(path)
-
-    if(node.isDirectory){
-      throw new FSException("Can't update directory")
-    }else{
-
-      val version = new ResourceVersion
-      version.data = data
-
-      node.resource.systemMetadata ++= metadata
-
-      node.resource.addVersion(version)
-
-      accessManager.update(node.resource)
-    }
-  }
-
   def deleteNode(path:String) = {
 
     val components = getPathComponents(path)
