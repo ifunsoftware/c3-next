@@ -41,7 +41,7 @@ trait FSManager{
 
   def deleteNode(path:String)
 
-  def createFile(path:String, name:String, resource:Resource)
+  def createFile(path:String, resource:Resource)
 
-  def createDirectory(path:String, name:String)
+  def createDirectory(path:String)
 }

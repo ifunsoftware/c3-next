@@ -33,10 +33,10 @@ package org.aphreet.c3.platform.remote.rest
 import org.springframework.stereotype.Controller
 import org.springframework.beans.factory.annotation.Autowired
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.filesystem.{Directory, FSManager}
 import response.fs.FSDirectory
 import response.{DirectoryResult, Result}
+import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 
 @Controller
 @RequestMapping(Array("/fs"))
@@ -64,5 +64,19 @@ class FSController extends AbstractController{
     }else{
       sendResourceData(node.resource, -1, getCurrentUser(authHeader, request.getRequestURI), response)
     }
+  }
+
+  @RequestMapping(method = Array(RequestMethod.POST))
+  def makeDir(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+              @RequestParam(value = "directory", required = false) directory:String,
+              request:HttpServletRequest,
+              response:HttpServletResponse){
+
+    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+
+    filesystemManager.createDirectory(fsPath)
+
+    response.setStatus(HttpServletResponse.SC_CREATED)
+
   }
 }

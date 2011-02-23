@@ -48,6 +48,7 @@ import org.aphreet.c3.platform.auth.{ACCESS, MANAGEMENT, UserRole, User}
 @Component
 @Scope("singleton")
 class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
+
   var configManager: PlatformConfigManager = _
 
   def configDir: File = configManager.configDir

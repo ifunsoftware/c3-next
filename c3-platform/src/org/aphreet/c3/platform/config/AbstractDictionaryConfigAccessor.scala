@@ -45,7 +45,6 @@ abstract class AbstractDictionaryConfigAccessor extends DictionaryConfigAccessor
 
   var configDirectory: File = _
 
-
   def configDir: File = configDirectory
 
 

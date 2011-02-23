@@ -126,17 +126,27 @@ class FSManagerImpl extends FSManager{
     accessManager.delete(node.resource.address)
   }
 
-  def createFile(path:String, name:String, resource:Resource) = {
+  def createFile(fullPath:String, resource:Resource) = {
+
+    val pathAndName = splitPath(fullPath)
+
+    val name = pathAndName._1
+    val path = pathAndName._2
 
     if(log.isDebugEnabled){
       log.debug("Creating file " + name + " at path " + path)
     }
 
     addNodeToDirectory(path, name, File.createFile(resource, name))
-    
+
   }
 
-  def createDirectory(path:String, name:String) = {
+  def createDirectory(fullPath:String) = {
+
+    val pathAndName = splitPath(fullPath)
+
+    val name = pathAndName._1
+    val path = pathAndName._2
 
     if(log.isDebugEnabled){
       log.debug("Creating directory " + name + " at path " + path)
@@ -226,7 +236,7 @@ class FSManagerImpl extends FSManager{
   private def getRoot:Directory = {
 
     if(rootAddress == null){
-       createNewRoot
+      createNewRoot
     }
 
     Directory(accessManager.get(rootAddress))
@@ -241,5 +251,19 @@ class FSManagerImpl extends FSManager{
     rootAddress = accessManager.add(directory.resource)
 
     configAccessor.update(_ + ((FSConfigAccessor.ROOT_ADDRESS, rootAddress)))
+  }
+
+  private def splitPath(path:String):(String, String) = {
+
+    val components = getPathComponents(path)
+
+    val name = components.lastOption match{
+      case Some(x) => x
+      case None => throw new FSException("Name is not specified")
+    }
+
+    val parentPath = path.replaceFirst(name + "$", "")
+
+    (parentPath, path)
   }
 }

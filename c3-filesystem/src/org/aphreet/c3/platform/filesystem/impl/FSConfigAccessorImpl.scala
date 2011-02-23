@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -31,13 +31,22 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.aphreet.c3.platform.config.AbstractDictionaryConfigAccessor
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.filesystem.FSConfigAccessor
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.config.{PlatformConfigManager, AbstractDictionaryConfigAccessor}
+import org.aphreet.c3.platform.filesystem.{FSConfigAccessor}
+import java.io.File
 
 @Component
 class FSConfigAccessorImpl extends AbstractDictionaryConfigAccessor with FSConfigAccessor{
 
-   def configFileName: String = "c3-fs-config.json"
+  override def configDir: File = configManager.configDir
+
+  def configFileName: String = "c3-fs-config.json"
+
+  var configManager: PlatformConfigManager = _
+
+  @Autowired
+  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
 }
