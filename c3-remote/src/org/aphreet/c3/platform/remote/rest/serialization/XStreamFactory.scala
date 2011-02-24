@@ -36,6 +36,7 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
 import org.aphreet.c3.platform.remote.rest.response._
 import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
+import fs.FSDirectory
 import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement}
 import org.aphreet.c3.platform.filesystem.NodeRef
 
@@ -91,6 +92,9 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[NodeRef], "address")
     xStream.useAttributeFor(classOf[NodeRef], "leaf")
     xStream.useAttributeFor(classOf[NodeRef], "name")
+
+    xStream.useAttributeFor(classOf[FSDirectory], "name")
+    xStream.useAttributeFor(classOf[FSDirectory], "address")
 
 
 

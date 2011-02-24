@@ -47,6 +47,7 @@ import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
+import response.ResourceResult
 
 class DataController extends AbstractController with ServletContextAware{
 
@@ -129,6 +130,20 @@ class DataController extends AbstractController with ServletContextAware{
         throw new AuthFailedException("Anonymous is disabled")
 
     }
+  }
+
+  def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
+
+    val resource = accessManager.get(address)
+
+    sendMetadata(resource, contentType, username, resp)
+
+  }
+
+  def sendMetadata(resource:Resource, contentType:String, username:String, resp:HttpServletResponse){
+    resp.setStatus(HttpServletResponse.SC_OK)
+
+    writerSelector.selectWriterForType(contentType).writeResponse(new ResourceResult(resource), resp)
   }
 
   def executeDataUpload(resource:Resource,

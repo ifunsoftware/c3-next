@@ -34,6 +34,7 @@ package org.aphreet.c3.platform.filesystem
 import collection.mutable.HashMap
 import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
+import org.apache.commons.logging.LogFactory
 
 abstract class Node(val resource:Resource){
 
@@ -43,6 +44,8 @@ abstract class Node(val resource:Resource){
 
 
 object Node{
+
+  val log = LogFactory.getLog(classOf[Node])
 
   val NODE_NAME_FIELD = "c3.fs.nodename"
 
@@ -97,6 +100,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
   override def isDirectory = true
 
   def getChild(name:String):Option[NodeRef] = {
+
+    Node.log debug children.toString
+
     children.get(name)
   }
 
@@ -119,6 +125,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
   protected def updateResource = {
     val version = new ResourceVersion
     version.data = getData(children)
+    version.persisted = false
     resource.addVersion(version)
   }
 
@@ -173,9 +180,6 @@ object Directory{
 
     resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
-
-    resource.isVersioned = false
-
 
     val directory = Directory(resource)
 

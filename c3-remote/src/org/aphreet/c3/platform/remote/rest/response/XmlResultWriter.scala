@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.remote.rest.response
 
 import com.thoughtworks.xstream.XStream
 import javax.servlet.http.HttpServletResponse
+import java.io.ByteArrayOutputStream
 
 class XmlResultWriter(val stream:XStream) extends ResultWriter{
 
@@ -40,9 +41,16 @@ class XmlResultWriter(val stream:XStream) extends ResultWriter{
     response.setCharacterEncoding("UTF-8")
     response.setContentType("application/xml")
 
-    response.getWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+    val bos = new ByteArrayOutputStream
 
-    stream.toXML(result, response.getWriter)
+    bos.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("UTF-8"))
+    stream.toXML(result, bos)
+
+    val byteArray = bos.toByteArray
+
+    response.setContentLength(byteArray.length)
+    response.getOutputStream.write(byteArray)
+
   }
 
 }

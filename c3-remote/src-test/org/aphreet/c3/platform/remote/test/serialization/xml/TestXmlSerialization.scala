@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
@@ -115,7 +114,7 @@ class TestXmlSerialization extends TestCase{
 
     val xStream = new XStreamFactory().createXMLStream
 
-    val directory = new FSDirectory(Array(NodeRef("name", "address", true), NodeRef("name2", "address2", false)))
+    val directory = new FSDirectory("name", "address", Array(NodeRef("name", "address", true), NodeRef("name2", "address2", false)))
 
     val output = xStream.toXML(new DirectoryResult(directory))
 

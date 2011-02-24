@@ -105,18 +105,6 @@ class ResourceController extends DataController{
     sendResourceData(resource, version, currentUser, response)
   }
 
-  def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
-
-    val resource = accessManager.get(address)
-
-    resp.setStatus(HttpServletResponse.SC_OK)
-
-    writerSelector.selectWriterForType(contentType).writeResponse(new ResourceResult(resource), resp)
-
-  }
-
-  
-
   @RequestMapping(method = Array(RequestMethod.POST))
   def saveResource(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                    @RequestHeader(value = "x-c3-type", required = false) contentType:String,

@@ -112,8 +112,8 @@ class FSManagerImpl extends FSManager{
 
     val pathAndName = splitPath(fullPath)
 
-    val name = pathAndName._1
-    val path = pathAndName._2
+    val path = pathAndName._1
+    val name = pathAndName._2
 
     if(log.isDebugEnabled){
       log.debug("Creating file " + name + " at path " + path)
@@ -127,8 +127,8 @@ class FSManagerImpl extends FSManager{
 
     val pathAndName = splitPath(fullPath)
 
-    val name = pathAndName._1
-    val path = pathAndName._2
+    val path = pathAndName._1
+    val name = pathAndName._2
 
     if(log.isDebugEnabled){
       log.debug("Creating directory " + name + " at path " + path)
@@ -138,7 +138,7 @@ class FSManagerImpl extends FSManager{
 
   }
 
-  private def addNodeToDirectory(path:String, name:String, node:Node){
+  private def addNodeToDirectory(path:String, name:String, newNode:Node){
 
     val node = getFSNode(path)
 
@@ -157,11 +157,11 @@ class FSManagerImpl extends FSManager{
       //refreshing directory instance
       directory = Node.fromResource(accessManager.get(directory.resource.address)).asInstanceOf[Directory]
 
-      node.resource.systemMetadata.put(Node.NODE_PARENT_FIELD, directory.resource.address)
+      newNode.resource.systemMetadata.put(Node.NODE_PARENT_FIELD, directory.resource.address)
 
-      val newAddress = accessManager.add(node.resource)
+      val newAddress = accessManager.add(newNode.resource)
 
-      directory.addChild(NodeRef(name, newAddress, !node.isDirectory))
+      directory.addChild(NodeRef(name, newAddress, !newNode.isDirectory))
 
       accessManager.update(directory.resource)
 
@@ -237,6 +237,10 @@ class FSManagerImpl extends FSManager{
 
   private def splitPath(path:String):(String, String) = {
 
+    if(log.isDebugEnabled){
+      log debug "Splitting path: " + path
+    }
+
     val components = getPathComponents(path)
 
     val name = components.lastOption match{
@@ -246,6 +250,6 @@ class FSManagerImpl extends FSManager{
 
     val parentPath = path.replaceFirst(name + "$", "")
 
-    (parentPath, path)
+    (parentPath, name)
   }
 }

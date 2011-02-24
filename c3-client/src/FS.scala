@@ -1,7 +1,3 @@
-package org.aphreet.c3.platform.remote.rest.response.fs
-
-import org.aphreet.c3.platform.filesystem.{NodeRef, Directory}
-
 /**
  * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
@@ -33,20 +29,9 @@ import org.aphreet.c3.platform.filesystem.{NodeRef, Directory}
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-case class FSDirectory(val name:String, val address:String, val nodes:Array[NodeRef])
+import org.aphreet.c3.platform.client.access.FSClient
 
-object FSDirectory{
+object FS{
 
-  def fromNode(node:Directory):FSDirectory = {
-    val resource = node.resource
-
-    val name = resource.systemMetadata.get("c3.fs.nodename") match{
-      case Some(x) => x
-      case None => ""
-    }
-
-    val address = resource.address
-
-    FSDirectory(name, address, node.getChildren)
-  }
+  def main(args:Array[String]) = new FSClient(args).run
 }

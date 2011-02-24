@@ -40,7 +40,7 @@ import response.{UploadResult, ResourceAddress, DirectoryResult, Result}
 import org.aphreet.c3.platform.resource.Resource
 
 @Controller
-@RequestMapping(Array("/fs"))
+@RequestMapping(Array("/fs/**"))
 class FSController extends DataController{
 
   val baseUrl = "/rest/fs"
@@ -53,17 +53,26 @@ class FSController extends DataController{
   @RequestMapping(method = Array(RequestMethod.GET))
   def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
               @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+              @RequestParam(value = "metadata", required = false) metadata:String,
               request:HttpServletRequest,
               response:HttpServletResponse){
+
+    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
 
     val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
 
     val node = filesystemManager.getNode(fsPath)
 
-    if(node.isDirectory){
-      getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
+    if(metadata == null){
+
+      if(node.isDirectory){
+        getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
+      }else{
+        sendResourceData(node.resource, -1, getCurrentUser(authHeader, request.getRequestURI), response)
+      }
+
     }else{
-      sendResourceData(node.resource, -1, getCurrentUser(authHeader, request.getRequestURI), response)
+      sendMetadata(node.resource, contentType, currentUser, response)
     }
   }
 
@@ -99,8 +108,8 @@ class FSController extends DataController{
 
   @RequestMapping(method = Array(RequestMethod.PUT))
   def updateNode(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
-               request:HttpServletRequest,
-               response:HttpServletResponse){
+                 request:HttpServletRequest,
+                 response:HttpServletResponse){
 
     val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
 
@@ -123,8 +132,8 @@ class FSController extends DataController{
 
   @RequestMapping(method = Array(RequestMethod.DELETE))
   def deleteNode(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
-               request:HttpServletRequest,
-               response:HttpServletResponse){
+                 request:HttpServletRequest,
+                 response:HttpServletResponse){
 
     val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
 

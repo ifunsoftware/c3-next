@@ -213,7 +213,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
 
       if(storage.mode.allowWrite)
-        storage.lock(ra)
+        storage.unlock(ra)
       else
         throw new StorageIsNotWritableException(storage.id)
 
