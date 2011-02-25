@@ -32,9 +32,11 @@
 package org.aphreet.c3.platform.client.access.http
 
 import com.twmacinta.util.MD5
-import java.io.FileOutputStream
 import org.apache.commons.httpclient.{HttpStatus, Header, HttpMethodBase, HttpClient}
-import org.apache.commons.httpclient.methods.{PostMethod, GetMethod}
+import org.apache.commons.httpclient.methods.multipart._
+import java.io.{InputStream, File, FileOutputStream}
+import xml.{XML, Elem}
+import org.apache.commons.httpclient.methods.{DeleteMethod, PostMethod, GetMethod}
 
 class C3FileHttpAccessor(val host:String, val username:String, val key:String){
 
@@ -62,7 +64,61 @@ class C3FileHttpAccessor(val host:String, val username:String, val key:String){
     }finally{
       getMethod.releaseConnection();
     }
+  }
 
+  def getNodeDataAsXml(path:String):Elem = {
+
+    val getMethod = new GetMethod(url + path)
+
+    addAuthHeader(getMethod, requestUri + path)
+
+    try{
+      val status = httpClient.executeMethod(getMethod)
+      status match {
+        case HttpStatus.SC_OK => {
+         XML.load(getMethod.getResponseBodyAsStream)
+        }
+        case _ =>
+          println(getMethod.getResponseBodyAsString)
+          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+      }
+    }finally{
+      getMethod.releaseConnection();
+    }
+  }
+
+  def uploadFile(path:String, file:File) = {
+    writeData(path, new FilePart("data", new FilePartSource(file)), Map[String, String]())
+  }
+
+  private def writeData(path:String, filePart:FilePart, metadata:Map[String, String]) = {
+    val postMethod = new PostMethod(url + path)
+
+    addAuthHeader(postMethod, requestUri)
+
+    val parts:Array[Part] = (filePart ::
+            metadata.map(e => {
+              val part = new StringPart(e._1, e._2, "UTF-16")
+              part.setCharSet("UTF-8")
+              part
+            }).toList).toArray
+
+    val entity = new MultipartRequestEntity(parts, postMethod.getParams)
+
+    postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
+
+    try{
+      val status = httpClient.executeMethod(postMethod)
+      status match {
+        case HttpStatus.SC_CREATED => {
+        }
+        case _ =>
+          println(postMethod.getResponseBodyAsString)
+          throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
+      }
+    }finally {
+      postMethod.releaseConnection
+    }
   }
 
   def makeDir(path:String) = {
@@ -100,6 +156,44 @@ class C3FileHttpAccessor(val host:String, val username:String, val key:String){
       }
     }finally{
       getMethod.releaseConnection();
+    }
+  }
+
+  def getNodeMetadataAsXML(path:String):Elem = {
+    val getMethod = new GetMethod(url + path + "?metadata")
+
+    addAuthHeader(getMethod, requestUri + path)
+
+    try{
+      val status = httpClient.executeMethod(getMethod)
+      status match {
+        case HttpStatus.SC_OK => {
+          XML.load(getMethod.getResponseBodyAsStream)
+        }
+        case _ =>
+          println(getMethod.getResponseBodyAsString)
+          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+      }
+    }finally{
+      getMethod.releaseConnection();
+    }
+  }
+
+  def delete(path:String) = {
+    val deleteMethod = new DeleteMethod(url + path)
+
+    addAuthHeader(deleteMethod, requestUri + path)
+
+    try{
+      val status = httpClient.executeMethod(deleteMethod)
+      status match {
+        case HttpStatus.SC_OK => {
+
+        }
+        case _ =>
+          println(deleteMethod.getResponseBodyAsString)
+          throw new Exception(("Failed to delete file, code " + status).asInstanceOf[String])
+      }
     }
   }
 

@@ -32,9 +32,10 @@
 package org.aphreet.c3.platform.client.access
 
 import http.{C3FileHttpAccessor, C3HttpAccessor}
-import java.io.{InputStreamReader, BufferedReader}
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
+import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
+import xml.XML
 
 class FSClient(override val args:Array[String]) extends CLI(args){
 
@@ -85,6 +86,10 @@ class FSClient(override val args:Array[String]) extends CLI(args){
         case "ls" => ls(list.tail)
         case "mkdir" => mkdir(list.tail)
         case "info"  => info(list.tail)
+        case "upload" => upload(list.tail)
+        case "download" => download(list.tail)
+        case "cd" => cd(list.tail)
+        case "rm" => rm(list.tail)
         case "exit" => System.exit(0)
 
         case _ => println("Unknown command.")
@@ -95,13 +100,50 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     }
   }
 
+  def rm(args:List[String]) = {
+    val directory = workDir(args)
+    fileAccessor.delete(directory)
+  }
 
+  def ls(args:List[String]) : Unit = {
 
-  def ls(args:List[String]) = {
+    val directory = workDir(args)
 
-    val directoryData = new String(fileAccessor.getNodeData(workDir(args)), "UTF-8")
+    if(!isDirectory(directory)){
+      println(directory + " is not a directory")
+      return Unit
+    }
 
-    println(directoryData)
+    val directoryData = fileAccessor.getNodeDataAsXml(directory)
+
+    val nodes = ((directoryData \\ "directory")(0) \\ "nodes")(0) \\ "node"
+
+    for(node <- nodes){
+      val name = (node \ "@name") text
+      val isFile = if((((node \ "@leaf") text) toBoolean)){
+        "f"
+      }else{
+        "d"
+      }
+      println(isFile + " " + name)
+    }
+  }
+
+  def cd(args:List[String]) : Unit = {
+
+    val directory = workDir(args)
+
+    if(isDirectory(directory)){
+      currentDir = directory
+
+      if(!currentDir.endsWith("/")){
+        currentDir = currentDir + "/"
+      }
+
+    }else{
+      println("can't cd, specified path is not a directory")
+    }
+
   }
 
   def mkdir(args:List[String]) = {
@@ -109,9 +151,59 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     fileAccessor.makeDir(workDir(args))
   }
 
+  def upload(args:List[String]) = {
+
+    val directory = workDir(args)
+    val fileToUpload = new File(args.tail.head)
+
+    println(fileToUpload.getAbsolutePath)
+
+    fileAccessor.uploadFile(directory, fileToUpload)
+  }
+
+  def download(args:List[String]):Unit = {
+
+    val directory = workDir(args)
+
+    //if(isDirectory(directory)){
+    //  println(directory + " is not a file")
+    //  return Unit
+    //}
+
+    args.tail.headOption match{
+      case Some(x) =>
+
+        val fos = new FileOutputStream(new File(x))
+        fos.write(fileAccessor.getNodeData(directory))
+        fos.close
+
+      case None => val directoryData = new String(fileAccessor.getNodeData(directory), "UTF-8")
+
+      println(directoryData)
+    }
+
+  }
+
   def info(args:List[String]) = {
     val metadata = fileAccessor.getNodeMetadata(workDir(args))
     println(metadata)
+  }
+
+  def isDirectory(nodePath:String):Boolean = {
+
+    val xml = fileAccessor.getNodeMetadataAsXML(nodePath)
+
+    val mdElements = ((xml \\ "resource")(0) \\ "systemMetadata")(0) \\ "element"
+
+    for(element <- mdElements){
+      if(((element \ "@key") text) == "c3.fs.nodetype"){
+        val nodeType = (element \\ "value")(0) text
+
+        return nodeType == "directory"
+      }
+    }
+
+    throw new RuntimeException("Failed to find node type")
   }
 
   def workDir(args:List[String]):String = {
