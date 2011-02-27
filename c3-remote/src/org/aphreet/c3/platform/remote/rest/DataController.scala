@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -71,7 +71,7 @@ class DataController extends AbstractController with ServletContextAware{
     servletContext = context
   }
 
-  def sendResourceData(resource:Resource, versionNumber:Int, username:String, resp:HttpServletResponse) = {
+  protected def sendResourceData(resource:Resource, versionNumber:Int, username:String, resp:HttpServletResponse) = {
 
     val version =
       if(versionNumber == -1) resource.versions.size
@@ -104,7 +104,11 @@ class DataController extends AbstractController with ServletContextAware{
     }
   }
 
-  def getCurrentUser(authHeader:String, requestUri:String):String = {
+  protected def getCurrentUser(request:HttpServletRequest):String = {
+
+    val requestUri= request.getRequestURI
+
+    val authHeader = request.getHeader("x-c3-auth")
 
     if(authHeader != null){
       val array = authHeader.split(":", 2)
@@ -132,7 +136,7 @@ class DataController extends AbstractController with ServletContextAware{
     }
   }
 
-  def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
+  protected def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
 
     val resource = accessManager.get(address)
 
@@ -140,17 +144,17 @@ class DataController extends AbstractController with ServletContextAware{
 
   }
 
-  def sendMetadata(resource:Resource, contentType:String, username:String, resp:HttpServletResponse){
+  protected def sendMetadata(resource:Resource, contentType:String, username:String, resp:HttpServletResponse){
     resp.setStatus(HttpServletResponse.SC_OK)
 
     writerSelector.selectWriterForType(contentType).writeResponse(new ResourceResult(resource), resp)
   }
 
-  def executeDataUpload(resource:Resource,
-                        currentUser:String,
-                        request:HttpServletRequest,
-                        response:HttpServletResponse,
-                        processUpload:Function0[Unit]) =
+  protected def executeDataUpload(resource:Resource,
+                                  currentUser:String,
+                                  request:HttpServletRequest,
+                                  response:HttpServletResponse,
+                                  processUpload:Function0[Unit]) =
   {
 
     if(ServletFileUpload.isMultipartContent(request)){
@@ -207,7 +211,7 @@ class DataController extends AbstractController with ServletContextAware{
     }
   }
 
-  def createDiskFileItemFactory: DiskFileItemFactory = {
+  protected def createDiskFileItemFactory: DiskFileItemFactory = {
     val fileCleaningTacker: FileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(servletContext)
 
     val factory = new DiskFileItemFactory()

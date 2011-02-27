@@ -36,6 +36,8 @@ import org.aphreet.c3.platform.search.SearchResultElement
 
 class Result(val info:ResultInfo){
 
+  def this() = this(new ResultInfo("1.0", "OK"))
+
   val namespace = "http://c3.aphreet.org/rest/1.0"
   val schemeLocation = namespace + " http://c3-system.googlecode.com/files/rest.xsd"
   val xsiScheme = "http://www.w3.org/2001/XMLSchema-instance"

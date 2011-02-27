@@ -182,6 +182,21 @@ class FSManagerImpl extends FSManager{
 
     var resultNode:Node = getRoot
 
+    if(pathComponents.size > 0){
+
+      if(resultNode.isDirectory){
+        resultNode.asInstanceOf[Directory].getChild(pathComponents(0)) match{
+          case Some(a) =>
+          case None => {
+            log debug "Creating first-level directory: " + pathComponents(0)
+            //creating first-level directory if does not exists
+            createDirectory("/" + pathComponents(0))
+            resultNode = getRoot
+          }
+        }
+      }
+    }
+
     for(directoryName <- pathComponents){
 
       if(log.isTraceEnabled){

@@ -45,12 +45,11 @@ class ResourceController extends DataController{
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
   def getResource(@PathVariable address:String,
-                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val showSystem = request.getParameter("system") != null
 
@@ -61,13 +60,12 @@ class ResourceController extends DataController{
   @RequestMapping(value =  Array("/{address}/metadata"),
                   method = Array(RequestMethod.GET))
   def getResourceMetadata(@PathVariable address:String,
-                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val showSystem = request.getParameter("system") != null
 
@@ -77,12 +75,11 @@ class ResourceController extends DataController{
   @RequestMapping(value =  Array("/{address}/data"),
                   method = Array(RequestMethod.GET))
   def getResourceData(@PathVariable address:String,
-                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 
@@ -93,12 +90,11 @@ class ResourceController extends DataController{
                   method = Array(RequestMethod.GET))
   def getResourceDataVersion(@PathVariable("address") address:String,
                   @PathVariable("version") version:Int,
-                  @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                   request:HttpServletRequest,
                   response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 
@@ -106,13 +102,12 @@ class ResourceController extends DataController{
   }
 
   @RequestMapping(method = Array(RequestMethod.POST))
-  def saveResource(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
-                   @RequestHeader(value = "x-c3-type", required = false) contentType:String,
+  def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                    request:HttpServletRequest,
                    response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val resource = new Resource
 
@@ -127,13 +122,12 @@ class ResourceController extends DataController{
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.PUT))
   def updateResource(@PathVariable address:String,
-                     @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) =
 
   {
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 
@@ -154,11 +148,10 @@ class ResourceController extends DataController{
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.DELETE))
   def deleteResource(@PathVariable address:String,
-                     @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) = {
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 

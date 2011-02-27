@@ -57,6 +57,7 @@ class XStreamFactory{
 
     xStream.alias("resource", classOf[Resource]);
     xStream.alias("version", classOf[ResourceVersion])
+    xStream.alias("p:response", classOf[Result])
     xStream.alias("p:response", classOf[ErrorResult])
     xStream.alias("p:response", classOf[ResourceResult])
     xStream.alias("p:response", classOf[SearchResult])

@@ -36,8 +36,8 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.filesystem.{Directory, FSManager}
 import response.fs.FSDirectory
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
-import response.{UploadResult, ResourceAddress, DirectoryResult, Result}
 import org.aphreet.c3.platform.resource.Resource
+import response.{Result, DirectoryResult}
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -52,14 +52,13 @@ class FSController extends DataController{
 
   @RequestMapping(method = Array(RequestMethod.GET))
   def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-              @RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
               @RequestParam(value = "metadata", required = false) metadata:String,
               request:HttpServletRequest,
               response:HttpServletResponse){
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
-    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+    val fsPath = getFilesystemPath(request)
 
     val node = filesystemManager.getNode(fsPath)
 
@@ -68,7 +67,7 @@ class FSController extends DataController{
       if(node.isDirectory){
         getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
       }else{
-        sendResourceData(node.resource, -1, getCurrentUser(authHeader, request.getRequestURI), response)
+        sendResourceData(node.resource, -1, getCurrentUser(request), response)
       }
 
     }else{
@@ -77,22 +76,22 @@ class FSController extends DataController{
   }
 
   @RequestMapping(method = Array(RequestMethod.POST))
-  def makeNode(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+  def makeNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                @RequestHeader(value = "x-c3-nodetype", required = false) nodetype:String,
                request:HttpServletRequest,
                response:HttpServletResponse){
 
 
-    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+    val fsPath = getFilesystemPath(request)
 
     if(nodetype == "directory"){
 
       filesystemManager.createDirectory(fsPath)
 
-      response.setStatus(HttpServletResponse.SC_CREATED)
+      reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
     }else{
 
-      val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+      val currentUser = getCurrentUser(request)
 
       val resource = new Resource
 
@@ -101,17 +100,17 @@ class FSController extends DataController{
 
         filesystemManager.createFile(fsPath, resource)
 
-        response.setStatus(HttpServletResponse.SC_CREATED)
+        reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
       })
     }
   }
 
   @RequestMapping(method = Array(RequestMethod.PUT))
-  def updateNode(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+  def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
-    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+    val fsPath = getFilesystemPath(request)
 
     val node = filesystemManager.getNode(fsPath)
 
@@ -121,24 +120,35 @@ class FSController extends DataController{
 
     val resource = node.resource
 
-    val currentUser = getCurrentUser(authHeader, request.getRequestURI)
+    val currentUser = getCurrentUser(request)
 
     executeDataUpload(resource, currentUser, request, response, () => {
       val ra = accessManager.update(resource)
-      response.setStatus(HttpServletResponse.SC_OK)
+      reportSuccess(HttpServletResponse.SC_OK, contentType, response)
     })
 
   }
 
   @RequestMapping(method = Array(RequestMethod.DELETE))
-  def deleteNode(@RequestHeader(value = "x-c3-auth", required = false) authHeader:String,
+  def deleteNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
-    val fsPath = request.getRequestURI.replaceFirst(baseUrl, "")
+    val fsPath = getFilesystemPath(request)
 
-    val node = filesystemManager.deleteNode(fsPath)
+    filesystemManager.deleteNode(fsPath)
+
+    reportSuccess(HttpServletResponse.SC_OK, contentType, response)
   }
 
+  private def reportSuccess(code:Int, contentType:String, response:HttpServletResponse){
+    response.setStatus(code)
+    getResultWriter(contentType).writeResponse(new Result, response)
+  }
 
+  private def getFilesystemPath(request:HttpServletRequest):String = {
+    val currentUser = getCurrentUser(request)
+
+    "/" + currentUser + request.getRequestURI.replaceFirst(baseUrl, "")
+  }
 }

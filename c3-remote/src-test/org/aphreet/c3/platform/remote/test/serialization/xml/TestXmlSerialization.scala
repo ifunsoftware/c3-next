@@ -85,7 +85,7 @@ class TestXmlSerialization extends TestCase{
   def testSearch{
     val entry = SearchResultElement("address", 0.12f,
       Array(SearchResultFragment("content", Array("qwe", "qweqwe", "qwewqe")),
-            SearchResultFragment("name", Array("sdfsdf"))))
+        SearchResultFragment("name", Array("sdfsdf"))))
 
     val result = Array(entry)
 
@@ -121,7 +121,17 @@ class TestXmlSerialization extends TestCase{
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 
     verifyXml(xml)
+  }
 
+  def testEmpty{
+
+    val xStream = new XStreamFactory().createXMLStream
+
+    val output = xStream.toXML(new Result)
+
+    val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
+
+    verifyXml(xml)
   }
 
   def verifyXml(xml:String){
