@@ -44,62 +44,46 @@ class ResourceController extends DataController{
 
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
-  def getResource(@PathVariable address:String,
-                  @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                  request:HttpServletRequest,
-                  response:HttpServletResponse) =
-  {
-    val currentUser = getCurrentUser(request)
-
-    val showSystem = request.getParameter("system") != null
-
-    sendResourceMetadata(address, contentType, currentUser, showSystem, response)
-  }
-
-
-  @RequestMapping(value =  Array("/{address}/metadata"),
-                  method = Array(RequestMethod.GET))
-  def getResourceMetadata(@PathVariable address:String,
-                  @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                  request:HttpServletRequest,
-                  response:HttpServletResponse) =
-  {
-
-    val currentUser = getCurrentUser(request)
-
-    val showSystem = request.getParameter("system") != null
-
-    sendResourceMetadata(address, contentType, currentUser, showSystem, response)
-  }
-
-  @RequestMapping(value =  Array("/{address}/data"),
-                  method = Array(RequestMethod.GET))
   def getResourceData(@PathVariable address:String,
-                  request:HttpServletRequest,
-                  response:HttpServletResponse) =
+                      @RequestParam(value = "metadata", required = false) metadata:String,
+                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
+                      request:HttpServletRequest,
+                      response:HttpServletResponse) =
   {
 
     val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 
-    sendResourceData(resource, -1, currentUser, response)
+    if(metadata != null){
+      sendMetadata(resource, contentType, currentUser, response)
+    }else{
+      sendResourceData(resource, -1, currentUser, response)
+    }
   }
 
-  @RequestMapping(value =  Array("/{address}/data/{version}"),
+  @RequestMapping(value =  Array("/{address}/{version}"),
                   method = Array(RequestMethod.GET))
   def getResourceDataVersion(@PathVariable("address") address:String,
-                  @PathVariable("version") version:Int,
-                  request:HttpServletRequest,
-                  response:HttpServletResponse) =
+                             @PathVariable("version") version:Int,
+                             @RequestParam(value = "metadata", required = false) metadata:String,
+                             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
+                             request:HttpServletRequest,
+                             response:HttpServletResponse) =
   {
 
     val currentUser = getCurrentUser(request)
 
     val resource = accessManager.get(address)
 
-    sendResourceData(resource, version, currentUser, response)
+    if(metadata != null){
+      sendMetadata(resource, contentType, currentUser, response)
+    }else{
+      sendResourceData(resource, version, currentUser, response)
+    }
   }
+
+
 
   @RequestMapping(method = Array(RequestMethod.POST))
   def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
@@ -115,7 +99,7 @@ class ResourceController extends DataController{
       resource.systemMetadata.put(Resource.MD_USER, currentUser)
       val ra = accessManager.add(resource)
       response.setStatus(HttpServletResponse.SC_CREATED)
-      writerSelector.selectWriterForType(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
+      getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
     })
 
   }
@@ -140,7 +124,7 @@ class ResourceController extends DataController{
 
     executeDataUpload(resource, currentUser, request, response, () => {
       val ra = accessManager.update(resource)
-      writerSelector.selectWriterForType(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
+      getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
     })
 
   }
@@ -148,6 +132,7 @@ class ResourceController extends DataController{
 
   @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.DELETE))
   def deleteResource(@PathVariable address:String,
+                     @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) = {
 
@@ -161,6 +146,8 @@ class ResourceController extends DataController{
     }
 
     accessManager.delete(address)
+    
+    getResultWriter(contentType).writeResponse(new Result, response)
   }
 
 }

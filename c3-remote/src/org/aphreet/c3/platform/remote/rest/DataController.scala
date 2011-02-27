@@ -147,7 +147,7 @@ class DataController extends AbstractController with ServletContextAware{
   protected def sendMetadata(resource:Resource, contentType:String, username:String, resp:HttpServletResponse){
     resp.setStatus(HttpServletResponse.SC_OK)
 
-    writerSelector.selectWriterForType(contentType).writeResponse(new ResourceResult(resource), resp)
+    getResultWriter(contentType).writeResponse(new ResourceResult(resource), resp)
   }
 
   protected def executeDataUpload(resource:Resource,
@@ -157,7 +157,7 @@ class DataController extends AbstractController with ServletContextAware{
                                   processUpload:Function0[Unit]) =
   {
 
-    if(ServletFileUpload.isMultipartContent(request)){
+    if(isMultipartRequest(request)){
 
       val factory = createDiskFileItemFactory
 
@@ -194,11 +194,14 @@ class DataController extends AbstractController with ServletContextAware{
       }
 
       try {
-        val version = new ResourceVersion
-        version.data = data
+        if(data != null){
+          val version = new ResourceVersion
+          version.data = data
+          resource.addVersion(version)
+        }
 
         resource.metadata ++= metadata
-        resource.addVersion(version)
+
 
         processUpload()
 
@@ -218,5 +221,17 @@ class DataController extends AbstractController with ServletContextAware{
     factory.setFileCleaningTracker(fileCleaningTacker)
 
     factory
+  }
+
+  private def isMultipartRequest(request:HttpServletRequest):Boolean = {
+
+    val contentType = request.getContentType
+    if(contentType != null){
+      if(contentType.toLowerCase.startsWith("multipart/")){
+        return true
+      }
+    }
+
+    return false
   }
 }

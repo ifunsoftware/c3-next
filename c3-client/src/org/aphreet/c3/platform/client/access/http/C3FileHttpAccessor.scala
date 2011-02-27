@@ -36,7 +36,7 @@ import org.apache.commons.httpclient.{HttpStatus, Header, HttpMethodBase, HttpCl
 import org.apache.commons.httpclient.methods.multipart._
 import java.io.{InputStream, File, FileOutputStream}
 import xml.{XML, Elem}
-import org.apache.commons.httpclient.methods.{DeleteMethod, PostMethod, GetMethod}
+import org.apache.commons.httpclient.methods.{PutMethod, DeleteMethod, PostMethod, GetMethod}
 
 class C3FileHttpAccessor(val host:String, val username:String, val key:String){
 
@@ -91,19 +91,41 @@ class C3FileHttpAccessor(val host:String, val username:String, val key:String){
     writeData(path, new FilePart("data", new FilePartSource(file)), Map[String, String]())
   }
 
+  def updateFile(path:String, file:File, metadata:Map[String, String]) = {
+
+    val putMethod = new PutMethod(url + path)
+
+    addAuthHeader(putMethod, requestUri + path)
+
+
+    var partList:List[Part] = metadata.map(e => new StringPart(e._1, e._2, "UTF-8")).toList
+
+    if(file != null){
+      partList = new FilePart("data", new FilePartSource(file)) :: partList
+    }
+
+    putMethod.setRequestEntity(new MultipartRequestEntity(partList.toArray, putMethod.getParams))
+
+    try{
+      val status = httpClient.executeMethod(putMethod)
+      status match {
+        case HttpStatus.SC_OK =>
+        case _ =>
+          println(putMethod.getResponseBodyAsString)
+          throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
+      }
+    }finally {
+      putMethod.releaseConnection
+    }
+  }
+
   private def writeData(path:String, filePart:FilePart, metadata:Map[String, String]) = {
     val postMethod = new PostMethod(url + path)
 
     addAuthHeader(postMethod, requestUri)
 
     val parts:Array[Part] = (filePart ::
-            metadata.map(e => {
-              val part = new StringPart(e._1, e._2, "UTF-16")
-              part.setCharSet("UTF-8")
-              part
-            }).toList).toArray
-
-    val entity = new MultipartRequestEntity(parts, postMethod.getParams)
+            metadata.map(e => new StringPart(e._1, e._2, "UTF-8")).toList).toArray
 
     postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
 

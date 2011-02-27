@@ -178,6 +178,8 @@ object Directory{
       resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
     }
 
+    resource.systemMetadata.put("c3.skip.index", "true")
+
     resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
 

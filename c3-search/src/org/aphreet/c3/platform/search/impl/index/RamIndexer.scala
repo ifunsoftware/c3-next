@@ -87,11 +87,14 @@ class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfigura
         case IndexMsg(resource) => {
           try {
 
-            indexResource(resource)
-            sender ! ResourceIndexedMsg(resource.address)
-            lastDocumentTime = System.currentTimeMillis
-            if (writer.numDocs > maxDocsCount) {
-              createNewWriter
+            if(shouldIndexResource(resource)){
+
+              indexResource(resource)
+              sender ! ResourceIndexedMsg(resource.address)
+              lastDocumentTime = System.currentTimeMillis
+              if (writer.numDocs > maxDocsCount) {
+                createNewWriter
+              }
             }
           } catch {
             case e => log.warn(num + ": Failed to index resource", e)
@@ -142,7 +145,7 @@ class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfigura
     val metadata = Map[String, String]() ++ resource.metadata
     val language = getLanguage(metadata, extractedMeta)
 
-    
+
     val resourceHandler = new ResourceHandler(documentBuilderFactory, resource, metadata, extractedMeta, language)
 
     val document = resourceHandler.document
@@ -165,7 +168,14 @@ class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfigura
       languageGuesser.guessLanguage(new StringReader(str))
     }else{
       null
-    } 
+    }
+  }
+
+  def shouldIndexResource(resource:Resource):Boolean = {
+    resource.systemMetadata.get("c3.skip.index") match{
+      case Some(x) => false
+      case None => true
+    }
   }
 }
 

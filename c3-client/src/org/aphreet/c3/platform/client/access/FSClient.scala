@@ -36,6 +36,7 @@ import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
 import xml.XML
+import java.net.URLEncoder
 
 class FSClient(override val args:Array[String]) extends CLI(args){
 
@@ -90,6 +91,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
         case "download" => download(list.tail)
         case "cd" => cd(list.tail)
         case "rm" => rm(list.tail)
+        case "setmd" => setmd(list.tail)
         case "exit" => System.exit(0)
 
         case _ => println("Unknown command.")
@@ -98,6 +100,16 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
       print("C3:" + currentDir + "$")
     }
+  }
+
+  def setmd(args:List[String]) = {
+    val directory = workDir(args)
+
+    val key = args.tail.head
+    val value = args.tail.tail.head
+
+    fileAccessor.updateFile(directory, null, Map[String, String]((key, value)))
+
   }
 
   def rm(args:List[String]) = {
@@ -164,11 +176,6 @@ class FSClient(override val args:Array[String]) extends CLI(args){
   def download(args:List[String]):Unit = {
 
     val directory = workDir(args)
-
-    //if(isDirectory(directory)){
-    //  println(directory + " is not a file")
-    //  return Unit
-    //}
 
     args.tail.headOption match{
       case Some(x) =>
