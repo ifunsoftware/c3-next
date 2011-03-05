@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.test.unit
 
 import org.aphreet.c3.platform.resource.AddressGenerator
 import junit.framework.{Assert, TestCase}
+import java.util.Random
 
 class AddressGeneratorTestCase extends TestCase {
 
@@ -46,4 +47,55 @@ class AddressGeneratorTestCase extends TestCase {
 
     Assert.assertTrue("Address does not end with systemid-storageid", address.endsWith(expectedEnd))
   }
+
+  def testByteOps = {
+    println("Address: " + generateId(6))
+  }
+
+  def testGenerateSystemId = {
+    println("SystemId: " + generateId(2))
+  }
+
+  def testGenerateStorageId = {
+   println("StorageId: " + generateId(1))
+  }
+
+  def generateId(groups:Int):String = {
+    val chars = Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
+                      "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+                      "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
+                      "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
+                      "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
+                      "Y", "Z", "Z", "Z")
+
+    val bytes = Array.ofDim[Byte](groups * 3);
+
+    val random = new Random
+
+    random.nextBytes(bytes)
+
+    val builder = new StringBuilder
+
+
+    for(i <- 0 to groups - 1){
+      val byte0 = bytes(i * 3 + 0)
+      val byte1 = bytes(i * 3 + 1)
+      val byte2 = bytes(i * 3 + 2)
+
+      val res0 = (byte0 >> 2) & 0x3F
+      val res1 = ((byte1 & 0xF0) >> 4) | ((byte0 & 0x03) << 4)
+      val res2 = (byte1 & 0x0F) | ((byte2 & 0xC0) >> 2)
+      val res3 = byte2 & 0x3F
+
+      if(i != 0 && i!=1 && i != 5){
+        builder.append("-")
+      }
+
+      builder.append(chars(res0)).append(chars(res1)).append(chars(res2)).append(chars(res3))
+    }
+
+    builder.toString
+  }
+
 }
