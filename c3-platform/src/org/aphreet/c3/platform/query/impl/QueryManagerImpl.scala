@@ -51,7 +51,7 @@ class QueryManagerImpl extends QueryManager{
 
   @PostConstruct
   def init = {
-    log info "Staring QueryManager"
+    log info "Starting QueryManager"
   }
 
   override
