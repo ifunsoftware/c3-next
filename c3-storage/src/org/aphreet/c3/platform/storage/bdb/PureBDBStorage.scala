@@ -7,7 +7,7 @@ import org.aphreet.c3.platform.storage.StorageParams
 import com.sleepycat.je._
 
 class PureBDBStorage(override val parameters: StorageParams,
-                     override val systemId:Int,
+                     override val systemId:String,
                      override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
 
   override protected def storeData(resource: Resource, tx: Transaction) {

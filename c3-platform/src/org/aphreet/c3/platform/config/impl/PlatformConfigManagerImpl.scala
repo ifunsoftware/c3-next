@@ -45,6 +45,7 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import collection.mutable.{HashMap, HashSet}
 import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
 import org.aphreet.c3.platform.common.{Constants, Path}
+import org.aphreet.c3.platform.resource.IdGenerator
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
@@ -104,7 +105,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
       case None => {
         log info "Generating new system id"
         configAccessor.store(
-          config + ((Constants.C3_SYSTEM_ID, new java.util.Random().nextInt.toString))
+          config + ((Constants.C3_SYSTEM_ID, IdGenerator.generateSystemId))
         )
       }
       case Some(x) => log info "Found systemId " + x

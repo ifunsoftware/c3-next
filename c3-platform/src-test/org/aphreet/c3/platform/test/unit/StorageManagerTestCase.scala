@@ -61,7 +61,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()), 123123)
+      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()), "12341234")
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -73,7 +73,7 @@ class StorageManagerTestCase extends TestCase{
 
     val configManager = createMock(classOf[PlatformConfigManager])
     expect(configManager.getPlatformProperties).andReturn(
-        Map(Constants.C3_SYSTEM_ID -> "123123")
+        Map(Constants.C3_SYSTEM_ID -> "12341234")
         ).atLeastOnce
     replay(configManager)
 

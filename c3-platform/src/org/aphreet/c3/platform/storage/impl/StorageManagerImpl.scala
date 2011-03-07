@@ -14,7 +14,6 @@ import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
-import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import actors.Actor
@@ -22,6 +21,7 @@ import actors.Actor._
 import org.aphreet.c3.platform.common.msg.{DestroyMsg, UnregisterListenerMsg, RegisterListenerMsg}
 import javax.annotation.{PreDestroy, PostConstruct}
 import collection.immutable.HashSet
+import org.aphreet.c3.platform.resource.{IdGenerator, Resource}
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -40,7 +40,7 @@ class StorageManagerImpl extends StorageManager{
 
   var platformConfigManager:PlatformConfigManager = null
 
-  var systemId:Int = 0
+  var systemId:String = null
 
   var listeners = new HashSet[Actor]
 
@@ -62,7 +62,7 @@ class StorageManagerImpl extends StorageManager{
     log info "Starting StorageManager"
 
     platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
-      case Some(value) => systemId = value.toInt
+      case Some(value) => systemId = value
       case None => throw new ConfigurationException("Failed to get systemId from params")
     }
 
@@ -143,7 +143,7 @@ class StorageManagerImpl extends StorageManager{
         var stId = ""
 
         do{
-          stId = Integer.toHexString((math.abs(rand.nextInt) % 0xEFFF) + 0x1000)
+          stId = IdGenerator.generateStorageId
         }while(!isIdCorrect(stId))
 
         log info "Creating new storage with id: " + stId

@@ -21,7 +21,7 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
   def setStorageManager(_manager:StorageManager) = {storageManager = _manager}
   
   
-  def createStorage(params:StorageParams, systemId:Int):Storage = {
+  def createStorage(params:StorageParams, systemId:String):Storage = {
     val storage = createNewStorage(params, systemId)
     
     storage.mode = params.mode
@@ -32,7 +32,7 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
 
   def storages:Set[Storage] = createdStorages
   
-  protected def createNewStorage(params:StorageParams, systemId:Int):Storage
+  protected def createNewStorage(params:StorageParams, systemId:String):Storage
   
   @PostConstruct
   def init = {
