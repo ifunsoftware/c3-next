@@ -1,17 +1,12 @@
-package org.aphreet.c3.platform.remote.test.rest.command
-
-import junit.framework.TestCase
-import junit.framework.Assert._
-import org.aphreet.c3.platform.auth.impl.AuthenticationManagerImpl
-
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -34,14 +29,17 @@ import org.aphreet.c3.platform.auth.impl.AuthenticationManagerImpl
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-class HashTest extends TestCase{
+package org.aphreet.c3.platform.remote.test.domain
 
-  def testMD5{
+import org.aphreet.c3.platform.auth.impl.HashUtil
+import junit.framework.{Assert, TestCase}
 
-    val authManager = new AuthenticationManagerImpl
+class HmacTestCase extends TestCase{
 
-    assertEquals("5f4dcc3b5aa765d61d8327deb882cf99", authManager.md5hash("password"))
-    
+  def testHmac(){
+
+    Assert.assertEquals("505b94fbc3e78dad2287819aeaa1285f8499b3b3d6c2a9cc2a932fe1c8f650a6", HashUtil.hmac("secret", "1234567"))
+
   }
 
 }

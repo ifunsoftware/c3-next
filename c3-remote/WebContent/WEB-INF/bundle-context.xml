@@ -15,6 +15,7 @@
     <context:component-scan base-package="org.aphreet.c3.platform.remote.impl" />
     <context:component-scan base-package="org.aphreet.c3.platform.remote.replication" />
     <context:component-scan base-package="org.aphreet.c3.platform.auth" />
+    <context:component-scan base-package="org.aphreet.c3.platform.domain" />
 
     <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
         <property name="serviceName" value="PlatformRmiManagementEndPoint" />

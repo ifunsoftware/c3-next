@@ -49,7 +49,7 @@ class FSManagerImpl extends FSManager{
 
   var configAccessor:FSConfigAccessor = _
 
-  var rootAddress:String = null
+  var fsRoots:Map[String, String] = Map()
 
   @Autowired
   def setAccessManager(manager:AccessManager) = {accessManager = manager}
@@ -62,24 +62,14 @@ class FSManagerImpl extends FSManager{
 
     log info "Starting Filesystem manager"
 
-    val map = configAccessor.load
-
-    map.get(FSConfigAccessor.ROOT_ADDRESS) match{
-      case Some(address) => {
-        rootAddress = address
-        log info "Found filesystem root address"
-      }
-      case None => {
-        log.warn("Filesystem root address is not found")
-      }
-    }
+    fsRoots = configAccessor.load
   }
 
-  def getNode(path:String):Node = {
-    getFSNode(path)
+  def getNode(domainId:String, path:String):Node = {
+    getFSNode(domainId, path)
   }
 
-  def deleteNode(path:String) = {
+  def deleteNode(domainId:String, path:String) = {
 
     val components = getPathComponents(path)
 
@@ -91,7 +81,7 @@ class FSManagerImpl extends FSManager{
     val parentPath = path.replaceFirst(nodeToDelete + "$", "")
 
 
-    val node = getNode(path)
+    val node = getNode(domainId, path)
 
     if(node.isDirectory){
       val directory = node.asInstanceOf[Directory]
@@ -100,7 +90,7 @@ class FSManagerImpl extends FSManager{
       }
     }
 
-    val parentNode = getNode(parentPath).asInstanceOf[Directory]
+    val parentNode = getNode(domainId, parentPath).asInstanceOf[Directory]
 
     parentNode.removeChild(nodeToDelete)
 
@@ -108,7 +98,7 @@ class FSManagerImpl extends FSManager{
     accessManager.delete(node.resource.address)
   }
 
-  def createFile(fullPath:String, resource:Resource) = {
+  def createFile(domainId:String, fullPath:String, resource:Resource) = {
 
     val pathAndName = splitPath(fullPath)
 
@@ -119,11 +109,11 @@ class FSManagerImpl extends FSManager{
       log.debug("Creating file " + name + " at path " + path)
     }
 
-    addNodeToDirectory(path, name, File.createFile(resource, name))
+    addNodeToDirectory(domainId, path, name, File.createFile(resource, domainId, name))
 
   }
 
-  def createDirectory(fullPath:String) = {
+  def createDirectory(domainId:String, fullPath:String) = {
 
     val pathAndName = splitPath(fullPath)
 
@@ -134,13 +124,13 @@ class FSManagerImpl extends FSManager{
       log.debug("Creating directory " + name + " at path " + path)
     }
 
-    addNodeToDirectory(path, name, Directory.emptyDirectory(name))
+    addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
 
   }
 
-  private def addNodeToDirectory(path:String, name:String, newNode:Node){
+  private def addNodeToDirectory(domainId:String, path:String, name:String, newNode:Node){
 
-    val node = getFSNode(path)
+    val node = getFSNode(domainId, path)
 
     var directory:Directory = null
 
@@ -172,7 +162,7 @@ class FSManagerImpl extends FSManager{
     }
   }
 
-  private def getFSNode(path:String):Node = {
+  private def getFSNode(domainId:String, path:String):Node = {
 
     if(log.isDebugEnabled){
       log.debug("Looking for node for path: " + path)
@@ -180,22 +170,7 @@ class FSManagerImpl extends FSManager{
 
     val pathComponents = getPathComponents(path).filter(_.length > 0)
 
-    var resultNode:Node = getRoot
-
-    if(pathComponents.size > 0){
-
-      if(resultNode.isDirectory){
-        resultNode.asInstanceOf[Directory].getChild(pathComponents(0)) match{
-          case Some(a) =>
-          case None => {
-            log debug "Creating first-level directory: " + pathComponents(0)
-            //creating first-level directory if does not exists
-            createDirectory("/" + pathComponents(0))
-            resultNode = getRoot
-          }
-        }
-      }
-    }
+    var resultNode:Node = getRoot(domainId)
 
     for(directoryName <- pathComponents){
 
@@ -230,24 +205,33 @@ class FSManagerImpl extends FSManager{
     path.split("/")
   }
 
-  private def getRoot:Directory = {
+  private def getRoot(domainId:String):Directory = {
 
-    if(rootAddress == null){
-      createNewRoot
+    val rootAddress = fsRoots.get(domainId) match{
+      case Some(x) =>x
+      case None => createNewRoot(domainId)
     }
 
     Directory(accessManager.get(rootAddress))
   }
 
-  private def createNewRoot = {
+  private def createNewRoot(domainId:String) = {
 
-    log info "Creating root directory"
+    log info "Creating root directory for domain: " + domainId
 
-    val directory = Directory.emptyDirectory(null)
+    val directory = Directory.emptyDirectory(domainId, null)
 
-    rootAddress = accessManager.add(directory.resource)
+    val rootAddress = accessManager.add(directory.resource)
 
-    configAccessor.update(_ + ((FSConfigAccessor.ROOT_ADDRESS, rootAddress)))
+    this.synchronized{
+      val map:Map[String, String] = fsRoots + ((domainId, rootAddress))
+
+      configAccessor.store(map)
+
+      fsRoots = configAccessor.load
+    }
+
+    rootAddress
   }
 
   private def splitPath(path:String):(String, String) = {

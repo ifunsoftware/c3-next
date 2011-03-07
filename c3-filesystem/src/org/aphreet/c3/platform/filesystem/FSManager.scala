@@ -35,11 +35,11 @@ import org.aphreet.c3.platform.resource.{DataWrapper, Resource}
 
 trait FSManager{
 
-  def getNode(path:String):Node
+  def getNode(domainId:String, path:String):Node
 
-  def deleteNode(path:String)
+  def deleteNode(domainId:String, path:String)
 
-  def createFile(path:String, resource:Resource)
+  def createFile(domainId:String, path:String, resource:Resource)
 
-  def createDirectory(path:String)
+  def createDirectory(domainId:String, path:String)
 }

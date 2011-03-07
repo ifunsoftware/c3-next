@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -28,21 +29,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.auth
+package org.aphreet.c3.platform.domain
 
+abstract sealed class DomainMode(val name:String);
 
-trait AuthenticationManager{
+object DomainMode{
 
-  def auth(username: String, password: String): User
+  def byName(name:String):DomainMode = {
+    name match{
+      case "disabled" => DisabledMode
+      case "readonly" => ReadOnlyMode
+      case "available" => FullMode
+      case _ => throw new IllegalArgumentException("Can't find mode for name: " + name)
+    }
+  }
+}
 
-  def update(username:String, password:String, enabled:Boolean)
+object DisabledMode extends DomainMode("disabled");
+object ReadOnlyMode extends DomainMode("readonly");
+object FullMode extends DomainMode("available");
 
-  def create(username:String, password:String)
+case class Domain(val id:String, var name:String, var key:String, var mode:DomainMode)
 
-  def delete(username:String)
+object Domain{
 
-  def get(username:String):User
-
-  def list:List[User]
-
+  val MD_FIELD = "c3.domain.id"
+  
 }

@@ -33,7 +33,7 @@ package org.aphreet.c3.platform.remote.impl
 import org.aphreet.c3.platform.task.{RUNNING, TaskState, PAUSED, TaskDescription}
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.api.RemoteException
-import org.aphreet.c3.platform.auth.{UserRole, AuthenticationManager}
+import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.storage._
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,6 +47,7 @@ import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil._
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.springframework.web.context.ContextLoader
+import org.aphreet.c3.platform.domain.DomainManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -57,6 +58,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _authenticationManager:AuthenticationManager = _
 
   private var _replicationManager:ReplicationManager = _
+
+  private var _domainManager:DomainManager = _
 
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) = {
@@ -71,6 +74,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setReplicationManager(manager:ReplicationManager) = {
     _replicationManager = manager
+  }
+
+  @Autowired
+  private def setDomainManager(manager:DomainManager) = {
+    _domainManager = manager
   }
 
   private def managementEndpoint:PlatformManagementEndpoint = {
@@ -92,6 +100,13 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       _replicationManager = ContextLoader.getCurrentWebApplicationContext.getBean("replicationManager", classOf[ReplicationManager])
     }
     _replicationManager
+  }
+
+  private def domainManager:DomainManager = {
+    if(_domainManager == null){
+      _domainManager = ContextLoader.getCurrentWebApplicationContext.getBean("domainManager", classOf[DomainManager])
+    }
+    _domainManager
   }
 
   def removeStorage(id:String) =
@@ -126,9 +141,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
 
   def createStorage(stType:String, path:String) =
-   try{
-     managementEndpoint.createStorage(stType, path)
-   }catch{
+    try{
+      managementEndpoint.createStorage(stType, path)
+    }catch{
       case e => {
         e.printStackTrace
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
@@ -146,7 +161,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
 
   def setStorageMode(id:String, mode:String) =
-   try{
+    try{
       val storageMode = mode match {
         case "RW" => RW(STORAGE_MODE_USER)
         case "RO" => RO(STORAGE_MODE_USER)
@@ -175,7 +190,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def platformProperties:Array[Pair] =
     try{
       (for(e <- asMap(managementEndpoint.getPlatformProperties))
-        yield new Pair(e._1, e._2)).toSeq.toArray
+      yield new Pair(e._1, e._2)).toSeq.toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -224,7 +239,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listTypeMappings:Array[TypeMapping] =
     try{
       (for(entry <- managementEndpoint.listTypeMappings)
-        yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
+      yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -255,7 +270,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listSizeMappings:Array[SizeMapping] =
     try{
       (for(entry <- managementEndpoint.listSizeMappings)
-        yield new SizeMapping(entry._1, entry._2, entry._3)).toArray
+      yield new SizeMapping(entry._1, entry._2, entry._3)).toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -285,7 +300,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def listUsers:Array[UserDescription] =
     try{
-      authenticationManager.list.map(e => new UserDescription(e.name, e.role.name, e.enabled)).toSeq.toArray
+      authenticationManager.list.map(e => new UserDescription(e.name, e.enabled)).toSeq.toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -293,9 +308,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
 
-  def addUser(name:String, password:String, role:String) = {
+  def addUser(name:String, password:String) = {
     try{
-      authenticationManager.create(name, password, UserRole.fromString(role))
+      authenticationManager.create(name, password)
     }catch{
       case e => {
         e.printStackTrace
@@ -304,9 +319,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def updateUser(name:String, password:String, role:String, enabled:java.lang.Boolean) = {
+  def updateUser(name:String, password:String, enabled:java.lang.Boolean) = {
     try{
-      authenticationManager.update(name, password, UserRole.fromString(role), enabled.booleanValue)
+      authenticationManager.update(name, password, enabled.booleanValue)
     }catch{
       case e => {
         e.printStackTrace
@@ -329,7 +344,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def statistics:Array[Pair] = {
     try{
       (for((key,value) <- managementEndpoint.statistics)
-        yield new Pair(key, value)).toSeq.toArray
+      yield new Pair(key, value)).toSeq.toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -341,7 +356,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def volumes:Array[VolumeDescription] = {
     try{
       (for(v <- managementEndpoint.listVolumes)
-        yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
+      yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
     }catch{
       case e => {
         e.printStackTrace
@@ -353,11 +368,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) = {
     try{
       val idx = new StorageIndex(name,
-                                 fields.toList,
-                                 multi.booleanValue,
-                                 system.booleanValue,
-                                 System.currentTimeMillis)
-      
+        fields.toList,
+        multi.booleanValue,
+        system.booleanValue,
+        System.currentTimeMillis)
+
       managementEndpoint.createIndex(id, idx)
     }catch{
       case e => {
@@ -436,6 +451,62 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def replayReplicationQueue = {
     try{
       replicationManager.replayReplicationQueue
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def createDomain(name:String) = {
+    try{
+      domainManager.addDomain(name)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def listDomains:Array[DomainDescription] = {
+    try{
+      (for(entry <- domainManager.domainList)
+      yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name)).toArray
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def updateDomainName(name:String, newName:String) = {
+    try{
+      domainManager.updateName(name, newName)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def generateDomainKey(name:String):String = {
+    try{
+      domainManager.generateKey(name)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def setDomainMode(name:String, mode:String) = {
+    try{
+      domainManager.setMode(name, mode)
     }catch{
       case e => {
         e.printStackTrace

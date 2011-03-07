@@ -42,9 +42,9 @@ trait PlatformManagementService {
 
   def listUsers:Array[UserDescription]
 
-  def addUser(name:String, password:String, role:String)
+  def addUser(name:String, password:String)
 
-  def updateUser(name:String, password:String, role:String, enabled:java.lang.Boolean)
+  def updateUser(name:String, password:String, enabled:java.lang.Boolean)
 
   def deleteUser(name:String)
 
@@ -67,5 +67,16 @@ trait PlatformManagementService {
   def listReplicationTargets:Array[ReplicationHost]
 
   def replayReplicationQueue
+
+
+  def createDomain(name:String)
+
+  def listDomains:Array[DomainDescription]
+
+  def updateDomainName(name:String, newName:String)
+
+  def generateDomainKey(name:String):String
+
+  def setDomainMode(name:String, mode:String)
 
 }

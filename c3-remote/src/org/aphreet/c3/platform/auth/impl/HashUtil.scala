@@ -1,6 +1,8 @@
 package org.aphreet.c3.platform.auth.impl
 
 import java.security.MessageDigest
+import javax.crypto.spec.SecretKeySpec
+import javax.crypto.Mac
 
 /**
  * Copyright (c) 2010, Mikhail Malygin
@@ -9,7 +11,7 @@ import java.security.MessageDigest
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -46,6 +48,28 @@ object HashUtil{
     val hash = md.digest
 
     for (b <- hash) {
+      if ((0xFF & b) < 0x10) {
+        hexString.append("0").append(Integer.toHexString((0xFF & b)))
+      } else {
+        hexString.append(Integer.toHexString((0xFF & b)))
+      }
+    }
+
+    hexString.toString
+  }
+
+  def hmac(key:String, input:String):String = {
+
+    val mac = Mac.getInstance("HmacSHA256")
+
+    val secret = new SecretKeySpec(key.getBytes, "HmacSHA256")
+    mac.init(secret)
+
+    val digest = mac.doFinal(input.getBytes("UTF-8"));
+
+    val hexString = new StringBuilder
+
+    for (b <- digest) {
       if ((0xFF & b) < 0x10) {
         hexString.append("0").append(Integer.toHexString((0xFF & b)))
       } else {

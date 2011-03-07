@@ -33,9 +33,8 @@ import reflect.BeanProperty
 
 class UserDescription(
   @BeanProperty var name:String,
-  @BeanProperty var role:String,
   @BeanProperty var enabled:java.lang.Boolean) extends java.io.Serializable{
 
-  def this() = this(null, null, null)
+  def this() = this(null, null)
 
 }

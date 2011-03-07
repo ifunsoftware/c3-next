@@ -43,7 +43,7 @@ import com.springsource.json.parser.{ListNode, ScalarNode, MapNode, AntlrJSONPar
 import collection.mutable.HashMap
 import collection.Map
 import collection.JavaConversions._
-import org.aphreet.c3.platform.auth.{ACCESS, MANAGEMENT, UserRole, User}
+import org.aphreet.c3.platform.auth.User
 
 @Component
 @Scope("singleton")
@@ -61,8 +61,8 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
   def defaultConfig:Map[String, User] = {
     val map = new HashMap[String, User]
 
-    map.put("admin", User("admin", "password", MANAGEMENT, true))
-    map.put("anonymous", User("anonymous", "", ACCESS, false))
+    map.put("admin", User("admin", "password", true))
+    map.put("anonymous", User("anonymous", "", false))
 
     map
   }
@@ -78,10 +78,9 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
     for (userNode <- asBuffer(userListNode.getNodes)) {
       val name = getValue(userNode.asInstanceOf[MapNode], "name")
       val password = getValue(userNode.asInstanceOf[MapNode], "password")
-      val role = getValue(userNode.asInstanceOf[MapNode], "role")
       val enabled = getBoolValue(userNode.asInstanceOf[MapNode], "enabled")
 
-      val user = new User(name, password, UserRole.fromString(role), enabled)
+      val user = new User(name, password, enabled)
 
       map.put(name, user)
     }
@@ -110,8 +109,6 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
           writer.value(user.name)
           writer.key("password")
           writer.value(user.password)
-          writer.key("role")
-          writer.value(user.role.name)
           writer.key("enabled")
           writer.value(user.enabled)
           writer.endObject

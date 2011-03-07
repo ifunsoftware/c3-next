@@ -29,7 +29,6 @@
  */
 package org.aphreet.c3.platform.remote.rest
 
-import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.remote.rest.response._
 
@@ -37,6 +36,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
 
 import javax.servlet.http._
+import org.aphreet.c3.platform.domain.Domain
 
 @Controller
 @RequestMapping(Array("/resource"))
@@ -51,14 +51,14 @@ class ResourceController extends DataController{
                       response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, true)
 
     val resource = accessManager.get(address)
 
     if(metadata != null){
-      sendMetadata(resource, contentType, currentUser, response)
+      sendMetadata(resource, contentType, domain, response)
     }else{
-      sendResourceData(resource, -1, currentUser, response)
+      sendResourceData(resource, -1, domain, response)
     }
   }
 
@@ -72,14 +72,14 @@ class ResourceController extends DataController{
                              response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, true)
 
     val resource = accessManager.get(address)
 
     if(metadata != null){
-      sendMetadata(resource, contentType, currentUser, response)
+      sendMetadata(resource, contentType, domain, response)
     }else{
-      sendResourceData(resource, version, currentUser, response)
+      sendResourceData(resource, version, domain, response)
     }
   }
 
@@ -91,12 +91,12 @@ class ResourceController extends DataController{
                    response:HttpServletResponse) =
   {
 
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, false)
 
     val resource = new Resource
 
-    executeDataUpload(resource, currentUser, request, response, () => {
-      resource.systemMetadata.put(Resource.MD_USER, currentUser)
+    executeDataUpload(resource, domain, request, response, () => {
+      resource.systemMetadata.put(Domain.MD_FIELD, domain)
       val ra = accessManager.add(resource)
       response.setStatus(HttpServletResponse.SC_CREATED)
       getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
@@ -111,18 +111,13 @@ class ResourceController extends DataController{
                      response:HttpServletResponse) =
 
   {
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, false)
 
     val resource = accessManager.get(address)
 
-    resource.systemMetadata.get(Resource.MD_USER) match{
-      case Some(u) =>
-        if(u != currentUser)
-          throw new AuthFailedException("Current user can't update specified resource")
-      case None => 
-    }
+    checkDomainAccess(resource, domain)
 
-    executeDataUpload(resource, currentUser, request, response, () => {
+    executeDataUpload(resource, domain, request, response, () => {
       val ra = accessManager.update(resource)
       getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
     })
@@ -136,14 +131,11 @@ class ResourceController extends DataController{
                      request:HttpServletRequest,
                      response:HttpServletResponse) = {
 
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, false)
 
     val resource = accessManager.get(address)
 
-    resource.systemMetadata.get(Resource.MD_USER) match {
-      case Some(u) => if(u != currentUser) throw new AuthFailedException("Current user can't delete this resource")
-      case None =>
-    }
+    checkDomainAccess(resource, domain)
 
     accessManager.delete(address)
     

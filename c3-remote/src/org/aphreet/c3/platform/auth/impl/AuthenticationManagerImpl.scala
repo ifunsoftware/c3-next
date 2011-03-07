@@ -49,8 +49,6 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   val users = new HashMap[String, User]
 
-
-
   var configAccessor: AuthConfigAccessor = _
 
   @Autowired
@@ -62,30 +60,11 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     users ++= configAccessor.load
   }
 
-
-  def authAccess(username:String, key:String, id:String):User = {
-
-    users.get(username) match {
-      case Some(user) => {
-
-        val strToHash = username + user.password + id.toLowerCase
-
-        val hash = md5hash(strToHash)
-
-        val authCorrect = (hash == key && user.role == ACCESS)
-
-        if(authCorrect) user
-        else null
-      }
-      case None => null
-    }
-  }
-
-  def authManagement(username: String, password: String): User = {
+  def auth(username: String, password: String): User = {
 
     users.get(username) match {
       case Some(user) => {
-        if (user.enabled && user.role == MANAGEMENT && password == user.password) {
+        if (user.enabled && password == user.password) {
           user
         } else {
           null
@@ -95,11 +74,10 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def update(username: String, password: String, role: UserRole, enabled:Boolean) = {
+  def update(username: String, password: String, enabled:Boolean) = {
     users.get(username) match {
       case Some(user) => {
         user.password = password
-        user.role = role
         user.enabled = enabled
         users.synchronized {
           configAccessor.store(users)
@@ -109,11 +87,11 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def create(username: String, password: String, role: UserRole) = {
+  def create(username: String, password: String) = {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
-        val user = new User(username, password, role, true)
+        val user = new User(username, password, true)
         users.synchronized {
           users.put(username, user)
           configAccessor.store(users)
@@ -147,26 +125,4 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   def list: List[User] = users.values.toList
 
-
-  def md5hash(input: String): String = {
-
-    if (input == null || input.isEmpty) return ""
-
-    val hexString = new StringBuilder
-
-    val md = MessageDigest.getInstance("MD5")
-    md.update(input.getBytes())
-
-    val hash = md.digest
-
-    for (b <- hash) {
-      if ((0xFF & b) < 0x10) {
-        hexString.append("0").append(Integer.toHexString((0xFF & b)))
-      } else {
-        hexString.append(Integer.toHexString((0xFF & b)))
-      }
-    }
-
-    hexString.toString
-  }
 }

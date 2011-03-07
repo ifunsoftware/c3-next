@@ -30,23 +30,8 @@ package org.aphreet.c3.platform.auth
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-sealed case class User(var name:String, var password:String, var role:UserRole, var enabled:Boolean){
+sealed case class User(var name:String, var password:String, var enabled:Boolean){
 
 
-}
-
-sealed case class UserRole(val name:String)
-
-object ACCESS extends UserRole("access");
-object MANAGEMENT extends UserRole("management");
-
-object UserRole {
-  def fromString(name:String):UserRole = {
-    name match{
-      case ACCESS.name => ACCESS
-      case MANAGEMENT.name => MANAGEMENT
-      case _ => throw new IllegalArgumentException
-    }
-  }
 }
 

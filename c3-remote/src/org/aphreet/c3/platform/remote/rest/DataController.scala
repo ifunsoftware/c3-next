@@ -33,11 +33,9 @@ package org.aphreet.c3.platform.remote.rest
 
 import org.springframework.web.context.ServletContextAware
 import javax.servlet.ServletContext
-import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
-import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import collection.mutable.HashMap
 import java.io.{File, BufferedOutputStream}
@@ -48,12 +46,13 @@ import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
 import response.ResourceResult
+import org.aphreet.c3.platform.domain._
 
 class DataController extends AbstractController with ServletContextAware{
 
   var servletContext:ServletContext = _
 
-  var authManager:AuthenticationManager = _
+  var domainManager:DomainManager = _
 
   var accessManager:AccessManager = _
 
@@ -63,15 +62,17 @@ class DataController extends AbstractController with ServletContextAware{
   }
 
   @Autowired
-  def setAuthenticationManager(manager:AuthenticationManager) = {
-    authManager = manager
+  def setDomainManager(manager:DomainManager) = {
+    domainManager = manager
   }
 
   def setServletContext(context:ServletContext) = {
     servletContext = context
   }
 
-  protected def sendResourceData(resource:Resource, versionNumber:Int, username:String, resp:HttpServletResponse) = {
+  protected def sendResourceData(resource:Resource, versionNumber:Int, domain:String, resp:HttpServletResponse) = {
+
+    checkDomainAccess(resource, domain)
 
     val version =
       if(versionNumber == -1) resource.versions.size
@@ -104,54 +105,70 @@ class DataController extends AbstractController with ServletContextAware{
     }
   }
 
-  protected def getCurrentUser(request:HttpServletRequest):String = {
-
-    val requestUri= request.getRequestURI
-
-    val authHeader = request.getHeader("x-c3-auth")
-
-    if(authHeader != null){
-      val array = authHeader.split(":", 2)
-      if(array.length == 2){
-
-        val user = authManager.authAccess(array(0), array(1), requestUri)
-        if(user != null){
-          return user.name
-        }else{
-          throw new AuthFailedException("Incorrect key")
-        }
-
-      }else{
-        throw new AuthFailedException("Incorrect header format")
-      }
-    }else{
-
-      val anonymous = authManager.get("anonymous")
-
-      if(anonymous != null && anonymous.enabled)
-        return anonymous.name
-      else
-        throw new AuthFailedException("Anonymous is disabled")
-
+  protected def checkDomainAccess(resource:Resource, domainId:String) = {
+    resource.systemMetadata.get(Domain.MD_FIELD) match{
+      case Some(id) => if(id != domainId) throw new DomainException("Requested resource does not belong to specified domain")
+      case None =>
     }
   }
 
-  protected def sendResourceMetadata(address:String, contentType:String, username:String, system:Boolean, resp:HttpServletResponse) = {
+  protected def getRequestDomain(request:HttpServletRequest, readonly:Boolean):String = {
 
-    val resource = accessManager.get(address)
+    var domain:Domain = null
 
-    sendMetadata(resource, contentType, username, resp)
+    val requestDomain = request.getHeader("x-c3-domain")
+
+    if(requestDomain != null){
+
+      val requestUri = request.getRequestURI
+      val date = request.getHeader("x-c3-date")
+
+      val hashBase = requestUri + date + requestDomain
+
+      val hash = request.getHeader("x-c3-sign")
+
+      if(hash == null){
+        throw new DomainException("Signature is empty")
+      }
+
+      domain = domainManager.checkDomainAccess(requestDomain, hash, hashBase)
+
+    }else{
+      domain = domainManager.getAnonymousDomain
+    }
+
+    domain.mode match{
+      case DisabledMode => throw new DomainException("Domain is disabled")
+      case FullMode => domain.id
+      case ReadOnlyMode =>
+        if(readonly){
+          domain.id
+        }else{
+          throw new DomainException("Domain is readonlyg")
+        }
+    }
 
   }
 
-  protected def sendMetadata(resource:Resource, contentType:String, username:String, resp:HttpServletResponse){
+  protected def sendResourceMetadata(address:String, contentType:String, domain:String, system:Boolean, resp:HttpServletResponse) = {
+
+    val resource = accessManager.get(address)
+
+    sendMetadata(resource, contentType, domain, resp)
+
+  }
+
+  protected def sendMetadata(resource:Resource, contentType:String, domain:String, resp:HttpServletResponse){
+
+    checkDomainAccess(resource, domain)
+
     resp.setStatus(HttpServletResponse.SC_OK)
 
     getResultWriter(contentType).writeResponse(new ResourceResult(resource), resp)
   }
 
   protected def executeDataUpload(resource:Resource,
-                                  currentUser:String,
+                                  domain:String,
                                   request:HttpServletRequest,
                                   response:HttpServletResponse,
                                   processUpload:Function0[Unit]) =

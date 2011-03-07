@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -28,21 +29,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.auth
+package org.aphreet.c3.platform.remote.test.domain
 
+import java.util.Random
+import java.lang.Integer
+import junit.framework.{Assert, TestCase}
 
-trait AuthenticationManager{
+class KeyGeneratorTestCase extends TestCase{
 
-  def auth(username: String, password: String): User
+  def testGenerateKey = {
 
-  def update(username:String, password:String, enabled:Boolean)
+    val random = new Random(0l)
 
-  def create(username:String, password:String)
+    val result = String.format("%8x%8x%8x%8x", new Integer(random.nextInt),
+                              new Integer(random.nextInt),
+                              new Integer(random.nextInt),
+                              new Integer(random.nextInt))
 
-  def delete(username:String)
+    Assert.assertEquals("bb20b460d4d951383d93cb7a9b3970be", result)
 
-  def get(username:String):User
+  }
 
-  def list:List[User]
 
 }

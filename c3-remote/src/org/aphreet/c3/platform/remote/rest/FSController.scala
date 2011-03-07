@@ -38,6 +38,7 @@ import response.fs.FSDirectory
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.resource.Resource
 import response.{Result, DirectoryResult}
+import org.aphreet.c3.platform.domain.Domain
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -56,22 +57,23 @@ class FSController extends DataController{
               request:HttpServletRequest,
               response:HttpServletResponse){
 
-    val currentUser = getCurrentUser(request)
+    val domain = getRequestDomain(request, true)
 
     val fsPath = getFilesystemPath(request)
 
-    val node = filesystemManager.getNode(fsPath)
+    val node = filesystemManager.getNode(domain, fsPath)
 
     if(metadata == null){
 
       if(node.isDirectory){
+        checkDomainAccess(node.resource, domain)
         getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
       }else{
-        sendResourceData(node.resource, -1, getCurrentUser(request), response)
+        sendResourceData(node.resource, -1, domain, response)
       }
 
     }else{
-      sendMetadata(node.resource, contentType, currentUser, response)
+      sendMetadata(node.resource, contentType, domain, response)
     }
   }
 
@@ -81,24 +83,23 @@ class FSController extends DataController{
                request:HttpServletRequest,
                response:HttpServletResponse){
 
+    val domain = getRequestDomain(request, false)
 
     val fsPath = getFilesystemPath(request)
 
     if(nodetype == "directory"){
 
-      filesystemManager.createDirectory(fsPath)
+      filesystemManager.createDirectory(domain, fsPath)
 
       reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
     }else{
 
-      val currentUser = getCurrentUser(request)
-
       val resource = new Resource
 
-      executeDataUpload(resource, currentUser, request, response, () => {
-        resource.systemMetadata.put(Resource.MD_USER, currentUser)
+      executeDataUpload(resource, domain, request, response, () => {
+        resource.systemMetadata.put(Domain.MD_FIELD, domain)
 
-        filesystemManager.createFile(fsPath, resource)
+        filesystemManager.createFile(domain, fsPath, resource)
 
         reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
       })
@@ -110,9 +111,11 @@ class FSController extends DataController{
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
+    val domain = getRequestDomain(request, false)
+
     val fsPath = getFilesystemPath(request)
 
-    val node = filesystemManager.getNode(fsPath)
+    val node = filesystemManager.getNode(domain, fsPath)
 
     if(node.isDirectory){
       throw new WrongRequestException("Can't update directory")
@@ -120,9 +123,9 @@ class FSController extends DataController{
 
     val resource = node.resource
 
-    val currentUser = getCurrentUser(request)
+    checkDomainAccess(node.resource, domain)    
 
-    executeDataUpload(resource, currentUser, request, response, () => {
+    executeDataUpload(resource, domain, request, response, () => {
       val ra = accessManager.update(resource)
       reportSuccess(HttpServletResponse.SC_OK, contentType, response)
     })
@@ -134,9 +137,11 @@ class FSController extends DataController{
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
+    val domain = getRequestDomain(request, false)
+
     val fsPath = getFilesystemPath(request)
 
-    filesystemManager.deleteNode(fsPath)
+    filesystemManager.deleteNode(domain, fsPath)
 
     reportSuccess(HttpServletResponse.SC_OK, contentType, response)
   }
@@ -147,8 +152,6 @@ class FSController extends DataController{
   }
 
   private def getFilesystemPath(request:HttpServletRequest):String = {
-    val currentUser = getCurrentUser(request)
-
-    "/" + currentUser + request.getRequestURI.replaceFirst(baseUrl, "")
+    request.getRequestURI.replaceFirst(baseUrl, "")
   }
 }

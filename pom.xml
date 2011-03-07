@@ -19,7 +19,6 @@
         <module>c3-filesystem</module>
         <module>c3-client</module>
         <module>c3-remote-webclient</module>
-        <module>c3-test</module>
     </modules>
 
     <properties>

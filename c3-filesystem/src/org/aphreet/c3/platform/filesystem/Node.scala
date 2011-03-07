@@ -81,9 +81,10 @@ case class File(override val resource:Resource) extends Node(resource){
 
 object File{
 
-  def createFile(resource:Resource, name:String):File = {
+  def createFile(resource:Resource, domainId:String, name:String):File = {
     resource.systemMetadata.put(Node.NODE_TYPE_FIELD, Node.NODE_TYPE_FILE)
     resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
+    resource.systemMetadata.put("c3.domain.id", domainId)
 
     File(resource)
   }
@@ -170,7 +171,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
 object Directory{
 
-  def emptyDirectory(name:String):Directory = {
+  def emptyDirectory(domainId:String, name:String):Directory = {
     val resource = new Resource
     resource.systemMetadata.put(Node.NODE_TYPE_FIELD, Node.NODE_TYPE_DIR)
 
@@ -179,6 +180,7 @@ object Directory{
     }
 
     resource.systemMetadata.put("c3.skip.index", "true")
+    resource.systemMetadata.put("c3.domain.id", domainId)
 
     resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)

@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -28,21 +29,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.auth
+package org.aphreet.c3.platform.domain
 
+import org.aphreet.c3.platform.exception.PlatformException
 
-trait AuthenticationManager{
+class DomainException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
 
-  def auth(username: String, password: String): User
+  def this(message:String) = this(message, null)
 
-  def update(username:String, password:String, enabled:Boolean)
+  def this() = this(null, null)
 
-  def create(username:String, password:String)
-
-  def delete(username:String)
-
-  def get(username:String):User
-
-  def list:List[User]
-
+  def this(cause:Throwable) = this(null, cause)
+  
 }

@@ -91,7 +91,7 @@ class WSAuthFilter extends Filter{
           val user = array(0)
           val password = array(1)
 
-          authOk = authManager.authManagement(user, password) != null
+          authOk = authManager.auth(user, password) != null
         }
       }catch{
         case e => e.printStackTrace
