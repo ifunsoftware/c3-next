@@ -125,7 +125,24 @@ class FSManagerImpl extends FSManager{
     }
 
     addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
+  }
 
+  def fileSystemRoots:Map[String, String] = fsRoots
+
+  def importFileSystemRoot(domainId:String, address:String) = {
+
+    fsRoots.get(domainId) match{
+      case Some(x) => throw new FSException("Can't import FS root - root already exists")
+      case None => {
+        this.synchronized{
+          val map:Map[String, String] = fsRoots + ((domainId, address))
+
+          configAccessor.store(map)
+
+          fsRoots = configAccessor.load
+        }
+      }
+    }
   }
 
   private def addNodeToDirectory(domainId:String, path:String, name:String, newNode:Node){

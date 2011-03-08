@@ -38,7 +38,8 @@ import java.io.{InputStream, File, FileOutputStream}
 import xml.{XML, Elem}
 import org.apache.commons.httpclient.methods.{PutMethod, DeleteMethod, PostMethod, GetMethod}
 
-class C3FileHttpAccessor(val host:String, val username:String, val key:String){
+class C3FileHttpAccessor(val host:String, override val domain:String, override val secret:String)
+          extends AbstractHttpAccessor(domain, secret){
 
   val requestUri = "/rest/fs"
   val url = host + requestUri
@@ -218,19 +219,4 @@ class C3FileHttpAccessor(val host:String, val username:String, val key:String){
       }
     }
   }
-
-  def addAuthHeader(method:HttpMethodBase, resource:String) = {
-    if(username != "anonymous"){
-
-      val strToHash = username + key + resource
-
-      val md5 = new MD5
-      md5.Update(strToHash.getBytes)
-
-      val hash = MD5.asHex(md5.Final)
-      val header = new Header("x-c3-auth", username + ":" + hash)
-      method.addRequestHeader(header)
-    }
-  }
-
 }

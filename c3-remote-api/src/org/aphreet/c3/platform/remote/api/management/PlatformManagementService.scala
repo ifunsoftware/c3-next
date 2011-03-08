@@ -79,4 +79,8 @@ trait PlatformManagementService {
 
   def setDomainMode(name:String, mode:String)
 
+  def listFileSystemRoots:Array[Pair]
+
+  def importFileSystemRoot(domainId:String, address:String)
+
 }

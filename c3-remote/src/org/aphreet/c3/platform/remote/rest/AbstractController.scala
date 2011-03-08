@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
 import org.springframework.web.bind.annotation.{ExceptionHandler}
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
+import org.aphreet.c3.platform.domain.DomainException
 
 class AbstractController{
 
@@ -79,6 +80,17 @@ class AbstractController{
 
     response.setStatus(HttpServletResponse.SC_FORBIDDEN)
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Authentication failed")), response)
+  }
+
+  @ExceptionHandler(Array(classOf[DomainException]))
+  def handleDomainException(e:DomainException,
+                                      request:HttpServletRequest,
+                                      response:HttpServletResponse) {
+
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   protected def getResultWriter(expectedType:String):ResultWriter = {

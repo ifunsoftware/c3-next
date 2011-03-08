@@ -93,6 +93,7 @@ class DomainManagerImpl extends DomainManager{
       case Some(d) =>
         d.key = generateKey
         storeDomainConfig
+        reloadDomainConfig
         d.key
       case None => throw new PlatformException("Domain with such name does not exists")
     }
@@ -103,6 +104,7 @@ class DomainManagerImpl extends DomainManager{
       case Some(d) =>
         d.mode = DomainMode.byName(mode)
         storeDomainConfig
+        reloadDomainConfig
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
@@ -112,6 +114,7 @@ class DomainManagerImpl extends DomainManager{
       case Some(d) =>
         d.name = newName
         storeDomainConfig
+        reloadDomainConfig
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
@@ -146,7 +149,7 @@ class DomainManagerImpl extends DomainManager{
 
     val random = new Random()
 
-    String.format("%8x%8x%8x%8x", new Integer(random.nextInt),
+    String.format("%08x%08x%08x%08x", new Integer(random.nextInt),
                               new Integer(random.nextInt),
                               new Integer(random.nextInt),
                               new Integer(random.nextInt))

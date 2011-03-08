@@ -48,6 +48,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.domain.DomainManager
+import org.aphreet.c3.platform.filesystem.FSManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -60,6 +61,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _replicationManager:ReplicationManager = _
 
   private var _domainManager:DomainManager = _
+
+  private var _filesystemManager:FSManager = _
 
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) = {
@@ -79,6 +82,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setDomainManager(manager:DomainManager) = {
     _domainManager = manager
+  }
+
+  @Autowired
+  private def setFSManager(manager:FSManager) = {
+    _filesystemManager = manager
   }
 
   private def managementEndpoint:PlatformManagementEndpoint = {
@@ -107,6 +115,13 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       _domainManager = ContextLoader.getCurrentWebApplicationContext.getBean("domainManager", classOf[DomainManager])
     }
     _domainManager
+  }
+
+  private def filesystemManager:FSManager = {
+    if(_filesystemManager == null){
+      _filesystemManager = ContextLoader.getCurrentWebApplicationContext.getBean("filesystemService", classOf[FSManager])
+    }
+    _filesystemManager
   }
 
   def removeStorage(id:String) =
@@ -507,6 +522,28 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def setDomainMode(name:String, mode:String) = {
     try{
       domainManager.setMode(name, mode)
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def listFileSystemRoots:Array[Pair] = {
+    try{
+      filesystemManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def importFileSystemRoot(domainId:String, address:String) = {
+    try{
+      filesystemManager.importFileSystemRoot(domainId, address)
     }catch{
       case e => {
         e.printStackTrace

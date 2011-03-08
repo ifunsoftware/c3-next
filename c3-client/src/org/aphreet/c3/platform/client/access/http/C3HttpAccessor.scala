@@ -39,7 +39,8 @@ import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpStatus, HttpCl
 import com.twmacinta.util.MD5
 import xml.XML
 
-class C3HttpAccessor(val host:String, val username:String, val key:String){
+class C3HttpAccessor(val host:String, override val domain:String, override val secret:String)
+    extends AbstractHttpAccessor(domain, secret){
 
   val requestUri = "/rest/resource/"
   val url = host + requestUri
@@ -180,21 +181,6 @@ class C3HttpAccessor(val host:String, val username:String, val key:String){
       }
     }finally{
       getMethod.releaseConnection();
-    }
-  }
-
-
-  def addAuthHeader(method:HttpMethodBase, resource:String) = {
-    if(username != "anonymous"){
-
-      val strToHash = username + key + resource
-
-      val md5 = new MD5
-      md5.Update(strToHash.getBytes)
-      
-      val hash = MD5.asHex(md5.Final)
-      val header = new Header("x-c3-auth", username + ":" + hash)
-      method.addRequestHeader(header)
     }
   }
 }

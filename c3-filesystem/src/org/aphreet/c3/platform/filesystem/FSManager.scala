@@ -42,4 +42,8 @@ trait FSManager{
   def createFile(domainId:String, path:String, resource:Resource)
 
   def createDirectory(domainId:String, path:String)
+
+  def fileSystemRoots:Map[String, String]
+
+  def importFileSystemRoot(domainId:String, address:String)
 }
