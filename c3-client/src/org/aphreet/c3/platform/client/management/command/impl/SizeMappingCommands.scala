@@ -46,7 +46,7 @@ class AddSizeMappingCommand extends Command {
 
   def execute = {
     if (params.size < 3)
-      "Not enough params.\nUsage: add size mapping <size> <storagetype> <versioned>"
+      wrongParameters("create size mapping <size> <storagetype> <versioned>")
     else {
 
       val size = params.head.toLong
@@ -60,7 +60,7 @@ class AddSizeMappingCommand extends Command {
     }
   }
 
-  def name = List("add", "size", "mapping")
+  def name = List("create", "size", "mapping")
 }
 
 class DeleteSizeMappingCommand extends Command {
@@ -68,14 +68,14 @@ class DeleteSizeMappingCommand extends Command {
   def execute = {
 
     if (params.size < 1) {
-      "Not enough params.\nUsage remove size mapping <size>"
+      wrongParameters("remove size mapping <size>")
     } else {
       management.removeSizeMapping(params.head.toLong)
       "Size mapping deleted"
     }
   }
 
-  def name = List("delete", "size", "mapping")
+  def name = List("remove", "size", "mapping")
 
 }
 

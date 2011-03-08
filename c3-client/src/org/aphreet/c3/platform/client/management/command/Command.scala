@@ -52,6 +52,9 @@ abstract class Command{
 
   def writeString(line:String) = print(line)
 
+  def wrongParameters(usage:String):String = {
+    "Not enough parameters. Usage: " +usage
+  }
 }
 
 abstract class Commands{

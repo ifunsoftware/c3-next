@@ -51,14 +51,14 @@ class AddStorageCommand extends Command{
 
   def execute:String = {
     if(params.size < 2){
-      "Not enought params.\nUsage: add storage <type> <path>"
+      wrongParameters("create storage <type> <path>")
     }else{
       management.createStorage(params.head, params.tail.head)
       "Storage created"
     }
   }
 
-  def name = List("add", "storage")
+  def name = List("create", "storage")
 }
 
 
@@ -67,14 +67,14 @@ class DeleteStorageCommand extends Command{
 
   def execute:String = {
     if(params.size < 1){
-      "Not enought params.\nUsage: delete storage <storage id>"
+      wrongParameters("remove storage <storage id>")
     }else{
       management.removeStorage(params.head)
       "Storage deleted"
     }
   }
 
-  def name = List("delete", "storage")
+  def name = List("remove", "storage")
 
 }
 

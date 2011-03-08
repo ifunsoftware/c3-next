@@ -54,6 +54,8 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
     register(VolumeCommands)
 
     register(ReplicationCommands)
+
+    register(DomainCommands)
     
     register(new HelpCommand)
   }

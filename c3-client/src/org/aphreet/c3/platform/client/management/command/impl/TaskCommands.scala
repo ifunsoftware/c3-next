@@ -5,7 +5,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -36,11 +36,10 @@ import org.aphreet.c3.platform.remote.api.management.RemoteTaskDescription
 object TaskCommands extends Commands{
 
   def instances = List(
-      new ListRunningTasksCommand,
-      new ListFinishedTasksCommand,
-      new PauseTaskCommand,
-      new ResumeTaskCommand
-    )
+    new ListRunningTasksCommand,
+    new ListFinishedTasksCommand,
+    new SetTaskMode
+  )
 }
 
 abstract class ListTasksCommand extends Command {
@@ -88,34 +87,18 @@ class ListFinishedTasksCommand extends ListTasksCommand {
 
 }
 
-class ResumeTaskCommand extends Command{
+class SetTaskMode extends Command {
 
   def execute:String = {
 
-    if(params.size < 1){
-      "Not enought params.\nUsage: resume task <id>"
+    if(params.size < 2){
+      wrongParameters("set task mode <id> <pause|resume>")
     }else{
-      management.setTaskMode(params.head, "resume" )
+      management.setTaskMode(params.head, params.tail.head )
       "Resumed"
     }
-
-
   }
 
-  def name = List("resume", "task")
-}
+  def name = List("set", "task", "mode")
 
-class PauseTaskCommand extends Command{
-
-  def execute:String = {
-
-    if(params.size < 1){
-      "Not enought params.\nUsage: pause task <id>"
-    }else{
-      management.setTaskMode(params.head, "pause" )
-      "Paused"
-    }
-  }
-
-  def name = List("pause", "task")
 }

@@ -50,7 +50,7 @@ class AddReplicationTarget extends Command {
 
   def execute:String = {
     if(params.size < 3){
-      "Not enough params.\n Usage: add replication target <hostname> <username> <password>"
+      wrongParameters("create replication target <hostname> <username> <password>")
     }else{
 
       val paramsArray = params.toArray
@@ -60,7 +60,7 @@ class AddReplicationTarget extends Command {
     }
   }
 
-  def name:List[String] = List("add", "replication", "target")
+  def name:List[String] = List("create", "replication", "target")
 }
 
 class RemoveReplicationTarget extends Command {
@@ -137,16 +137,16 @@ class PrepareForReplication extends Command {
     "Done"
   }
 
-  def name:List[String] = List("prepare", "for", "replication")
+  def name:List[String] = List("set", "replication", "properties")
 }
 
 class ReplayReplicationQueueCommand extends Command {
 
   override def execute:String = {
     management.replayReplicationQueue
-    "Task submitted"
+    "Retry started"
   }
 
-  def name:List[String] = List("replay", "replication", "queue")
+  def name:List[String] = List("start", "replication", "retry")
 
 }

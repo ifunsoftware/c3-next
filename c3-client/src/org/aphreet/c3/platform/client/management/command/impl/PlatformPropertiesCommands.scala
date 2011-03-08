@@ -97,5 +97,5 @@ class ListStatisticsCommand extends Command{
     
   }
 
-  def name = List("statistics")
+  def name = List("show", "statistics")
 }

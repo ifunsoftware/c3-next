@@ -45,7 +45,7 @@ class AddTypeMappingCommand extends Command{
 
   def execute:String = {
     if(params.size < 3)
-      "Not enough params.\nUsage: add type mapping <mimetype> <storagetype> <versioned>"
+      wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
     else{
 
       val mimeType = params.head
@@ -58,7 +58,7 @@ class AddTypeMappingCommand extends Command{
     }
   }
 
-  def name = List("add", "type", "mapping")
+  def name = List("create", "type", "mapping")
 
 }
 
@@ -67,14 +67,14 @@ class DeleteTypeMappingCommand extends Command{
   def execute:String = {
 
     if(params.size < 1){
-      "Not enough params.\nUsage delete type mapping <mimetype>"
+      wrongParameters("remove type mapping <mimetype>")
     }else{
       management.removeTypeMapping(params.head)
-      "Type mapping deleted"
+      "Type mapping removed"
     }
   }
 
-  def name = List("delete", "type", "mapping")
+  def name = List("remove", "type", "mapping")
 }
 
 class ListTypeMappingCommand extends Command{
