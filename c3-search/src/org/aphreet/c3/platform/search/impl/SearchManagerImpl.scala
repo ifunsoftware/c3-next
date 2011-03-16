@@ -147,7 +147,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       ramIndexers.foreach(_.start)
 
       this.start
-      accessMediator ! RegisterListenerMsg(this)
+      accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
@@ -178,11 +178,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   def act {
     while (true) {
       receive {
-        case ResourceAddedMsg(resource) => selectIndexer ! IndexMsg(resource)
+        case ResourceAddedMsg(resource, source) => selectIndexer ! IndexMsg(resource)
 
-        case ResourceUpdatedMsg(resource) => fileIndexer ! DeleteForUpdateMsg(resource)
+        case ResourceUpdatedMsg(resource, source) => fileIndexer ! DeleteForUpdateMsg(resource)
 
-        case ResourceDeletedMsg(address) => fileIndexer ! DeleteMsg(address)
+        case ResourceDeletedMsg(address, source) => fileIndexer ! DeleteMsg(address)
 
         case IndexMsg(resource) => selectIndexer ! IndexMsg(resource)
 
@@ -207,7 +207,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
                 taskManager.stopTask(indexerTaskId)
               }
 
-              accessMediator ! UnregisterListenerMsg(this)
+              accessMediator ! UnregisterNamedListenerMsg(this, 'SearchManager)
               configManager ! UnregisterMsg(this)
             }
 

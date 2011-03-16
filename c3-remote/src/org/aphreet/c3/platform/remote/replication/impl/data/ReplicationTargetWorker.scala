@@ -116,7 +116,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
       target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
 
-      accessMediator ! ResourceAddedMsg(resource)
+      accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
 
     }catch{
       case e => log.error("Failed to replicate add", e)
@@ -155,14 +155,14 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
           resource.verifyCheckSums
           storage.update(resource)
 
-          accessMediator ! ResourceUpdatedMsg(resource)
+          accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
 
         }
         case None => {
           resource.verifyCheckSums
           storage.put(resource)
 
-          accessMediator ! ResourceAddedMsg(resource)
+          accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
         }
       }
 
@@ -200,7 +200,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
         target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
 
-        accessMediator ! ResourceDeletedMsg(address)
+        accessMediator ! ResourceDeletedMsg(address, 'ReplicationManager)
       }else{
         log warn "Failed to replicate delete, storage is not writable"
       }

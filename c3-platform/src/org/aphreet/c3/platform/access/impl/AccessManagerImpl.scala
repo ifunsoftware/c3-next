@@ -56,6 +56,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   var accessMediator:AccessMediator = _
 
+  val ACCESS_MANAGER_NAME = 'AccessManager
+
   val log = LogFactory.getLog(getClass)
 
   {
@@ -126,7 +128,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       resource.calculateCheckSums
       val ra = storage.add(resource)
 
-      accessMediator ! ResourceAddedMsg(resource)
+      accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
 
       if(log.isDebugEnabled){
         log.debug("Resource added: " + ra)
@@ -150,7 +152,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
         resource.calculateCheckSums
         val ra = storage.update(resource)
 
-        accessMediator ! ResourceUpdatedMsg(resource)
+        accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
 
         ra
 
@@ -174,7 +176,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       if(storage.mode.allowWrite){
         storage delete ra
 
-        accessMediator ! ResourceDeletedMsg(ra)
+        accessMediator ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
       }
 
       else

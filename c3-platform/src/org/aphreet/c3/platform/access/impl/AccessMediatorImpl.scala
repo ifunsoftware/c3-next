@@ -33,11 +33,11 @@ package org.aphreet.c3.platform.access.impl
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 import actors.Actor
-import collection.mutable.HashSet
-import org.aphreet.c3.platform.common.msg.{UnregisterListenerMsg, RegisterListenerMsg, DestroyMsg}
+import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.access.{ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg, AccessMediator}
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
+import collection.mutable.{HashMap, HashSet}
 
 @Component("accessMediator")
 @Scope("singleton")
@@ -45,7 +45,7 @@ class AccessMediatorImpl extends AccessMediator {
 
   val log = LogFactory getLog getClass
 
-  var accessListeners = new HashSet[Actor]
+  var accessListeners = new HashMap[Actor, Symbol]
 
   @PostConstruct
   def init {
@@ -61,31 +61,38 @@ class AccessMediatorImpl extends AccessMediator {
           this.exit
         }
 
-        case RegisterListenerMsg(actor) =>
+        case RegisterNamedListenerMsg(actor, name) =>
           log debug "Registering listener " + actor.toString
-          accessListeners = accessListeners + actor
+          accessListeners.put(actor, name)
           log debug accessListeners.toString
         
-        case UnregisterListenerMsg(actor) =>
+        case UnregisterNamedListenerMsg(actor, name) =>
           log debug "Unregistering listener " + actor.toString
-          accessListeners = accessListeners - actor
+          accessListeners.remove(actor)
           log debug accessListeners.toString
 
-        case ResourceAddedMsg(resource) => {
-          accessListeners.foreach{
-            _ ! ResourceAddedMsg(resource)
+        case ResourceAddedMsg(resource, source) => {
+
+          accessListeners.foreach{e => {
+            if(e._2 != source)
+              e._1 ! ResourceAddedMsg(resource, source)
+            }
           }
         }
 
-        case ResourceUpdatedMsg(resource) => {
-          accessListeners.foreach{
-            _ ! ResourceUpdatedMsg(resource)
+        case ResourceUpdatedMsg(resource, source) => {
+          accessListeners.foreach{e => {
+            if(e._2 != source)
+              e._1 ! ResourceUpdatedMsg(resource, source)
+            }
           }
         }
 
-        case ResourceDeletedMsg(address) => {
-          accessListeners.foreach {
-            _ ! ResourceDeletedMsg(address)
+        case ResourceDeletedMsg(address, source) => {
+          accessListeners.foreach {e => {
+            if(e._2 != source)
+              e._1 ! ResourceDeletedMsg(address, source)
+            }
           }
         }
       }

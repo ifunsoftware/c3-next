@@ -34,7 +34,7 @@ import actors.Actor._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg.{RegisterListenerMsg, UnregisterListenerMsg, DestroyMsg}
+import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access._
@@ -61,28 +61,28 @@ class AccessCounter extends Actor{
   @PostConstruct
   def init{
     log info "Starting AccessCounter"
-    accessMediator ! RegisterListenerMsg(this)
+    accessMediator ! RegisterNamedListenerMsg(this, 'AccessCounter)
   }
 
   @PreDestroy
   def destroy{
     log info "Stopping AccessCounter"
-    accessMediator ! UnregisterListenerMsg(this)
+    accessMediator ! UnregisterNamedListenerMsg(this, 'AccessCounter)
     this ! DestroyMsg
   }
 
   def act{
     loop{
       react{
-        case ResourceAddedMsg(resource) => {
+        case ResourceAddedMsg(resource, source) => {
           statisticsManger ! IncreaseStatisticsMsg("c3.access.created", 1)
         }
 
-        case ResourceUpdatedMsg(resource) => {
+        case ResourceUpdatedMsg(resource, source) => {
           statisticsManger ! IncreaseStatisticsMsg("c3.access.updated", 1)
         }
 
-        case ResourceDeletedMsg(address) => {
+        case ResourceDeletedMsg(address, source) => {
           statisticsManger ! IncreaseStatisticsMsg("c3.access.deleted", 1)
         }
 

@@ -71,7 +71,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
     loop{
       react{
 
-        case ResourceAddedMsg(resource) => {
+        case ResourceAddedMsg(resource, source) => {
           val bytes = resource.toByteArray
 
 
@@ -98,7 +98,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
 
 
-        case ResourceUpdatedMsg(resource) => {
+        case ResourceUpdatedMsg(resource, source) => {
           val bytes = resource.toByteArray
 
           sendRemoteMessage(remoteActor, ReplicateUpdateMsg(bytes, calculator.calculate(bytes)))
@@ -128,7 +128,7 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
 
 
-        case ResourceDeletedMsg(address) => {
+        case ResourceDeletedMsg(address, source) => {
 
           sendRemoteMessage(remoteActor, ReplicateDeleteMsg(address, calculator.calculate(address)))
 

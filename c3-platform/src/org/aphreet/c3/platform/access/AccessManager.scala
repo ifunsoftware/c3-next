@@ -49,10 +49,4 @@ trait AccessManager extends WatchedActor{
 
 }
 
-case class ResourceAddedMsg(val resource:Resource)
-
-case class ResourceUpdatedMsg(val resource:Resource)
-
-case class ResourceDeletedMsg(val address:String)
-
 case class UpdateMetadataMsg(val address:String, val metadata:Map[String,String])

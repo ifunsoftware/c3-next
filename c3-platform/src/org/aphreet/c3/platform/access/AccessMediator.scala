@@ -31,7 +31,14 @@
 package org.aphreet.c3.platform.access
 
 import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.resource.Resource
 
 trait AccessMediator extends WatchedActor{
   
 }
+
+case class ResourceAddedMsg(val resource:Resource, source:Symbol)
+
+case class ResourceUpdatedMsg(val resource:Resource, source:Symbol)
+
+case class ResourceDeletedMsg(val address:String, source:Symbol)

@@ -80,7 +80,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
       remoteReplicationActors = remoteReplicationActors + ((id, new ReplicationLink(localSystemId, host, statisticsManager)))
     }
 
-    accessMediator ! RegisterListenerMsg(this)
+    accessMediator ! RegisterNamedListenerMsg(this, 'ReplicationManager)
 
     this.start
 
@@ -90,32 +90,32 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
   override def act{
     loop{
       react{
-        case ResourceAddedMsg(resource) => {
+        case ResourceAddedMsg(resource, source) => {
           try{
             for((id, link) <- remoteReplicationActors){
               if(!link.isStarted) link.start
-              link ! ResourceAddedMsg(resource)
+              link ! ResourceAddedMsg(resource, source)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
           }
 
         }
-        case ResourceUpdatedMsg(resource) => {
+        case ResourceUpdatedMsg(resource, source) => {
           try{
             for((id, link) <- remoteReplicationActors){
               if(!link.isStarted) link.start
-              link ! ResourceUpdatedMsg(resource)
+              link ! ResourceUpdatedMsg(resource, source)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
           }
         }
-        case ResourceDeletedMsg(address) => {
+        case ResourceDeletedMsg(address, source) => {
           try{
             for((id, link) <- remoteReplicationActors){
               if(!link.isStarted) link.start
-              link ! ResourceDeletedMsg(address)
+              link ! ResourceDeletedMsg(address, source)
             }
           }catch{
             case e => log.error("Failed to replicate resource", e)
@@ -166,7 +166,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           remoteReplicationActors.get(systemId) match{
             case Some(link) =>
               if(!link.isStarted) link.start
-              link ! ResourceAddedMsg(resource)
+              link ! ResourceAddedMsg(resource, 'ReplicationManager)
             case None => log.warn("Failed to replay add, host does not exist " + systemId)
           }
 
@@ -176,7 +176,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           remoteReplicationActors.get(systemId) match{
             case Some(link) =>
               if(!link.isStarted) link.start
-              link ! ResourceUpdatedMsg(resource)
+              link ! ResourceUpdatedMsg(resource, 'ReplicationManager)
             case None => log.warn("Failed to replay update, host does not exist " + systemId)
           }
         }
@@ -185,7 +185,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           remoteReplicationActors.get(systemId) match{
             case Some(link) =>
               if(!link.isStarted) link.start
-              link ! ResourceDeletedMsg(address)
+              link ! ResourceDeletedMsg(address, 'ReplicationManager)
             case None => log.warn("Failed to replay delete, host does not exist " + systemId)
           }
         }
@@ -198,7 +198,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           remoteReplicationActors = Map()
 
           letItFall{
-            accessMediator ! UnregisterListenerMsg(this)
+            accessMediator ! UnregisterNamedListenerMsg(this, 'ReplicationManager)
           }
 
           log info "ReplicationSourceActor stopped"
