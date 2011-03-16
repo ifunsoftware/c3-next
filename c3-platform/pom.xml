@@ -49,6 +49,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>net.sourceforge.ehcache</groupId>
+            <artifactId>com.springsource.net.sf.ehcache</artifactId>
+            <version>1.6.2</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -163,6 +170,12 @@
                                 <artifactItem>
                                     <groupId>com.twmacinta.util</groupId>
                                     <artifactId>md5</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.sourceforge.ehcache</groupId>
+                                    <artifactId>com.springsource.net.sf.ehcache</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

@@ -56,7 +56,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   var accessMediator:AccessMediator = _
 
-  val ACCESS_MANAGER_NAME = 'AccessManager
+  var accessCache:AccessCache = _
 
   val log = LogFactory.getLog(getClass)
 
@@ -77,10 +77,18 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   @Autowired
   def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
 
+  @Autowired
+  def setAccessCache(cache:AccessCache) = {accessCache = cache}
+
   def get(ra:String):Resource = {
 
     if(log.isDebugEnabled){
       log.debug("Getting resource with address: " + ra)
+    }
+
+    accessCache.get(ra) match{
+      case Some(resource) => return resource
+      case None =>
     }
 
     try{
@@ -91,7 +99,10 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       }
 
       storage.get(ra) match {
-        case Some(r) => r
+        case Some(r) => {
+          accessCache.put(r)
+          r
+        }
         case None => throw new ResourceNotFoundException(ra)
       }
     }catch{
@@ -128,7 +139,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       resource.calculateCheckSums
       val ra = storage.add(resource)
 
-      accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
+      accessMediator ! ResourceAddedMsg(resource, AccessManagerImpl.ACCESS_MANAGER_NAME)
 
       if(log.isDebugEnabled){
         log.debug("Resource added: " + ra)
@@ -152,7 +163,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
         resource.calculateCheckSums
         val ra = storage.update(resource)
 
-        accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
+        accessCache.remove(resource.address)
+
+        accessMediator ! ResourceUpdatedMsg(resource, AccessManagerImpl.ACCESS_MANAGER_NAME)
 
         ra
 
@@ -176,7 +189,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       if(storage.mode.allowWrite){
         storage delete ra
 
-        accessMediator ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
+        accessCache.remove(ra)
+
+        accessMediator ! ResourceDeletedMsg(ra, AccessManagerImpl.ACCESS_MANAGER_NAME)
       }
 
       else
@@ -260,4 +275,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   def defaultValues:Map[String,String] =
     Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
 
+}
+
+object AccessManagerImpl{
+  val ACCESS_MANAGER_NAME = 'AccessManagerå
 }
