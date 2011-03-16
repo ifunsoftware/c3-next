@@ -38,7 +38,7 @@ class HmacTestCase extends TestCase{
 
   def testHmac(){
 
-    Assert.assertEquals("505b94fbc3e78dad2287819aeaa1285f8499b3b3d6c2a9cc2a932fe1c8f650a6", HashUtil.hmac("secret", "1234567"))
+    Assert.assertEquals("ee358e0b804ae5b18bc3ecf3924bee7dbc1c01425ab48e3dcb1990a038d2ea70", HashUtil.hmac("secret_key", "/rest/fs/directory/file.txtSun, 13 Mar 2011 23:37:51 MSKplab"))
 
   }
 

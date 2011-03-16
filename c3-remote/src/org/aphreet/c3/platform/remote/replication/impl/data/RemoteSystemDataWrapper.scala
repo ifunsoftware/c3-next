@@ -39,6 +39,9 @@ import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
 import com.twmacinta.util.MD5
+import java.text.SimpleDateFormat
+import java.util.Date
+import org.aphreet.c3.platform.auth.impl.HashUtil
 
 class RemoteSystemDataWrapper(val host:ReplicationHost, val secure:Boolean, val address:String, val version:Int) extends AbstractFileDataWrapper{
 
@@ -52,7 +55,7 @@ class RemoteSystemDataWrapper(val host:ReplicationHost, val secure:Boolean, val 
 
     created = true
 
-    val requestUri = "/rest/resource/" + address + "/data/" + version
+    val requestUri = "/rest/resource/" + address + "/" + version
 
     val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 
@@ -80,19 +83,31 @@ class RemoteSystemDataWrapper(val host:ReplicationHost, val secure:Boolean, val 
     file
   }
 
-  def addAuthHeader(method:HttpMethodBase, resource:String, username:String, key:String) = {
-    if(username != "anonymous"){
+  def addAuthHeader(method:HttpMethodBase, resource:String, domain:String, secret:String) = {
 
-      val strToHash = username + key + resource
 
-      val md5 = new MD5
-      md5.Update(strToHash.getBytes)
+    if(domain != "anonymous"){
 
-      val hash = MD5.asHex(md5.Final)
-      val header = new Header("C3Auth", username + ":" + hash)
+      val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")
+
+      val dateString = dateFormat.format(new Date())
+
+      val hashBase = resource + dateString + domain
+
+      val hash = HashUtil.hmac(secret, hashBase)
+
+      val header = new Header("x-c3-sign", hash)
       method.addRequestHeader(header)
+
+      val domainHeader = new Header("x-c3-domain", domain)
+      method.addRequestHeader(domainHeader)
+
+      val dateHeader = new Header("x-c3-date", dateString)
+      method.addRequestHeader(dateHeader)
     }
   }
+
+  override def copy:RemoteSystemDataWrapper = new RemoteSystemDataWrapper(host, secure, address, version)
 
   override def finalize{
     if(created){

@@ -92,6 +92,18 @@ class ResourceVersion{
     }
   }
 
+  override def clone:ResourceVersion = {
+    val version = new ResourceVersion
+    version.persisted = this.persisted
+    version.date = if(this.date != null) this.date.clone.asInstanceOf[Date] else null
+
+    version.revision = this.revision
+    version.systemMetadata = this.systemMetadata.clone
+    version.data = if(this.data != null) this.data.copy else null
+
+    version
+  }
+
 }
 
 object ResourceVersion{

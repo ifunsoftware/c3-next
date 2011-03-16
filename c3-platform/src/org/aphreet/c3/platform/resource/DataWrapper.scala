@@ -127,7 +127,8 @@ abstract class DataWrapper {
     writeTo(stream)
     stream.toByteArray
   }
-  
+
+  def copy:DataWrapper
 
   
   protected def top(types:java.util.Collection[_]):String = {
@@ -185,6 +186,8 @@ abstract class AbstractFileDataWrapper extends DataWrapper{
 class FileDataWrapper(val existentFile:File) extends AbstractFileDataWrapper{
 
   override def getFile:File = existentFile
+
+  def copy:FileDataWrapper = new FileDataWrapper(existentFile)
   
 }
 
@@ -224,6 +227,8 @@ class BytesDataWrapper(val bytes:Array[Byte]) extends AbstractBytesDataWrapper {
 
   override def loadBytes:Array[Byte] = bytes
 
+  def copy:BytesDataWrapper = new BytesDataWrapper(bytes)
+
 }
 
 /**
@@ -246,6 +251,9 @@ class StringDataWrapper(val value:String) extends DataWrapper {
   })
   
   def mimeType:String = top(MimeUtil.getMimeTypes(value))
+
+  def copy:StringDataWrapper = new StringDataWrapper(value)
+
 }
 
 
@@ -268,4 +276,6 @@ class EmptyDataWrapper extends DataWrapper {
   })
 
   def mimeType:String = ""
+
+  def copy:EmptyDataWrapper = new EmptyDataWrapper
 }

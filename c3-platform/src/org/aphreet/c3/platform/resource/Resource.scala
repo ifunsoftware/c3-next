@@ -199,6 +199,24 @@ class Resource {
     byteOs.toByteArray
   }
 
+  override def clone:Resource = {
+
+    val resource = new Resource
+    resource.address = this.address
+    resource.createDate = this.createDate.clone.asInstanceOf[Date]
+
+    resource.metadata = this.metadata.clone
+    resource.systemMetadata = this.systemMetadata.clone
+
+    resource.isVersioned = this.isVersioned
+
+    for(version <- this.versions){
+      resource.versions.append(version.clone)
+    }
+    
+    resource
+  }
+
 }
 
 object Resource {

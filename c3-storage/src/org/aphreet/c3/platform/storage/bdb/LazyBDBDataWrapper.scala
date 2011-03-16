@@ -30,18 +30,22 @@
 
 package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.resource.AbstractBytesDataWrapper
 import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry, Database}
 import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.resource.{BytesDataWrapper, AbstractBytesDataWrapper}
 
 class LazyBDBDataWrapper(val key: String, val database: Database) extends AbstractBytesDataWrapper {
 
   lazy val loadedBytes: Array[Byte] = fetchBytesFromDb
 
+  private var loaded = false
+
   private def fetchBytesFromDb: Array[Byte] = {
     val valueEntry = new DatabaseEntry()
 
     val status = database.get(null, new DatabaseEntry(key.getBytes), valueEntry, LockMode.DEFAULT)
+
+    loaded = true
 
     if (status == OperationStatus.SUCCESS)
       valueEntry.getData
@@ -51,5 +55,13 @@ class LazyBDBDataWrapper(val key: String, val database: Database) extends Abstra
   }
 
   override def loadBytes: Array[Byte] = loadedBytes
-  
+
+  override def copy:AbstractBytesDataWrapper =
+  {
+    if(this.loaded)
+      if(this.loadedBytes.length < 102400)
+         return new BytesDataWrapper(this.loadedBytes)
+
+    new LazyBDBDataWrapper(key, database)
+  }
 }

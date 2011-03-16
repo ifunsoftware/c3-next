@@ -32,8 +32,8 @@ package org.aphreet.c3.platform.test.unit
 import junit.framework.TestCase
 import junit.framework.Assert._
 import java.util.Date
-import org.aphreet.c3.platform.resource.{ResourceSerializer, DataWrapper, ResourceVersion, Resource}
-
+import org.aphreet.c3.platform.resource._
+import collection.mutable.ArrayBuffer
 
 class ResourceTestCase extends TestCase {
 
@@ -327,6 +327,20 @@ class ResourceTestCase extends TestCase {
     resource.addVersion(version)
 
     assertEquals("Значение2", Resource.fromByteArray(resource.toByteArray).metadata.get("key2").get)
+
+  }
+
+  def testClone {
+
+
+    val resourceVersion = new ResourceVersion
+    resourceVersion.data = new StringDataWrapper("testme")
+
+    val resource = new Resource
+
+    resource.addVersion(resourceVersion)
+
+    resource.clone
 
   }
 
