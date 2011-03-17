@@ -176,9 +176,13 @@ class DataController extends AbstractController with ServletContextAware{
 
     if(isMultipartRequest(request)){
 
+      log debug "Starting data upload"
+
       val factory = createDiskFileItemFactory
 
       val upload = new ServletFileUpload(factory)
+
+      log debug "Parsing request"
 
       val iterator = upload.parseRequest(request).iterator
 
@@ -210,6 +214,8 @@ class DataController extends AbstractController with ServletContextAware{
 
       }
 
+      log debug "Parse complete"
+
       try {
         if(data != null){
           val version = new ResourceVersion
@@ -219,8 +225,11 @@ class DataController extends AbstractController with ServletContextAware{
 
         resource.metadata ++= metadata
 
+        log debug "Executing callback"
 
         processUpload()
+
+        log debug "Upload done"
 
       } finally {
         if (tmpFile != null) tmpFile.delete

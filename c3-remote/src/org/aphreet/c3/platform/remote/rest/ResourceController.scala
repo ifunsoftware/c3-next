@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation._
 
 import javax.servlet.http._
 import org.aphreet.c3.platform.domain.Domain
+import org.aphreet.c3.platform.filesystem.Node
 
 @Controller
 @RequestMapping(Array("/resource"))
@@ -115,6 +116,7 @@ class ResourceController extends DataController{
 
     val resource = accessManager.get(address)
 
+    canEditResource(resource)
     checkDomainAccess(resource, domain)
 
     executeDataUpload(resource, domain, request, response, () => {
@@ -135,11 +137,19 @@ class ResourceController extends DataController{
 
     val resource = accessManager.get(address)
 
+    canEditResource(resource)
     checkDomainAccess(resource, domain)
 
     accessManager.delete(address)
     
     getResultWriter(contentType).writeResponse(new Result, response)
+  }
+
+  def canEditResource(resource:Resource):Boolean = {
+    resource.systemMetadata.get(Node.NODE_TYPE_FIELD) match {
+      case Some(x) => x != Node.NODE_TYPE_FIELD
+      case None => true
+    }
   }
 
 }

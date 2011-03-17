@@ -85,7 +85,9 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
           (xml \\ "uploaded")(0) \ "@address" text
 
         }
-        case _ => throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
+        case _ =>
+          println(postMethod.getResponseBodyAsString)
+          throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
       }
     }finally {
       postMethod.releaseConnection

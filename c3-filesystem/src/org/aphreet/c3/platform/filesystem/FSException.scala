@@ -40,3 +40,12 @@ class FSException(override val message:String, override val cause:Throwable) ext
 
   def this(cause:Throwable) = this(null, cause)
 }
+
+class FSNotFoundException(override val message:String, override val cause:Throwable) extends FSException(message, cause){
+
+  def this(message:String) = this(message, null)
+
+  def this() = this(null, null)
+
+  def this(cause:Throwable) = this(null, cause)
+}

@@ -201,7 +201,7 @@ class FSManagerImpl extends FSManager{
 
       val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
         case Some(a) => a
-        case None => throw new FSException("Specified path does not exists")
+        case None => throw new FSNotFoundException("Specified path does not exists")
       }
 
       val resource = accessManager.get(nodeRef.address)

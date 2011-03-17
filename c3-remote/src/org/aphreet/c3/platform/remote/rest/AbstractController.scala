@@ -38,8 +38,12 @@ import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescripti
 import org.springframework.web.bind.annotation.{ExceptionHandler}
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.domain.DomainException
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.filesystem.FSNotFoundException
 
 class AbstractController{
+
+  val log = LogFactory getLog getClass
 
   var writerSelector:ResultWriterSelector = _
 
@@ -91,6 +95,17 @@ class AbstractController{
 
     response.setStatus(HttpServletResponse.SC_FORBIDDEN)
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+  }
+
+  @ExceptionHandler(Array(classOf[FSNotFoundException]))
+  def handleDomainException(e:FSNotFoundException,
+                                      request:HttpServletRequest,
+                                      response:HttpServletResponse) {
+
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_NOT_FOUND)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("File not found")), response)
   }
 
   protected def getResultWriter(expectedType:String):ResultWriter = {
