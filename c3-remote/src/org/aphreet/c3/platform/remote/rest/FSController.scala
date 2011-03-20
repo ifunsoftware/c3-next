@@ -66,8 +66,7 @@ class FSController extends DataController{
     if(metadata == null){
 
       if(node.isDirectory){
-        checkDomainAccess(node.resource, domain)
-        getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
+        sendDirectoryContents(node, contentType, domain, response)
       }else{
         sendResourceData(node.resource, -1, domain, response)
       }

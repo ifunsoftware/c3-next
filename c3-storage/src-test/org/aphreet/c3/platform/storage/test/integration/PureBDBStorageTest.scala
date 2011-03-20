@@ -46,6 +46,8 @@ class PureBDBStorageTest extends TestCase{
 
       val resource = createResource
 
+      val lengthString = resource.versions(0).data.length.toString
+
       val ra = storage.add(resource)
 
       var readResource = storage.get(ra) match {
@@ -54,6 +56,11 @@ class PureBDBStorageTest extends TestCase{
       }
 
       compareResources(resource, readResource)
+
+      resource.versions(0).systemMetadata.get(Resource.MD_DATA_LENGTH) match{
+        case Some(value) => assertEquals(lengthString, value)
+        case None => assertTrue("Data length sys md is not found", false)
+      }
 
       storage.close
 

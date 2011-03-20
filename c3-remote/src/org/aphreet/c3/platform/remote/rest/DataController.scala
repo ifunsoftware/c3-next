@@ -45,8 +45,10 @@ import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
-import response.ResourceResult
 import org.aphreet.c3.platform.domain._
+import response.fs.FSDirectory
+import response.{DirectoryResult, ResourceResult}
+import org.aphreet.c3.platform.filesystem.{Directory, Node}
 
 class DataController extends AbstractController with ServletContextAware{
 
@@ -103,6 +105,11 @@ class DataController extends AbstractController with ServletContextAware{
     }else{
       throw new ResourceNotFoundException("Incorrect version number")
     }
+  }
+
+  protected def sendDirectoryContents(node:Node, contentType:String, domain:String, response:HttpServletResponse) = {
+    checkDomainAccess(node.resource, domain)
+    getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
   }
 
   protected def checkDomainAccess(resource:Resource, domainId:String) = {

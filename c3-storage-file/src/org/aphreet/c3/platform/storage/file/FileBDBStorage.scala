@@ -112,6 +112,7 @@ class FileBDBStorage(override val parameters:StorageParams,
 
       //version.data writeTo targetFile
       version.data = DataWrapper.wrap(targetFile)
+      version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
 
     }catch{
       case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)

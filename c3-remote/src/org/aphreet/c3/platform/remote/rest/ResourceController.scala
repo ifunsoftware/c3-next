@@ -45,7 +45,7 @@ class ResourceController extends DataController{
 
   @RequestMapping(value =  Array("/{address}"),
                   method = Array(RequestMethod.GET))
-  def getResourceData(@PathVariable address:String,
+  def getResource(@PathVariable address:String,
                       @RequestParam(value = "metadata", required = false) metadata:String,
                       @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                       request:HttpServletRequest,
@@ -59,13 +59,25 @@ class ResourceController extends DataController{
     if(metadata != null){
       sendMetadata(resource, contentType, domain, response)
     }else{
-      sendResourceData(resource, -1, domain, response)
+
+      val directoryNode:Node =
+        if(Node.canBuildFromResource(resource)){
+          val node = Node.fromResource(resource)
+          if(node.isDirectory) node
+          else null
+        }else null
+
+      if(directoryNode != null){
+        sendDirectoryContents(directoryNode, contentType, domain, response)
+      }else{
+        sendResourceData(resource, -1, domain, response)
+      }
     }
   }
 
   @RequestMapping(value =  Array("/{address}/{version}"),
                   method = Array(RequestMethod.GET))
-  def getResourceDataVersion(@PathVariable("address") address:String,
+  def getResourceVersion(@PathVariable("address") address:String,
                              @PathVariable("version") version:Int,
                              @RequestParam(value = "metadata", required = false) metadata:String,
                              @RequestHeader(value = "x-c3-type", required = false) contentType:String,

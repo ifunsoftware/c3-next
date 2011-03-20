@@ -96,7 +96,7 @@ class PureBDBStorage(override val parameters: StorageParams,
     }
 
     version.data = DataWrapper.wrap(version.data.getBytes)
-
+    version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
   }
 
   def name = PureBDBStorage.NAME

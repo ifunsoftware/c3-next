@@ -69,6 +69,17 @@ object Node{
       case None => throw new FSException("Referenced node does not have a type")
     }
   }
+
+  def canBuildFromResource(resource:Resource):Boolean = {
+    resource.systemMetadata.get(NODE_TYPE_FIELD) match {
+      case Some(value) => value match {
+        case "directory" => true
+        case "file" => true
+        case _ => false
+      }
+      case None => false
+    }
+  }
 }
 
 case class NodeRef(val name:String, val address:String, val leaf:Boolean)
