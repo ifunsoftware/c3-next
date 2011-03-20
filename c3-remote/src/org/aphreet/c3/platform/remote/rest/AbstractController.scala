@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.{ExceptionHandler}
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.domain.DomainException
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.filesystem.FSNotFoundException
+import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
 
 class AbstractController{
 
@@ -106,6 +106,17 @@ class AbstractController{
 
     response.setStatus(HttpServletResponse.SC_NOT_FOUND)
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("File not found")), response)
+  }
+
+  @ExceptionHandler(Array(classOf[FSWrongRequestException]))
+  def handleDomainException(e:FSWrongRequestException,
+                                      request:HttpServletRequest,
+                                      response:HttpServletResponse) {
+
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   protected def getResultWriter(expectedType:String):ResultWriter = {

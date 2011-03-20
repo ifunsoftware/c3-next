@@ -157,6 +157,11 @@ class FSManagerImpl extends FSManager{
       throw new FSException("Can't add node to file")
     }
 
+    directory.getChild(name) match{
+      case Some(value) => throw new FSWrongRequestException("Node with name: " + name +  "already exists")
+      case None =>
+    }
+
 
     try{
       accessManager.lock(directory.resource.address)

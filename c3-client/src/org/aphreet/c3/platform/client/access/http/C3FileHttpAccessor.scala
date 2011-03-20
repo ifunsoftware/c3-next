@@ -123,7 +123,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
   private def writeData(path:String, filePart:FilePart, metadata:Map[String, String]) = {
     val postMethod = new PostMethod(url + path)
 
-    addAuthHeader(postMethod, requestUri)
+    addAuthHeader(postMethod, requestUri + path)
 
     val parts:Array[Part] = (filePart ::
             metadata.map(e => new StringPart(e._1, e._2, "UTF-8")).toList).toArray

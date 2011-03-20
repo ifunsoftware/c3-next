@@ -169,6 +169,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     val fileToUpload = new File(args.tail.head)
 
     println(fileToUpload.getAbsolutePath)
+    println(directory)
 
     fileAccessor.uploadFile(directory, fileToUpload)
   }
