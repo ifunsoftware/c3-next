@@ -169,7 +169,7 @@ class FSManagerImpl extends FSManager{
       //refreshing directory instance
       directory = Node.fromResource(accessManager.get(directory.resource.address)).asInstanceOf[Directory]
 
-      newNode.resource.systemMetadata.put(Node.NODE_PARENT_FIELD, directory.resource.address)
+      newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
 
       val newAddress = accessManager.add(newNode.resource)
 

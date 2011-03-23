@@ -158,7 +158,7 @@ class ResourceController extends DataController{
   }
 
   def canEditResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get(Node.NODE_TYPE_FIELD) match {
+    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
       case Some(x) => x != Node.NODE_TYPE_DIR
       case None => true
     }

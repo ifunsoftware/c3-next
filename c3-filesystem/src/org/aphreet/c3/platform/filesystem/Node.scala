@@ -47,11 +47,11 @@ object Node{
 
   val log = LogFactory.getLog(classOf[Node])
 
-  val NODE_NAME_FIELD = "c3.fs.nodename"
+  val NODE_FIELD_NAME = "c3.fs.nodename"
 
-  val NODE_TYPE_FIELD = "c3.fs.nodetype"
+  val NODE_FIELD_TYPE = "c3.fs.nodetype"
 
-  val NODE_PARENT_FIELD = "c3.fs.parent"
+  val NODE_FIELD_PARENT = "c3.fs.parent"
 
   val NODE_TYPE_FILE = "file"
 
@@ -60,7 +60,7 @@ object Node{
   val DIRECTORY_CONTENT_TYPE = "application/x-c3-directory"
 
   def fromResource(resource:Resource):Node = {
-    resource.systemMetadata.get(NODE_TYPE_FIELD) match {
+    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => Directory(resource)
         case "file" => File(resource)
@@ -71,7 +71,7 @@ object Node{
   }
 
   def canBuildFromResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get(NODE_TYPE_FIELD) match {
+    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => true
         case "file" => true
@@ -93,8 +93,8 @@ case class File(override val resource:Resource) extends Node(resource){
 object File{
 
   def createFile(resource:Resource, domainId:String, name:String):File = {
-    resource.systemMetadata.put(Node.NODE_TYPE_FIELD, Node.NODE_TYPE_FILE)
-    resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
+    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
+    resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
     resource.systemMetadata.put("c3.domain.id", domainId)
 
     File(resource)
@@ -184,10 +184,10 @@ object Directory{
 
   def emptyDirectory(domainId:String, name:String):Directory = {
     val resource = new Resource
-    resource.systemMetadata.put(Node.NODE_TYPE_FIELD, Node.NODE_TYPE_DIR)
+    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
 
     if(name != null){
-      resource.systemMetadata.put(Node.NODE_NAME_FIELD, name)
+      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
     }
 
     resource.systemMetadata.put("c3.skip.index", "true")
