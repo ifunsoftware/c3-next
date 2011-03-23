@@ -28,16 +28,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access.worker
+package org.aphreet.c3.platform.client.access.tools.worker
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.{TimeUnit, ArrayBlockingQueue}
+import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 
-class DeleteWorker(override val host:String,
-                   override val user:String,
-                   override val key:String,
-                   override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, user, key, queue){
+class ConsumerWorker(val host:String, val user:String, val key:String, val queue:ArrayBlockingQueue[String]) extends Runnable{
 
-  override def execute(address:String) = {client.delete(address); 0l}
+  var done:Boolean = false
+  var processed:Int = 0
+  var errors:Int = 0
+  var bytesRead:Long = 0l
+  val client = new C3HttpAccessor(host, user, key)
 
+  override def run{
+
+    var address = queue.poll(5, TimeUnit.SECONDS)
+
+    while(address != null){
+      try{
+        val bytes = execute(address)
+        bytesRead = bytesRead + bytes
+        processed = processed + 1
+      }catch{
+        case e => {
+          errors = errors + 1
+          System.err.println("Error: " + e.getMessage)
+        }
+      }
+      address = queue.poll(5, TimeUnit.SECONDS)
+    }
+
+    done = true
+  }
+
+  def execute(address:String):Long = {
+    client.fakeRead(address) 
+  }
+
+  
 }

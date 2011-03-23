@@ -28,15 +28,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access.worker
+package org.aphreet.c3.platform.client.access.tools
 
 import java.util.concurrent.ArrayBlockingQueue
+import worker.{DownloadWorker, ConsumerWorker}
+import org.aphreet.c3.platform.client.common.ArgumentType._
+import java.io.File
 
-class ReadWorker(override val host:String,
-                   override val user:String,
-                   override val key:String,
-                   override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, user, key, queue){
+class PlatformDownloadClient (override val args:Array[String]) extends ConsumerClient(args){
 
-  override def execute(address:String) = client.fakeRead(address)
+  var directory:File = _
+
+  override def cliDescription = parameters(
+    HOST_ARG,
+    USER_ARG,
+    KEY_ARG,
+    THREADS_ARG,
+    IN_ARG,
+    OUT_ARG,
+    HELP_ARG
+  )
+
+  override def parseCLI{
+
+    val directoryName:String = OUT_ARG
+
+    if(directoryName != null){
+      directory = new File(directoryName)
+
+      if(!directory.isDirectory){
+        throw new IllegalArgumentException("Specified path is not directory")
+      }
+    }else{
+      throw new IllegalArgumentException("out option is required")
+    }
+  }
+
+  override def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker =
+     new DownloadWorker(host, user, key, queue, directory)
+
+  override def clientName = "Downloader"
+
+  override def actionName = "download"
 }

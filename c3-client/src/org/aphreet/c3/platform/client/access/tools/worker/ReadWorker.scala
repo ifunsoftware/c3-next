@@ -28,18 +28,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access
+package org.aphreet.c3.platform.client.access.tools.worker
 
 import java.util.concurrent.ArrayBlockingQueue
-import worker.{ReadWorker, ConsumerWorker}
 
-class PlatformReadClient(override val args:Array[String]) extends ConsumerClient(args){
+class ReadWorker(override val host:String,
+                   override val user:String,
+                   override val key:String,
+                   override val queue:ArrayBlockingQueue[String])
+        extends ConsumerWorker(host, user, key, queue){
 
-  def clientName = "Reader"
-
-  def actionName = "read"
-
-  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker
-    = new ReadWorker(host, user, key, queue)
-
+  override def execute(address:String) = client.fakeRead(address)
 }

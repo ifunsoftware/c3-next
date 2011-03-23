@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.aphreet.c3.platform.client.access.FSClient
+import org.aphreet.c3.platform.client.access.filesystem.FSClient
 
 object FS{
 

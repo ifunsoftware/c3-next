@@ -29,14 +29,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access
+package org.aphreet.c3.platform.client.access.filesystem
 
-import http.{C3FileHttpAccessor, C3HttpAccessor}
+import org.aphreet.c3.platform.client.access.http.{C3FileHttpAccessor, C3HttpAccessor}
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
 import xml.XML
 import java.net.URLEncoder
+import jline.{ConsoleReader, History}
 
 class FSClient(override val args:Array[String]) extends CLI(args){
 
@@ -68,7 +69,11 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     resourceAccessor = new C3HttpAccessor(host, user, secret)
     fileAccessor = new C3FileHttpAccessor(host, user, secret)
 
-    val reader = new BufferedReader(new InputStreamReader(System.in))
+    val reader = new ConsoleReader
+    reader.setUseHistory(true)
+
+    val history = new History(File.createTempFile("fs.history", ""))
+    reader.setHistory(new History())
 
     println("C3 Filesystem client version " + VersionUtils.clientVersion)
     

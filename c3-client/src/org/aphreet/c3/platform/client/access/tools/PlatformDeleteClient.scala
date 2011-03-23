@@ -27,54 +27,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.client.access.tools
 
-package org.aphreet.c3.platform.client.access
+import java.util.concurrent.ArrayBlockingQueue
+import worker.{DeleteWorker, ConsumerWorker}
 
-import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
-import java.util.Random
-import java.util.concurrent.LinkedBlockingQueue
+class PlatformDeleteClient(override val args:Array[String]) extends ConsumerClient(args){
 
-class ResourceWriter(val host:String, val user:String, val key:String, val count:Int) extends Runnable {
+  def clientName = "Deleter"
 
-  var _size:Int = 1024
-  var _md:Map[String, String] = Map()
-  var _queue:LinkedBlockingQueue[String] = null
-  var written:Int = 0
-  var errors:Int = 0
-  var done:Boolean = false
+  def actionName = "deleted"
 
-  def size(s:Int):ResourceWriter = {_size = s; this}
+  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker = new DeleteWorker(host, user, key, queue)
 
-  def metadata(md:Map[String, String]):ResourceWriter = {_md = md; this}
-
-  def queue(queue:LinkedBlockingQueue[String]):ResourceWriter = {_queue = queue; this}
-
-  override def run{
-
-    val client = new C3HttpAccessor(host, user, key)
-
-    for(i <- 1 to count){
-      try{
-        val ra = client.write(generateDataOfSize(_size), _md)
-        if(_queue != null){
-          _queue.offer(ra)
-        }
-        written = written + 1
-      }catch{
-        case e => {errors = errors + 1; System.err.println(e.getMessage)}
-      }
-    }
-
-    done = true
-  }
-
-  def generateDataOfSize(size:Int):Array[Byte] = {
-
-    val result = new Array[Byte](size)
-    val random = new Random(System.currentTimeMillis)
-    random.nextBytes(result)
-
-    result
-  }
-  
 }

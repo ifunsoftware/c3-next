@@ -56,10 +56,16 @@
             <version>3.1.0</version>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>com.twmacinta.util</groupId>
             <artifactId>md5</artifactId>
             <version>1.0.539</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>0.9.94</version>
         </dependency>
 
     </dependencies>

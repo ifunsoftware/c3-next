@@ -28,22 +28,53 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access.worker
+package org.aphreet.c3.platform.client.access.tools
 
-import java.util.concurrent.ArrayBlockingQueue
-import java.io.File
+import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
+import java.util.Random
+import java.util.concurrent.LinkedBlockingQueue
 
-class DownloadWorker(override val host:String,
-                     override val user:String,
-                     override val key:String,
-                     override val queue:ArrayBlockingQueue[String], val directory:File)
-        extends ConsumerWorker(host, user, key, queue){
+class ResourceWriter(val host:String, val user:String, val key:String, val count:Int) extends Runnable {
 
-  override def execute(address:String) = {
-    val dataFile = new File(directory, address + "-data")
-    val metadataFile = new File(directory, address + "-metadata")
+  var _size:Int = 1024
+  var _md:Map[String, String] = Map()
+  var _queue:LinkedBlockingQueue[String] = null
+  var written:Int = 0
+  var errors:Int = 0
+  var done:Boolean = false
 
-    client.downloadMD(address, metadataFile)
-    client.downloadData(address, dataFile)
+  def size(s:Int):ResourceWriter = {_size = s; this}
+
+  def metadata(md:Map[String, String]):ResourceWriter = {_md = md; this}
+
+  def queue(queue:LinkedBlockingQueue[String]):ResourceWriter = {_queue = queue; this}
+
+  override def run{
+
+    val client = new C3HttpAccessor(host, user, key)
+
+    for(i <- 1 to count){
+      try{
+        val ra = client.write(generateDataOfSize(_size), _md)
+        if(_queue != null){
+          _queue.offer(ra)
+        }
+        written = written + 1
+      }catch{
+        case e => {errors = errors + 1; System.err.println(e.getMessage)}
+      }
+    }
+
+    done = true
   }
+
+  def generateDataOfSize(size:Int):Array[Byte] = {
+
+    val result = new Array[Byte](size)
+    val random = new Random(System.currentTimeMillis)
+    random.nextBytes(result)
+
+    result
+  }
+  
 }

@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access
+package org.aphreet.c3.platform.client.access.tools
 
 import java.util.concurrent.{ArrayBlockingQueue, Executors}
 import java.io.{File, FileReader, BufferedReader}

@@ -28,46 +28,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access
+package org.aphreet.c3.platform.client.access.tools.worker
 
 import java.util.concurrent.ArrayBlockingQueue
-import worker.{DownloadWorker, ConsumerWorker}
-import org.aphreet.c3.platform.client.common.ArgumentType._
-import java.io.File
 
-class PlatformDownloadClient (override val args:Array[String]) extends ConsumerClient(args){
+class DeleteWorker(override val host:String,
+                   override val user:String,
+                   override val key:String,
+                   override val queue:ArrayBlockingQueue[String])
+        extends ConsumerWorker(host, user, key, queue){
 
-  var directory:File = _
+  override def execute(address:String) = {client.delete(address); 0l}
 
-  override def cliDescription = parameters(
-    HOST_ARG,
-    USER_ARG,
-    KEY_ARG,
-    THREADS_ARG,
-    IN_ARG,
-    OUT_ARG,
-    HELP_ARG
-  )
-
-  override def parseCLI{
-
-    val directoryName:String = OUT_ARG
-
-    if(directoryName != null){
-      directory = new File(directoryName)
-
-      if(!directory.isDirectory){
-        throw new IllegalArgumentException("Specified path is not directory")
-      }
-    }else{
-      throw new IllegalArgumentException("out option is required")
-    }
-  }
-
-  override def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker =
-     new DownloadWorker(host, user, key, queue, directory)
-
-  override def clientName = "Downloader"
-
-  override def actionName = "download"
 }

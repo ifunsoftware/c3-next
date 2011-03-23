@@ -27,17 +27,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.client.access
+
+package org.aphreet.c3.platform.client.access.tools
 
 import java.util.concurrent.ArrayBlockingQueue
-import worker.{DeleteWorker, ConsumerWorker}
+import worker.{ReadWorker, ConsumerWorker}
 
-class PlatformDeleteClient(override val args:Array[String]) extends ConsumerClient(args){
+class PlatformReadClient(override val args:Array[String]) extends ConsumerClient(args){
 
-  def clientName = "Deleter"
+  def clientName = "Reader"
 
-  def actionName = "deleted"
+  def actionName = "read"
 
-  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker = new DeleteWorker(host, user, key, queue)
+  def createConsumer(host:String, user:String, key:String, queue:ArrayBlockingQueue[String]):ConsumerWorker
+    = new ReadWorker(host, user, key, queue)
 
 }

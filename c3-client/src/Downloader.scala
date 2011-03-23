@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.aphreet.c3.platform.client.access.PlatformDownloadClient
+import org.aphreet.c3.platform.client.access.tools.PlatformDownloadClient
 
 object Downloader {
 

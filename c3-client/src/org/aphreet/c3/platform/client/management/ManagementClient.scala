@@ -38,6 +38,8 @@ import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnect
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.util.logging.LogManager
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
+import jline.{History, ConsoleReader}
+import java.io.File
 
 class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
@@ -45,9 +47,16 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
   val clientName = "Shell"
 
+  var reader:ConsoleReader = _
+
   {
     LogManager.getLogManager.readConfiguration(getClass.getClassLoader.getResourceAsStream("log.properties"))
 
+    reader = new ConsoleReader
+    reader.setUseHistory(true)
+
+    val history = new History(File.createTempFile("cli.history", ""))
+    reader.setHistory(new History())
 
     if(cli.getOptions.length == 0) helpAndExit(clientName)
 
@@ -62,7 +71,10 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
       case "ws" => {
         val host = cliValue("h", "http://localhost:9301")
         val user = cliValue("u", "")
-        val password = cliValue("p", "")
+        val password = {
+          print("Password:")
+          reader.readLine(new java.lang.Character('*'))
+        }
         try{
           new WSConnectionProvider(host, user, password)
         }catch{
@@ -83,7 +95,6 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     "t" has mandatory argument "type" described "Connection type WS|RMI. Default is RMI",
     "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is http://localhost:9301",
     "u" has mandatory argument "username" described "Only for WS",
-    "p" has mandatory argument "password" described "Only fir WS",
     "ignoreSSLHostname" described  "Ignore host name verification error",
     "help" described "Prints this message"
   )
@@ -95,7 +106,12 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     var shouldExit = false
 
-    val reader = new BufferedReader(new InputStreamReader(System.in))
+
+    val reader = new ConsoleReader
+    reader.setUseHistory(true)
+
+    val history = new History(File.createTempFile("cli.history", ""))
+    reader.setHistory(new History())
 
     println("C3 Client version " + VersionUtils.clientVersion)
 

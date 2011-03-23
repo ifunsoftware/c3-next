@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access
+package org.aphreet.c3.platform.client.access.tools
 
 import org.aphreet.c3.platform.client.common.CLI
 import org.aphreet.c3.platform.client.common.ArgumentType._
