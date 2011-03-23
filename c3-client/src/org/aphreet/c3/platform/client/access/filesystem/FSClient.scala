@@ -69,11 +69,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     resourceAccessor = new C3HttpAccessor(host, user, secret)
     fileAccessor = new C3FileHttpAccessor(host, user, secret)
 
-    val reader = new ConsoleReader
-    reader.setUseHistory(true)
-
-    val history = new History(File.createTempFile("fs.history", ""))
-    reader.setHistory(new History())
+    val reader = new BufferedReader(new InputStreamReader(System.in)
 
     println("C3 Filesystem client version " + VersionUtils.clientVersion)
     
