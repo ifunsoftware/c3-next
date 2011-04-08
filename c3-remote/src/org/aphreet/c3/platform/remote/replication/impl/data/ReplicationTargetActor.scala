@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
 import actors.{AbstractActor, OutputChannel, Actor}
 import actors.remote.{RemoteActor, Node}
+import impl.config.ConfigurationManager
 import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common.WatchedActor
 
@@ -57,6 +58,8 @@ class ReplicationTargetActor extends WatchedActor{
   var accessMediator:AccessMediator = null
 
   var storageManager:StorageManager = null
+
+  var configurationManager:ConfigurationManager = null
 
   var sourceReplicationActor:ReplicationSourceActor = null
 
@@ -83,6 +86,9 @@ class ReplicationTargetActor extends WatchedActor{
   @Autowired
   def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
 
+  @Autowired
+  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+
   def setUseSecureDataConnection(use:Boolean) = {
     secureDataConnection = use
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
@@ -99,7 +105,7 @@ class ReplicationTargetActor extends WatchedActor{
     this.config = config
 
     for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator)
+      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator, configurationManager)
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers
@@ -155,6 +161,10 @@ class ReplicationTargetActor extends WatchedActor{
             getNextWorker ! ProcessDeleteMsg(address, signature, target)
         }
 
+        case ReplicateSystemConfigMsg(config, signature) => {
+          getNextWorker ! ReplicateSystemConfigMsg(config, signature)
+        }
+
         case ReplicateAddAckMsg(address, signature) =>
           sourceReplicationActor ! ReplicateAddAckMsg(address, signature)
 
@@ -163,10 +173,6 @@ class ReplicationTargetActor extends WatchedActor{
 
         case ReplicateDeleteAckMsg(address, signature) =>
           sourceReplicationActor ! ReplicateDeleteAckMsg(address, signature)
-
-        case ReplicateNewStorageIdMsg(storageId, storageType, signature) => {
-          getNextWorker ! ReplicateNewStorageIdMsg(storageId, storageType, signature)
-        }
       }
     }
   }

@@ -33,27 +33,89 @@ package org.aphreet.c3.platform.remote.rest
 
 import org.springframework.stereotype.Controller
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.web.bind.annotation.{RequestMethod, PathVariable, RequestMapping}
+import org.aphreet.c3.platform.resource.Resource
+import java.io.BufferedOutputStream
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.access.AccessManager
+import org.aphreet.c3.platform.remote.replication.ReplicationManager
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
+import org.aphreet.c3.platform.auth.impl.HashUtil
 
 @Controller
 @RequestMapping(Array("/data"))
 class DataTransferController extends AbstractController{
 
+  var accessManager:AccessManager = _
+
+  var replicationManager:ReplicationManager = _
+
+  @Autowired
+  def setAccessManager(manager:AccessManager) = {
+    accessManager = manager
+  }
+
+  @Autowired
+  def setReplicationManager(manager:ReplicationManager) = {
+    replicationManager = manager
+  }
+
   @RequestMapping(value =  Array("/replication/{address}/{version}"),
                   method = Array(RequestMethod.GET))
   def getResourceDataVersion(@PathVariable("address") address:String,
                              @PathVariable("version") version:Int,
+                             @RequestHeader(value = "x-c3-repl", required = false) signature:String,
+                             @RequestHeader(value = "x-c3-host", required = false) targetHostId:String,
+                             @RequestHeader(value = "x-c3-date", required = false) date:String,
                              request:HttpServletRequest,
                              response:HttpServletResponse) =
   {
-    
+
+    val targetHost = replicationManager.getReplicationTarget(targetHostId)
+
+    if(targetHost != null){
+      val hashBase = request.getRequestURI + targetHostId + date
+
+      if(HashUtil.hmac(targetHost.getKey, hashBase) == signature){
+         sendResourceData(accessManager.get(address), version, response)
+      }else{
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+      }
+    }else{
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    }
   }
 
-  @RequestMapping(value =  Array("/bytoken/{accesstoken}"),
-                  method = Array(RequestMethod.GET))
-  def getByToken(@PathVariable("accesstoken") version:Int,
-                             response:HttpServletResponse) =
-  {
-    
+  protected def sendResourceData(resource:Resource, versionNumber:Int, resp:HttpServletResponse) = {
+
+    val version =
+      if(versionNumber == -1) resource.versions.size
+      else versionNumber
+
+    if(version > 0 && resource.versions.size >= version){
+
+      val resourceVersion = resource.versions(version - 1)
+
+      resp.reset
+      resp.setStatus(HttpServletResponse.SC_OK)
+      resp.setContentLength(resourceVersion.data.length.toInt)
+
+      resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+        case Some(x) => resp.setContentType(x)
+        case None =>
+      }
+
+      val os = new BufferedOutputStream(resp.getOutputStream)
+
+      try {
+        resourceVersion.data.writeTo(os)
+      } finally {
+        os.close
+        resp.flushBuffer
+      }
+
+    }else{
+      throw new ResourceNotFoundException("Incorrect version number")
+    }
   }
 }

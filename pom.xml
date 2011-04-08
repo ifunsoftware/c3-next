@@ -57,13 +57,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
-            <dependency>
-                <groupId>org.aphreet.c3</groupId>
-                <artifactId>c3-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -130,6 +123,13 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest</artifactId>
             <version>1.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>com.springsource.slf4j.simple</artifactId>
+            <version>1.5.10</version>
             <scope>test</scope>
         </dependency>
 

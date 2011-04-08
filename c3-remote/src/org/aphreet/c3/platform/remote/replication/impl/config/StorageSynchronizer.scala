@@ -34,6 +34,7 @@ import org.aphreet.c3.platform.remote.api.management.StorageDescription
 import org.aphreet.c3.platform.storage.{StorageModeParser, Storage}
 import org.aphreet.c3.platform.exception.StorageException
 import collection.mutable.{ArrayBuffer, HashSet, HashMap}
+import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil
 
 
 /*        .==.        .==.          
@@ -53,14 +54,21 @@ class StorageSynchronizer {
    * decide what ids should be added
    * to remote machine
    */
-  def getAdditionalIds(remoteStorages:List[StorageDescription], localStorages:List[Storage])
+  def getAdditionalIds(remoteStorages:List[StorageDescription], localStorages:List[Storage]):List[(String, String)] = {
+    val localStorageDescriptions = localStorages.map(s => PlatformManagementServiceUtil.storageToDescription(s)).toList
+
+    compareStorageConfigs(localStorageDescriptions, remoteStorages)
+
+  }
+
+  def compareStorageConfigs(referenceConfiguration:List[StorageDescription], updatableConfiguration:List[StorageDescription])
   :List[(String, String)] = {
 
     val remoteIdsSet = new HashSet[String]
 
     val remoteTypesMap = new HashMap[String, ArrayBuffer[String]]
 
-    for(remoteStorage <- remoteStorages){
+    for(remoteStorage <- updatableConfiguration){
 
       val mode = StorageModeParser.valueOf(remoteStorage.mode)
 
@@ -84,13 +92,13 @@ class StorageSynchronizer {
 
     val localTypesMap = new HashMap[String, ArrayBuffer[String]]
 
-    for(localStorage <- localStorages){
+    for(localStorage <- referenceConfiguration){
 
-      val idBuffer = localTypesMap.get(localStorage.name) match{
+      val idBuffer = localTypesMap.get(localStorage.storageType) match{
         case Some(buffer) => buffer
         case None => {
           val buffer = new ArrayBuffer[String]()
-          localTypesMap += ((localStorage.name, buffer))
+          localTypesMap += ((localStorage.storageType, buffer))
           buffer
         }
       }

@@ -29,23 +29,21 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import actors.Actor
-
-import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.remote.replication._
-
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation.{PostConstruct, PreDestroy}
+import javax.annotation.PreDestroy
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.remote.replication._
 
 @Component
 @Scope("singleton")
@@ -61,6 +59,8 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   var statisticsManager:StatisticsManager = null
 
+  var configurationManager:ConfigurationManager = null
+
   var localSystemId:String = _
 
   @Autowired
@@ -68,6 +68,10 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   @Autowired
   def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
+  
+  @Autowired
+  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+
 
   def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager, localSystemId:String) = {
 
@@ -154,14 +158,6 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           manager ! QueuedTasksReply(tasks)
         }
 
-
-        case NewStorageIdMsg(id, storageType) => {
-          for((id, link) <- remoteReplicationActors){
-            if(!link.isStarted) link.start
-            link ! NewStorageIdMsg(id, storageType)
-          }
-        }
-
         case ReplicationReplayAdd(resource, systemId) => {
           remoteReplicationActors.get(systemId) match{
             case Some(link) =>
@@ -187,6 +183,16 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
               if(!link.isStarted) link.start
               link ! ResourceDeletedMsg(address, 'ReplicationManager)
             case None => log.warn("Failed to replay delete, host does not exist " + systemId)
+          }
+        }
+
+        case SendConfigurationMsg => {
+          val configuration = configurationManager.getSerializedConfiguration
+
+          for((id, link) <- remoteReplicationActors){
+            if(link.isStarted){
+              link ! SendConfigurationMsg(configuration)
+            }
           }
         }
 
@@ -231,4 +237,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 case class ReplicationReplayAdd(val resource:Resource, val systemId:String)
 case class ReplicationReplayDelete(val address:String, val systemId:String)
 case class ReplicationReplayUpdate(val resource:Resource, val systemId:String)
+
+object SendConfigurationMsg
+case class SendConfigurationMsg(val configuration:String)
 

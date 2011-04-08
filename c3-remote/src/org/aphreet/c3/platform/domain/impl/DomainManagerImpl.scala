@@ -41,10 +41,13 @@ import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.auth.impl.HashUtil
 import java.util.{Random, UUID}
 import java.lang.Integer
+import org.apache.commons.logging.LogFactory
 
 @Component("domainManager")
 @Scope("singleton")
 class DomainManagerImpl extends DomainManager{
+
+  val log = LogFactory getLog getClass
 
   var domainAccessor:DomainAccessor = _
 
@@ -129,6 +132,56 @@ class DomainManagerImpl extends DomainManager{
       case None => throw new DomainException("Can't find anonymous domain")
     }
   }
+
+  def importDomain(importedDomain:Domain, remoteSystemId:String){
+
+    val domainList = domainAccessor.load
+
+    val newDomainList = addDomainToList(importedDomain, remoteSystemId, domainList)
+
+    domainAccessor.store(newDomainList)
+
+    reloadDomainConfig
+  }
+
+  def addDomainToList(importedDomain:Domain, remoteSystemId:String, domainList:List[Domain]):List[Domain] = {
+    domainList.filter(d => d.id == importedDomain.id).headOption match{
+      case Some(domain) =>
+        //Found domain with the same id
+        if(domain.name != importedDomain.name + "-" + remoteSystemId){
+          if(domainList.filter(d => d.name == importedDomain.name).isEmpty){
+            domain.name = importedDomain.name
+          }else{
+            domain.name = importedDomain.name + "-" + remoteSystemId
+          }
+        }
+
+        domain.key = importedDomain.key
+        domain.mode = importedDomain.mode
+
+        domainList
+
+      case None => {
+        domainList.filter(d => d.name == importedDomain.name).headOption match{
+          case Some(domain) =>
+            //We have a name collision for this domain, adding a remoteSystemId to its name
+            importedDomain.name = importedDomain.name + "-" + remoteSystemId
+
+            log info "Adding domain with name " + importedDomain.name
+
+            importedDomain :: domainList
+          case None =>
+            //No collisions
+
+            log info "Adding domain with name " + importedDomain.name
+
+            importedDomain :: domainList
+        }
+      }
+
+    }
+  }
+
 
   def checkDomainAccess(name:String, hash:String, keyBase:String):Domain = {
 

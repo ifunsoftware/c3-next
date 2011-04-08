@@ -1,19 +1,12 @@
-package org.aphreet.c3.platform.remote.impl
-
-import org.aphreet.c3.platform.remote.api.RemoteException
-import org.aphreet.c3.platform.storage.{StorageIndex, Storage}
-import org.aphreet.c3.platform.task.TaskDescription
-import org.aphreet.c3.platform.remote.api.management.{DomainDescription, RemoteTaskDescription, StorageIndexDescription, StorageDescription}
-import org.aphreet.c3.platform.domain.{DomainMode, Domain}
-
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -36,28 +29,37 @@ import org.aphreet.c3.platform.domain.{DomainMode, Domain}
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-object PlatformManagementServiceUtil{
-  
-  def storageToDescription(storage:Storage):StorageDescription = {
-    new StorageDescription(storage.id,
-            storage.ids.toArray,
-            storage.params.storageType,
-            storage.path.toString,
-            storage.mode.name + "(" + storage.mode.message + ")",
-            storage.count,
-            storage.params.indexes.map(indexToDescription(_)).toArray)
-  }
+package org.aphreet.c3.platform.remote.test.serialization.xml
 
-  def indexToDescription(index:StorageIndex):StorageIndexDescription = {
-    new StorageIndexDescription(index.name, index.multi, index.system, index.fields.toArray, index.created)
-  }
+import com.thoughtworks.xstream.io.xml.DomDriver
+import com.thoughtworks.xstream.XStream
+import junit.framework.TestCase
+import junit.framework.Assert._
+import org.aphreet.c3.platform.remote.replication.impl.config._
+import org.aphreet.c3.platform.remote.api.management.{StorageDescription, Pair, DomainDescription}
 
-  def fromLocalDescription(descr:TaskDescription):RemoteTaskDescription = {
-    new RemoteTaskDescription(descr.id, descr.name, descr.state.name, descr.progress.toString)
-  }
+class ConfigSerialization extends TestCase{
 
-  def domainFromDescription(domainDescription:DomainDescription):Domain = {
-    Domain(domainDescription.id, domainDescription.name, domainDescription.key, DomainMode.byName(domainDescription.mode))
-  }
+  def testPlatformConfig = {
 
+    val platformConfig = PlatformInfo("systemId", 
+      Array(new StorageDescription("1111", Array("2222", "3333"), "PureBDBStorage", "path", "RO", 0, Array()),
+            new StorageDescription("4444", Array("5555", "6666"), "FileBDBStorage", "path", "RW", 0, Array())),
+      Array(new DomainDescription("id", "name", "key", "full"),
+            new DomainDescription("id2", "name2", "key2", "full")),
+      Array(new Pair("sdsd", "sfdsfdsfsdf"),
+            new Pair("sds", "asdsad")))
+
+    val xStream = new XStream(new DomDriver("UTF-8"))
+
+    val output = xStream.toXML(platformConfig)
+
+    val platformConfig2 = xStream.fromXML(output).asInstanceOf[PlatformInfo]
+
+    val output2 = xStream.toXML(platformConfig2)
+
+    println(output)
+
+    assertEquals(output, output2)
+  }
 }

@@ -43,6 +43,8 @@ trait FSManager{
 
   def createDirectory(domainId:String, path:String)
 
+  def lookupResourcePath(address:String):String
+
   def fileSystemRoots:Map[String, String]
 
   def importFileSystemRoot(domainId:String, address:String)

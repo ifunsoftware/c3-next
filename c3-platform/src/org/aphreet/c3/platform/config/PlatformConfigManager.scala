@@ -43,6 +43,8 @@ trait PlatformConfigManager extends WatchedActor{
 
  def configDir:File
 
+ def getSystemId:String
+
  def getPlatformProperties:Map[String, String]
 
  def setPlatformProperty(key:String, value:String)

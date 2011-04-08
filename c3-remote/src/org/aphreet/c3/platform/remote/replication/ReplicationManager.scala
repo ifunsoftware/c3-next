@@ -50,6 +50,8 @@ trait ReplicationManager extends WatchedActor {
 
   def listReplicationTargets:Array[ReplicationHost]
 
+  def getReplicationTarget(systemId:String):ReplicationHost
+
   def replayReplicationQueue
 }
 

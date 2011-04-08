@@ -207,6 +207,13 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     }
   }
 
+  def getSystemId:String = {
+    getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
+      case Some(id) => id
+      case None => null
+    }
+  }
+
 
   def getPlatformProperties: Map[String, String] = {
 

@@ -41,7 +41,10 @@ import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
 import org.aphreet.c3.platform.common.WatchedActor
 
-class ReplicationTargetWorker(val localSystemId:String, val storageManager:StorageManager, val accessMediator:AccessMediator) extends WatchedActor {
+class ReplicationTargetWorker(val localSystemId:String,
+                              val storageManager:StorageManager,
+                              val accessMediator:AccessMediator,
+                              val configurationManager:ConfigurationManager) extends WatchedActor {
 
   val log = LogFactory getLog getClass
 
@@ -72,7 +75,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
 
         case ProcessDeleteMsg(address, sign, target) => replicateDelete(address, sign, target)
 
-        case ReplicateNewStorageIdMsg(storageId, storageType, signature) =>
+        case ReplicateSystemConfigMsg(configuration, sign) => processConfiguration(configuration, sign)
 
         case DestroyMsg => {
           log info "Stopping replication worker"
@@ -211,26 +214,14 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
     }
   }
 
-  private def addNewStorageId(id:String, storageType:String, signature:ReplicationSignature) = {
+  private def processConfiguration(configuration:String, signature:ReplicationSignature) = {
 
-    if(checkSignature(id + storageType, signature) != null){
-
-     val storages = storageManager.listStorages
-
-     try{
-        new StorageSynchronizer().getAdditionalId(storages, id, storageType) match {
-          case Some(primaryId) => storageManager.addSecondaryId(primaryId, id)
-          case None =>
-        }
-     }catch{
-       case e:StorageSynchronizerException => log error ("Failed to add id " + id, e)
-     }
-
+    if(checkSignature(configuration, signature) != null){
+      log info "Processing configuration"
+      configurationManager.processSerializedRemoteConfiguration(configuration)
     }else{
-      log warn "Ignoring new storageId due to wrong signature"
+      log info "Ignorring configuration due to incorrect message"
     }
-
-
   }
 
   private def compareUpdatedResource(incomeResource:Resource, storedResource:Resource) = {
@@ -256,7 +247,7 @@ class ReplicationTargetWorker(val localSystemId:String, val storageManager:Stora
   private def fillWithData(resource:Resource, replicationHost:ReplicationHost) = {
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(replicationHost, useSecureDataConnection, resource.address, i)
+      val data = new RemoteSystemDataWrapper(localSystemId, replicationHost, useSecureDataConnection, resource.address, i)
       version.data = data
     }
   }

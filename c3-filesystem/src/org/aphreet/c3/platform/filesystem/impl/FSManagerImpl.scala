@@ -39,6 +39,7 @@ import org.aphreet.c3.platform.resource.{ResourceVersion, DataWrapper, Resource}
 import org.aphreet.c3.platform.filesystem._
 import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
+import annotation.tailrec
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager{
@@ -127,6 +128,30 @@ class FSManagerImpl extends FSManager{
     addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
   }
 
+  def lookupResourcePath(address:String):String = {
+
+    try{
+      lookupResourcePath(address, List[String]()).foldLeft("")(_ + "/" + _)
+    }catch{
+      case e => ""
+    }
+
+  }
+
+  @tailrec
+  private def lookupResourcePath(address:String, pathComponents:List[String]):List[String] = {
+
+    val resource = accessManager.get(address)
+
+    val name = resource.metadata.get(Node.NODE_FIELD_NAME).get
+
+    resource.metadata.get(Node.NODE_FIELD_PARENT) match{
+      case Some(value) => lookupResourcePath(value, name :: pathComponents)
+      case None => name :: pathComponents
+    }
+
+  }
+
   def fileSystemRoots:Map[String, String] = fsRoots
 
   def importFileSystemRoot(domainId:String, address:String) = {
@@ -135,6 +160,9 @@ class FSManagerImpl extends FSManager{
       case Some(x) => throw new FSException("Can't import FS root - root already exists")
       case None => {
         this.synchronized{
+
+          log info "Adding new root: " + domainId + " => " + address
+
           val map:Map[String, String] = fsRoots + ((domainId, address))
 
           configAccessor.store(map)

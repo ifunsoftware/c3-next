@@ -35,11 +35,6 @@ case class ReplicationSignature(val systemId:String, val hash:String)
 class ReplicationMsg(val signature:ReplicationSignature) extends java.io.Serializable
 
 
-case class ReplicateNewStorageIdMsg(val storageId:String,
-                                  val storageType:String,
-                                  override val signature:ReplicationSignature
-        ) extends ReplicationMsg(signature)
-
 case class ReplicateAddMsg(
             val resource:Array[Byte],
             override val signature:ReplicationSignature
@@ -69,5 +64,10 @@ case class ReplicateUpdateAckMsg(
 
 case class ReplicateDeleteAckMsg(
             val address:String, 
+            override val signature:ReplicationSignature
+        ) extends ReplicationMsg(signature)
+
+case class ReplicateSystemConfigMsg(
+            val configuration:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)

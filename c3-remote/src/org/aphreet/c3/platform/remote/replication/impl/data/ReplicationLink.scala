@@ -175,13 +175,10 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           }
         }
 
-        case NewStorageIdMsg(storageId, storageType) => {
-          log info "Sending NewStorageIdMsg to " + host.systemId
+        case SendConfigurationMsg(configuration) => {
+          sendRemoteMessage(remoteActor, ReplicateSystemConfigMsg(configuration, calculator.calculate(configuration)))
 
-          val signature = calculator.calculate(storageId + storageType)
-
-          sendRemoteMessage(remoteActor, ReplicateNewStorageIdMsg(storageId, storageType, signature))
-
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.sendconfig." + host.systemId, 1l)
         }
 
         case DestroyMsg => {
@@ -208,4 +205,3 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
 
 object QueuedTasks
 case class QueuedTasksReply(val set:HashSet[ReplicationTask])
-case class NewStorageIdMsg(val storageId:String, val storageType:String)

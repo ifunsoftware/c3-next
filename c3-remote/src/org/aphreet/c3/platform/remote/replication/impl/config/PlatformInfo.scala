@@ -1,19 +1,12 @@
-package org.aphreet.c3.platform.remote.impl
-
-import org.aphreet.c3.platform.remote.api.RemoteException
-import org.aphreet.c3.platform.storage.{StorageIndex, Storage}
-import org.aphreet.c3.platform.task.TaskDescription
-import org.aphreet.c3.platform.remote.api.management.{DomainDescription, RemoteTaskDescription, StorageIndexDescription, StorageDescription}
-import org.aphreet.c3.platform.domain.{DomainMode, Domain}
-
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -36,28 +29,11 @@ import org.aphreet.c3.platform.domain.{DomainMode, Domain}
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-object PlatformManagementServiceUtil{
-  
-  def storageToDescription(storage:Storage):StorageDescription = {
-    new StorageDescription(storage.id,
-            storage.ids.toArray,
-            storage.params.storageType,
-            storage.path.toString,
-            storage.mode.name + "(" + storage.mode.message + ")",
-            storage.count,
-            storage.params.indexes.map(indexToDescription(_)).toArray)
-  }
+package org.aphreet.c3.platform.remote.replication.impl.config
 
-  def indexToDescription(index:StorageIndex):StorageIndexDescription = {
-    new StorageIndexDescription(index.name, index.multi, index.system, index.fields.toArray, index.created)
-  }
+import org.aphreet.c3.platform.remote.api.management.{DomainDescription, StorageDescription, Pair}
 
-  def fromLocalDescription(descr:TaskDescription):RemoteTaskDescription = {
-    new RemoteTaskDescription(descr.id, descr.name, descr.state.name, descr.progress.toString)
-  }
-
-  def domainFromDescription(domainDescription:DomainDescription):Domain = {
-    Domain(domainDescription.id, domainDescription.name, domainDescription.key, DomainMode.byName(domainDescription.mode))
-  }
-
-}
+case class PlatformInfo(val systemId:String,
+                        val storages:Array[StorageDescription],
+                        val domains:Array[DomainDescription],
+                        val fsRoots:Array[Pair])
