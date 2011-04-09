@@ -54,6 +54,8 @@ abstract class CLI(val args:Array[String]) {
   val SIZE_ARG : Parameter  = "size" has mandatory argument "num" described "Size of object to write" withDefaultVal "512"
   val COUNT_ARG : Parameter = "count" has mandatory argument "num" described "Count of objects to write" withDefaultVal "10"
   val TYPE_ARG  : Parameter = "type" has mandatory argument "mime" described "Mime type of content" withDefaultVal "application/octet-stream"
+  val ID_ARG    : Parameter = "i" has mandatory argument "targetId" described "Id of the target replication system"
+  val ADDRESS_ARG : Parameter = "a" has mandatory argument "address" described "Adress of the resource"
 
   val cli = (new PosixParser).parse(cliDescription, args)
 

@@ -247,7 +247,7 @@ class ReplicationTargetWorker(val localSystemId:String,
   private def fillWithData(resource:Resource, replicationHost:ReplicationHost) = {
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(localSystemId, replicationHost, useSecureDataConnection, resource.address, i)
+      val data = new RemoteSystemDataWrapper(localSystemId, replicationHost, useSecureDataConnection, resource.address, i+1)
       version.data = data
     }
   }

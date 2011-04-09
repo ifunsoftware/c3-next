@@ -29,36 +29,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access.http
+package org.aphreet.c3.platform.client.common
 
-import java.text.SimpleDateFormat
-import org.apache.commons.httpclient.{Header, HttpMethodBase}
-import java.util.Date
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Mac
-import org.aphreet.c3.platform.client.common.HashUtil
 
-abstract class AbstractHttpAccessor(val domain:String, val secret:String){
+object HashUtil{
 
-  def addAuthHeader(method:HttpMethodBase, resource:String) = {
-    if(domain != "anonymous"){
+  def hmac(key:String, input:String):String = {
 
-      val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")
+    val mac = Mac.getInstance("HmacSHA256")
 
-      val dateString = dateFormat.format(new Date())
+    val secret = new SecretKeySpec(key.getBytes, "HmacSHA256")
+    mac.init(secret)
 
-      val hashBase = resource + dateString + domain
+    val digest = mac.doFinal(input.getBytes("UTF-8"));
 
-      val hash = HashUtil.hmac(secret, hashBase)
+    val hexString = new StringBuilder
 
-      val header = new Header("x-c3-sign", hash)
-      method.addRequestHeader(header)
-
-      val domainHeader = new Header("x-c3-domain", domain)
-      method.addRequestHeader(domainHeader)
-
-      val dateHeader = new Header("x-c3-date", dateString)
-      method.addRequestHeader(dateHeader)
+    for (b <- digest) {
+      if ((0xFF & b) < 0x10) {
+        hexString.append("0").append(Integer.toHexString((0xFF & b)))
+      } else {
+        hexString.append(Integer.toHexString((0xFF & b)))
+      }
     }
+
+    hexString.toString
   }
+  
 }

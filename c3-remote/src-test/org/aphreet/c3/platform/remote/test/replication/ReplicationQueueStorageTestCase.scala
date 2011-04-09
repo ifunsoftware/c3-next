@@ -66,10 +66,17 @@ class ReplicationQueueStorageTestCase extends TestCase{
 
     storage.add(tasks)
 
+    //Small test to check behavoir with duplicate entries
+    storage.add(Set(ReplicationTask("1228249156", "0e6315ea-c2fd-4bef-936e-59cef7943841-6a40", AddAction)))
+
     val iterator = storage.iterator
 
     while(iterator.hasNext){
-      assertTrue(tasks.contains(iterator.next))
+
+      val task = iterator.next
+      println("Enumerating: " + task)
+
+      assertTrue(tasks.contains(task))
     }
 
     iterator.close
@@ -77,7 +84,9 @@ class ReplicationQueueStorageTestCase extends TestCase{
     val iterator2 = storage.iterator
 
     while(iterator2.hasNext){
-      iterator2.next
+      val task = iterator2.next
+
+      println("Deleting:" + task)
       iterator2.remove
     }
 
@@ -88,7 +97,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
     var taskCount = 0
 
     while(iterator3.hasNext){
-      iterator3.next
+      println(iterator3.next)
       taskCount = taskCount + 1
     }
 

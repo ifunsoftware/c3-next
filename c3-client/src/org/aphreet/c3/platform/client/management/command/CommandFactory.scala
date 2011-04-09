@@ -35,8 +35,9 @@ import impl._
 import scala.collection.mutable.HashMap
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import jline.ConsoleReader
 
-class CommandFactory(val accessService:PlatformAccessService, val managementService:PlatformManagementService) {
+class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessService, val managementService:PlatformManagementService) {
 
   val root : CommandTreeNode = new CommandTreeNode(null)
 
@@ -71,6 +72,7 @@ class CommandFactory(val accessService:PlatformAccessService, val managementServ
       command.params = classAndParams._2
       command.access = accessService
       command.management = managementService
+      command.reader = reader
       Some(command)
     }else{
       Some(new ErrorCommand("Command not found. Type help to get list of all commands"))

@@ -157,6 +157,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
 
         case SendConfigurationMsg => {
+          log debug "Sending configuration to targets"
           sourceReplicationActor ! SendConfigurationMsg
         }
 
@@ -298,7 +299,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
     val secretKey = secret
 
-    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort, "anonymous", "")
+    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort)
   }
 
   private def createLocalPropertyRetriever:Function1[String, String] = {

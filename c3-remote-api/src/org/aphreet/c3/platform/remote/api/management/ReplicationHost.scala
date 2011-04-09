@@ -38,12 +38,10 @@ case class ReplicationHost(
             @BeanProperty var key:String,
             @BeanProperty var httpPort:JInt,
             @BeanProperty var httpsPort:JInt,
-            @BeanProperty var replicationPort:JInt,
-            @BeanProperty var httpDataUser:String,
-            @BeanProperty var httpDataPassword:String
+            @BeanProperty var replicationPort:JInt
         ) extends java.io.Serializable{
 
-  def this() = this(null, null, null, null, null, null, null, null)
+  def this() = this(null, null, null, null, null, null)
 
   def httpServerString(secure:Boolean) = {
     if(secure){

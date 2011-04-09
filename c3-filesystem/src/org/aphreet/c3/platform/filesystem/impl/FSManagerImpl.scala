@@ -157,7 +157,9 @@ class FSManagerImpl extends FSManager{
   def importFileSystemRoot(domainId:String, address:String) = {
 
     fsRoots.get(domainId) match{
-      case Some(x) => throw new FSException("Can't import FS root - root already exists")
+      case Some(x) =>
+        if(x != address)
+          throw new FSException("Can't import FS root - root already exists")
       case None => {
         this.synchronized{
 

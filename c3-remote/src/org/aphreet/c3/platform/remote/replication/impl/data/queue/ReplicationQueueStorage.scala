@@ -62,7 +62,7 @@ class ReplicationQueueStorage(val path:Path) {
     val envConfig = new EnvironmentConfig
     envConfig setAllowCreate true
     envConfig setSharedCache false
-    envConfig setTransactional true
+    envConfig setTransactional false
     envConfig setTxnNoSync true
     envConfig setTxnWriteNoSync true
 
@@ -75,7 +75,7 @@ class ReplicationQueueStorage(val path:Path) {
 
     val dbConfig = new DatabaseConfig
     dbConfig setAllowCreate true
-    dbConfig setTransactional true
+    dbConfig setTransactional false
     database = env.openDatabase(null, "ReplicationQueueDB", dbConfig)
 
     log info "ReplicationQueueDB opened"
@@ -95,7 +95,7 @@ class ReplicationQueueStorage(val path:Path) {
 
             if(task.action.isStronger(queuedAction)){
               value.setData(task.action.toBytes)
-              if(database.putNoDupData(null, key, value) != OperationStatus.SUCCESS){
+              if(database.put(null, key, value) != OperationStatus.SUCCESS){
                 log warn "Can't put task to queue " + task
               }
             }
@@ -140,7 +140,6 @@ class ReplicationQueueStorage(val path:Path) {
 }
 
 class ReplicationQueueIterator(val database:Database) extends java.util.Iterator[ReplicationTask]{
-
 
   val cursor = database.openCursor(null, null)
 

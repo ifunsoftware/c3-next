@@ -71,10 +71,8 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
       val http = getValue(hostNode.asInstanceOf[MapNode], "http_port").toInt
       val https = getValue(hostNode.asInstanceOf[MapNode], "https_port").toInt
       val replicationPort = getValue(hostNode.asInstanceOf[MapNode], "replication_port").toInt
-      val httpUser = getValue(hostNode.asInstanceOf[MapNode], "http_user")
-      val httpPassword = getValue(hostNode.asInstanceOf[MapNode], "http_password")
 
-      map = map + ((id, new ReplicationHost(id, host, key, http, https, replicationPort, httpUser, httpPassword)))
+      map = map + ((id, new ReplicationHost(id, host, key, http, https, replicationPort)))
     }
     map
   }
@@ -114,12 +112,6 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
 
           writer.key("replication_port")
           writer.value(host.replicationPort)
-
-          writer.key("http_user")
-          writer.value(host.httpDataUser)
-
-          writer.key("http_password")
-          writer.value(host.httpDataPassword)
 
           writer.endObject
         }

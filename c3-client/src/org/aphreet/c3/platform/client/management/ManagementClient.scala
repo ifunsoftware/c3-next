@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.client.management
 import command.CommandFactory
 import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
 import connection.{ConnectionException, ConnectionProvider}
-import java.io.{InputStreamReader, BufferedReader}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.util.logging.LogManager
@@ -115,7 +114,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     println("C3 Client version " + VersionUtils.clientVersion)
 
-    var commandFactory = connect
+    var commandFactory = connect(reader)
     
     println("Welcome to C3 shell")
 
@@ -139,7 +138,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
         	    case e:RemoteConnectFailureException=> {
         	      println("Connection to server lost. Trying to reconnect...")
 
-        	      commandFactory = connect
+        	      commandFactory = connect(reader)
         	      false
         	    }
         	    case e =>{
@@ -164,14 +163,14 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     }
   }
 
-  def createCommandFactory:CommandFactory = {
-    new CommandFactory(connectionProvider.access, connectionProvider.management)
+  def createCommandFactory(reader:ConsoleReader):CommandFactory = {
+    new CommandFactory(reader, connectionProvider.access, connectionProvider.management)
   }
 
-  def connect:CommandFactory = {
+  def connect(reader:ConsoleReader):CommandFactory = {
     for(i <- 1 to 5){
       try{
-        return createCommandFactory
+        return createCommandFactory(reader)
       }catch{
         case e:RemoteLookupFailureException => {
           if(i < 5){

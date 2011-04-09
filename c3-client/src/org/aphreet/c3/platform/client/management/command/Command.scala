@@ -32,11 +32,11 @@ package org.aphreet.c3.platform.client.management.command
 
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import java.io.{InputStreamReader, BufferedReader}
+import jline.ConsoleReader
 
 abstract class Command{
 
-  val reader = new BufferedReader(new InputStreamReader(System.in))
+  var reader:ConsoleReader = null
 
   var params:List[String] = List()
   

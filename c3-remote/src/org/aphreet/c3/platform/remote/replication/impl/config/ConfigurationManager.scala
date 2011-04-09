@@ -71,6 +71,7 @@ class ConfigurationManager{
 
   def processSerializedRemoteConfiguration(configuration:String) = {
     val xStream = new XStream(new DomDriver("UTF-8"))
+    xStream.setClassLoader(getClass.getClassLoader)
 
     processRemoteConfiguration(xStream.fromXML(configuration).asInstanceOf[PlatformInfo])
   }

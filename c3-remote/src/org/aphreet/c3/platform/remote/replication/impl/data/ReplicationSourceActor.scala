@@ -187,12 +187,16 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
         }
 
         case SendConfigurationMsg => {
+
+          log info "Retrieving configuration from manager"
+
           val configuration = configurationManager.getSerializedConfiguration
 
+          log info "Got configuration, distributing over targets"
+
           for((id, link) <- remoteReplicationActors){
-            if(link.isStarted){
-              link ! SendConfigurationMsg(configuration)
-            }
+            if(!link.isStarted) link.start
+            link ! SendConfigurationMsg(configuration)
           }
         }
 
