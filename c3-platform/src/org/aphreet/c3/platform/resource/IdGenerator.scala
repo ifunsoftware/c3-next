@@ -45,18 +45,22 @@ object IdGenerator{
 
 
   def generateAddress(systemId:String, storageId:String) = {
-   generateId(6) + "-" + systemId + "-" + storageId
+   generateId(6, true) + "-" + systemId + "-" + storageId
   }
 
   def generateSystemId:String = {
-    generateId(2)
+    generateId(2, true)
   }
 
   def generateStorageId:String = {
-    generateId(1)
+    generateId(1, true)
   }
 
-  private def generateId(groups:Int):String = {
+  def generateId(groups:Int):String = {
+    generateId(groups, false)
+  }
+
+  private def generateId(groups:Int, withDashes:Boolean):String = {
 
 
     val bytes = Array.ofDim[Byte](groups * 3);
@@ -78,8 +82,10 @@ object IdGenerator{
       val res2 = (byte1 & 0x0F) | ((byte2 & 0xC0) >> 2)
       val res3 = byte2 & 0x3F
 
-      if(i != 0 && i!=1 && i != 5){
-        builder.append("-")
+      if(withDashes){
+        if(i != 0 && i!=1 && i != 5){
+          builder.append("-")
+        }
       }
 
       builder.append(chars(res0)).append(chars(res1)).append(chars(res2)).append(chars(res3))

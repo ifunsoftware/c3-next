@@ -53,6 +53,7 @@ import org.aphreet.c3.platform.storage.{StorageParams, StorageManager}
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
+import org.aphreet.c3.platform.resource.IdGenerator
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -221,8 +222,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val managementService = getManagementService(host, user, password)
 
-    val secret = System.currentTimeMillis.toString //TODO replace this
-
+    val secret = IdGenerator.generateId(5)
 
     val localReplicationHost = createLocalReplicationHost(secret)
 
