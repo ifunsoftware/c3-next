@@ -56,11 +56,11 @@ object SearchConfigurationUtil{
 
     val it  = properties.keySet.iterator
 
-    val map = new java.util.HashMap[String, String]
+    val map = new java.util.HashMap[String, java.lang.Integer]
 
     while(it.hasNext){
       val key = it.next.asInstanceOf[String]
-      val value = properties.getProperty(key)
+      val value = java.lang.Integer.parseInt(properties.getProperty(key))
       map.put(key, value)
     }
 

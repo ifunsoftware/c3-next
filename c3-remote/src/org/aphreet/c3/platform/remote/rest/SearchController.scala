@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, Pa
 
 @Controller
 @RequestMapping(Array("/search"))
-class SearchController extends AbstractController{
+class SearchController extends DataController{
 
   var searchManager:SearchManager = _
 
@@ -53,9 +53,13 @@ class SearchController extends AbstractController{
                   method = Array(RequestMethod.GET))
   def search(@PathVariable query:String,
              @RequestHeader(value = "x-c3-type", required = false) contentType:String,
+             req:HttpServletRequest,
              resp:HttpServletResponse){
 
-    val results = searchManager.search(query)
+
+    val domain = getRequestDomain(req, false)
+
+    val results = searchManager.search(domain, query)
 
     resp.setStatus(HttpServletResponse.SC_OK)
 

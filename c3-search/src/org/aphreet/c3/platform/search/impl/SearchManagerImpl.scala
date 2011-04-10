@@ -164,7 +164,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     this ! DestroyMsg
   }
 
-  def search(query: String): Array[SearchResultElement] = {
+  def search(domain:String, query: String): Array[SearchResultElement] = {
 
     log debug "Search called with query: " + query
 
@@ -172,7 +172,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       log debug "Searcher is null"
       new Array[SearchResultElement](0)
     }
-    else searcher.search(query)
+    else searcher.search(domain, query)
   }
 
   def act {

@@ -156,7 +156,7 @@ class DataController extends AbstractController with ServletContextAware{
         if(readonly){
           domain.id
         }else{
-          throw new DomainException("Domain is readonlyg")
+          throw new DomainException("Domain is readonly")
         }
     }
 
