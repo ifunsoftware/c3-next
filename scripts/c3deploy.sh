@@ -18,8 +18,8 @@ rm -rf /tmp/c3-tmp
 mkdir /tmp/c3-tmp
 
 cd /tmp/c3-tmp
-wget http://$C3_BUILD_SERVER/builds/c3/$REVISION/c3-all-1.0.$REVISION.zip
-unzip c3-all-1.0.$REVISION.zip
+wget http://$C3_BUILD_SERVER/c3-next/$REVISION/c3-next-$REVISION.zip
+unzip c3-next-$REVISION.zip
 
 $VIRGO_CTL stop
 sleep 10
