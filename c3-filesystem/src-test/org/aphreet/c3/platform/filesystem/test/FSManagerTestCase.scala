@@ -47,17 +47,17 @@ class FSManagerTestCase extends TestCase{
     expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
     expect(accessManager.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("third_level_dir", "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
     expect(accessManager.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("second_level_dir", "00000003-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("first_level_dir", null)).anyTimes
+    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
     replay(accessManager)
 
     val fsManager = new FSManagerImpl
 
     fsManager.setAccessManager(accessManager)
     
-    assertEquals("/first_level_dir/second_level_dir/third_level_dir/file0", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/first_level_dir/second_level_dir/third_level_dir", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/first_level_dir/second_level_dir", fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/first_level_dir", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals("/second_level_dir/third_level_dir/file0", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals("/second_level_dir/third_level_dir", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals("/second_level_dir", fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals("", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
 
     verify(accessManager)
@@ -69,7 +69,7 @@ class FSManagerTestCase extends TestCase{
     expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
     expect(accessManager.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
     expect(accessManager.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, null)).anyTimes
-    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("first_level_dir", null)).anyTimes
+    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
     replay(accessManager)
 
     val fsManager = new FSManagerImpl
@@ -79,7 +79,7 @@ class FSManagerTestCase extends TestCase{
     assertEquals("", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals("", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals("", fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/first_level_dir", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals("", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
 
 
@@ -90,11 +90,11 @@ class FSManagerTestCase extends TestCase{
     val resource = new Resource
 
     if(name != null){
-      resource.metadata.put(Node.NODE_FIELD_NAME, name)
+      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
     }
     
     if(parentAddress != null){
-      resource.metadata.put(Node.NODE_FIELD_PARENT, parentAddress)
+      resource.systemMetadata.put(Node.NODE_FIELD_PARENT, parentAddress)
     }
 
     resource

@@ -167,6 +167,8 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
 
     addAuthHeader(getMethod, requestUri + path)
 
+    getMethod.addRequestHeader(new Header("x-c3-extmeta", "c3.ext.fs.path"))
+
     try{
       val status = httpClient.executeMethod(getMethod)
       status match {

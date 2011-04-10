@@ -131,9 +131,14 @@ class FSManagerImpl extends FSManager{
   def lookupResourcePath(address:String):String = {
 
     try{
-      lookupResourcePath(address, List[String]()).foldLeft("")(_ + "/" + _)
+      val result = lookupResourcePath(address, List[String]()).foldLeft("")(_ + "/" + _)
+
+      log info result
+
+      result
     }catch{
-      case e => ""
+      case e => log.debug("Failed to get resource path", e)
+      ""
     }
 
   }
@@ -143,11 +148,11 @@ class FSManagerImpl extends FSManager{
 
     val resource = accessManager.get(address)
 
-    val name = resource.metadata.get(Node.NODE_FIELD_NAME).get
+    val name = resource.systemMetadata.get(Node.NODE_FIELD_NAME)
 
-    resource.metadata.get(Node.NODE_FIELD_PARENT) match{
-      case Some(value) => lookupResourcePath(value, name :: pathComponents)
-      case None => name :: pathComponents
+    resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
+      case Some(value) => lookupResourcePath(value, name.get :: pathComponents)
+      case None => pathComponents
     }
 
   }

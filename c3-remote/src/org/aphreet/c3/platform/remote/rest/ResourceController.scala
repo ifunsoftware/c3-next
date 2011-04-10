@@ -47,6 +47,7 @@ class ResourceController extends DataController{
                   method = Array(RequestMethod.GET))
   def getResource(@PathVariable address:String,
                       @RequestParam(value = "metadata", required = false) metadata:String,
+                      @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
                       @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                       request:HttpServletRequest,
                       response:HttpServletResponse) =
@@ -57,6 +58,7 @@ class ResourceController extends DataController{
     val resource = accessManager.get(address)
 
     if(metadata != null){
+      addNonPersistentMetadata(resource, extMeta)
       sendMetadata(resource, contentType, domain, response)
     }else{
 
@@ -81,6 +83,7 @@ class ResourceController extends DataController{
                              @PathVariable("version") version:Int,
                              @RequestParam(value = "metadata", required = false) metadata:String,
                              @RequestHeader(value = "x-c3-type", required = false) contentType:String,
+                             @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
                              request:HttpServletRequest,
                              response:HttpServletResponse) =
   {
@@ -90,6 +93,9 @@ class ResourceController extends DataController{
     val resource = accessManager.get(address)
 
     if(metadata != null){
+
+      addNonPersistentMetadata(resource, extMeta)
+
       sendMetadata(resource, contentType, domain, response)
     }else{
       sendResourceData(resource, version, domain, response)

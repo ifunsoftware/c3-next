@@ -31,10 +31,7 @@
 package org.aphreet.c3.platform.remote.rest
 
 import org.springframework.stereotype.Controller
-import org.springframework.beans.factory.annotation.Autowired
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.aphreet.c3.platform.filesystem.{Directory, FSManager}
-import response.fs.FSDirectory
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.resource.Resource
 import response.{Result, DirectoryResult}
@@ -46,13 +43,9 @@ class FSController extends DataController{
 
   val baseUrl = "/rest/fs"
 
-  var filesystemManager:FSManager = _
-
-  @Autowired
-  def setFilesystemManager(manager:FSManager) = {filesystemManager = manager}
-
   @RequestMapping(method = Array(RequestMethod.GET))
   def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
+              @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
               @RequestParam(value = "metadata", required = false) metadata:String,
               request:HttpServletRequest,
               response:HttpServletResponse){
@@ -72,6 +65,7 @@ class FSController extends DataController{
       }
 
     }else{
+      addNonPersistentMetadata(node.resource, extMeta)
       sendMetadata(node.resource, contentType, domain, response)
     }
   }

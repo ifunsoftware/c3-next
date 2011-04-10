@@ -48,7 +48,7 @@ import org.apache.commons.fileupload.FileItem
 import org.aphreet.c3.platform.domain._
 import response.fs.FSDirectory
 import response.{DirectoryResult, ResourceResult}
-import org.aphreet.c3.platform.filesystem.{Directory, Node}
+import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
 
 class DataController extends AbstractController with ServletContextAware{
 
@@ -57,6 +57,8 @@ class DataController extends AbstractController with ServletContextAware{
   var domainManager:DomainManager = _
 
   var accessManager:AccessManager = _
+
+  var filesystemManager:FSManager = _
 
   @Autowired
   def setAccessManager(manager:AccessManager) = {
@@ -71,6 +73,9 @@ class DataController extends AbstractController with ServletContextAware{
   def setServletContext(context:ServletContext) = {
     servletContext = context
   }
+
+  @Autowired
+  def setFilesystemManager(manager:FSManager) = {filesystemManager = manager}
 
   protected def sendResourceData(resource:Resource, versionNumber:Int, domain:String, resp:HttpServletResponse) = {
 
@@ -172,6 +177,24 @@ class DataController extends AbstractController with ServletContextAware{
     resp.setStatus(HttpServletResponse.SC_OK)
 
     getResultWriter(contentType).writeResponse(new ResourceResult(resource), resp)
+  }
+
+  protected def addNonPersistentMetadata(resource:Resource, extMeta:String) = {
+
+    if(extMeta != null){
+
+      val keys = extMeta.split(",")
+
+      //Replace this with something like strategy if future if we need more fields
+      for(key <- keys){
+        log info "Processing extended meta: " + key
+        if(key == "c3.ext.fs.path"){
+          val value = filesystemManager.lookupResourcePath(resource.address)
+          resource.systemMetadata.put(key, value)
+        }
+      }
+    }
+
   }
 
   protected def executeDataUpload(resource:Resource,
