@@ -249,8 +249,6 @@
                                     <tasks>
                                         <copy file="${basedir}/config/c3.plan" toDir="${installPath}/plan" overwrite="true"
                                               failonerror="false"/>
-                                        <copy file="${basedir}/config/c3.properties" toDir="${installPath}/jars"
-                                              overwrite="true" failonerror="false"/>
                                     </tasks>
                                 </configuration>
                                 <goals>
