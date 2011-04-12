@@ -35,7 +35,7 @@ import java.io.File
 import org.springframework.stereotype.Component
 import org.apache.commons.logging.LogFactory
 import collection.immutable.Map
-import org.aphreet.c3.platform.management.{PropertyChangeEvent, PlatformPropertyListener}
+import org.aphreet.c3.platform.config.{PropertyChangeEvent, PlatformPropertyListener}
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.{Set => JSet}

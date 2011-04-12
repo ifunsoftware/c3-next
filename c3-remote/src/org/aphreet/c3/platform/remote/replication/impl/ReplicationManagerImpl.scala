@@ -44,9 +44,8 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
-import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
-import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
+import org.aphreet.c3.platform.config._
 import actors.remote.RemoteActor
 import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
 import org.aphreet.c3.platform.storage.{StorageParams, StorageManager}

@@ -35,9 +35,7 @@ import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{Storage, StorageIterator, StorageManager}
 import org.aphreet.c3.platform.search.SearchManager
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import java.util.Date
-import org.aphreet.c3.platform.search.impl.BackgroundIndexMsg
 
 class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager, var indexCreateTimestamp:Long) extends Task {
 
@@ -144,3 +142,5 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 
   override def name = "BackgroundIndexer"
 }
+
+case class BackgroundIndexMsg(val resource:Resource)

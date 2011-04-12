@@ -114,7 +114,9 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
             inChannel.close
           }
         }
-        case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+        case _ =>
+          println(getMethod.getResponseBodyAsString)
+          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
       }
     }finally{
       getMethod.releaseConnection();
@@ -126,7 +128,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
   def downloadMD(address:String, file:File) = {
     val getMethod = new GetMethod(url + address + "?metadata")
 
-    addAuthHeader(getMethod, requestUri + address + "?metadata")
+    addAuthHeader(getMethod, requestUri + address)
 
     try{
       val status = httpClient.executeMethod(getMethod)
@@ -140,7 +142,9 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
             fileChannel.close
           }
         }
-        case _ => throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+        case _ =>
+          println(getMethod.getResponseBodyAsString)          
+          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
       }
     }finally{
       getMethod.releaseConnection();

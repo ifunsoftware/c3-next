@@ -44,7 +44,7 @@ import org.aphreet.c3.platform.access._
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
+import org.aphreet.c3.platform.config.{SPlatformPropertyListener, PropertyChangeEvent}
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{

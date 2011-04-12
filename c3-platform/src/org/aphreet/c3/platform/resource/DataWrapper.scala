@@ -41,13 +41,13 @@ import java.nio.channels.{Channels, WritableByteChannel}
 
 object DataWrapper{
   
-  def wrap(file:File) = new FileDataWrapper(file)
+  def wrap(file:File):DataWrapper = new FileDataWrapper(file)
   
-  def wrap(data:Array[Byte]) = new BytesDataWrapper(data)
+  def wrap(data:Array[Byte]):DataWrapper = new BytesDataWrapper(data)
   
-  def wrap(value:String) = new StringDataWrapper(value)
+  def wrap(value:String):DataWrapper = new StringDataWrapper(value)
   
-  def empty = new EmptyDataWrapper
+  def empty:DataWrapper = new EmptyDataWrapper
   
 }
 

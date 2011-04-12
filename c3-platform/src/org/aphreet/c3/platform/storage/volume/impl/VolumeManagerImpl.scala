@@ -38,7 +38,7 @@ import javax.annotation.{PostConstruct}
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.task._
-import org.aphreet.c3.platform.management.{SPlatformPropertyListener, PropertyChangeEvent}
+import org.aphreet.c3.platform.config.{SPlatformPropertyListener, PropertyChangeEvent}
 
 import org.aphreet.c3.platform.storage.Storage
 import org.aphreet.c3.platform.exception.StorageException

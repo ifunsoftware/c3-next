@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.config
 import collection.immutable.Map
 
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.management.PlatformPropertyListener
 import java.io.File
 import org.aphreet.c3.platform.common.WatchedActor
 

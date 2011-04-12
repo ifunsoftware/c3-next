@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.SearchResultElement
 import org.aphreet.c3.search.ext.{SearchConfiguration, SearchStrategyFactory}
@@ -119,3 +118,5 @@ class Searcher(var indexPath: Path, val configuration:SearchConfiguration) exten
 }
 
 object ReopenSearcher
+
+case class NewIndexPathMsg(path:Path)

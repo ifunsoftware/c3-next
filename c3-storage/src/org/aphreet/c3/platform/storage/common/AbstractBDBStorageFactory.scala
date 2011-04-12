@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.storage.common
 
-import org.aphreet.c3.platform.management.{PlatformManagementEndpoint, PropertyChangeEvent, SPlatformPropertyListener}
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U

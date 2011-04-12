@@ -39,7 +39,7 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
 import org.apache.lucene.index.{Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.search.impl.NewIndexPathMsg
+import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 
 class FileIndexer(var indexPath:Path) extends WatchedActor{

@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.search.impl
 
 import actors.Actor._
 
-import background.BackgroundIndexTask
+import background._
 import common.SearchConfigurationUtil
 import index._
 import org.aphreet.c3.platform.access._
@@ -40,14 +40,11 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.common.msg._
-import java.util.Date
-import org.aphreet.c3.platform.management.{PropertyChangeEvent, SPlatformPropertyListener}
-import org.aphreet.c3.platform.config.{UnregisterMsg, RegisterMsg, PlatformConfigManager}
-import search.Searcher
+import org.aphreet.c3.platform.config._
+import search._
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.{ComponentGuard, Path}
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchManager}
 
@@ -337,6 +334,3 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
   }
 
 }
-
-case class BackgroundIndexMsg(val resource:Resource)
-case class NewIndexPathMsg(path:Path)

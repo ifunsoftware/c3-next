@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.management
+package org.aphreet.c3.platform.config
 
 import java.util.EventObject
 
