@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, Req
 import org.aphreet.c3.platform.resource.Resource
 import response.{Result, DirectoryResult}
 import org.aphreet.c3.platform.domain.Domain
+import org.apache.commons.httpclient.util.URIUtil
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -145,6 +146,11 @@ class FSController extends DataController{
   }
 
   private def getFilesystemPath(request:HttpServletRequest):String = {
-    request.getRequestURI.replaceFirst(baseUrl, "")
+    val path = request.getRequestURI.replaceFirst(baseUrl, "")
+    decodeFSPath(path)
+  }
+
+  def decodeFSPath(path:String):String = {
+    URIUtil.decode(path, "UTF-8")
   }
 }

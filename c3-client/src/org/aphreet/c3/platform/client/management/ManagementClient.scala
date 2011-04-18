@@ -63,7 +63,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification
 
-    val connectionType = cliValue("t", "rmi").toLowerCase
+    val connectionType = cliValue("t", "ws").toLowerCase
 
     connectionProvider = connectionType match {
       case "rmi" => new RmiConnectionProvider
