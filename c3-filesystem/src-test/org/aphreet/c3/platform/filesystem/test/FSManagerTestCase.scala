@@ -99,4 +99,14 @@ class FSManagerTestCase extends TestCase{
 
     resource
   }
+
+  def testSplitPath = {
+
+    val manager = new FSManagerImpl
+
+    val result = manager.splitPath("test/dir/file.jpeg")
+
+    assertEquals(result._1, "test/dir")
+    assertEquals(result._2, "file.jpeg")
+  }
 }

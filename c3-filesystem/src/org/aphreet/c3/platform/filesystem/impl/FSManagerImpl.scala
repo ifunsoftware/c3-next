@@ -291,7 +291,7 @@ class FSManagerImpl extends FSManager{
     rootAddress
   }
 
-  private def splitPath(path:String):(String, String) = {
+  def splitPath(path:String):(String, String) = {
 
     if(log.isDebugEnabled){
       log debug "Splitting path: " + path
@@ -304,8 +304,9 @@ class FSManagerImpl extends FSManager{
       case None => throw new FSException("Name is not specified")
     }
 
-    val parentPath = path.replaceFirst(name + "$", "")
+    val parentPath = path.substring(0, path.length - name.length - 1)
 
     (parentPath, name)
+
   }
 }

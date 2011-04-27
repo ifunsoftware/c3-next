@@ -104,7 +104,7 @@ class ReplicationQueueStorage(val path:Path) {
 
           case OperationStatus.NOTFOUND => {
             value.setData(task.action.toBytes)
-            if(database.putNoDupData(null, key, value) != OperationStatus.SUCCESS){
+            if(database.put(null, key, value) != OperationStatus.SUCCESS){
               log warn "Can't put task to queue " + task
             }
           }
