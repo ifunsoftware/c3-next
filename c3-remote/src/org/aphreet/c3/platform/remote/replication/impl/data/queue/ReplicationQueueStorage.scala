@@ -143,13 +143,11 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
 
   val cursor = database.openCursor(null, null)
 
+  private var nextElement = findNextTask
+
   override def hasNext:Boolean = {
 
-    val next = findNextTask
-
-    goBack
-
-    next match {
+    nextElement match {
       case Some(task) => true
       case None => false
     }
@@ -157,16 +155,29 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
   }
 
   override def next:ReplicationTask = {
-    findNextTask match {
+
+    val result = nextElement match {
       case Some(task) => task
-      case None => null
+      case None => throw new IllegalStateException
     }
+
+    nextElement = findNextTask
+
+    result
   }
 
   override def remove = {
+
+    val key = new DatabaseEntry
+    val value = new DatabaseEntry
+
+    cursor.getPrev(key, value, LockMode.DEFAULT)
+
     if(cursor.delete != OperationStatus.SUCCESS){
       throw new ReplicationException("Failed to remove task from queue") 
     }
+
+    nextElement = findNextTask
   }
 
   private def findNextTask:Option[ReplicationTask] = {
@@ -174,20 +185,11 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
     val key = new DatabaseEntry
     val value = new DatabaseEntry
 
-
     if (cursor.getNext(key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
       Some(ReplicationTask.fromByteArrays(key.getData, value.getData))
     } else {
       None
     }
-  }
-
-  private def goBack = {
-
-    val key = new DatabaseEntry
-    val value = new DatabaseEntry
-
-    cursor.getPrev(key, value, LockMode.DEFAULT)
   }
 
   def close = {
