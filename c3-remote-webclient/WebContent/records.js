@@ -16,3 +16,15 @@ var Storage = Ext.data.Record.create([
 var StorageType = Ext.data.Record.create([
     {name: 'name', type:Ext.data.Types.C3PLAIN}
 ]);
+
+var Domain = Ext.data.Record.create([
+    {name: 'domainId', mapping:'id'},
+    {name: 'name'},
+    {name: 'mode'},
+    {name: 'key'}
+]);
+
+var ManagementUser = Ext.data.Record.create([
+    {name: 'name'},
+    {name: 'enabled'}
+]);
