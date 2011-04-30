@@ -127,7 +127,7 @@ function getDefaultHeaders(){
 
 function createDefaultConnection(){
     return new Ext.data.Connection({
-        url: '/c3-remote/ws/management',
+        url: '/ws/management',
         method: 'POST',
         defaultHeaders: getDefaultHeaders()
     })
@@ -157,4 +157,14 @@ function ManagementCreateStorage(type, path, success, failure){
         success:success,
         failure:failure
     })
+}
+
+var _connectionProxy = null;
+
+function getConnectionProxy(){
+    if(_connectionProxy == null){
+        _connectionProxy = new Ext.data.HttpProxy(createDefaultConnection());
+    }
+
+    return _connectionProxy;
 }
