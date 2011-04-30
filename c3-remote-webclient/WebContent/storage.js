@@ -253,6 +253,12 @@ var storageColumnModel = new Ext.grid.ColumnModel({
         store: volumesStore,
         title:'Volumes',
         cm:volumesColumnModel,
+        tbar: [{
+                text: 'Refresh',
+                handler : function(){
+                    volumesStore.load()
+                }
+            }]
     });
 
 function createStorageTab(){

@@ -3,6 +3,11 @@ var PlatformProperty = Ext.data.Record.create([
     {name: 'value'}
 ]);
 
+var Statistics = Ext.data.Record.create([
+    {name: 'key'},
+    {name: 'value'}
+]);
+
 var Storage = Ext.data.Record.create([
     {name: 'stId', mapping:'id'},
     {name: 'storageType'},

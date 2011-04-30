@@ -7,7 +7,8 @@ Ext.onReady(function(){
         items:[
             createPropertiesTab(),
             createStorageTab(),
-            createAccessTab()
+            createAccessTab(),
+            createStatisticsTab()
         ]
     });
 
