@@ -1,25 +1,29 @@
-var statisticsStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        Statistics
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'statistics'
-    },
-    autoLoad:true,
-    autoSave:false,
-    batch:false
-/*    listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+var statisticsStore = null;
+
+function getStatisticsStore(){
+
+    if(statisticsStore == null){
+        statisticsStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            Statistics
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'statistics'
+                        },
+                        autoLoad:true,
+                        autoSave:false,
+                        batch:false
+                      })
+    }
+
+    return statisticsStore;
+}
 
 var statisticsColumnModel = new Ext.grid.ColumnModel({
     defaults: {
@@ -42,13 +46,13 @@ var statisticsColumnModel = new Ext.grid.ColumnModel({
 
 function createStatisticsTab() {
     return new Ext.grid.EditorGridPanel({
-        store: statisticsStore,
+        store: getStatisticsStore(),
         title:'Statistics',
         cm:statisticsColumnModel,
         tbar: [{
                 text: 'Refresh',
                 handler : function(){
-                    statisticsStore.load()
+                    getStatisticsStore().load()
                 }
             }]
     })

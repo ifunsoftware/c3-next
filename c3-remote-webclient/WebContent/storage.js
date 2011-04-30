@@ -1,65 +1,78 @@
-var storageStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        Storage
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'listStorages'
-    },
-    autoLoad:true,
-   /* listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+var storageStore = null;
 
-var storageTypesStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        StorageType
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'listStorageTypes'
-    },
-    autoLoad:false,
-   /* listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+function getStorageStore(){
+    if(storageStore == null){
+        storageStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            Storage
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'listStorages'
+                        },
+                        autoLoad:true,
+                      })
+    }
 
-var volumesStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        Volume
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'volumes'
-    },
-    autoLoad:true,
-   /* listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+    return storageStore;
+}
+
+var storageTypesStore = null;
+
+function getStorageTypesStore(){
+    if(storageTypesStore == null){
+        storageTypesStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            StorageType
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'listStorageTypes'
+                        },
+                        autoLoad:true,
+                      })
+    }
+
+    return storageTypesStore;
+}
+
+
+var volumesStore = null;
+
+function getVolumeStore(){
+
+    if(volumesStore == null){
+        volumesStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            Volume
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'volumes'
+                        },
+                        autoLoad:true,
+                        autoSave:false,
+                        batch:false
+                      })
+    }
+
+    return volumesStore;
+}
 
 
 var volumesColumnModel = new Ext.grid.ColumnModel({
@@ -136,14 +149,15 @@ var storageColumnModel = new Ext.grid.ColumnModel({
 
 
     // create the Grid
-    var storageGrid = new Ext.grid.EditorGridPanel({
-        store: storageStore,
+function createStorageGrid(){
+    return new Ext.grid.EditorGridPanel({
+        store: getStorageStore(),
         title:'Storages',
         cm:storageColumnModel,
         listeners: {
             rowdblclick: function(obj, index, e){
 
-                var row = storageStore.getAt(index)
+                var row = getStorageStore().getAt(index)
 
                 var win = new Ext.Window({
                     title:'Storage ',// + row.data.stId,
@@ -176,7 +190,7 @@ var storageColumnModel = new Ext.grid.ColumnModel({
         tbar: [{
                 text: 'Refresh',
                 handler : function(){
-                    storageStore.load({})
+                    getStorageStore().load({})
                 }
             },
             {
@@ -202,7 +216,7 @@ var storageColumnModel = new Ext.grid.ColumnModel({
                                     allowBlank : false,
                                     valueField:'name',
                                     displayField:'name',
-                                    store: storageTypesStore,
+                                    store: getStorageTypesStore(),
                                     triggerAction: 'all',
                                     editable:false
                                 },
@@ -225,7 +239,7 @@ var storageColumnModel = new Ext.grid.ColumnModel({
 
                                             ManagementCreateStorage(storageType, storagePath,
                                                 function(resp, opts){
-                                                    storageStore.load();
+                                                    getStorageStore().load();
                                                     win.close();
                                                 },
                                                 function(resp, opts){
@@ -247,19 +261,22 @@ var storageColumnModel = new Ext.grid.ColumnModel({
                     win.show();
                 }
             }]
-    });
+    })
+}
 
-    var volumesGrid = new Ext.grid.EditorGridPanel({
-        store: volumesStore,
+function createVolumesGrid(){
+    return new Ext.grid.EditorGridPanel({
+        store: getVolumeStore(),
         title:'Volumes',
         cm:volumesColumnModel,
         tbar: [{
                 text: 'Refresh',
                 handler : function(){
-                    volumesStore.load()
+                    getVolumeStore.load()
                 }
             }]
     });
+}
 
 function createStorageTab(){
     return new Ext.Panel({
@@ -268,12 +285,12 @@ function createStorageTab(){
         defaults:{layout:'fit', border:true},
         layoutConfig:{animate:true},
         items: [
-            storageGrid,
+            createStorageGrid(),
             {
                 title:'Content mappings',
                 html: 'empty panel'
             },
-            volumesGrid
+            createVolumesGrid()
         ]
 
     });

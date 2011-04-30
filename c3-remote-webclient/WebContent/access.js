@@ -1,48 +1,56 @@
-var domainStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        Domain
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'listDomains'
-    },
-    autoLoad:true,
-    autoSave:false,
-    batch:false
-/*    listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+var domainStore = null;
 
-var userStore = new Ext.data.WSStore({
-    reader: new Ext.data.XmlReader(
-        {
-            record: "return",
-        },
-        ManagementUser
-    ),
-    writer: new Ext.data.XmlWriter({
-    }),
-    proxy: getConnectionProxy(),
-    baseParams:{
-        methodName:'listUsers'
-    },
-    autoLoad:true,
-    autoSave:false,
-    batch:false
-/*    listeners:{
-        load:function(store, records, options){
-            alert(records);
-        }
-    }*/
-});
+function getDomainStore(){
+
+    if(domainStore == null){
+        domainStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            Domain
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'listDomains'
+                        },
+                        autoLoad:true,
+                        autoSave:false,
+                        batch:false
+                      })
+    }
+
+    return domainStore;
+}
+
+var userStore = null
+
+function getUserStore(){
+
+    if(userStore == null){
+        userStore = new Ext.data.WSStore({
+                        reader: new Ext.data.XmlReader(
+                            {
+                                record: "return",
+                            },
+                            ManagementUser
+                        ),
+                        writer: new Ext.data.XmlWriter({
+                        }),
+                        proxy: getConnectionProxy(),
+                        baseParams:{
+                            methodName:'listUsers'
+                        },
+                        autoLoad:true,
+                        autoSave:false,
+                        batch:false
+                      })
+    }
+
+    return userStore;
+}
 
 
 
@@ -91,12 +99,15 @@ var domainColumnModel = new Ext.grid.ColumnModel({
     ]
 });
 
-var domainGrid = new Ext.grid.EditorGridPanel({
-    store: domainStore,
-    title:'Domains',
-    cm:domainColumnModel,
-//    clicksToEdit: 2
-});
+function createDomainGrid(){
+    return new Ext.grid.EditorGridPanel({
+        store: getDomainStore(),
+        title:'Domains',
+        cm:domainColumnModel,
+//      clicksToEdit: 2
+    });
+}
+
 
 
 var userColumnModel = new Ext.grid.ColumnModel({
@@ -118,12 +129,14 @@ var userColumnModel = new Ext.grid.ColumnModel({
     ]
 });
 
-var userGrid = new Ext.grid.EditorGridPanel({
-    store: userStore,
-    title:'Users',
-    cm:userColumnModel,
-//    clicksToEdit: 2
-});
+function createUserGrid(){
+    return new Ext.grid.EditorGridPanel({
+        store: getUserStore(),
+        title:'Users',
+        cm:userColumnModel,
+//      clicksToEdit: 2
+    });
+}
 
 function createAccessTab() {
     return new Ext.Panel({
@@ -132,8 +145,8 @@ function createAccessTab() {
         defaults:{layout:'fit', border:true},
         layoutConfig:{animate:true},
         items: [
-            domainGrid,
-            userGrid
+            createDomainGrid(),
+            createUserGrid()
         ]
 
     });
