@@ -28,3 +28,11 @@ var ManagementUser = Ext.data.Record.create([
     {name: 'name'},
     {name: 'enabled'}
 ]);
+
+var Volume = Ext.data.Record.create([
+    {name:'path'},
+    {name:'free'},
+    {name:'size'},
+    {name:'available'},
+    {name:'storages'}
+]);

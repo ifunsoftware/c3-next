@@ -40,6 +40,66 @@ var storageTypesStore = new Ext.data.WSStore({
     }*/
 });
 
+var volumesStore = new Ext.data.WSStore({
+    reader: new Ext.data.XmlReader(
+        {
+            record: "return",
+        },
+        Volume
+    ),
+    writer: new Ext.data.XmlWriter({
+    }),
+    proxy: getConnectionProxy(),
+    baseParams:{
+        methodName:'volumes'
+    },
+    autoLoad:true,
+   /* listeners:{
+        load:function(store, records, options){
+            alert(records);
+        }
+    }*/
+});
+
+
+var volumesColumnModel = new Ext.grid.ColumnModel({
+    defaults: {
+        sortable: true
+    },
+    columns: [
+        {
+            id: 'path',
+            header: 'Mount point',
+            dataIndex: 'path',
+            width: 130
+        },
+        {
+            header: 'Size',
+            dataIndex: 'size',
+            width: 130,
+            renderer: Ext.util.Format.fileSize
+        },
+        {
+            header: 'Available',
+            dataIndex: 'available',
+            width:100,
+            renderer: Ext.util.Format.fileSize
+        },
+        {
+            header: 'Free',
+            dataIndex: 'free',
+            width:100,
+            renderer: Ext.util.Format.fileSize
+        },
+        {
+            header: 'Storages',
+            dataIndex: 'storages',
+            width:100
+        }
+    ]
+});
+
+
 var storageColumnModel = new Ext.grid.ColumnModel({
         defaults: {
             sortable: true
@@ -189,6 +249,12 @@ var storageColumnModel = new Ext.grid.ColumnModel({
             }]
     });
 
+    var volumesGrid = new Ext.grid.EditorGridPanel({
+        store: volumesStore,
+        title:'Volumes',
+        cm:volumesColumnModel,
+    });
+
 function createStorageTab(){
     return new Ext.Panel({
         title: 'Storage',
@@ -201,10 +267,7 @@ function createStorageTab(){
                 title:'Content mappings',
                 html: 'empty panel'
             },
-            {
-                title:'Volumes',
-                html: 'empty panel'
-            }
+            volumesGrid
         ]
 
     });
