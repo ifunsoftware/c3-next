@@ -68,7 +68,8 @@ function createPropertiesTab() {
         frame: true,
         clicksToEdit: 2,
         tbar: [{
-                text: 'Reload',
+                text: 'Refresh',
+                iconCls:'refresh',
                 handler : function(){
                     getPlatformPropertiesStore().load({})
                 }

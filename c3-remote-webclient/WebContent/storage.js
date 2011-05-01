@@ -189,12 +189,14 @@ function createStorageGrid(){
         },
         tbar: [{
                 text: 'Refresh',
+                iconCls:'refresh',
                 handler : function(){
                     getStorageStore().load({})
                 }
             },
             {
                 text: 'Add',
+                iconCls:'plus',
                 handler : function(){
 
                     var win = new Ext.Window({
@@ -271,6 +273,7 @@ function createVolumesGrid(){
         cm:volumesColumnModel,
         tbar: [{
                 text: 'Refresh',
+                iconCls:'refresh',
                 handler : function(){
                     getVolumeStore.load()
                 }

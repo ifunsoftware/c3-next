@@ -51,6 +51,8 @@ function createStatisticsTab() {
         cm:statisticsColumnModel,
         tbar: [{
                 text: 'Refresh',
+                iconCls:'refresh',
+                tooltip:'Refresh statistics',
                 handler : function(){
                     getStatisticsStore().load()
                 }
