@@ -1,0 +1,52 @@
+﻿/*!
+ * Ext JS Library 3.0.0
+ * Copyright(c) 2006-2009 Ext JS, LLC
+ * licensing@extjs.com
+ * http://www.extjs.com/license
+ *
+ * xtheme-symphony skin
+ * Created by Arthur Kay
+ * http://www.akawebdesign.com
+ *
+ * The idea is to use these custom styles to override the some elements of the
+ * Slickness theme (v2.2). While originally designed for Ext2.0, the Slickness
+ * theme renders surprisingly well in v3.0.
+ */
+
+.x-grid3-row-alt{ background-color:#cec; }
+
+.x-grid3-row-selected {
+	background-color: #fdddaa !important;
+	background-image: none;
+	border-color:#ffb500;
+}
+
+.x-tree-node .x-tree-node-over { background-color: #cec; }
+.x-tree-node .x-tree-selected {	background-color: #fdddaa; }
+
+/*
+ * The text on the bottom toolbars was black, which blended with the black background.
+ */
+.x-toolbar { color: #eeeef0; }
+
+/*
+ * The portlet forms have a white background. The labels were also white.
+ */
+.x-form { background-color: #222; }
+
+/*
+ * White text on button mouseovers was hard to read as background was a light blue.
+ */
+.x-toolbar .x-btn-over button { color: #000; }
+
+/**
+ * On Ext.menu.Menu(), the mouse-over image and border don't look good.
+ */
+.x-menu-item-active {
+    background-image: none;
+    background-color: #3f3f3f;
+}
+.x-menu-item-active a.x-menu-item {
+    border-style: none;
+    border-width: 0;
+}
