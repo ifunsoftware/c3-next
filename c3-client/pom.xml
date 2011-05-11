@@ -72,14 +72,12 @@
 
     <build>
         <defaultGoal>package</defaultGoal>
-        <sourceDirectory>src</sourceDirectory>
-        <outputDirectory>bin</outputDirectory>
-        <testSourceDirectory>src-test</testSourceDirectory>
-        <testOutputDirectory>bin-test</testOutputDirectory>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
 
         <resources>
             <resource>
-                <directory>src/</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>*.properties</include>
                 </includes>
@@ -100,7 +98,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <sourceDir>src</sourceDir>
                     <args>
                         <arg>-deprecation</arg>
                     </args>
@@ -134,21 +131,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${basedir}</directory>
-                            <includes>
-                                <include>bin.timestamp</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
-                </configuration>
             </plugin>
         </plugins>
     </build>

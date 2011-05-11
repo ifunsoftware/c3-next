@@ -48,6 +48,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-access-control</artifactId>
+            <version>${bundleVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.8.0</version>
@@ -65,20 +72,6 @@
     </dependencies>
 
     <build>
-        <!--
-                <defaultGoal>package</defaultGoal>
-                <sourceDirectory>src</sourceDirectory>
-                <outputDirectory>bin</outputDirectory>
-
-                <testSourceDirectory>src-test</testSourceDirectory>
-                <testOutputDirectory>bin-test</testOutputDirectory>
-
-                <resources>
-                    <resource>
-                        <directory>src/</directory>
-                    </resource>
-                </resources>
-        -->
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -185,7 +178,7 @@
                                 <configuration>
                                     <tasks>
                                         <echo message="Updating manifest file with current build number" />
-                                        <copy file="src/META-INF/MANIFEST.MF" toDir="target"
+                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
                                               overwrite="true" />
                                         <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
                                                  value="Bundle-Version: ${bundleVersion}" />

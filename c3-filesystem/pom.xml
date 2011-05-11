@@ -25,23 +25,15 @@
 
     <build>
         <defaultGoal>package</defaultGoal>
-        <sourceDirectory>src</sourceDirectory>
-        <outputDirectory>bin</outputDirectory>
 
-        <testSourceDirectory>src-test</testSourceDirectory>
-        <testOutputDirectory>bin-test</testOutputDirectory>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/main/scala</testSourceDirectory>
 
         <resources>
             <resource>
-                <directory>src/</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>META-INF/spring/*.xml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>${basedir}</directory>
-                <includes>
-                    <include>lib/*.jar</include>
                 </includes>
             </resource>
         </resources>
@@ -67,7 +59,6 @@
                         <jvmArg>-Xms64m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
                     </jvmArgs>
-                    <sourceDir>src</sourceDir>
                 </configuration>
             </plugin>
 
@@ -86,25 +77,7 @@
                     </archive>
                 </configuration>
             </plugin>
-            <!--
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-
-                            </artifactItems>
-                            <outputDirectory>${dependencyPath}</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
+            
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -142,7 +115,7 @@
                                 <configuration>
                                     <tasks>
                                         <echo message="Updating manifest file with current build number"/>
-                                        <copy file="src/META-INF/MANIFEST.MF" toDir="target"
+                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
                                               overwrite="true"/>
                                         <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
                                                  value="Bundle-Version: ${bundleVersion}"/>

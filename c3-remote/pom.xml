@@ -36,6 +36,12 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-access-control</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-search</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -211,18 +217,13 @@
 
     <build>
         <defaultGoal>package</defaultGoal>
-        <sourceDirectory>src</sourceDirectory>
-        <outputDirectory>bin</outputDirectory>
+        <sourceDirectory>src/main/scala</sourceDirectory>
 
-        <testSourceDirectory>src-test</testSourceDirectory>
-        <testOutputDirectory>bin-test</testOutputDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
 
         <resources>
             <resource>
-                <directory>src/</directory>
-                <includes>
-                    <include>META-INF/spring/*.xml</include>
-                </includes>
+                <directory>src/main/resources</directory>
             </resource>
         </resources>
 
@@ -246,26 +247,23 @@
                         <jvmArg>-Xms64m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
                     </jvmArgs>
-                    <sourceDir>src</sourceDir>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <webXml>WebContent/WEB-INF/web.xml</webXml>
-                    <warSourceDirectory>WebContent</warSourceDirectory>
+                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
+                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
                     <webResources>
                         <resource>
-                            <directory>src</directory>
+                            <directory>src/main/scala</directory>
                             <targetPath>WEB-INF/classes</targetPath>
-                            <includes>
-                                <include>**/*.xml</include>
-                            </includes>
                         </resource>
                     </webResources>
                     <archive>
-                        <manifestFile>${warManifestPath}</manifestFile>
+                        <manifestFile>${bundleManifestPath}</manifestFile>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
@@ -394,7 +392,7 @@
                                 <configuration>
                                     <tasks>
                                         <echo message="Updating manifest file with current build number"/>
-                                        <copy file="WebContent/META-INF/MANIFEST.MF" toDir="target"
+                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
                                               overwrite="true"/>
                                         <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
                                                  value="Bundle-Version: ${bundleVersion}"/>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:osgi-compendium="http://www.springframework.org/schema/osgi-compendium"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/osgi-compendium
+           http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium-1.2.xsd">
+
+    <context:annotation-config />
+
+    <context:component-scan base-package="org.aphreet.c3.platform.remote.impl" />
+    <context:component-scan base-package="org.aphreet.c3.platform.remote.replication" />
+
+    <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
+        <property name="serviceName" value="PlatformRmiManagementEndPoint" />
+        <property name="service" ref="platformManagementService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.management.PlatformManagementService" />
+        <property name="registryPort" value="1299" />
+    </bean>
+
+    <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
+        <property name="serviceName" value="PlatformRmiAccessEndPoint" />
+        <property name="service" ref="platformAccessService" />
+        <property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.access.PlatformAccessService" />
+        <property name="registryPort" value="1299" />
+    </bean>
+
+    <bean id="resultWriterFactory" class="org.aphreet.c3.platform.remote.rest.response.ResultWriterFactory"/>
+
+    <bean id="xmlResultWriter"
+      factory-bean="resultWriterFactory"
+      factory-method="createXmlResultWriter"/>
+
+    <bean id="jsonResultWriter"
+      factory-bean="resultWriterFactory"
+      factory-method="createJsonResultWriter"/>
+
+</beans>

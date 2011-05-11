@@ -1,0 +1,17 @@
+bin.timestamp
+bin-test.timestamp
+target
+bin
+.idea
+.externalToolBuilders
+.settings
+.project
+.classpath
+.springBeans
+*.iml
+*.iws
+*.out
+*.log
+*.ipr
+*.tmp
+
