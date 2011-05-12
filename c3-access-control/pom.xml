@@ -121,7 +121,7 @@
                                 <configuration>
                                     <tasks>
                                         <echo message="Updating manifest file with current build number"/>
-                                        <copy file="src/resources/main/META-INF/MANIFEST.MF" toDir="target"
+                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
                                               overwrite="true"/>
                                         <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
                                                  value="Bundle-Version: ${bundleVersion}"/>
