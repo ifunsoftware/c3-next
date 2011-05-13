@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<profiles>
+		
+        <profile>
+			<id>development</id>
+			<properties>
+				<serverHome>/Users/Aphreet/Soft/virgo-web-server-2.1.0.RELEASE</serverHome>
+				<bundleManifestPath>src/main/resources/META-INF/MANIFEST.MF</bundleManifestPath>
+				<bundleVersion>1.0.0</bundleVersion>
+				<dependencyPath>${serverHome}/repository/usr</dependencyPath>
+				<artPath>${serverHome}/repository/usr</artPath>
+			</properties>
+		</profile>
+        
+		<profile>
+			<id>release</id>
+			<properties>
+				<bundleManifestPath>target/MANIFEST.MF</bundleManifestPath>
+				<artPath>${installPath}/jars</artPath>
+				<dependencyPath>${installPath}/jars</dependencyPath>
+			</properties>
+
+		</profile>
+		
+        <profile>
+			<id>remote</id>
+			<properties>
+				<serverHome>/Volumes/data/soft/bin/springsource-dm-server-1.0.2.SR02</serverHome>
+				<bundleManifestPath>src/main/resources/META-INF/MANIFEST.MF</bundleManifestPath>
+				<bundleVersion>1.0.0</bundleVersion>
+			</properties>
+		</profile>
+
+	</profiles>
+
+	<activeProfiles>
+		<activeProfile>development</activeProfile>
+	</activeProfiles>
+</settings>
