@@ -70,14 +70,18 @@ class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfigura
 
 
   def createNewWriter = {
-    if (writer != null) {
-      writer.close
-      fileIndexer ! MergeIndexMsg(directory)
-    }
+
+    val oldWriter = writer
+    val oldDirectory = directory
 
     directory = new RAMDirectory
 
     writer = new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
+
+    if (oldWriter != null) {
+      oldWriter.close
+      fileIndexer ! MergeIndexMsg(oldDirectory)
+    }
   }
 
 
