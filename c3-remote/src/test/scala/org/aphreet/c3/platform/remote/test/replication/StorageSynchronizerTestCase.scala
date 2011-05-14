@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.remote.replication.impl.config.{StorageSynchronizerException, StorageSynchronizer}
 import org.aphreet.c3.platform.common.Path
+import collection.mutable.HashMap
 
 class StorageSynchronizerTestCase extends TestCase {
 
@@ -224,7 +225,7 @@ case class StorageMock(val mockId:String, val secIds:List[String], val stName:St
 
   def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
 
-  def params:StorageParams = StorageParams(mockId, secIds, path, stName, this.mode, List())
+  def params:StorageParams = StorageParams(mockId, secIds, path, stName, this.mode, List(), new HashMap[String, String])
 
   def count:Long = 0
 
