@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.storage.common.AbstractBDBStorageFactory
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
+import org.springframework.stereotype.Component
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,6 +12,7 @@ import org.aphreet.c3.platform.storage.{Storage, StorageParams}
  * To change this template use File | Settings | File Templates.
  */
 
+@Component
 class ReplicatedBDBStorageFactory extends AbstractBDBStorageFactory{
 
   protected def createNewStorage(params:StorageParams, systemId:String):Storage = {
