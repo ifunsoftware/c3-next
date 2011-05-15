@@ -7,11 +7,12 @@ import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
 import collection.immutable.{HashMap}
 import collection.mutable.HashSet
+import org.aphreet.c3.platform.common.ComponentGuard
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val map:Map[String, String],
                          val systemMap:Map[String, String],
-                         val filter:Function1[Resource, Boolean]) extends StorageIterator {
+                         val filter:Function1[Resource, Boolean]) extends StorageIterator with ComponentGuard{
 
   var cursor: Cursor = null
 
@@ -51,7 +52,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
         val indexKey = new DatabaseEntry(value.getBytes("UTF-8"))
 
-        val secCursor = indexDb.openSecondaryCursor(null, null)
+        val secCursor = indexDb.openCursor(null, null)
 
         val indexVal = new DatabaseEntry
 
@@ -81,7 +82,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   private def indexesForQuery(query:Map[String, String],
                               systemMap:Map[String, String]
-          ):Map[StorageIndex, String] = {
+                               ):Map[StorageIndex, String] = {
 
     var map = new HashMap[StorageIndex, String]
 
@@ -113,7 +114,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       if(!i.system){
         ordIndex += i.fields.head
       }
-      )
+    )
 
     var ordFields = new HashMap[String,String]() ++ map
 
@@ -149,7 +150,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       if(i.system){
         sysIndex += i.fields.head
       }
-      )
+    )
 
     var sysFields = new HashMap[String, String]() ++ systemMap
 
@@ -281,20 +282,25 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       if(secCursors != null){
         for(secCursor <- secCursors){
-          secCursor.close
+          letItFall{
+            secCursor.close
+          }
         }
         secCursors = null
       }
 
-      if(joinCursor != null){
-        joinCursor.close
-        joinCursor = null
+      letItFall{
+        if(joinCursor != null){
+          joinCursor.close
+          joinCursor = null
+        }
       }
 
-
-      if (cursor != null) {
-        cursor.close
-        cursor = null
+      letItFall{
+        if (cursor != null) {
+          cursor.close
+          cursor = null
+        }
       }
     } catch {
       case e: DatabaseException => e.printStackTrace
@@ -305,7 +311,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   override def finalize = {
     try {
-      this.close
+      if(!closed)
+        this.close
     } catch {
       case e => e.printStackTrace
     }
