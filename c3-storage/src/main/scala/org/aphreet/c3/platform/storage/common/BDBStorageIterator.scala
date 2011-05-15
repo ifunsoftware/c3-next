@@ -8,11 +8,14 @@ import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
 import collection.immutable.{HashMap}
 import collection.mutable.HashSet
 import org.aphreet.c3.platform.common.ComponentGuard
+import org.apache.commons.logging.LogFactory
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val map:Map[String, String],
                          val systemMap:Map[String, String],
                          val filter:Function1[Resource, Boolean]) extends StorageIterator with ComponentGuard{
+
+  val log = LogFactory getLog getClass
 
   var cursor: Cursor = null
 
@@ -45,7 +48,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val indexDb = storage.getSecondaryDatabases(false).get(index.name) match{
+        val indexDb = storage.getSecondaryDatabases(true).get(index.name) match{
           case Some(db) => db
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
@@ -278,9 +281,15 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   def close = {
     try {
 
+      log debug "Closing itertor"
+
       closed = true
 
+
       if(secCursors != null){
+
+        log debug "Closing secondary cursors"
+
         for(secCursor <- secCursors){
           letItFall{
             secCursor.close
@@ -289,15 +298,21 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         secCursors = null
       }
 
+
       letItFall{
         if(joinCursor != null){
+          log debug "Closing joint cursor"
+          
           joinCursor.close
           joinCursor = null
         }
       }
 
+
       letItFall{
         if (cursor != null) {
+          log debug "Closing cursor"
+
           cursor.close
           cursor = null
         }
@@ -306,13 +321,16 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       case e: DatabaseException => e.printStackTrace
     } finally {
       storage.removeIterator(this)
+      log debug "Iterator closed"
     }
   }
 
   override def finalize = {
     try {
-      if(!closed)
+      if(!closed){
+        log debug "Finalize block called, closing iterator"
         this.close
+      }
     } catch {
       case e => e.printStackTrace
     }

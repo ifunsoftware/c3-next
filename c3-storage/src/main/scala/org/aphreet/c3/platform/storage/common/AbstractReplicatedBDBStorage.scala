@@ -194,7 +194,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       databases(i).database = nodesEnvironments(i).openDatabase(null, storageName, dbConfig)
     }
 
-    log info "Opening secondary database..."
+    log info "Opening secondary databases..."
 
     for(index <- indexes) {
       log info "Index " + index.name + "..."
@@ -211,8 +211,9 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         databases(i).secondaryDatabases.put(index.name, secDatabase)
       }
 
-      log info "Storage " + id + " opened"
     }
+
+    log info "Storage " + id + " opened"
 
     startObjectCounter
   }
@@ -224,6 +225,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     secConfig setSortedDuplicates true
     secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
 
+    log debug "Creating index: " + index
+
     for(i <- 0 to NODES_AMOUNT-1) {
       val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name, databases(i).database, secConfig)
 
@@ -231,6 +234,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     }
 
     indexes = index :: indexes
+
+    log debug "Index created: " + index
   }
 
   def removeIndex(index : StorageIndex) {

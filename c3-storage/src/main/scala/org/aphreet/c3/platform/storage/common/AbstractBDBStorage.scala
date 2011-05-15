@@ -60,11 +60,17 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
                systemFields:Map[String,String],
                filter:Function1[Resource, Boolean]):StorageIterator = {
 
+    if(log.isDebugEnabled){
+      log debug "Creating iterator; fields: " + fields + " sysFields: " + systemFields
+    }
+
     val iterator = new BDBStorageIterator(this, fields, systemFields, filter)
 
     iterators.synchronized(
       iterators += iterator
     )
+
+    log debug "Iterator created"
 
     iterator
 

@@ -418,6 +418,8 @@ class ReplicatedBDBStorageTest extends TestCase{
       iterator.close
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
+    }catch{
+      case e => e.printStackTrace
 
     }finally storage.close
   }
