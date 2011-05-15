@@ -3,6 +3,7 @@ package org.aphreet.c3.platform.mock
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.storage._
+import collection.mutable.HashMap
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,7 +29,7 @@ case class StorageMock(val mockId:String, val mockPath:String) extends Storage{
 
   def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
 
-  def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode, List())
+  def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode, List(), new HashMap[String, String])
 
   def count:Long = 0
 

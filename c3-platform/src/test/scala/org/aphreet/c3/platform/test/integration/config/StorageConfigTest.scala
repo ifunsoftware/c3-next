@@ -38,22 +38,39 @@ import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import junit.framework.Assert._
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 import java.io.File
+import collection.mutable.HashMap
 
 class StorageConfigTest extends AbstractTestWithFileSystem{
 
 
   def testConfigPersistence = {
+
+    val paramsMap1 = new HashMap[String, String]
+    val paramsMap2 = new HashMap[String, String]
+
+    for (i <- 0 to 2) {
+      paramsMap1.put("nodeName-" + i, "testName-" + i)
+      paramsMap1.put("nodePort-" + i, (10000 * (i+1)).toString)
+      paramsMap1.put("nodeDir-" + i, "testdir/" + i)
+
+      paramsMap2.put("nodeName-" + i, "anotherTestName-" + i)
+      paramsMap2.put("nodePort-" + i, (20000 * (i+1)).toString)
+      paramsMap2.put("nodeDir-" + i, "anotherTestdir/" + i)
+    }
+
+    paramsMap1.put("nodeCounter", "5")
+    paramsMap1.put("nodeCounter", "3")
     
     val config  = List(
       StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
         List(
           new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
-          )),
+          ), paramsMap1),
       StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
         List(
           new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
           new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
-        ))
+        ), paramsMap2)
     )
     
     val configManager = new PlatformConfigManagerImpl
@@ -74,7 +91,8 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     val newParams = StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RW(""),
       List(
         new StorageIndex("poolindex", List("c3.pool", "c3.tags"), true, true,10003l)
-        )
+        ),
+        new HashMap[String, String]
       )
     
     
@@ -85,17 +103,32 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
   }
 
   def testIdCheck = {
+    val paramsMap1 = new HashMap[String, String]
+    val paramsMap2 = new HashMap[String, String]
+
+    for (i <- 0 to 2) {
+      paramsMap1.put("nodeName-" + i, "testName-" + i)
+      paramsMap1.put("nodePort-" + i, (10000 * (i+1)).toString)
+      paramsMap1.put("nodeDir-" + i, "testdir/" + i)
+
+      paramsMap2.put("nodeName-" + i, "anotherTestName-" + i)
+      paramsMap2.put("nodePort-" + i, (20000 * (i+1)).toString)
+      paramsMap2.put("nodeDir-" + i, "anotherTestdir/" + i)
+    }
+
+    paramsMap1.put("nodeCounter", "5")
+    paramsMap1.put("nodeCounter", "3")
 
     val config  = List(
       StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
         List(
           new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
-          )),
+          ), paramsMap1),
       StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
         List(
           new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
           new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
-        ))
+        ), paramsMap2)
     )
 
     val idNotExists = config

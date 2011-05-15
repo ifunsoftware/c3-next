@@ -44,7 +44,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val indexDb = storage.secondaryDatabases.get(index.name) match{
+        val indexDb = storage.getSecondaryDatabases(false).get(index.name) match{
           case Some(db) => db
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
@@ -65,12 +65,13 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       }
 
-      joinCursor = storage.database.join(secCursors.toArray, null)
-
+      //joinCursor = storage.database.join(secCursors.toArray, null)
+      joinCursor = storage.getDatabase(true).join(secCursors.toArray, null)
 
 
     }else{
-      cursor = storage.database.openCursor(null, null)
+      //cursor = storage.database.openCursor(null, null)
+      cursor = storage.getDatabase(true).openCursor(null, null)
     }
 
 

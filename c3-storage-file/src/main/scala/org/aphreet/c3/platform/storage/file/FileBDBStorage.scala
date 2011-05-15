@@ -4,12 +4,13 @@ import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
 import java.io._
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
 import org.aphreet.c3.platform.storage.StorageParams
+import org.aphreet.c3.platform.storage.common.{AbstractSingleInstanceBDBStorage, BDBConfig}
 
 class FileBDBStorage(override val parameters:StorageParams,
                      override val systemId:String,
-                     override val config:BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
+                     override val config:BDBConfig)
+          extends AbstractSingleInstanceBDBStorage(parameters, systemId, config) {
 
   var dataPath : File = null
 

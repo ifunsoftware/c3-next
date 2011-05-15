@@ -2,13 +2,14 @@ package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.storage.common.{BDBConfig, AbstractBDBStorage}
 import org.aphreet.c3.platform.storage.StorageParams
 import com.sleepycat.je._
+import org.aphreet.c3.platform.storage.common.{AbstractSingleInstanceBDBStorage, BDBConfig}
 
 class PureBDBStorage(override val parameters: StorageParams,
                      override val systemId:String,
-                     override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
+                     override val config: BDBConfig)
+          extends AbstractSingleInstanceBDBStorage(parameters, systemId, config) {
 
   override protected def storeData(resource: Resource, tx: Transaction) {
 

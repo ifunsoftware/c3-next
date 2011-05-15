@@ -39,9 +39,9 @@ import com.springsource.json.writer.JSONWriterImpl
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import collection.mutable.Buffer
 import collection.JavaConversions
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
+import collection.mutable.{HashMap, Buffer}
 
 
 @Component
@@ -113,6 +113,31 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
       }
 
+      val repParameters = new HashMap[String, String]
+
+      val repParamsNode = storage.getNode("repParams")
+
+      if (repParamsNode != null) {
+        val repParamsMap = repParamsNode.asInstanceOf[MapNode]
+
+        for (i <- 0 to 2) {
+          if (repParamsMap.getNode("nodeName-"  + i) != null)
+            repParameters.put("nodeName-" + i,
+                            repParamsMap.getNode("nodeName-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+
+          if (repParamsMap.getNode("nodePort-"  + i) != null)
+            repParameters.put("nodePort-" + i,
+                            repParamsMap.getNode("nodePort-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+
+          if (repParamsMap.getNode("nodeDir-"  + i) != null)
+            repParameters.put("nodeDir-" + i,
+                            repParamsMap.getNode("nodeDir-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+        }
+        if (repParamsMap.getNode("nodeCounter") != null)
+          repParameters.put("nodeCounter",
+                            repParamsMap.getNode("nodeCounter").asInstanceOf[ScalarNode].getValue.toString)
+      }
+
       list = list ::: List(
         new StorageParams(
           storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
@@ -120,7 +145,8 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
           new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
           storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
           storageMode,
-          indexes
+          indexes,
+          repParameters
           ))
     }
 
@@ -165,6 +191,14 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
             }
 
           writer.endArray //indexes end
+
+          /* new */
+          writer.key("repParams").`object`
+            for((paramKey, paramValue) <- storage.repParams) {
+              writer.key(paramKey).value(paramValue)
+            }
+          writer.endObject
+          /* end of new */
 
           writer.endObject
         }

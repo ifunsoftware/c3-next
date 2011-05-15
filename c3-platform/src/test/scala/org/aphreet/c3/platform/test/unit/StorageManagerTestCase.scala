@@ -40,6 +40,7 @@ import org.aphreet.c3.platform.mock.StorageMock
 import org.aphreet.c3.platform.storage.{StorageConfigAccessor, StorageFactory, RW, StorageParams}
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.common.{Constants, Path}
+import collection.mutable.HashMap
 
 class StorageManagerTestCase extends TestCase{
 
@@ -61,13 +62,13 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()), "12341234")
+      StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List(), new HashMap[String, String]), "12341234")
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
     val configAccessor = createMock(classOf[StorageConfigAccessor])
     expect(configAccessor.load).andReturn(
-      List(StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List()))
+      List(StorageParams(storageId, List(), new Path(storagePath), storageName, RW(""), List(), new HashMap[String, String]))
     ).atLeastOnce
     replay(configAccessor)
 

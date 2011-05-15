@@ -144,7 +144,10 @@ class StorageManagerImpl extends StorageManager{
 
         log info "Creating new storage with id: " + stId
 
-        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name, RW(Constants.STORAGE_MODE_NONE), List()), systemId)
+        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name,
+                                                  RW(Constants.STORAGE_MODE_NONE),
+                                                  List(), new HashMap[String, String]),
+                                               systemId)
 
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)

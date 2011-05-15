@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.IdGenerator
 import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageParams}
 import org.aphreet.c3.platform.common.{ThreadWatcher, Path}
+import collection.mutable.HashMap
 
 abstract class AbstractStorage(val parameters:StorageParams, val systemId:String) extends Storage{
 
@@ -16,7 +17,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
   var indexes = parameters.indexes
 
   def params:StorageParams = {
-    new StorageParams(id, ids, parameters.path, parameters.storageType, parameters.mode, indexes)
+    new StorageParams(id, ids, parameters.path, parameters.storageType, parameters.mode, indexes, new HashMap[String, String])
   }
 
   def startObjectCounter = {

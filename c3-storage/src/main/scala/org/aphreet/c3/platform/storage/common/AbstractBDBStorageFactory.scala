@@ -1,10 +1,12 @@
 package org.aphreet.c3.platform.storage.common
 
+import org.aphreet.c3.platform.management.PlatformManagementEndpoint
+import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener}
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U
-import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.common.{ComponentGuard, Constants}
+import org.aphreet.c3.platform.config._
 
 /**
  * Created by IntelliJ IDEA.
@@ -61,13 +63,29 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
     def updateStorageParams {
       log info "Updating storage param " + event.name
 
-      for (storage <- createdStorages if (storage.isInstanceOf[AbstractBDBStorage])) {
-        val mode = storage.mode
-        storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-        storage.close
-        storage.asInstanceOf[AbstractBDBStorage].open(currentConfig)
-        storage.mode = mode
+      /*for (storage <- createdStorages if (storage.isInstanceOf[AbstractBDBStorage])) {
+          val mode = storage.mode
+          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
+          storage.close
+          storage.asInstanceOf[AbstractBDBStorage].open(currentConfig)
+          storage.mode = mode
+      }*/
+      for (storage <- createdStorages) {
+        if (storage.isInstanceOf[AbstractSingleInstanceBDBStorage]) {
+          val mode = storage.mode
+          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
+          storage.close
+          storage.asInstanceOf[AbstractSingleInstanceBDBStorage].open(currentConfig)
+          storage.mode = mode
+        } else if (storage.isInstanceOf[AbstractReplicatedBDBStorage]) {
+          val mode = storage.mode
+          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
+          storage.close
+          storage.asInstanceOf[AbstractReplicatedBDBStorage].open(currentConfig)
+          storage.mode = mode
+        }
       }
+
     }
 
 
