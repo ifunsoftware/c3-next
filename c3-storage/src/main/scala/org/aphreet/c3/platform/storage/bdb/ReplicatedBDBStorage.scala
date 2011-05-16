@@ -84,7 +84,7 @@ class ReplicatedBDBStorage(override val parameters: StorageParams,
         try {
           do {
             attempts += 1
-            masterNodeNumber = getMasterNodeNumber
+            //masterNodeNumber = getMasterNodeNumber
 
             tryToWrite {
               getDatabase(true).delete(tx, dataKey)
@@ -94,6 +94,7 @@ class ReplicatedBDBStorage(override val parameters: StorageParams,
           } while(!successFlag && attempts <= 2)
         } catch {
           case e => {
+            log.error("Some error", e)
             throw e
           }
         }
@@ -117,7 +118,7 @@ class ReplicatedBDBStorage(override val parameters: StorageParams,
     try {
       do {
         attempts += 1
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         tryToWrite {
           if (allowOverwrite) {
@@ -135,6 +136,7 @@ class ReplicatedBDBStorage(override val parameters: StorageParams,
       } while(!successFlag && attempts <= 2)
     } catch {
       case e => {
+        log.error("Some error", e)
         throw e
       }
     }
