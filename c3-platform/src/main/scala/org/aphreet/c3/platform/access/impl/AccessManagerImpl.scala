@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component
 
 
 import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
@@ -125,21 +126,13 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
 
-    val pool = resource.metadata.get(Resource.MD_POOL) match {
-      case Some(x) => if(!x.isEmpty) x else "default"
-      case None => "default"
-    }
-
-    resource.systemMetadata.put(Resource.MD_POOL, pool)
-
-
     val storage = storageManager.storageForResource(resource)
 
     if(storage != null){
       resource.calculateCheckSums
       val ra = storage.add(resource)
 
-      accessMediator ! ResourceAddedMsg(resource, AccessManagerImpl.ACCESS_MANAGER_NAME)
+      accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
 
       if(log.isDebugEnabled){
         log.debug("Resource added: " + ra)
@@ -165,7 +158,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
         accessCache.remove(resource.address)
 
-        accessMediator ! ResourceUpdatedMsg(resource, AccessManagerImpl.ACCESS_MANAGER_NAME)
+        accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
 
         ra
 
@@ -191,7 +184,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
         accessCache.remove(ra)
 
-        accessMediator ! ResourceDeletedMsg(ra, AccessManagerImpl.ACCESS_MANAGER_NAME)
+        accessMediator ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
       }
 
       else
@@ -275,8 +268,4 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   def defaultValues:Map[String,String] =
     Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
 
-}
-
-object AccessManagerImpl{
-  val ACCESS_MANAGER_NAME = 'AccessManager
 }

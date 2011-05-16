@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
  * 
+ 
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -27,26 +28,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.access
 
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.common.WatchedActor
+object Constants{
 
-
-trait AccessManager extends WatchedActor{
-
-  def get(ra:String):Resource
-
-  def add(resource:Resource):String
-
-  def update(resource:Resource):String
-
-  def delete(ra:String)
-
-  def lock(ra:String)
-
-  def unlock(ra:String)
-
+  val ACCESS_MANAGER_NAME = 'AccessManager
+  
 }
-
-case class UpdateMetadataMsg(val address:String, val metadata:Map[String,String])

@@ -34,31 +34,34 @@ package org.aphreet.c3.platform.access.impl
 import actors.Actor
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.access._
-import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.access.{ResourceAddedMsg, ResourceUpdatedMsg, ResourceDeletedMsg}
+import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
 import net.sf.ehcache.{Element, Cache, CacheManager}
-import org.aphreet.c3.platform.statistics._
+import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
 import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
 import org.apache.commons.logging.LogFactory
+import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 
 @Component
 class AccessCache extends WatchedActor with ComponentGuard{
 
   var cache:Cache = _
 
-  var accessMediator:AccessMediator = _
+  var accessMediator:Actor = _
 
-  var statisticsManager:StatisticsManager = _
+  var statisticsService:Actor = _
 
   val log = LogFactory getLog getClass
 
   @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
+  @Qualifier("AccessMediator")
+  def setAccessMediator(mediator:Actor) = {accessMediator = mediator}
 
   @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
+  @Qualifier("StatisticsService")
+  def setStatisticsService(service:Actor) = {statisticsService = service}
 
   @PostConstruct
   def init{
@@ -69,7 +72,7 @@ class AccessCache extends WatchedActor with ComponentGuard{
 
     cacheManager.addCache(cache)
 
-    accessMediator ! RegisterNamedListenerMsg(this, AccessManagerImpl.ACCESS_MANAGER_NAME)
+    accessMediator ! RegisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
     this.start
 
     log info "Access cache started"
@@ -89,8 +92,9 @@ class AccessCache extends WatchedActor with ComponentGuard{
         case DestroyMsg =>
           letItFall{
             CacheManager.getInstance.shutdown
-            accessMediator ! UnregisterNamedListenerMsg(this, AccessManagerImpl.ACCESS_MANAGER_NAME)
+            accessMediator ! UnregisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
           }
+          log info "AccessCache stopped"
           this.exit
       }
     }
@@ -103,10 +107,10 @@ class AccessCache extends WatchedActor with ComponentGuard{
   def get(address:String):Option[Resource] = {
     val element = cache.get(address)
     if(element != null){
-      statisticsManager ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
+      statisticsService ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
       Some(element.getObjectValue.asInstanceOf[Resource])
     }else{
-      statisticsManager ! IncreaseStatisticsMsg("c3.access.cache.miss", 1)
+      statisticsService ! IncreaseStatisticsMsg("c3.access.cache.miss", 1)
       None
     }
   }

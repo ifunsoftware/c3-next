@@ -231,7 +231,6 @@ object Resource {
   val MD_DATA_ADDRESS = "c3.data.address"
   val MD_DATA_LENGTH = "c3.data.length"
   val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
-  val MD_POOL = "c3.pool"
   val MD_TAGS = "c3.tags"
   val MD_USER = "c3.user"
   val SMD_LOCK = "c3.lock"

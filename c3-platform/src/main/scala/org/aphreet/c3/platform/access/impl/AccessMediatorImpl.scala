@@ -37,10 +37,12 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.access.{ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg, AccessMediator}
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
-import collection.mutable.{HashMap, HashSet}
+import collection.mutable.HashMap
+import org.springframework.beans.factory.annotation.Qualifier
 
 @Component("accessMediator")
 @Scope("singleton")
+@Qualifier("AccessMediator")
 class AccessMediatorImpl extends AccessMediator {
 
   val log = LogFactory getLog getClass
