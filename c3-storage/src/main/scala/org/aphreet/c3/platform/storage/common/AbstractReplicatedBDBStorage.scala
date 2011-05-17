@@ -77,18 +77,18 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     envConfig setDurability durability
 
     forAllNodes(i  =>   {
-      val tmp = parameters.repParams.get("nodeName-" + i)
+      val tmp = parameters.params.get("nodeName-" + i)
 
       if (tmp != scala.None) {
         nodesNames(i) = tmp.toString
       } else {
         nodesNames(i) = generateNodeName(i)
-        parameters.repParams.put("nodeName-" + i, nodesNames(i))
+        parameters.params.put("nodeName-" + i, nodesNames(i))
       }
     })
 
     forAllNodes(i  =>   {
-      val tmp = parameters.repParams.get("nodePort-" + i)
+      val tmp = parameters.params.get("nodePort-" + i)
 
       if (tmp != scala.None) {
         try {
@@ -96,40 +96,40 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         } catch {
           case e : NumberFormatException => {
             portsNumbers(i) = generatePortNumber(i)
-            parameters.repParams.put("nodePort-" + i, portsNumbers(i).toString)
+            parameters.params.put("nodePort-" + i, portsNumbers(i).toString)
           }
         }
 
       } else {
         portsNumbers(i) = generatePortNumber(i)
-        parameters.repParams.put("nodePort-" + i, portsNumbers(i).toString)
+        parameters.params.put("nodePort-" + i, portsNumbers(i).toString)
       }
     })
 
     forAllNodes(i  =>   {
-      val tmp = parameters.repParams.get("nodeDir-" + i)
+      val tmp = parameters.params.get("nodeDir-" + i)
 
       if (tmp != scala.None) {
         nodesDirs(i) = tmp.toString
       } else {
         nodesDirs(i) = storagePath + "/" + i
-        parameters.repParams.put("nodeDir-" + i, nodesDirs(i))
+        parameters.params.put("nodeDir-" + i, nodesDirs(i))
       }
     })
 
-    val tmp = parameters.repParams.get("nodeCounter")
+    val tmp = parameters.params.get("nodeCounter")
     if (tmp != scala.None) {
       try {
         newNodeNumber = Integer.parseInt( tmp.toString )
       } catch {
         case e : NumberFormatException => {
           newNodeNumber = 0
-          parameters.repParams.put("nodeCounter", "0")
+          parameters.params.put("nodeCounter", "0")
         }
       }
     } else {
       newNodeNumber = 0
-      parameters.repParams.put("nodeCounter", "0")
+      parameters.params.put("nodeCounter", "0")
     }
 
 
@@ -845,15 +845,15 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       helpers add address
     })
 
-    parameters.repParams.remove("nodeName-" + nodeNumberToRestart)
-    parameters.repParams.remove("nodePort-" + nodeNumberToRestart)
-    parameters.repParams.remove("nodeDir-" + nodeNumberToRestart)
-    parameters.repParams.remove("nodeCounter")
+    parameters.params.remove("nodeName-" + nodeNumberToRestart)
+    parameters.params.remove("nodePort-" + nodeNumberToRestart)
+    parameters.params.remove("nodeDir-" + nodeNumberToRestart)
+    parameters.params.remove("nodeCounter")
 
-    parameters.repParams.put("nodeName-" + nodeNumberToRestart, newName)
-    parameters.repParams.put("nodePort-" + nodeNumberToRestart, newPort.toString)
-    parameters.repParams.put("nodeDir-" + nodeNumberToRestart, newDir)
-    parameters.repParams.put("nodeCounter", newNodeNumber.toString)
+    parameters.params.put("nodeName-" + nodeNumberToRestart, newName)
+    parameters.params.put("nodePort-" + nodeNumberToRestart, newPort.toString)
+    parameters.params.put("nodeDir-" + nodeNumberToRestart, newDir)
+    parameters.params.put("nodeCounter", newNodeNumber.toString)
   }
 
 

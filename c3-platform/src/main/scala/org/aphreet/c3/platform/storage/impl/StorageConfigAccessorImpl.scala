@@ -115,7 +115,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
       val repParameters = new HashMap[String, String]
 
-      val repParamsNode = storage.getNode("repParams")
+      val repParamsNode = storage.getNode("params")
 
       if (repParamsNode != null) {
         val repParamsMap = repParamsNode.asInstanceOf[MapNode]
@@ -193,8 +193,8 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
           writer.endArray //indexes end
 
           /* new */
-          writer.key("repParams").`object`
-            for((paramKey, paramValue) <- storage.repParams) {
+          writer.key("params").`object`
+            for((paramKey, paramValue) <- storage.params) {
               writer.key(paramKey).value(paramValue)
             }
           writer.endObject
