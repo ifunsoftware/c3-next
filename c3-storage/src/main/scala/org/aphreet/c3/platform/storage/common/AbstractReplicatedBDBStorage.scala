@@ -56,6 +56,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   protected val rand = new Random
 
+  protected var errorHandling = false
+
   {
     open(config)
   }
@@ -955,50 +957,54 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     })
   }
 
-  protected def tryToWrite (s: => Unit) = synchronized {
+  protected def tryToWrite (s: => Unit) {
     try{
       s
     } catch {
-      case e : InsufficientAcksException => {
-        log.error("InsufficientAcksException", e)
 
-        var deadNodeNumber : Int = -1
-        forAllNodes(i  =>  {
-          if (!nodesEnvironments(i).isValid) {
-            deadNodeNumber = i
+        case e : InsufficientAcksException => synchronized {
+          log.error("InsufficientAcksException", e)
+
+          var deadNodeNumber : Int = -1
+          forAllNodes(i  =>  {
+            if (!nodesEnvironments(i).isValid) {
+              deadNodeNumber = i
+            }
+          })
+
+          if (deadNodeNumber != -1) {
+            restartNode(deadNodeNumber)
           }
-        })
-
-        if (deadNodeNumber != -1) {
-          restartNode(deadNodeNumber)
-        }
-
-        masterNodeNumber = getMasterNodeNumber
-      }
-
-      case e : LogWriteException => {
-        log.error("LogWriteException", e)
-
-        forAllNodes(i  =>  {
-          stopNode(i)
-        })
-        try {
-          restartAliveNodes(masterNodeNumber)
-
-          restartNode(masterNodeNumber)
 
           masterNodeNumber = getMasterNodeNumber
+        }
 
-        } catch {
-          case ex => {
-            throw ex
+        case e : LogWriteException => synchronized {
+          if (getMasterNodeNumber == -1) {
+            log.error("LogWriteException", e)
+
+            forAllNodes(i  =>  {
+              stopNode(i)
+            })
+            try {
+              restartAliveNodes(masterNodeNumber)
+
+              restartNode(masterNodeNumber)
+
+              masterNodeNumber = getMasterNodeNumber
+
+            } catch {
+              case ex => {
+                throw ex
+              }
+            }
           }
         }
-      }
 
-      case e => {
-        throw e
-      }
+        case e => {
+          throw e
+        }
+
     }
   }
 
