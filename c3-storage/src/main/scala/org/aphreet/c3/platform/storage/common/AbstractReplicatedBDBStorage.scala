@@ -10,6 +10,7 @@ import org.aphreet.c3.platform.resource.{Resource, IdGenerator}
 import rep._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import collection.mutable.HashMap
+import scala.util.Random
 
 /**
  * Created by IntelliJ IDEA.
@@ -47,13 +48,13 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   protected var rga : ReplicationGroupAdmin = null
 
-  protected var nodeForReading: Int = 0
-
   protected var tempRepEnv : ReplicatedEnvironment = null
 
   protected var envConfig : EnvironmentConfig = null
 
   protected var masterNodeNumber : Int = 0
+
+  protected val rand = new Random
 
   {
     open(config)
@@ -352,7 +353,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     throw new IllegalStateException("Reached max retries!")
   }
 
-  override def getDatabase(writeFlag : Boolean) : Database = synchronized {
+  override def getDatabase(writeFlag : Boolean) : Database = {
       var db : Database = null
 
       if (writeFlag) {
@@ -363,9 +364,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         })
 
       } else {
-        db = databases( nodeForReading ).database
-
-        nodeForReading = (nodeForReading + 1) % NODES_AMOUNT
+        db = databases( rand.nextInt(3) ).database
       }
 
       db
@@ -382,9 +381,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       })
 
     } else {
-      dbs = databases( nodeForReading ).secondaryDatabases
-
-      nodeForReading = (nodeForReading + 1) % NODES_AMOUNT
+      dbs = databases( rand.nextInt(3) ).secondaryDatabases
     }
 
     dbs
