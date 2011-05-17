@@ -29,7 +29,6 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.apache.lucene.search._
 import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Actor._
@@ -37,9 +36,11 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.SearchResultElement
 import org.aphreet.c3.search.ext.{SearchConfiguration, SearchStrategyFactory}
+import org.aphreet.c3.platform.search.impl.index.RamIndexer
+import org.apache.lucene.search._
 
 
-class Searcher(var indexPath: Path, val configuration:SearchConfiguration) extends WatchedActor{
+class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val configuration:SearchConfiguration) extends WatchedActor{
 
   var searchStrategyFactory:SearchStrategyFactory = _
 
@@ -50,7 +51,8 @@ class Searcher(var indexPath: Path, val configuration:SearchConfiguration) exten
 
   val log = LogFactory.getLog(getClass)
 
-  var indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
+  var indexSearcher = createSearcher
+
 
   def act{
     loop{
@@ -59,7 +61,7 @@ class Searcher(var indexPath: Path, val configuration:SearchConfiguration) exten
           log info "Reopening searcher"
           val oldSearcher = indexSearcher
 
-          indexSearcher = new IndexSearcher(indexPath.file.getCanonicalPath)
+          indexSearcher = createSearcher
 
           Thread.sleep(1000 * 5) //May be some threads is still using old searcher
 
@@ -85,6 +87,18 @@ class Searcher(var indexPath: Path, val configuration:SearchConfiguration) exten
     }
   }
 
+
+  //TODO replace to ParallelMultiSearcher when correct c3-search-ext will be ready
+  private def createSearcher:IndexSearcher = {
+    new IndexSearcher(indexPath.file.getCanonicalPath)
+  }
+//  private def createSearcher:ParallelMultiSearcher = {
+//    new ParallelMultiSearcher(
+//    (new IndexSearcher(indexPath.file.getCanonicalPath)
+//      :: ramIndexers.map(indexer => new IndexSearcher(indexer.directory)).toList).toArray)
+//  }
+
+  //def getSearcher:ParallelMultiSearcher = indexSearcher
   def getSearcher:IndexSearcher = indexSearcher
 
   def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {

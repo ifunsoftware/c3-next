@@ -131,15 +131,15 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
       fileIndexer = new FileIndexer(indexPath)
 
-      searcher = new Searcher(indexPath, configuration)
-      fileIndexer.searcher = searcher
-      searcher.start
-
-      fileIndexer.start
-
       ramIndexers = new RamIndexer(fileIndexer, configuration, 1) :: ramIndexers
       ramIndexers = new RamIndexer(fileIndexer, configuration, 2) :: ramIndexers
 
+      searcher = new Searcher(indexPath, ramIndexers, configuration)
+      fileIndexer.searcher = searcher
+
+      searcher.start
+
+      fileIndexer.start
 
       ramIndexers.foreach(_.start)
 
@@ -286,6 +286,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           val dropCount = ramIndexers.size - newCount
           val toStop = ramIndexers.take(dropCount)
           ramIndexers = ramIndexers.drop(dropCount)
+
+          searcher.ramIndexers = ramIndexers
 
           toStop.foreach(_ ! DestroyMsg)
         } else{
