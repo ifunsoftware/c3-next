@@ -19,10 +19,9 @@ import org.aphreet.c3.platform.config._
 abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPlatformPropertyListener{
 
   val BDB_CONFIG_TX_NO_SYNC = "c3.storage.bdb.txnosync"
-  val BDB_CONFIG_TX_WRITE_NO_SYNC = "c3.storage.bdb.txwritenosync"
   val BDB_CONFIG_CACHE_PERCENT = "c3.storage.bdb.cachepercent"
 
-  var currentConfig:BDBConfig = new BDBConfig(false, false, 20)
+  var currentConfig:BDBConfig = new BDBConfig(false, 20)
 
   var configManager:PlatformConfigManager = _
 
@@ -54,7 +53,6 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
   def defaultValues:Map[String, String] =
     Map(
       BDB_CONFIG_TX_NO_SYNC -> "false",
-      BDB_CONFIG_TX_WRITE_NO_SYNC -> "false",
       BDB_CONFIG_CACHE_PERCENT -> "20"
       )
 
@@ -63,13 +61,6 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
     def updateStorageParams {
       log info "Updating storage param " + event.name
 
-      /*for (storage <- createdStorages if (storage.isInstanceOf[AbstractBDBStorage])) {
-          val mode = storage.mode
-          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-          storage.close
-          storage.asInstanceOf[AbstractBDBStorage].open(currentConfig)
-          storage.mode = mode
-      }*/
       for (storage <- createdStorages) {
         if (storage.isInstanceOf[AbstractSingleInstanceBDBStorage]) {
           val mode = storage.mode
@@ -93,26 +84,15 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
       case BDB_CONFIG_TX_NO_SYNC => {
         val value = event.newValue == "true"
         if(currentConfig.txNoSync != value){
-          currentConfig = new BDBConfig(value, currentConfig.txWriteNoSync, currentConfig.cachePercent)
+          currentConfig = new BDBConfig(value, currentConfig.cachePercent)
           updateStorageParams
         }
-      }
-
-      case BDB_CONFIG_TX_WRITE_NO_SYNC => {
-        val value = event.newValue == "true"
-
-        if(currentConfig.txWriteNoSync != value){
-          currentConfig = new BDBConfig(currentConfig.txNoSync, value, currentConfig.cachePercent)
-          updateStorageParams
-        }
-
-
       }
 
       case BDB_CONFIG_CACHE_PERCENT => {
         val value = Integer.parseInt(event.newValue)
         if(value != currentConfig.cachePercent){
-          currentConfig = new BDBConfig(currentConfig.txNoSync, currentConfig.txWriteNoSync, value)
+          currentConfig = new BDBConfig(currentConfig.txNoSync, value)
           updateStorageParams
         }
       }

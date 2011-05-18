@@ -7,6 +7,7 @@ import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.storage.{U, StorageIndex, StorageParams}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,9 +41,13 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
-//    envConfig setTxnNoSync bdbConfig.txNoSync
-//    envConfig setTxnWriteNoSync bdbConfig.txWriteNoSync
-//    envConfig setLockTimeout 0
+    envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+
+    if(bdbConfig.txNoSync){
+      envConfig.setDurability(Durability.COMMIT_NO_SYNC)
+    }else{
+      envConfig.setDurability(Durability.COMMIT_SYNC)
+    }
 
     val storagePathFile = new File(storagePath, "metadata")
     if(!storagePathFile.exists){
@@ -166,13 +171,13 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
 
   def add(resource:Resource):String = {
 
-    val ra = generateName
+    val tx = getEnvironment.beginTransaction(null, null)
+
+    val ra = generateName(TransactionBasedSeedSource(tx))
 
     resource.address = ra
 
     preSave(resource)
-
-    val tx = getEnvironment.beginTransaction(null, null)
 
     try{
       storeData(resource, tx)
@@ -183,7 +188,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
       val status = getDatabase(true).putNoOverwrite(tx, key, value)
 
       if(status != OperationStatus.SUCCESS){
-        throw new StorageException("Failed to store resource in database, operation status is: " + status.toString)
+        throw new StorageException("Failed to store resource in database, operation status is: " + status.toString + "; address: " + ra)
       }
 
       tx.commit

@@ -9,9 +9,8 @@ package org.aphreet.c3.platform.storage.common
  */
 
 class BDBConfig(val txNoSync:Boolean,
-                val txWriteNoSync:Boolean,
                 val cachePercent:Int){
 
   override def toString =
-    "[txNoSync:" + txNoSync + ", txWriteNoSync:" + txWriteNoSync + ", cachePercent:" + cachePercent +"]"
+    "[txNoSync:" + txNoSync  + ", cachePercent:" + cachePercent +"]"
 }

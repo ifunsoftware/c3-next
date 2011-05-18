@@ -27,12 +27,14 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
     log info "Started object counter for storage " + this.id
   }
 
-  def generateName:String = {
+  def generateName(seedSource:SeedSource):String = {
 
-    var address = IdGenerator.generateAddress(systemId, id)
+    val seed = seedSource.getSeed
+
+    var address = IdGenerator.generateAddress(seed, systemId, id)
 
     while(isAddressExists(address)){
-      address = IdGenerator.generateAddress(systemId, id)
+      address = IdGenerator.generateAddress(seed, systemId, id)
     }
 
     address

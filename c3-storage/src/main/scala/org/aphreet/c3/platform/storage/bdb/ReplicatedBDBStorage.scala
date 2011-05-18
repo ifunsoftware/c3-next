@@ -146,7 +146,7 @@ class ReplicatedBDBStorage(override val parameters: StorageParams,
     version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
   }
 
-  def name = PureBDBStorage.NAME
+  def name = ReplicatedBDBStorage.NAME
 
 }
 

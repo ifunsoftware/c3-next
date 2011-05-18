@@ -44,28 +44,28 @@ object IdGenerator{
                       "Y", "Z", "Z", "Z")
 
 
-  def generateAddress(systemId:String, storageId:String) = {
-   generateId(6, true) + "-" + systemId + "-" + storageId
+  def generateAddress(seedDiff:Long, systemId:String, storageId:String) = {
+   generateId(seedDiff, 6, true) + "-" + systemId + "-" + storageId
   }
 
   def generateSystemId:String = {
-    generateId(2, true)
+    generateId(0, 2, true)
   }
 
   def generateStorageId:String = {
-    generateId(1, true)
+    generateId(0, 1, true)
   }
 
   def generateId(groups:Int):String = {
-    generateId(groups, false)
+    generateId(0, groups, false)
   }
 
-  private def generateId(groups:Int, withDashes:Boolean):String = {
+  private def generateId(seedDiff:Long, groups:Int, withDashes:Boolean):String = {
 
 
     val bytes = Array.ofDim[Byte](groups * 3);
 
-    val random = new Random
+    val random = new Random(System.currentTimeMillis() + seedDiff * 100 + 5000)
 
     random.nextBytes(bytes)
 

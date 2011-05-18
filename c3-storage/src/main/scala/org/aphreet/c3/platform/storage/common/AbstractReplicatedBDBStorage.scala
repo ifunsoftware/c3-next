@@ -11,6 +11,7 @@ import rep._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import collection.mutable.HashMap
 import scala.util.Random
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by IntelliJ IDEA.
@@ -71,10 +72,18 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
+    envConfig.setLockTimeout(5, TimeUnit.MINUTES)
 
-    val durability = new Durability(Durability.SyncPolicy.SYNC,
-                                    Durability.SyncPolicy.SYNC,
-                                    Durability.ReplicaAckPolicy.ALL)
+    val durability =
+      if(bdbConfig.txNoSync){
+        new Durability(Durability.SyncPolicy.NO_SYNC,
+          Durability.SyncPolicy.NO_SYNC,
+          Durability.ReplicaAckPolicy.ALL)
+      }else{
+        new Durability(Durability.SyncPolicy.SYNC,
+          Durability.SyncPolicy.SYNC,
+          Durability.ReplicaAckPolicy.ALL)
+      }
 
     envConfig setDurability durability
 
@@ -415,13 +424,13 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   def add(resource:Resource):String = {
 
-    val ra = generateName
+    val tx = getEnvironment.beginTransaction(null, null)
+
+    val ra = generateName(TransactionBasedSeedSource(tx))
 
     resource.address = ra
 
     preSave(resource)
-
-    val tx = getEnvironment.beginTransaction(null, null)
 
     storeData(resource, tx)
 
