@@ -9,7 +9,7 @@ case class StorageParams(val id : String,
                          val storageType : String,
                          val mode : StorageMode,
                          val indexes:List[StorageIndex],
-                         val repParams : HashMap[String, String]){
+                         val params : HashMap[String, String]){
   
   def containsId(checkedId:String):Boolean = 
     id.equals(checkedId) || secIds.exists(id => id.equals(checkedId))

@@ -6,10 +6,11 @@ import com.sleepycat.je._
 import java.io.File
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.storage.{U, StorageIndex, StorageParams}
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.resource.{Resource, IdGenerator}
 import rep._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import collection.mutable.HashMap
+import scala.util.Random
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,14 +24,6 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
                      override val systemId:String,
                      override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
 
-   protected val chars = Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                      'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                      'u', 'v', 'w'  , 'x', 'y', 'z', 'A', 'B', 'C', 'D',
-                      'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                      'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                      'Y', 'Z')
-
   protected val NODES_AMOUNT : Int  = 3
 
   protected val REP_HANDLE_RETRY_MAX : Int = 10
@@ -38,8 +31,6 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   protected val groupName = storageName.replaceAll("-", "")
 
   protected var nodesEnvironments = new Array[ReplicatedEnvironment](NODES_AMOUNT)
-
- // protected var databases = new Array[Database](NODES_AMOUNT)
 
   protected var databases = new Array[DatabasesPair](NODES_AMOUNT)
 
@@ -57,13 +48,15 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   protected var rga : ReplicationGroupAdmin = null
 
-  protected var nodeForReading: Int = 0
-
   protected var tempRepEnv : ReplicatedEnvironment = null
 
   protected var envConfig : EnvironmentConfig = null
 
   protected var masterNodeNumber : Int = 0
+
+  protected val rand = new Random
+
+  protected var errorHandling = false
 
   {
     open(config)
@@ -85,19 +78,19 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     envConfig setDurability durability
 
-    for (i <- 0 to NODES_AMOUNT-1) {
-      val tmp = parameters.repParams.get("nodeName-" + i)
+    forAllNodes(i  =>   {
+      val tmp = parameters.params.get("nodeName-" + i)
 
       if (tmp != scala.None) {
         nodesNames(i) = tmp.toString
       } else {
         nodesNames(i) = generateNodeName(i)
-        parameters.repParams.put("nodeName-" + i, nodesNames(i))
+        parameters.params.put("nodeName-" + i, nodesNames(i))
       }
-    }
+    })
 
-    for (i <- 0 to NODES_AMOUNT-1) {
-      val tmp = parameters.repParams.get("nodePort-" + i)
+    forAllNodes(i  =>   {
+      val tmp = parameters.params.get("nodePort-" + i)
 
       if (tmp != scala.None) {
         try {
@@ -105,45 +98,45 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         } catch {
           case e : NumberFormatException => {
             portsNumbers(i) = generatePortNumber(i)
-            parameters.repParams.put("nodePort-" + i, portsNumbers(i).toString)
+            parameters.params.put("nodePort-" + i, portsNumbers(i).toString)
           }
         }
 
       } else {
         portsNumbers(i) = generatePortNumber(i)
-        parameters.repParams.put("nodePort-" + i, portsNumbers(i).toString)
+        parameters.params.put("nodePort-" + i, portsNumbers(i).toString)
       }
-    }
+    })
 
-    for(i <- 0 to NODES_AMOUNT - 1) {
-      val tmp = parameters.repParams.get("nodeDir-" + i)
+    forAllNodes(i  =>   {
+      val tmp = parameters.params.get("nodeDir-" + i)
 
       if (tmp != scala.None) {
         nodesDirs(i) = tmp.toString
       } else {
         nodesDirs(i) = storagePath + "/" + i
-        parameters.repParams.put("nodeDir-" + i, nodesDirs(i))
+        parameters.params.put("nodeDir-" + i, nodesDirs(i))
       }
-    }
+    })
 
-    val tmp = parameters.repParams.get("nodeCounter")
+    val tmp = parameters.params.get("nodeCounter")
     if (tmp != scala.None) {
       try {
         newNodeNumber = Integer.parseInt( tmp.toString )
       } catch {
         case e : NumberFormatException => {
           newNodeNumber = 0
-          parameters.repParams.put("nodeCounter", "0")
+          parameters.params.put("nodeCounter", "0")
         }
       }
     } else {
       newNodeNumber = 0
-      parameters.repParams.put("nodeCounter", "0")
+      parameters.params.put("nodeCounter", "0")
     }
 
 
     try {
-      for (i <- 0 to NODES_AMOUNT-1) {
+      forAllNodes(i  =>  {
         threads(i) = new Thread( new Runnable() {
             override def run() {
               nodesEnvironments(i) =  createNode( envConfig, groupName, nodesNames(i),
@@ -152,47 +145,56 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
                                                   nodesDirs(i))
             }
         })
-      }
+      })
     } catch {
       case e : IllegalStateException => {
-        e printStackTrace
+        log.error("Enable to create node config", e)
         //return
       }
     }
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    /*for(i <- 0 to NODES_AMOUNT-1) {
       threads(i).start
-    }
+    }*/
+    log info "Starting nodes..."
+
+    forAllNodes(i  =>  {
+      threads(i).start
+    })
 
     try {
-      for(i <- 0 to NODES_AMOUNT-1) {
+      forAllNodes(i  =>   {
         threads(i).join
 
         newNodeNumber += 1
-      }
+      })
     } catch {
-      case e : InterruptedException => e printStackTrace
+      case e : InterruptedException => log.error("Interrupted exception", e)
     }
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    log info "All nodes was started"
+
+    forAllNodes(i  =>   {
       val address : InetSocketAddress = new InetSocketAddress("localhost", portsNumbers(i))
       helpers add address
-    }
+    })
     rga = new ReplicationGroupAdmin(groupName, helpers)
+
+    masterNodeNumber = getMasterNodeNumber
 
     log info "Opening database..."
 
-    for (i <- 0 to NODES_AMOUNT - 1) {
+    forAllNodes(i  =>  {
       databases(i) = new DatabasesPair
-    }
+    })
 
     val dbConfig : DatabaseConfig = new DatabaseConfig
     dbConfig setAllowCreate true
     dbConfig setTransactional true
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>   {
       databases(i).database = nodesEnvironments(i).openDatabase(null, storageName, dbConfig)
-    }
+    })
 
     log info "Opening secondary databases..."
 
@@ -205,11 +207,11 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       secConfig setSortedDuplicates true
       secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
 
-      for(i <- 0 to NODES_AMOUNT-1) {
+      forAllNodes(i  =>   {
         val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name, databases(i).database, secConfig)
 
         databases(i).secondaryDatabases.put(index.name, secDatabase)
-      }
+      })
 
     }
 
@@ -227,11 +229,11 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     log debug "Creating index: " + index
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>   {
       val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name, databases(i).database, secConfig)
 
       databases(i).secondaryDatabases.put(index.name, secDatabase)
-    }
+    })
 
     indexes = index :: indexes
 
@@ -241,7 +243,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   def removeIndex(index : StorageIndex) {
     val idxName = index.name
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>  {
       databases(i).secondaryDatabases.get(idxName) match{
         case None => {}
         case Some(secDb) => {
@@ -249,7 +251,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           nodesEnvironments(i).removeDatabase(null, idxName)
         }
       }
-    }
+    })
 
     indexes = indexes.filter(_.name != index.name)
   }
@@ -275,26 +277,34 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       case e => log.error(e)
     }
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    log info "Closing secondary databases..."
+
+    forAllNodes(i  =>   {
       for((name, secDb) <- databases(i).secondaryDatabases) {
         secDb.close
       }
 
       databases(i).secondaryDatabases.clear
-    }
+    })
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    log info "Closing databases..."
+
+    forAllNodes(i  =>   {
       if(databases(i).database != null) {
         databases(i).database.close
         databases(i).database = null
       }
+    })
 
+    log info "Closing environments..."
+
+    forAllNodes(i  => {
       if(nodesEnvironments(i) != null) {
         nodesEnvironments(i).cleanLog
         nodesEnvironments(i).close
         nodesEnvironments(i) = null
       }
-    }
+    })
 
     databases = null
 
@@ -322,6 +332,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     var continueFlag = true
 
+    log info "Creating node " + nodeName + "..."
+
     for (i <- 0 to REP_HANDLE_RETRY_MAX) {
       if (continueFlag) {
         try {
@@ -344,38 +356,34 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   }
 
   override def getDatabase(writeFlag : Boolean) : Database = {
-    var db : Database = null
+      var db : Database = null
 
-    if (writeFlag) {
-      for(i <- 0 to NODES_AMOUNT-1) {
-        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
-          db = databases(i).database
-        }
+      if (writeFlag) {
+        forAllNodes(i  =>  {
+          if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+            db = databases(i).database
+          }
+        })
+
+      } else {
+        db = databases( rand.nextInt(3) ).database
       }
 
-    } else {
-      db = databases( nodeForReading ).database
-
-      nodeForReading = (nodeForReading + 1) % NODES_AMOUNT
-    }
-
-    db
+      db
   }
 
   override def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase] = {
     var dbs : HashMap[String, SecondaryDatabase] = null
 
     if (writeFlag) {
-      for(i <- 0 to NODES_AMOUNT-1) {
+      forAllNodes(i  =>  {
         if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
           dbs = databases(i).secondaryDatabases
         }
-      }
+      })
 
     } else {
-      dbs = databases( nodeForReading ).secondaryDatabases
-
-      nodeForReading = (nodeForReading + 1) % NODES_AMOUNT
+      dbs = databases( rand.nextInt(3) ).secondaryDatabases
     }
 
     dbs
@@ -384,25 +392,25 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   override def getEnvironment() : Environment = {
     var env : ReplicatedEnvironment = null
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>   {
       if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
         env = nodesEnvironments(i)
       }
-    }
+    })
 
     env
   }
 
   def getMasterNodeNumber() : Int = {
-    var masterNodeNumber : Int = -1
+    var mNodeNumber : Int = -1
 
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>   {
       if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
-        masterNodeNumber = i
+        mNodeNumber = i
       }
-    }
+    })
 
-    masterNodeNumber
+    mNodeNumber
   }
 
   def add(resource:Resource):String = {
@@ -425,7 +433,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     try {
       do {
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         attempts += 1
 
@@ -458,12 +466,12 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    if(getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+    if (getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
       resource.address = ra
       loadData(resource)
       Some(resource)
-    }else None
+    } else None
 
   }
 
@@ -475,8 +483,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     val tx = getEnvironment.beginTransaction(null, null)
 
 
-    try{
-
+    try {
 
       //Obtaining actual version of resource and locking it for write
       val savedResource:Resource = {
@@ -514,7 +521,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
       do {
         attempts += 1
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         tryToWrite {
           if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
@@ -523,7 +530,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
             successFlag = true
           }
         }
-      } while(!successFlag && attempts <= 2)
+      } while (!successFlag && attempts <= 2)
 
       tx.commit
 
@@ -549,12 +556,12 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       var successFlag = false
       do {
         attempts += 1
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         tryToWrite {
           val status = getDatabase(true).delete(tx, key)
 
-          if(status != OperationStatus.SUCCESS)
+          if (status != OperationStatus.SUCCESS)
             throw new StorageException("Failed to delete data from DB, op status: " + status.toString)
           else {
             successFlag = true
@@ -563,7 +570,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       } while(!successFlag && attempts <= 2)
 
       tx.commit
-    }catch{
+    } catch {
       case e => {
         tx.abort
         throw e
@@ -586,7 +593,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
       do {
         attempts += 1
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         tryToWrite {
           val status = getDatabase(true).put(tx, key, value)
@@ -638,7 +645,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
       do {
         attempts += 1
-        masterNodeNumber = getMasterNodeNumber
+        //masterNodeNumber = getMasterNodeNumber
 
         tryToWrite {
           if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
@@ -683,7 +690,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         do {
           tryToWrite {
             attempts += 1
-            masterNodeNumber = getMasterNodeNumber
+            //masterNodeNumber = getMasterNodeNumber
 
             getDatabase(true).put(tx, key, value)
 
@@ -727,7 +734,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         do {
           tryToWrite {
             attempts += 1
-            masterNodeNumber = getMasterNodeNumber
+            //masterNodeNumber = getMasterNodeNumber
 
             getDatabase(true).put(tx, key, value)
 
@@ -757,7 +764,9 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
-  protected def restartNode(nodeNumber : Int) {
+  protected def restartNode(nodeNumberToRestart : Int) {
+
+    log info "Restarting node " + nodeNumberToRestart + "..."
 
     val newName = generateNodeName(newNodeNumber)
     val newPort = generatePortNumber(newNodeNumber)
@@ -772,6 +781,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       }
     })
 
+    log info "Creating new node \"" + newName + "\"..."
+
     try {
       t.start
       t.join
@@ -785,17 +796,19 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     rga = new ReplicationGroupAdmin(groupName, helpers)
 
     try {
-      stopNode(nodeNumber)
+      stopNode(nodeNumberToRestart)
 
-      rga.removeMember(nodesNames(nodeNumber))
+      log info "Removing node \"" + nodesNames(nodeNumberToRestart) + "\" from the group \"" + storageName + "\"..."
 
-      log info "Node " + nodesNames(nodeNumber) + " was successfully removed from the group " + storageName
+      rga.removeMember(nodesNames(nodeNumberToRestart))
+
+      log info "Node " + nodesNames(nodeNumberToRestart) + " was successfully removed from the group \"" + storageName + "\'"
     } catch {
-      case e : MemberNotFoundException => e printStackTrace
-      case e : MasterStateException => e printStackTrace
+      case e : MemberNotFoundException => log.error( "Failed to find the node", e)
+      case e : MasterStateException => log.error( "Failed to delete master from the group", e)
     }
 
-    nodesEnvironments(nodeNumber) = tempRepEnv
+    nodesEnvironments(nodeNumberToRestart) = tempRepEnv
 
     log info "Opening database..."
 
@@ -803,9 +816,10 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     dbConfig setAllowCreate true
     dbConfig setTransactional true
 
-    databases(nodeNumber).database = nodesEnvironments(nodeNumber).openDatabase(null, storageName, dbConfig)
+    databases(nodeNumberToRestart).database =
+      nodesEnvironments(nodeNumberToRestart).openDatabase(null, storageName, dbConfig)
 
-    log info "Opening secondary database..."
+    log info "Opening secondary databases..."
 
     for(index <- indexes) {
       log info "Index " + index.name + "..."
@@ -816,31 +830,32 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       secConfig setSortedDuplicates true
       secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
 
-      val secDatabase = nodesEnvironments(nodeNumber).openSecondaryDatabase(null, index.name, databases(nodeNumber).database, secConfig)
+      val secDatabase =
+        nodesEnvironments(nodeNumberToRestart).openSecondaryDatabase(null, index.name, databases(nodeNumberToRestart).database, secConfig)
 
-      databases(nodeNumber).secondaryDatabases.put(index.name, secDatabase)
+      databases(nodeNumberToRestart).secondaryDatabases.put(index.name, secDatabase)
     }
 
     newNodeNumber += 1
-    nodesNames(nodeNumber) = newName
-    portsNumbers(nodeNumber) = newPort
-    nodesDirs(nodeNumber) = newDir
+    nodesNames(nodeNumberToRestart) = newName
+    portsNumbers(nodeNumberToRestart) = newPort
+    nodesDirs(nodeNumberToRestart) = newDir
 
     helpers.clear
-    for(i <- 0 to NODES_AMOUNT-1) {
+    forAllNodes(i  =>   {
       val address : InetSocketAddress = new InetSocketAddress("localhost", portsNumbers(i))
       helpers add address
-    }
+    })
 
-    parameters.repParams.remove("nodeName-" + nodeNumber)
-    parameters.repParams.remove("nodePort-" + nodeNumber)
-    parameters.repParams.remove("nodeDir-" + nodeNumber)
-    parameters.repParams.remove("nodeCounter")
+    parameters.params.remove("nodeName-" + nodeNumberToRestart)
+    parameters.params.remove("nodePort-" + nodeNumberToRestart)
+    parameters.params.remove("nodeDir-" + nodeNumberToRestart)
+    parameters.params.remove("nodeCounter")
 
-    parameters.repParams.put("nodeName-" + nodeNumber, newName)
-    parameters.repParams.put("nodePort-" + nodeNumber, newPort.toString)
-    parameters.repParams.put("nodeDir-" + nodeNumber, newDir)
-    parameters.repParams.put("nodeCounter", newNodeNumber.toString)
+    parameters.params.put("nodeName-" + nodeNumberToRestart, newName)
+    parameters.params.put("nodePort-" + nodeNumberToRestart, newPort.toString)
+    parameters.params.put("nodeDir-" + nodeNumberToRestart, newDir)
+    parameters.params.put("nodeCounter", newNodeNumber.toString)
   }
 
 
@@ -850,9 +865,9 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   }
 
   protected def generatePortNumber(num : Int) : Int = {
-    val n1 = id.charAt(2)
-    val n2 = id.charAt(3)
-    val portsBase : Int = (62 * (1 + chars.indexOf( id.charAt(2) )) + (1 + chars.indexOf( id.charAt(3)) ))
+    val portsBase : Int = (62 * (1 + IdGenerator.chars.indexOf( id.charAt(2).toString )) +
+                                (1 + IdGenerator.chars.indexOf( id.charAt(3).toString )) )
+
     val portNum = 30000 + (num + 1) * portsBase
     portNum
   }
@@ -865,12 +880,18 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       secDb.close
     }
 
+    log info "Closing secondary database..."
+
     databases(num).secondaryDatabases.clear
+
+    log info "Closing database..."
 
     if(databases(num).database != null) {
       databases(num).database.close
       databases(num).database = null
     }
+
+    log info "Closing environment..."
 
     if(nodesEnvironments(num) != null) {
       nodesEnvironments(num).cleanLog
@@ -878,13 +899,13 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       nodesEnvironments(num) = null
     }
 
-    log info "Node " + nodesNames(num) + " stopped"
+    log info "Node " + nodesNames(num) + " was stopped"
   }
 
 
-  def restartAliveNodes(masterNodeNumber : Int) {
-    for (i <- 0 to NODES_AMOUNT-1) {
-      if (i != masterNodeNumber) {
+  def restartAliveNodes(deadMasterNodeNumber : Int) {
+    forAllNodes(i  =>   {
+      if (i != deadMasterNodeNumber) {
         threads(i) = new Thread( new Runnable() {
             override def run() {
               nodesEnvironments(i) =  createNode( envConfig, storageName, nodesNames(i),
@@ -894,20 +915,24 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
             }
         })
       }
-    }
+    })
 
-    for (i <- 0 to NODES_AMOUNT-1) {
-      if (i != masterNodeNumber) {
+    forAllNodes(i  =>   {
+      log info "Starting node \"" + nodesNames(i) + "\"..."
+
+      if (i != deadMasterNodeNumber) {
         threads(i).start
       }
-    }
-    for (i <- 0 to NODES_AMOUNT-1) {
-      if (i != masterNodeNumber) {
+    })
+
+    forAllNodes(i  =>   {
+      if (i != deadMasterNodeNumber) {
         threads(i).join
       }
-    }
-    for (i <- 0 to NODES_AMOUNT-1) {
-      if (i != masterNodeNumber) {
+    })
+
+    forAllNodes(i  =>  {
+      if (i != deadMasterNodeNumber) {
         val dbConfig : DatabaseConfig = new DatabaseConfig
         dbConfig setAllowCreate true
         dbConfig setTransactional true
@@ -929,45 +954,63 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           databases(i).secondaryDatabases.put(index.name, secDatabase)
         }
       }
-    }
+    })
   }
 
   protected def tryToWrite (s: => Unit) {
     try{
       s
     } catch {
-      case e : InsufficientAcksException => {
 
-        var deadNodeNumber : Int = -1
-        for(i <- 0 to NODES_AMOUNT-1) {
-          if (!nodesEnvironments(i).isValid) {
-            deadNodeNumber = i
+        case e : InsufficientAcksException => synchronized {
+          log.error("InsufficientAcksException", e)
+
+          var deadNodeNumber : Int = -1
+          forAllNodes(i  =>  {
+            if (!nodesEnvironments(i).isValid) {
+              deadNodeNumber = i
+            }
+          })
+
+          if (deadNodeNumber != -1) {
+            restartNode(deadNodeNumber)
+          }
+
+          masterNodeNumber = getMasterNodeNumber
+        }
+
+        case e : LogWriteException => synchronized {
+          if (getMasterNodeNumber == -1) {
+            log.error("LogWriteException", e)
+
+            forAllNodes(i  =>  {
+              stopNode(i)
+            })
+            try {
+              restartAliveNodes(masterNodeNumber)
+
+              restartNode(masterNodeNumber)
+
+              masterNodeNumber = getMasterNodeNumber
+
+            } catch {
+              case ex => {
+                throw ex
+              }
+            }
           }
         }
-        if (deadNodeNumber != -1) {
-          restartNode(deadNodeNumber)
+
+        case e => {
+          throw e
         }
-      }
 
-      case e : LogWriteException => {
-        for(i <- 0 to NODES_AMOUNT-1) {
-          stopNode(i)
-        }
-        try {
-          restartAliveNodes(masterNodeNumber)
+    }
+  }
 
-          restartNode(masterNodeNumber)
-
-        } catch {
-          case ex => {
-            throw ex
-          }
-        }
-      }
-
-      case e => {
-        throw e
-      }
+  protected def forAllNodes(f : Int => Unit) {
+    for (i <- 0 to NODES_AMOUNT - 1) {
+      f(i)
     }
   }
 
