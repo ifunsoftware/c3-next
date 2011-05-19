@@ -334,6 +334,12 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
+                                    <groupId>com.sleepycat.je</groupId>
+                                    <artifactId>com.springsource.com.sleepycat.je</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.apache.commons</groupId>
                                     <artifactId>com.springsource.org.apache.commons.fileupload</artifactId>
                                     <type>jar</type>
