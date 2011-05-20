@@ -32,9 +32,10 @@
 package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
+import actors.Actor._
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.access.{ResourceAddedMsg, ResourceUpdatedMsg, ResourceDeletedMsg}
+import org.aphreet.c3.platform.access.{AccessCache, ResourceAddedMsg, ResourceUpdatedMsg, ResourceDeletedMsg}
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
@@ -45,7 +46,7 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 
 @Component
-class AccessCache extends WatchedActor with ComponentGuard{
+class AccessCacheImpl extends AccessCache with ComponentGuard{
 
   var cache:Cache = _
 
@@ -100,11 +101,11 @@ class AccessCache extends WatchedActor with ComponentGuard{
     }
   }
 
-  def put(resource:Resource) = {
+  override def put(resource:Resource) = {
     cache.put(new Element(resource.address, resource))
   }
 
-  def get(address:String):Option[Resource] = {
+  override def get(address:String):Option[Resource] = {
     val element = cache.get(address)
     if(element != null){
       statisticsService ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
@@ -115,7 +116,7 @@ class AccessCache extends WatchedActor with ComponentGuard{
     }
   }
 
-  def remove(address:String) = {
+  override def remove(address:String) = {
     cache.remove(address)
   }
 

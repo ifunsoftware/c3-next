@@ -45,7 +45,7 @@ import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.config.{SPlatformPropertyListener, PropertyChangeEvent}
+import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
@@ -56,6 +56,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   var storageManager:StorageManager = _
 
   var accessMediator:AccessMediator = _
+
+  var configManager:PlatformConfigManager = _
 
   var accessCache:AccessCache = _
 
@@ -77,6 +79,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   @Autowired
   def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
+
+  @Autowired
+  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
 
   @Autowired
   def setAccessCache(cache:AccessCache) = {accessCache = cache}
