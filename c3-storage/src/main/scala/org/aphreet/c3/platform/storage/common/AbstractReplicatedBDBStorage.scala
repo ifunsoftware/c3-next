@@ -12,6 +12,7 @@ import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundExce
 import collection.mutable.HashMap
 import scala.util.Random
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Created by IntelliJ IDEA.
@@ -55,9 +56,9 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   protected var masterNodeNumber : Int = 0
 
-  protected val rand = new Random
+  protected var nodeForReading = new AtomicInteger(0)
 
-  protected var errorHandling = false
+  //protected val rand = new Random
 
   {
     open(config)
@@ -333,6 +334,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     repConfig setNodeName     nodeName
     repConfig setNodeHostPort nodeHostPort
     repConfig setHelperHosts  helperHosts
+    repConfig.setReplicaAckTimeout(30, TimeUnit.SECONDS)
 
     val storagePathFile = new File(fileName, "metadata")
     if(!storagePathFile.exists) {
@@ -375,7 +377,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         })
 
       } else {
-        db = databases( rand.nextInt(3) ).database
+        db = databases( math.abs( nodeForReading.getAndIncrement % NODES_AMOUNT ) ).database
       }
 
       db
@@ -392,7 +394,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       })
 
     } else {
-      dbs = databases( rand.nextInt(3) ).secondaryDatabases
+      dbs = databases( math.abs( nodeForReading.getAndIncrement % NODES_AMOUNT ) ).secondaryDatabases
     }
 
     dbs
