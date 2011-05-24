@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.storage.file
 
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
-import org.aphreet.c3.platform.storage.common.AbstractBDBStorageFactory
+import org.aphreet.c3.platform.storage.bdb.AbstractBDBStorageFactory
 
 @Component
 class FileBDBStorageFactory extends AbstractBDBStorageFactory{
