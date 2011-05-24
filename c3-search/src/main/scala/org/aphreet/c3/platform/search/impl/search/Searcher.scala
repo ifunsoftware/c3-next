@@ -38,6 +38,7 @@ import org.aphreet.c3.platform.search.SearchResultElement
 import org.aphreet.c3.search.ext.{SearchConfiguration, SearchStrategyFactory}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
+import org.apache.lucene.search.{Searcher => LuceneSearcher}
 
 
 class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val configuration:SearchConfiguration) extends WatchedActor{
@@ -87,19 +88,13 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
     }
   }
 
-
-  //TODO replace to ParallelMultiSearcher when correct c3-search-ext will be ready
-  private def createSearcher:IndexSearcher = {
-    new IndexSearcher(indexPath.file.getCanonicalPath)
+  private def createSearcher:LuceneSearcher = {
+    new ParallelMultiSearcher(
+    (new IndexSearcher(indexPath.file.getCanonicalPath)
+      :: ramIndexers.map(indexer => new IndexSearcher(indexer.directory)).toList).toArray)
   }
-//  private def createSearcher:ParallelMultiSearcher = {
-//    new ParallelMultiSearcher(
-//    (new IndexSearcher(indexPath.file.getCanonicalPath)
-//      :: ramIndexers.map(indexer => new IndexSearcher(indexer.directory)).toList).toArray)
-//  }
 
-  //def getSearcher:ParallelMultiSearcher = indexSearcher
-  def getSearcher:IndexSearcher = indexSearcher
+  def getSearcher:LuceneSearcher = indexSearcher
 
   def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {
 

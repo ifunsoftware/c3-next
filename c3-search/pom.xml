@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-search-ext</artifactId>
-            <version>1.0.747</version>
+            <version>1.0.754</version>
         </dependency>
 
     </dependencies>

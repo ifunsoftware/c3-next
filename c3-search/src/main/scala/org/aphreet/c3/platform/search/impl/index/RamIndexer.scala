@@ -44,7 +44,9 @@ import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 
-class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfiguration, num: Int) extends WatchedActor {
+class RamIndexer(val fileIndexer: FileIndexer,
+                 val configuration:SearchConfiguration, num: Int,
+                 var extractDocumentContent:Boolean) extends WatchedActor {
 
   val log = LogFactory.getLog(getClass)
 
@@ -145,7 +147,13 @@ class RamIndexer(val fileIndexer: FileIndexer, val configuration:SearchConfigura
   def indexResource(resource: Resource) = {
     log debug num + ": Indexing resource " + resource.address
 
-    val extractedMeta = textExtractor.extract(resource)
+    val extractedMeta =
+      if(extractDocumentContent){
+        textExtractor.extract(resource)
+      }else{
+        Map[String, String]()
+      }
+
     val metadata = Map[String, String]() ++ resource.metadata
     val language = getLanguage(metadata, extractedMeta)
 

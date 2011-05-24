@@ -59,6 +59,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val INDEX_CREATE_TIMESTAMP = "c3.search.index.createTimestamp"
 
+  val EXTRACT_DOCUMENT_CONTENT = "c3.search.index.extract_content"
+
 
   val log = LogFactory.getLog(getClass)
 
@@ -90,11 +92,14 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val indexScheduler = new SearchIndexScheduler(this)
 
+
   var indexerTaskId:String = null
 
   var backgroundIndexTask:BackgroundIndexTask = null
 
   var indexCreateTimestamp = 0l
+
+  var extractDocumentContent = false
 
   @Autowired
   def setAccessManager(manager: AccessManager) = {accessManager = manager}
@@ -131,8 +136,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
       fileIndexer = new FileIndexer(indexPath)
 
-      ramIndexers = new RamIndexer(fileIndexer, configuration, 1) :: ramIndexers
-      ramIndexers = new RamIndexer(fileIndexer, configuration, 2) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, configuration, 1, extractDocumentContent) :: ramIndexers
+      ramIndexers = new RamIndexer(fileIndexer, configuration, 2, extractDocumentContent) :: ramIndexers
 
       searcher = new Searcher(indexPath, ramIndexers, configuration)
       fileIndexer.searcher = searcher
@@ -243,11 +248,12 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   def defaultValues: Map[String, String] = Map(
     INDEXER_COUNT -> "2",
     MAX_TMP_INDEX_SIZE -> "100",
-    INDEX_CREATE_TIMESTAMP -> "0"
+    INDEX_CREATE_TIMESTAMP -> "0",
+    EXTRACT_DOCUMENT_CONTENT -> "false"
     )
 
   override def listeningForProperties: Array[String] = Array(
-    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP
+    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT
     )
 
   def propertyChanged(event: PropertyChangeEvent) {
@@ -278,7 +284,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           val indexersToAdd = newCount - ramIndexers.size
 
           for (i <- 1 to indexersToAdd) {
-            val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size)
+            val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent)
             indexer.start
             ramIndexers = indexer :: ramIndexers
           }
@@ -304,6 +310,14 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         indexCreateTimestamp = event.newValue.toLong
         if(backgroundIndexTask != null)
           backgroundIndexTask.indexCreateTimestamp = indexCreateTimestamp
+
+      case EXTRACT_DOCUMENT_CONTENT =>
+        log info "Setting " + EXTRACT_DOCUMENT_CONTENT + " value: " + event.newValue
+        extractDocumentContent = event.newValue == "true"
+
+        for(indexer <- ramIndexers){
+          indexer.extractDocumentContent = extractDocumentContent
+        }
     }
   }
 
