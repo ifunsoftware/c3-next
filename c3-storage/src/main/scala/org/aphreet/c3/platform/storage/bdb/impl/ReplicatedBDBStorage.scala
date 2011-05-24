@@ -1,9 +1,10 @@
-package org.aphreet.c3.platform.storage.bdb
+package org.aphreet.c3.platform.storage.bdb.impl
 
 import org.aphreet.c3.platform.storage.StorageParams
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper, ResourceVersion}
+import org.aphreet.c3.platform.storage.bdb._
 
 /**
  * Created by IntelliJ IDEA.

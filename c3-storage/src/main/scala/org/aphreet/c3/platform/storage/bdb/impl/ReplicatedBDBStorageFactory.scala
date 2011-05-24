@@ -1,7 +1,8 @@
-package org.aphreet.c3.platform.storage.bdb
+package org.aphreet.c3.platform.storage.bdb.impl
 
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.storage.bdb._
 
 /**
  * Created by IntelliJ IDEA.

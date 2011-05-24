@@ -12,7 +12,7 @@ import org.aphreet.c3.platform.common._
 
 import java.io.File
 
-import org.aphreet.c3.platform.storage.bdb.ReplicatedBDBStorage
+import org.aphreet.c3.platform.storage.bdb.impl.ReplicatedBDBStorage
 import org.aphreet.c3.platform.exception.StorageException
 import java.util.Date
 

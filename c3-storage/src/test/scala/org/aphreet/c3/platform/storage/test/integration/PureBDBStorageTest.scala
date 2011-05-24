@@ -12,7 +12,7 @@ import org.aphreet.c3.platform.common._
 
 import java.io.File
 
-import org.aphreet.c3.platform.storage.bdb.PureBDBStorage
+import org.aphreet.c3.platform.storage.bdb.impl.PureBDBStorage
 import org.aphreet.c3.platform.exception.StorageException
 
 class PureBDBStorageTest extends TestCase{
