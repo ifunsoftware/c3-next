@@ -79,8 +79,7 @@ class FSManagerImpl extends FSManager{
       case None => throw new FSException("Can't remove root node")
     }
 
-    val parentPath = path.replaceFirst(nodeToDelete + "$", "")
-
+    val parentPath = splitPath(path)._1
 
     val node = getNode(domainId, path)
 
