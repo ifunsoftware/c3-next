@@ -29,9 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import com.sleepycat.je.Transaction
+import org.aphreet.c3.platform.storage.common.SeedSource
 
 case class TransactionBasedSeedSource(val tx:Transaction) extends SeedSource{
 

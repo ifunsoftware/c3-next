@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.common.{Path, Constants}
 import org.aphreet.c3.platform.resource.Resource
@@ -9,6 +9,7 @@ import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageExce
 import org.aphreet.c3.platform.storage.{StorageParams, StorageIterator}
 import com.sleepycat.je._
 import collection.mutable.{HashSet, HashMap}
+import org.aphreet.c3.platform.storage.common.AbstractStorage
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
                                   override val systemId:String,

@@ -1,7 +1,6 @@
 package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.storage.StorageParams
-import org.aphreet.c3.platform.storage.common.{AbstractReplicatedBDBStorage, BDBConfig}
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.resource.{Resource, DataWrapper, ResourceVersion}

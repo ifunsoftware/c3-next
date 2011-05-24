@@ -4,7 +4,6 @@ import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 import org.aphreet.c3.platform.storage.StorageParams
 import com.sleepycat.je._
-import org.aphreet.c3.platform.storage.common.{AbstractSingleInstanceBDBStorage, BDBConfig}
 
 class PureBDBStorage(override val parameters: StorageParams,
                      override val systemId:String,

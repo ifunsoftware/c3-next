@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.storage.common.AbstractBDBStorageFactory
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.springframework.stereotype.Component
 

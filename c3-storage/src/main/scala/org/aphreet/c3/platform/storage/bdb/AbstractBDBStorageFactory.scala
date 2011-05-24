@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener}
@@ -7,6 +7,7 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.storage.U
 import org.aphreet.c3.platform.common.{ComponentGuard, Constants}
 import org.aphreet.c3.platform.config._
+import org.aphreet.c3.platform.storage.common.AbstractStorageFactory
 
 /**
  * Created by IntelliJ IDEA.

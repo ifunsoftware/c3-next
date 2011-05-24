@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import org.aphreet.c3.platform.storage.StorageIndex
 import org.aphreet.c3.platform.resource.Resource

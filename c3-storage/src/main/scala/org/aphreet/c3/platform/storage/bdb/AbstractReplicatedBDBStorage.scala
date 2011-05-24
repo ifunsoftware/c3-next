@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import java.net.InetSocketAddress
 import com.sleepycat.je.rep.util.ReplicationGroupAdmin
