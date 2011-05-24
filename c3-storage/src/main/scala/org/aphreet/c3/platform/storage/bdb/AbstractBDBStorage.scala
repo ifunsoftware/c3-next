@@ -13,7 +13,10 @@ import org.aphreet.c3.platform.storage.common.AbstractStorage
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
                                   override val systemId:String,
-                                  val config:BDBConfig) extends AbstractStorage(parameters, systemId){
+                                  val config:BDBConfig) extends AbstractStorage(parameters, systemId)
+                                                        with DataManipulator
+                                                        with DatabaseProvider
+                                                        with FailoverStrategy{
 
 
   protected var objectCount:Long = -1
@@ -54,9 +57,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     size
   }
-
-  protected def failuresArePossible(block: => Any):Unit
-
+  
   def isAddressExists(address:String):Boolean = {
 
     val key = new DatabaseEntry(address.getBytes)
@@ -366,22 +367,6 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     )
   }
 
-  def loadData(resource:Resource)
-
-
-  protected def storeData(resource:Resource, tx:Transaction):Unit = storeData(resource)
-
-  protected def storeData(resource:Resource):Unit = {}
-
-  protected def deleteData(ra:String, tx:Transaction):Unit = deleteData(ra)
-
-  protected def deleteData(ra:String):Unit = {}
-
-  protected def putData(resource:Resource):Unit = {}
-
-  protected def putData(resource:Resource, tx:Transaction):Unit = putData(resource)
-
-
   protected def preSave(resource:Resource){}
 
   protected def postSave(resource:Resource){
@@ -390,12 +375,15 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     }
   }
 
-  def getDatabase(writeFlag : Boolean) : Database
-
   def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase]
 
   protected def getEnvironment() : Environment
 
-  //protected def open(bdbConfig : BDBConfig){}
+}
+
+trait DatabaseProvider{
+
+  def getDatabase(writeFlag : Boolean) : Database
+
 }
 
