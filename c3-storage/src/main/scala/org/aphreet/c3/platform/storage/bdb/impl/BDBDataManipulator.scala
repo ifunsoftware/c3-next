@@ -1,15 +1,17 @@
-package org.aphreet.c3.platform.storage.bdb
+package org.aphreet.c3.platform.storage.bdb.impl
 
-import org.aphreet.c3.platform.resource._
-import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.storage.StorageParams
 import com.sleepycat.je._
-import org.aphreet.c3.platform.storage.common.{AbstractSingleInstanceBDBStorage, BDBConfig}
+import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
+import org.aphreet.c3.platform.resource.{Resource, DataWrapper, ResourceVersion}
+import org.aphreet.c3.platform.storage.bdb.{FailoverStrategy, LazyBDBDataWrapper, DatabaseProvider, DataManipulator}
 
-class PureBDBStorage(override val parameters: StorageParams,
-                     override val systemId:String,
-                     override val config: BDBConfig)
-          extends AbstractSingleInstanceBDBStorage(parameters, systemId, config) {
+/*
+* Created by IntelliJ IDEA.
+* User: Aphreet
+* Date: 5/25/11
+* Time: 2:16 AM
+*/
+trait BDBDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy{
 
   override protected def storeData(resource: Resource, tx: Transaction) {
 
@@ -51,7 +53,7 @@ class PureBDBStorage(override val parameters: StorageParams,
         case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
       }
 
-      version.data = new LazyBDBDataWrapper(versionKey, database)
+      version.data = new LazyBDBDataWrapper(versionKey, getDatabase(false))
     }
   }
 
@@ -61,7 +63,7 @@ class PureBDBStorage(override val parameters: StorageParams,
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = database.get(null, key, value, LockMode.DEFAULT)
+    val status = getDatabase(true).get(null, key, value, LockMode.DEFAULT)
 
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
@@ -71,8 +73,9 @@ class PureBDBStorage(override val parameters: StorageParams,
           case Some(address) => new DatabaseEntry(address.getBytes)
           case None => throw new StorageException("No data address in version for resource: " + ra)
         }
-
-        database.delete(tx, dataKey);
+        failuresArePossible{
+          getDatabase(true).delete(tx, dataKey);
+        }
       }
 
 
@@ -86,24 +89,22 @@ class PureBDBStorage(override val parameters: StorageParams,
     val dbValue = new DatabaseEntry(version.data.getBytes)
 
     var status: OperationStatus = null
-    if (allowOverwrite) {
-      status = database.put(tx, dbKey, dbValue)
-    } else {
-      status = database.putNoOverwrite(tx, dbKey, dbValue)
-    }
 
-    if (status != OperationStatus.SUCCESS) {
-      throw new StorageException("Failed to write version data, operation status is " + status.toString)
+    failuresArePossible{
+
+      if (allowOverwrite) {
+        status = getDatabase(true).put(tx, dbKey, dbValue)
+      } else {
+        status = getDatabase(true).putNoOverwrite(tx, dbKey, dbValue)
+      }
+
+      if (status != OperationStatus.SUCCESS) {
+        throw new StorageException("Failed to write version data, operation status is " + status.toString)
+      }
     }
 
     version.data = DataWrapper.wrap(version.data.getBytes)
     version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
   }
 
-  def name = PureBDBStorage.NAME
-
-}
-
-object PureBDBStorage {
-  val NAME = classOf[PureBDBStorage].getSimpleName
 }

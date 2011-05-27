@@ -6,13 +6,13 @@ import junit.framework.Assert._
 import scala.collection.mutable.HashMap
 
 import org.aphreet.c3.platform.storage._
-import common.{BDBStorageIterator, BDBConfig}
+import bdb.{BDBStorageIterator, BDBConfig}
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
 
 import java.io.File
 
-import org.aphreet.c3.platform.storage.bdb.ReplicatedBDBStorage
+import org.aphreet.c3.platform.storage.bdb.impl.ReplicatedBDBStorage
 import org.aphreet.c3.platform.exception.StorageException
 import java.util.Date
 

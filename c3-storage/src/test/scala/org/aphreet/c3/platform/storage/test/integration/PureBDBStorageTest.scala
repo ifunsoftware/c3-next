@@ -6,13 +6,13 @@ import junit.framework.Assert._
 import scala.collection.mutable.HashMap
 
 import org.aphreet.c3.platform.storage._
-import common.{BDBStorageIterator, BDBConfig}
+import bdb.{BDBStorageIterator, BDBConfig}
 import org.aphreet.c3.platform.resource._
 import org.aphreet.c3.platform.common._
 
 import java.io.File
 
-import org.aphreet.c3.platform.storage.bdb.PureBDBStorage
+import org.aphreet.c3.platform.storage.bdb.impl.PureBDBStorage
 import org.aphreet.c3.platform.exception.StorageException
 
 class PureBDBStorageTest extends TestCase{

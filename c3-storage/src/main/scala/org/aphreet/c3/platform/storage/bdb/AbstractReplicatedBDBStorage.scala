@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.storage.common
+package org.aphreet.c3.platform.storage.bdb
 
 import java.net.InetSocketAddress
 import com.sleepycat.je.rep.util.ReplicationGroupAdmin
@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 
 abstract class AbstractReplicatedBDBStorage  (override val parameters: StorageParams,
-                     override val systemId:String,
-                     override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
+                                              override val systemId:String,
+                                              override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
 
   protected val NODES_AMOUNT : Int  = 3
 
@@ -148,12 +148,12 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     try {
       forAllNodes(i  =>  {
         threads(i) = new Thread( new Runnable() {
-            override def run() {
-              nodesEnvironments(i) =  createNode( envConfig, groupName, nodesNames(i),
-                                                  "localhost:" + portsNumbers(i).toString(),
-                                                  "localhost:" + portsNumbers(0).toString(),
-                                                  nodesDirs(i))
-            }
+          override def run() {
+            nodesEnvironments(i) =  createNode( envConfig, groupName, nodesNames(i),
+              "localhost:" + portsNumbers(i).toString(),
+              "localhost:" + portsNumbers(0).toString(),
+              nodesDirs(i))
+          }
         })
       })
     } catch {
@@ -367,20 +367,20 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
   }
 
   override def getDatabase(writeFlag : Boolean) : Database = {
-      var db : Database = null
+    var db : Database = null
 
-      if (writeFlag) {
-        forAllNodes(i  =>  {
-          if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
-            db = databases(i).database
-          }
-        })
+    if (writeFlag) {
+      forAllNodes(i  =>  {
+        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+          db = databases(i).database
+        }
+      })
 
-      } else {
-        db = databases( math.abs( nodeForReading.getAndIncrement % NODES_AMOUNT ) ).database
-      }
+    } else {
+      db = databases( math.abs( nodeForReading.getAndIncrement % NODES_AMOUNT ) ).database
+    }
 
-      db
+    db
   }
 
   override def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase] = {
@@ -424,355 +424,19 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     mNodeNumber
   }
 
-  def add(resource:Resource):String = {
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-    val ra = generateName(TransactionBasedSeedSource(tx))
-
-    resource.address = ra
-
-    preSave(resource)
-
-    storeData(resource, tx)
-
-    val key = new DatabaseEntry(ra.getBytes)
-    val value = new DatabaseEntry(resource.toByteArray)
-
+  protected def failuresArePossible(block: => Any):Unit = {
     var attempts : Int = 0
     var successFlag : Boolean = false
 
-    try {
-      do {
-        //masterNodeNumber = getMasterNodeNumber
+    do {
+      attempts += 1
 
-        attempts += 1
+      tryToWrite {
+        block
 
-        tryToWrite {
-          val status = getDatabase(true).putNoOverwrite(tx, key, value)
-
-          if(status != OperationStatus.SUCCESS){
-            throw new StorageException("Failed to store resource in database, operation status is: " + status.toString)
-          }
-
-          successFlag = true
-        }
-      } while (!successFlag && attempts <= 2)
-
-      tx.commit
-
-      postSave(resource)
-
-      ra
-    } catch {
-      case e => {
-        tx.abort
-        throw e
+        successFlag = true
       }
-    }
-  }
-
-  def get(ra:String):Option[Resource] = {
-
-    val key = new DatabaseEntry(ra.getBytes)
-    val value = new DatabaseEntry()
-
-    if (getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-      val resource = Resource.fromByteArray(value.getData)
-      resource.address = ra
-      loadData(resource)
-      Some(resource)
-    } else None
-
-  }
-
-  def update(resource:Resource):String = {
-    val ra = resource.address
-
-    preSave(resource)
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-
-    try {
-
-      //Obtaining actual version of resource and locking it for write
-      val savedResource:Resource = {
-        val key = new DatabaseEntry(ra.getBytes)
-        val value = new DatabaseEntry()
-
-        val status = getDatabase(false).get(tx, key, value, LockMode.RMW)
-        if(status == OperationStatus.SUCCESS){
-          val res = Resource.fromByteArray(value.getData)
-          res.address = ra
-          res
-        }else throw new ResourceNotFoundException(
-          "Failed to get resource with address " + ra + " Operation status " + status.toString)
-      }
-
-      //Replacing metadata
-      savedResource.metadata.clear
-      savedResource.metadata ++= resource.metadata
-
-      //Appending system metadata
-      savedResource.systemMetadata ++= resource.systemMetadata
-
-
-      for(version <- resource.versions if !version.persisted)
-        savedResource.addVersion(version)
-
-
-      storeData(savedResource, tx)
-
-      val key = new DatabaseEntry(ra.getBytes)
-      val value = new DatabaseEntry(savedResource.toByteArray)
-
-      var attempts = 0
-      var successFlag = false
-
-      do {
-        attempts += 1
-        //masterNodeNumber = getMasterNodeNumber
-
-        tryToWrite {
-          if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
-            throw new StorageException("Failed to store resource in database")
-          } else {
-            successFlag = true
-          }
-        }
-      } while (!successFlag && attempts <= 2)
-
-      tx.commit
-
-      postSave(savedResource)
-
-      ra
-    }catch{
-      case e => {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def delete(ra:String) = {
-    val key = new DatabaseEntry(ra.getBytes)
-
-    val tx = getEnvironment.beginTransaction(null, null)
-    try{
-      deleteData(ra, tx)
-
-      var attempts = 0
-      var successFlag = false
-      do {
-        attempts += 1
-        //masterNodeNumber = getMasterNodeNumber
-
-        tryToWrite {
-          val status = getDatabase(true).delete(tx, key)
-
-          if (status != OperationStatus.SUCCESS)
-            throw new StorageException("Failed to delete data from DB, op status: " + status.toString)
-          else {
-            successFlag = true
-          }
-        }
-      } while(!successFlag && attempts <= 2)
-
-      tx.commit
-    } catch {
-      case e => {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def put(resource:Resource) = {
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-    try{
-      putData(resource, tx)
-
-      val key = new DatabaseEntry(resource.address.getBytes)
-      val value = new DatabaseEntry(resource.toByteArray)
-
-      var attempts = 0
-      var successFlag = false
-
-      do {
-        attempts += 1
-        //masterNodeNumber = getMasterNodeNumber
-
-        tryToWrite {
-          val status = getDatabase(true).put(tx, key, value)
-
-          if(status != OperationStatus.SUCCESS){
-            throw new StorageException("Failed to store resource in database, operation status: " + status.toString)
-          } else {
-            successFlag = true
-          }
-        }
-      } while(!successFlag && attempts <= 2)
-
-      tx.commit
-    }catch{
-      case e=> {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]){
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-    try{
-
-      //Obtaining actual version of resource and locking it for write
-      val savedResource:Resource = {
-        val key = new DatabaseEntry(ra.getBytes)
-        val value = new DatabaseEntry()
-
-        val status = getDatabase(false).get(tx, key, value, LockMode.RMW)
-        if(status == OperationStatus.SUCCESS){
-          val res = Resource.fromByteArray(value.getData)
-          res.address = ra
-          res
-        }else throw new ResourceNotFoundException(
-          "Failed to get resource with address " + ra + " Operation status " + status.toString)
-      }
-      //Appending system metadata
-      savedResource.systemMetadata ++= metadata
-
-      val key = new DatabaseEntry(ra.getBytes)
-      val value = new DatabaseEntry(savedResource.toByteArray)
-
-      var attempts = 0
-      var successFlag = false
-
-      do {
-        attempts += 1
-        //masterNodeNumber = getMasterNodeNumber
-
-        tryToWrite {
-          if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
-            throw new StorageException("Failed to store resource in database")
-          } else {
-            successFlag = true
-          }
-        }
-      } while(!successFlag && attempts <= 2)
-
-
-      tx.commit
-    } catch {
-      case e => {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def lock(ra:String){
-    val key = new DatabaseEntry(ra.getBytes)
-    val value = new DatabaseEntry()
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-    try{
-      val status = getDatabase(false).get(tx, key, value, LockMode.RMW)
-      if(status == OperationStatus.SUCCESS){
-        val res = Resource.fromByteArray(value.getData)
-        res.systemMetadata.get(Resource.SMD_LOCK) match{
-          case Some(x) => throw new StorageException("Failed to obtain lock")
-          case None =>
-        }
-
-        res.systemMetadata.put(Resource.SMD_LOCK, System.currentTimeMillis.toString)
-
-        value.setData(res.toByteArray)
-
-        var attempts = 0
-        var successFlag = false
-        do {
-          tryToWrite {
-            attempts += 1
-            //masterNodeNumber = getMasterNodeNumber
-
-            getDatabase(true).put(tx, key, value)
-
-            successFlag = true
-
-          }
-        } while (!successFlag && attempts <= 2)
-
-
-        tx.commit
-      } else {
-        throw new ResourceNotFoundException(
-          "Failed to get resource with address " + ra + " Operation status " + status.toString)
-      }
-    } catch {
-      case e => {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def unlock(ra:String){
-    val key = new DatabaseEntry(ra.getBytes)
-    val value = new DatabaseEntry()
-
-    val tx = getEnvironment.beginTransaction(null, null)
-
-    try{
-      val status = getDatabase(false).get(tx, key, value, LockMode.RMW)
-      if(status == OperationStatus.SUCCESS){
-        val res = Resource.fromByteArray(value.getData)
-
-
-        res.systemMetadata.remove(Resource.SMD_LOCK)
-
-        value.setData(res.toByteArray)
-
-        var attempts = 0
-        var successFlag = false
-        do {
-          tryToWrite {
-            attempts += 1
-            //masterNodeNumber = getMasterNodeNumber
-
-            getDatabase(true).put(tx, key, value)
-
-            successFlag = true
-
-          }
-        } while (!successFlag && attempts <= 2)
-
-        tx.commit
-      }else{
-        throw new ResourceNotFoundException(
-          "Failed to get resource with address " + ra + " Operation status " + status.toString)
-      }
-    }catch{
-      case e => {
-        tx.abort
-        throw e
-      }
-    }
-  }
-
-  def isAddressExists(address:String):Boolean = {
-
-    val key = new DatabaseEntry(address.getBytes)
-    val value = new DatabaseEntry()
-
-    getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
+    } while (!successFlag && attempts <= 2)
   }
 
   protected def restartNode(nodeNumberToRestart : Int) {
@@ -785,10 +449,10 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     val t = new Thread(new Runnable() {
       override def run() {
-              tempRepEnv =  createNode( envConfig, storageName, newName,
-                                                  "localhost:" + newPort.toString,
-                                                  "localhost:" + generatePortNumber(0).toString(),
-                                                  newDir)
+        tempRepEnv =  createNode( envConfig, storageName, newName,
+          "localhost:" + newPort.toString,
+          "localhost:" + generatePortNumber(0).toString(),
+          newDir)
       }
     })
 
@@ -877,7 +541,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
   protected def generatePortNumber(num : Int) : Int = {
     val portsBase : Int = (62 * (1 + IdGenerator.chars.indexOf( id.charAt(2).toString )) +
-                                (1 + IdGenerator.chars.indexOf( id.charAt(3).toString )) )
+      (1 + IdGenerator.chars.indexOf( id.charAt(3).toString )) )
 
     val portNum = 30000 + (num + 1) * portsBase
     portNum
@@ -918,12 +582,12 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     forAllNodes(i  =>   {
       if (i != deadMasterNodeNumber) {
         threads(i) = new Thread( new Runnable() {
-            override def run() {
-              nodesEnvironments(i) =  createNode( envConfig, storageName, nodesNames(i),
-                                                  "localhost:" + portsNumbers(i).toString(),
-                                                  "localhost:" + portsNumbers(0).toString(),
-                                                  storagePath + "-" + i)
-            }
+          override def run() {
+            nodesEnvironments(i) =  createNode( envConfig, storageName, nodesNames(i),
+              "localhost:" + portsNumbers(i).toString(),
+              "localhost:" + portsNumbers(0).toString(),
+              storagePath + "-" + i)
+          }
         })
       }
     })
@@ -960,7 +624,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
 
           val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name,
-                                                                           databases(i).database, secConfig)
+            databases(i).database, secConfig)
 
           databases(i).secondaryDatabases.put(index.name, secDatabase)
         }
@@ -973,48 +637,48 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       s
     } catch {
 
-        case e : InsufficientAcksException => synchronized {
-          log.error("InsufficientAcksException", e)
+      case e : InsufficientAcksException => synchronized {
+        log.error("InsufficientAcksException", e)
 
-          var deadNodeNumber : Int = -1
+        var deadNodeNumber : Int = -1
+        forAllNodes(i  =>  {
+          if (!nodesEnvironments(i).isValid) {
+            deadNodeNumber = i
+          }
+        })
+
+        if (deadNodeNumber != -1) {
+          restartNode(deadNodeNumber)
+        }
+
+        masterNodeNumber = getMasterNodeNumber
+      }
+
+      case e : LogWriteException => synchronized {
+        if (getMasterNodeNumber == -1) {
+          log.error("LogWriteException", e)
+
           forAllNodes(i  =>  {
-            if (!nodesEnvironments(i).isValid) {
-              deadNodeNumber = i
-            }
+            stopNode(i)
           })
+          try {
+            restartAliveNodes(masterNodeNumber)
 
-          if (deadNodeNumber != -1) {
-            restartNode(deadNodeNumber)
-          }
+            restartNode(masterNodeNumber)
 
-          masterNodeNumber = getMasterNodeNumber
-        }
+            masterNodeNumber = getMasterNodeNumber
 
-        case e : LogWriteException => synchronized {
-          if (getMasterNodeNumber == -1) {
-            log.error("LogWriteException", e)
-
-            forAllNodes(i  =>  {
-              stopNode(i)
-            })
-            try {
-              restartAliveNodes(masterNodeNumber)
-
-              restartNode(masterNodeNumber)
-
-              masterNodeNumber = getMasterNodeNumber
-
-            } catch {
-              case ex => {
-                throw ex
-              }
+          } catch {
+            case ex => {
+              throw ex
             }
           }
         }
+      }
 
-        case e => {
-          throw e
-        }
+      case e => {
+        throw e
+      }
 
     }
   }
