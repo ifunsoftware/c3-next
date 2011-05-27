@@ -83,4 +83,6 @@ trait PlatformManagementService {
 
   def importFileSystemRoot(domainId:String, address:String)
 
+  def startFilesystemCheck
+
 }

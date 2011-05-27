@@ -40,6 +40,9 @@ import org.aphreet.c3.platform.filesystem._
 import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
 import annotation.tailrec
+import org.aphreet.c3.platform.statistics.StatisticsManager
+import org.aphreet.c3.platform.task.TaskManager
+import java.lang.IllegalStateException
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager{
@@ -50,6 +53,10 @@ class FSManagerImpl extends FSManager{
 
   var configAccessor:FSConfigAccessor = _
 
+  var statisticsManager:StatisticsManager = _
+
+  var taskManager:TaskManager = _
+
   var fsRoots:Map[String, String] = Map()
 
   @Autowired
@@ -57,6 +64,12 @@ class FSManagerImpl extends FSManager{
 
   @Autowired
   def setConfigAccessor(accessor:FSConfigAccessor) = {configAccessor = accessor}
+
+  @Autowired
+  def setTaskManager(manager:TaskManager) = {taskManager = manager}
+
+  @Autowired
+  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
 
   @PostConstruct
   def init{
@@ -307,5 +320,15 @@ class FSManagerImpl extends FSManager{
 
     (parentPath, name)
 
+  }
+
+  def startFilesystemCheck{
+
+    if(taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty){
+      val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)
+      taskManager.submitTask(task)
+    }else{
+      throw new IllegalStateException("Task already started")
+    }
   }
 }

@@ -16,4 +16,8 @@
 
     <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
+    <reference id="taskService" interface="org.aphreet.c3.platform.task.TaskManager"/>
+
+    <reference id="statisticsService" interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
+
 </beans:beans>

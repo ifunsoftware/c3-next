@@ -79,6 +79,11 @@ class StatisticsManagerImpl extends StatisticsManager{
             }
           }
         }
+
+        case ResetStatisticsMsg(key) => {
+          statistics.remove(key)
+        }
+
         case DestroyMsg => {
           log info "Statistics Manager's actor stopped"
           this.exit

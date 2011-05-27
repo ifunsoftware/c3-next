@@ -41,3 +41,5 @@ trait StatisticsManager extends WatchedActor{
 case class SetStatisticsMsg(key:String, value:String)
 
 case class IncreaseStatisticsMsg(key:String, value:Long)
+
+case class ResetStatisticsMsg(key:String)

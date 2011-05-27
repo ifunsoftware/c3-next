@@ -48,4 +48,6 @@ trait FSManager{
   def fileSystemRoots:Map[String, String]
 
   def importFileSystemRoot(domainId:String, address:String)
+
+  def startFilesystemCheck
 }

@@ -551,4 +551,15 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
   }
+
+  def startFilesystemCheck = {
+    try{
+      filesystemManager.startFilesystemCheck
+    }catch{
+      case e => {
+        e.printStackTrace
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 }

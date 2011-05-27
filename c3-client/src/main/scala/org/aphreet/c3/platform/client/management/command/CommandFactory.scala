@@ -57,6 +57,8 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
     register(ReplicationCommands)
 
     register(DomainCommands)
+
+    register(FilesystemCommands)
     
     register(new HelpCommand)
   }

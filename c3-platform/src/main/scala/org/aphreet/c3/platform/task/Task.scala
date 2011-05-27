@@ -9,7 +9,7 @@ abstract class Task extends Runnable{
 
   val id = name + "-" + System.currentTimeMillis
 
-  private var shouldStopFlag = false
+  protected var shouldStopFlag = false
 
   private val SLEEP_ON_PAUSE_INTERVAL = 5000
 
