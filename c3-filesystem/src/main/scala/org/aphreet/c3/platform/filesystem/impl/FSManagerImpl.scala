@@ -31,21 +31,22 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.resource.{ResourceVersion, DataWrapper, Resource}
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.filesystem._
-import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
 import annotation.tailrec
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.task.TaskManager
 import java.lang.IllegalStateException
+import org.aphreet.c3.platform.access.{ResourceOwner, AccessManager}
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common.ComponentGuard
 
 @Component("fsManager")
-class FSManagerImpl extends FSManager{
+class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
@@ -76,7 +77,17 @@ class FSManagerImpl extends FSManager{
 
     log info "Starting Filesystem manager"
 
+    accessManager.registerOwner(this)
+
     fsRoots = configAccessor.load
+  }
+
+  @PreDestroy
+  def destroy{
+
+    letItFall{
+      accessManager.unregisterOwner(this)
+    }
   }
 
   def getNode(domainId:String, path:String):Node = {
@@ -85,30 +96,67 @@ class FSManagerImpl extends FSManager{
 
   def deleteNode(domainId:String, path:String) = {
 
-    val components = getPathComponents(path)
-
-    val nodeToDelete = components.lastOption match{
-      case Some(x) => x
-      case None => throw new FSException("Can't remove root node")
-    }
-
-    val parentPath = splitPath(path)._1
-
     val node = getNode(domainId, path)
 
-    if(node.isDirectory){
-      val directory = node.asInstanceOf[Directory]
-      if(!directory.getChildren.isEmpty){
-        throw new FSException("Can't remove non-empty directory")
+    accessManager.delete(node.resource.address)
+  }
+
+  override def resourceCanBeDeleted(resource:Resource):Boolean = {
+    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match{
+      case None => true
+      case Some(nodeType) => {
+
+        var canDelete = false
+
+        if(nodeType == Node.NODE_TYPE_DIR){
+          val directory = Directory(resource)
+          if(directory.getChildren.isEmpty){
+            canDelete = fsRoots.values.forall(_ != resource.address)
+          }else{
+            canDelete = false
+          }
+        }else{
+          canDelete = true
+        }
+
+        canDelete
       }
     }
+  }
 
-    val parentNode = getNode(domainId, parentPath).asInstanceOf[Directory]
+  override def resourceCanBeUpdated(resource:Resource):Boolean = {
+    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match{
+      case None => true
+      case Some(nodeType) =>
+        if(nodeType == Node.NODE_TYPE_DIR){
+          try{
+            //trying to create a directory from provided bytestream
+            Directory(resource)
+            true
+          }catch{
+            case e => false
+          }
+        }else{
+          true
+        }
+    }
+  }
 
-    parentNode.removeChild(nodeToDelete)
+  override def deleteResource(resource:Resource) = {
 
-    accessManager.update(parentNode.resource)
-    accessManager.delete(node.resource.address)
+    resource.systemMetadata.get(Node.NODE_FIELD_NAME) match {
+      case None => //it seems that resource is not a part of FS, skipping
+      case Some(name) =>
+        resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
+          case Some(parentAddress) => {
+            val parent = accessManager.get(parentAddress)
+            val directory = Directory(parent)
+            directory.removeChild(name)
+            accessManager.update(directory.resource)
+          }
+          case None =>
+        }
+    }
   }
 
   def createFile(domainId:String, fullPath:String, resource:Resource) = {
