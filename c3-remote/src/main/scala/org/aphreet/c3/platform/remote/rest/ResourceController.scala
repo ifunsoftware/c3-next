@@ -134,7 +134,6 @@ class ResourceController extends DataController{
 
     val resource = accessManager.get(address)
 
-    canEditResource(resource)
     checkDomainAccess(resource, domain)
 
     executeDataUpload(resource, domain, request, response, () => {
@@ -155,19 +154,10 @@ class ResourceController extends DataController{
 
     val resource = accessManager.get(address)
 
-    canEditResource(resource)
     checkDomainAccess(resource, domain)
 
     accessManager.delete(address)
     
     getResultWriter(contentType).writeResponse(new Result, response)
   }
-
-  def canEditResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
-      case Some(x) => x != Node.NODE_TYPE_DIR
-      case None => true
-    }
-  }
-
 }
