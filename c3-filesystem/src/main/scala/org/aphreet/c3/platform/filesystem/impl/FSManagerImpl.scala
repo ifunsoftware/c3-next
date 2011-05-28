@@ -101,6 +101,57 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     accessManager.delete(node.resource.address)
   }
 
+  def moveNode(domainsId:String, oldPath:String, newPath:String){
+
+    val oldPathAndName = splitPath(oldPath)
+
+    val newPathAndName = splitPath(newPath)
+
+
+    val currentParent = getFSNode(oldPathAndName._1)
+
+    val newParent = getFSNode(newPathAndName._1)
+
+    if(!currentParent.isDirectory) throw new FSException("Current parent is not a directory")
+
+    if(!newParent.isDirectory) throw new FSException("Current parent is not a directory")
+
+    val nodeRef = currentParent.asInstanceOf[Directory].getChild(oldPathAndName._2) match {
+      case Some(n) => n
+      case None => throw new FSException("Can't find specified node")
+    }
+
+    val nodeAddress = nodeRef.address
+
+    val node = Node.fromResource(accessManager.get(nodeAddress))
+
+    try{
+      accessManager.lock(currentParent.resource.address)
+      accessManager.lock(newParent.resource.address)
+
+      val oldDir = Directory(accessManager.get(currentParent.resource.address))
+      val newDir = Directory(accessManager.get(newParent.resource.address))
+
+      newDir.addChild(NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf))
+
+      accessManager.update(newDir.resource)
+
+      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+      node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
+
+      accessManager.update(node.resource)
+
+
+      oldDir.removeChild(oldPathAndName._2)
+
+      accessManager.update(oldDir.resource)
+    }finally{
+      accessManager.unlock(newParent.resource.address)
+      accessManager.unlock(currentParent.resource.address)
+    }
+
+  }
+
   override def resourceCanBeDeleted(resource:Resource):Boolean = {
     resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match{
       case None => true
