@@ -94,13 +94,36 @@ class FSClient(override val args:Array[String]) extends CLI(args){
         case "rm" => rm(list.tail)
         case "setmd" => setmd(list.tail)
         case "exit" => System.exit(0)
+        case "help" => help
+        case "mv" => mv(list.tail)
 
-        case _ => println("Unknown command.")
+        case _ => println("Unknown command. Type help to show available commands")
       }
 
 
       print("C3:" + currentDir + "$")
     }
+  }
+
+  def help = {
+    println("cd <path>                           - Change current directory")
+    println("download <remote file> <local file> - download remote file content")
+    println("exit                                - Exit from shell")
+    println("help                                - Print this message")
+    println("info [<path>]                       - Download file metadata")
+    println("mkdir <path>                        - Create new directory")
+    println("mv <path> <new path>                - Rename or move file")
+    println("rm <path>                           - Remove file or directory")
+    println("setmd <path> <key> <value>          - Set metadata key/value")
+    println("upload <remote file> <local file>   - Upload file to c3")
+  }
+
+  def mv(args:List[String]) = {
+    val name = workDir(args)
+
+    val newName = args.tail.head
+
+    fileAccessor.moveFile(name, newName)
   }
 
   def setmd(args:List[String]) = {

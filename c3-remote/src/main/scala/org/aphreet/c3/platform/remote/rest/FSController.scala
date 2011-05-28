@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.resource.Resource
 import response.{Result, DirectoryResult}
 import org.aphreet.c3.platform.domain.Domain
 import org.apache.commons.httpclient.util.URIUtil
+import java.io.{BufferedReader, Reader}
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -102,6 +103,8 @@ class FSController extends DataController{
 
   @RequestMapping(method = Array(RequestMethod.PUT))
   def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
+                 @RequestHeader(value = "x-c3-op", required = false) operation:String,
+                 reader:Reader,
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
@@ -111,19 +114,26 @@ class FSController extends DataController{
 
     val node = filesystemManager.getNode(domain, fsPath)
 
-    if(node.isDirectory){
-      throw new WrongRequestException("Can't update directory")
-    }
-
     val resource = node.resource
 
-    checkDomainAccess(node.resource, domain)    
+    checkDomainAccess(node.resource, domain)
 
-    executeDataUpload(resource, domain, request, response, () => {
-      val ra = accessManager.update(resource)
+    if(operation != null && operation == "move"){
+
+      val bufferedReader = new BufferedReader(reader)
+
+      val newPath = decodeFSPath(bufferedReader.readLine())
+
+      filesystemManager.moveNode(domain, fsPath, newPath);
+
       reportSuccess(HttpServletResponse.SC_OK, contentType, response)
-    })
 
+    }else{
+      executeDataUpload(resource, domain, request, response, () => {
+        val ra = accessManager.update(resource)
+        reportSuccess(HttpServletResponse.SC_OK, contentType, response)
+      })
+    }
   }
 
   @RequestMapping(method = Array(RequestMethod.DELETE))

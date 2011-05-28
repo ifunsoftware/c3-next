@@ -101,16 +101,16 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     accessManager.delete(node.resource.address)
   }
 
-  def moveNode(domainsId:String, oldPath:String, newPath:String){
+  def moveNode(domainId:String, oldPath:String, newPath:String){
 
     val oldPathAndName = splitPath(oldPath)
 
     val newPathAndName = splitPath(newPath)
 
 
-    val currentParent = getFSNode(oldPathAndName._1)
+    val currentParent = getFSNode(domainId, oldPathAndName._1)
 
-    val newParent = getFSNode(newPathAndName._1)
+    val newParent = getFSNode(domainId, newPathAndName._1)
 
     if(!currentParent.isDirectory) throw new FSException("Current parent is not a directory")
 
@@ -125,30 +125,52 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
     val node = Node.fromResource(accessManager.get(nodeAddress))
 
-    try{
-      accessManager.lock(currentParent.resource.address)
-      accessManager.lock(newParent.resource.address)
+    if(currentParent.resource.address == newParent.resource.address){
+      try{
+        accessManager.lock(currentParent.resource.address)
 
-      val oldDir = Directory(accessManager.get(currentParent.resource.address))
-      val newDir = Directory(accessManager.get(newParent.resource.address))
+        val dir = Directory(accessManager.get(currentParent.resource.address))
 
-      newDir.addChild(NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf))
+        dir.removeChild(oldPathAndName._2)
+        dir.addChild(NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf))
 
-      accessManager.update(newDir.resource)
+        accessManager.update(dir.resource)
 
-      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-      node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
+        node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
 
-      accessManager.update(node.resource)
+        accessManager.update(node.resource)
+
+      }finally {
+        accessManager.unlock(currentParent.resource.address)
+      }
+    }else{
+      try{
+        accessManager.lock(currentParent.resource.address)
+        accessManager.lock(newParent.resource.address)
+
+        val oldDir = Directory(accessManager.get(currentParent.resource.address))
+        val newDir = Directory(accessManager.get(newParent.resource.address))
+
+        newDir.addChild(NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf))
+
+        accessManager.update(newDir.resource)
+
+        node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+        node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
+
+        accessManager.update(node.resource)
 
 
-      oldDir.removeChild(oldPathAndName._2)
+        oldDir.removeChild(oldPathAndName._2)
 
-      accessManager.update(oldDir.resource)
-    }finally{
-      accessManager.unlock(newParent.resource.address)
-      accessManager.unlock(currentParent.resource.address)
+        accessManager.update(oldDir.resource)
+      }finally{
+        accessManager.unlock(newParent.resource.address)
+        accessManager.unlock(currentParent.resource.address)
+      }
     }
+
+
 
   }
 

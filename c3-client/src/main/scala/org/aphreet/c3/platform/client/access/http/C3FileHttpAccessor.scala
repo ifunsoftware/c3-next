@@ -32,11 +32,11 @@
 package org.aphreet.c3.platform.client.access.http
 
 import com.twmacinta.util.MD5
-import org.apache.commons.httpclient.{HttpStatus, Header, HttpMethodBase, HttpClient}
 import org.apache.commons.httpclient.methods.multipart._
 import java.io.{InputStream, File, FileOutputStream}
 import xml.{XML, Elem}
-import org.apache.commons.httpclient.methods.{PutMethod, DeleteMethod, PostMethod, GetMethod}
+import org.apache.commons.httpclient.methods._
+import org.apache.commons.httpclient._
 
 class C3FileHttpAccessor(val host:String, override val domain:String, override val secret:String)
           extends AbstractHttpAccessor(domain, secret){
@@ -106,6 +106,29 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
     }
 
     putMethod.setRequestEntity(new MultipartRequestEntity(partList.toArray, putMethod.getParams))
+
+    try{
+      val status = httpClient.executeMethod(putMethod)
+      status match {
+        case HttpStatus.SC_OK =>
+        case _ =>
+          println(putMethod.getResponseBodyAsString)
+          throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
+      }
+    }finally {
+      putMethod.releaseConnection
+    }
+  }
+
+  def moveFile(path:String, newPath:String) = {
+
+    val putMethod = new PutMethod(url + path)
+
+    addAuthHeader(putMethod, requestUri + path)
+
+    putMethod.addRequestHeader(new Header("x-c3-op", "move"))
+
+    putMethod.setRequestEntity(new StringRequestEntity(newPath, "text/plain", "UTF-8"))
 
     try{
       val status = httpClient.executeMethod(putMethod)
