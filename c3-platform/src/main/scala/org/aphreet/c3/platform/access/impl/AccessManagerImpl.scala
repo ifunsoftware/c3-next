@@ -46,10 +46,10 @@ import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
+import collection.mutable.HashSet
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
-
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
 
@@ -62,6 +62,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   var accessCache:AccessCache = _
 
   val log = LogFactory.getLog(getClass)
+
+  val resourceOwners = new HashSet[ResourceOwner]
 
   {
     log info "Starting AccessManager"
@@ -157,9 +159,22 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
     try{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
+
       if(storage.mode.allowWrite){
         resource.calculateCheckSums
+
+        for(owner <- resourceOwners){
+          if(!owner.resourceCanBeUpdated(resource)){
+            log info "" + owner + " forbided resource update"
+            throw new AccessException("Specified resource can't be updated")
+          }
+        }
+
         val ra = storage.update(resource)
+
+        for(owner <- resourceOwners){
+          owner.updateResource(resource)
+        }
 
         accessCache.remove(resource.address)
 
@@ -185,6 +200,23 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
 
       if(storage.mode.allowWrite){
+
+        val resource = storage.get(ra) match {
+          case Some(r) => r
+          case None => throw new ResourceNotFoundException()
+        }
+
+        for(owner <- resourceOwners){
+          if(!owner.resourceCanBeDeleted(resource)){
+            log info "" + owner + " forbided resource deletion"
+            throw new AccessException("Specified resource can't be deleted")
+          }
+        }
+
+        for(owner <- resourceOwners){
+          owner.deleteResource(resource)
+        }
+
         storage delete ra
 
         accessCache.remove(ra)
@@ -236,6 +268,20 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
     }
 
+  }
+
+  def registerOwner(owner:ResourceOwner) = {
+    resourceOwners.synchronized{
+      log debug "Registering owner " + owner
+      resourceOwners += owner
+    }
+  }
+
+  def unregisterOwner(owner:ResourceOwner) = {
+    resourceOwners.synchronized{
+      log debug "Unregistering owner " + owner
+      resourceOwners -= owner
+    }
   }
 
   def act{
