@@ -94,97 +94,32 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
   override def act{
     loop{
       react{
-        case ResourceAddedMsg(resource, source) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceAddedMsg(resource, source)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
+        case ResourceAddedMsg(resource, source) => sendToAllLinks(ResourceAddedMsg(resource, source))
 
-        }
-        case ResourceUpdatedMsg(resource, source) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceUpdatedMsg(resource, source)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
-        }
-        case ResourceDeletedMsg(address, source) => {
-          try{
-            for((id, link) <- remoteReplicationActors){
-              if(!link.isStarted) link.start
-              link ! ResourceDeletedMsg(address, source)
-            }
-          }catch{
-            case e => log.error("Failed to replicate resource", e)
-          }
-        }
+        case ResourceUpdatedMsg(resource, source) => sendToAllLinks(ResourceUpdatedMsg(resource, source))
 
-        case ReplicateAddAckMsg(address, sign) => {
-          remoteReplicationActors.get(sign.systemId) match {
-            case Some(link) => link ! ReplicateAddAckMsg(address, sign)
-            case None =>
-          }
-        }
+        case ResourceDeletedMsg(address, source) => sendToAllLinks(ResourceDeletedMsg(address, source))
 
-        case ReplicateUpdateAckMsg(address, timestamp, sign) =>
-          remoteReplicationActors.get(sign.systemId) match {
-            case Some(link) => link ! ReplicateUpdateAckMsg(address, timestamp, sign)
-            case None =>
-          }
+        case ReplicateAddAckMsg(address, sign) => sendToLinkWithId(sign.systemId, ReplicateAddAckMsg(address, sign))
 
-        case ReplicateDeleteAckMsg(address, sign) =>
-          remoteReplicationActors.get(sign.systemId) match {
-            case Some(link) => link ! ReplicateDeleteAckMsg(address, sign)
-            case None =>
-          }
+        case ReplicateUpdateAckMsg(address, timestamp, sign) => sendToLinkWithId(sign.systemId, ReplicateUpdateAckMsg(address, timestamp, sign))
+          
+        case ReplicateDeleteAckMsg(address, sign) => sendToLinkWithId(sign.systemId, ReplicateDeleteAckMsg(address, sign))
 
         case QueuedTasks => {
           log debug "Getting list of queued resources"
-          for((id, link) <- remoteReplicationActors){
-            if(link.isStarted){
-              link ! QueuedTasks
-            }
-          }
+          sendToAllLinks(QueuedTasks)
         }
 
         case QueuedTasksReply(tasks) => {
           manager ! QueuedTasksReply(tasks)
         }
 
-        case ReplicationReplayAdd(resource, systemId) => {
-          remoteReplicationActors.get(systemId) match{
-            case Some(link) =>
-              if(!link.isStarted) link.start
-              link ! ResourceAddedMsg(resource, 'ReplicationManager)
-            case None => log.warn("Failed to replay add, host does not exist " + systemId)
-          }
+        case ReplicationReplayAdd(resource, systemId) => sendToLinkWithId(systemId, ResourceAddedMsg(resource, 'ReplicationManager))
 
-        }
+        case ReplicationReplayUpdate(resource, systemId) => sendToLinkWithId(systemId, ResourceUpdatedMsg(resource, 'ReplicationManager))
 
-        case ReplicationReplayUpdate(resource, systemId) => {
-          remoteReplicationActors.get(systemId) match{
-            case Some(link) =>
-              if(!link.isStarted) link.start
-              link ! ResourceUpdatedMsg(resource, 'ReplicationManager)
-            case None => log.warn("Failed to replay update, host does not exist " + systemId)
-          }
-        }
-
-        case ReplicationReplayDelete(address, systemId) => {
-          remoteReplicationActors.get(systemId) match{
-            case Some(link) =>
-              if(!link.isStarted) link.start
-              link ! ResourceDeletedMsg(address, 'ReplicationManager)
-            case None => log.warn("Failed to replay delete, host does not exist " + systemId)
-          }
-        }
+        case ReplicationReplayDelete(address, systemId) => sendToLinkWithId(systemId, ResourceDeletedMsg(address, 'ReplicationManager))
 
         case SendConfigurationMsg => {
 
@@ -194,10 +129,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
           log info "Got configuration, distributing over targets"
 
-          for((id, link) <- remoteReplicationActors){
-            if(!link.isStarted) link.start
-            link ! SendConfigurationMsg(configuration)
-          }
+          sendToAllLinks(SendConfigurationMsg(configuration))
         }
 
         case DestroyMsg => {
@@ -228,6 +160,30 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
     remoteReplicationActors = remoteReplicationActors - remoteSystemId
 
     link.close
+  }
+
+  private def sendToAllLinks(msg:Any) = {
+    try{
+
+      for((id, link) <- remoteReplicationActors){
+        if(!link.isStarted) link.start
+        link ! msg
+      }
+
+
+    }catch{
+      case e => log.error("Failed to post message: " + msg, e)
+    }
+  }
+
+  private def sendToLinkWithId(id:String, msg:Any) = {
+    remoteReplicationActors.get(id) match {
+      case Some(link) => {
+        if(link.isStarted) link.start
+        link ! msg
+      }
+      case None => log.warn("Failed to send message, host does not exist: " + id + " msg: " + msg)
+    }
   }
 
   @PreDestroy
