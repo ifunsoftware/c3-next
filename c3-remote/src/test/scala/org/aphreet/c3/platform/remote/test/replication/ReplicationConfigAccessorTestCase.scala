@@ -55,8 +55,8 @@ class ReplicationConfigAccessorTestCase extends TestCase {
 
   def testConfigPersistence = {
 
-    val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375),
-                     "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2", 7373, 7374, 7375))
+    val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),
+                     "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2", 7373, 7374, 7375, "my_encoded_aes_key2"))
 
     val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir

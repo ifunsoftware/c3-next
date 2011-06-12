@@ -56,6 +56,10 @@ class DataEncryptor(val sharedKey:Array[Byte]) {
     encCipher.doFinal(data)
   }
 
+  def encrypt(data:String):Array[Byte] = {
+    encrypt(data.getBytes("UTF-8"))
+  }
+
   def decrypt(data:Array[Byte]):Array[Byte] = {
     decCipher.doFinal(data)
   }

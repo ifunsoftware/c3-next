@@ -71,11 +71,3 @@ case class ReplicateSystemConfigMsg(
             val configuration:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
-
-case class NegotiateKeyExchangeMsg(val systemId:String, val publicKey:Array[Byte]) extends java.io.Serializable
-
-case class NegotiateKeyExchangeMsgReply(val encryptedSharedKsy:Array[Byte]) extends java.io.Serializable
-
-case class NegotiateRegisterSourceMsg(val systemId:String, val configuration:Array[Byte], val login:Array[Byte], val password:Array[Byte]) extends java.io.Serializable
-
-case class NegotiateRegisterSourceMsgReply(val status:String, val configuration:Array[Byte]) extends java.io.Serializable

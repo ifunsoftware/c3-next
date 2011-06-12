@@ -40,13 +40,14 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import collection.mutable.HashMap
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.resource.IdGenerator
 
-
+//TODO clear sharedKeys map after unsuccessful negotiations
 class ReplicationNegotiator extends WatchedActor{
 
   val log = LogFactory getLog getClass
 
-  val sharedKeys = new HashMap[String, Array[Byte]]
+  val sharedKeys = new HashMap[String, String]
 
   var authManager:AuthenticationManager = null
 
@@ -58,10 +59,10 @@ class ReplicationNegotiator extends WatchedActor{
   def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
 
   @Autowired
-  def setConfigurationManager:ConfigurationManager = {configurationManager = manager}
+  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
 
   @Autowired
-  def setReplicationManager:ReplicationManager = {replicationManager = manager}
+  def setReplicationManager(manager:ReplicationManager) = {replicationManager = manager}
 
   @PostConstruct
   def init{
@@ -96,7 +97,7 @@ class ReplicationNegotiator extends WatchedActor{
 
           sharedKeys.put(systemId, sharedKey)
 
-          val encryptedSharedKey = AsymmetricDataEncryptor.encrypt(sharedKey, publicKey)
+          val encryptedSharedKey = AsymmetricDataEncryptor.encrypt(sharedKey.getBytes("UTF-8"), publicKey)
 
           log info "Encrypted shared key"
 
@@ -140,11 +141,16 @@ class ReplicationNegotiator extends WatchedActor{
 
                 host.encryptionKey = sharedKey
 
+                val replicationKey = IdGenerator.generateId(5)
+
+                host.key = replicationKey
+
                 replicationManager.registerReplicationSource(platformInfo.host)
 
-                val localConfiguration = configurationManager.getSerializedConfiguration
+                val localConfiguration = configurationManager.getLocalConfiguration
+                localConfiguration.host.key = replicationKey
 
-                val encryptedConfiguration = dataEncryptor.encrypt(localConfiguration)
+                val encryptedConfiguration = dataEncryptor.encrypt(configurationManager.serializeConfiguration(localConfiguration))
 
                 log info "Successefully applied remote configuration"
 
@@ -173,3 +179,11 @@ class ReplicationNegotiator extends WatchedActor{
     }
   }
 }
+
+case class NegotiateKeyExchangeMsg(val systemId:String, val publicKey:Array[Byte]) extends java.io.Serializable
+
+case class NegotiateKeyExchangeMsgReply(val encryptedSharedKey:Array[Byte]) extends java.io.Serializable
+
+case class NegotiateRegisterSourceMsg(val systemId:String, val configuration:Array[Byte], val login:Array[Byte], val password:Array[Byte]) extends java.io.Serializable
+
+case class NegotiateRegisterSourceMsgReply(val status:String, val configuration:Array[Byte]) extends java.io.Serializable

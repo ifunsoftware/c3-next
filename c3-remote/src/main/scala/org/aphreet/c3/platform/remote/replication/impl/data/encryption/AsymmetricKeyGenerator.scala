@@ -33,6 +33,12 @@ import java.security.KeyPairGenerator
 
 object AsymmetricKeyGenerator{
 
+  /**
+   * Returns public and private keys
+   *
+   * The first element is public key, the second one is private key
+   */
+
   def generateKeys:(Array[Byte], Array[Byte]) = {
 
     val keyPairGenerator = KeyPairGenerator.getInstance("RSA")

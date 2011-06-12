@@ -29,10 +29,9 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
-import data._
 import config._
-
-import encryption.AsymmetricKeyGenerator
+import data._
+import encryption.{DataEncryptor, AsymmetricDataEncryptor, AsymmetricKeyGenerator}
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -42,25 +41,25 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.remote.HttpHost
 import org.aphreet.c3.platform.remote.api.management._
-import org.aphreet.c3.platform.remote.client.ManagementConnectionFactory
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config._
-import actors.remote.RemoteActor
 import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
-import org.aphreet.c3.platform.storage.{StorageParams, StorageManager}
+import org.aphreet.c3.platform.storage.{StorageManager}
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
-import org.aphreet.c3.platform.resource.IdGenerator
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.remote.replication.{NegotiateKeyExchangeMsgReply, ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
+import actors.remote.{Node, RemoteActor}
+import org.apache.commons.codec.binary.Base64
 
 @Component("replicationManager")
 @Scope("singleton")
 class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
 
   private val DEFAULT_REPLICATION_PORT = 7375
+
+  private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
 
   val log = LogFactory getLog getClass
 
@@ -70,6 +69,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   var sourceReplicationActor:ReplicationSourceActor = null
 
   var platformConfigManager:PlatformConfigManager = null
+
+  var configurationManager:ConfigurationManager = null
 
   var storageManager:StorageManager = null
 
@@ -206,36 +207,49 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-  /**
-   * First check that all storage ids from this machine exist on remote machine
-   *
-   * After that, generate replication key
-   *
-   * And write remote source config and local target
-   */
   def establishReplication(host:String, user:String, password:String) = {
+
+    val localSystemId = ""
 
     val keyPair = AsymmetricKeyGenerator.generateKeys
 
-    val actor = null //todo create remote actor
+    val node = Node(host, 7375)
 
-    val message = (actor !? NegotiateKeyExchangeMsg(keyPair._1)).asInstanceOf[NegotiateKeyExchangeMsgReply]
-    
+    val negotiator = RemoteActor.select(node, 'ReplicationNegotiator)
+
+    val keyExchangeReply
+        = (negotiator !? (NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1)))
+              .asInstanceOf[NegotiateKeyExchangeMsgReply]
 
 
+    //base64-encoded key
+    val sharedKey = new String(AsymmetricDataEncryptor.decrypt(keyExchangeReply.encryptedSharedKey, keyPair._2), "UTF-8")
 
-    val managementService = getManagementService(host, user, password)
+    val dataEncryptor = new DataEncryptor(sharedKey)
 
-    val secret = IdGenerator.generateId(5)
+    val sourceConfiguration = configurationManager.getSerializedConfiguration
 
-    val localReplicationHost = createLocalReplicationHost(secret)
+    val registerSourceReply
+          = (negotiator !? (NEGOTIATE_MSG_TIMEOUT,
+                                NegotiateRegisterSourceMsg(
+                                  localSystemId,
+                                  dataEncryptor.encrypt(sourceConfiguration),
+                                  dataEncryptor.encrypt(user),
+                                  dataEncryptor.encrypt(password)
+                                ))).asInstanceOf[NegotiateRegisterSourceMsgReply]
 
-    val remoteReplicationHost = createRemoteReplicationHost(managementService, secret)
+    if(registerSourceReply.status == "OK"){
+      val remoteConfiguration = dataEncryptor.decryptString(registerSourceReply.configuration)
+      val platformInfo = configurationManager.deserializeConfiguration(remoteConfiguration)
 
-    syncStorageConfigurations(managementService)
+      val host = platformInfo.host
+      host.encryptionKey = sharedKey
 
-    managementService.registerReplicationSource(localReplicationHost)
-    this.registerReplicationTarget(remoteReplicationHost)
+      registerReplicationTarget(host)
+
+    }else{
+      throw new ReplicationException("Failed to esablish replication")
+    }
   }
 
   def cancelReplication(id:String) = {
@@ -262,73 +276,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     sourceReplicationActor.addReplicationTarget(host)
 
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
-  }
-
-  private def syncStorageConfigurations(managementService:PlatformManagementService) = {
-    val remoteStorages = managementService.listStorages.toList
-    val localStorages = storageManager.listStorages
-
-    log info "Comparing storage configuration..."
-
-    val additionalIds = new StorageSynchronizer().getAdditionalIds(remoteStorages, localStorages)
-
-    log info "Done"
-
-    log info "Applying configuration changes..."
-
-    for((id, secId) <- additionalIds){
-      managementService.addStorageSecondaryId(id, secId)
-    }
-
-    log info "Done"
-  }
-
-  private def createLocalReplicationHost(secret:String):ReplicationHost = {
-    createReplicationHost(createLocalPropertyRetriever, secret)
-  }
-
-  private def createRemoteReplicationHost(service:PlatformManagementService, secret:String):ReplicationHost = {
-
-    val platformProperties = service.platformProperties
-
-    createReplicationHost(createRemotePropertyRetriever(platformProperties), secret)
-  }
-
-  private def createReplicationHost(propertyRetriever:Function1[String, String], secret:String):ReplicationHost = {
-
-    val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
-    val systemHost = propertyRetriever(Constants.C3_PUBLIC_HOSTNAME)
-    val httpPort = propertyRetriever(HTTP_PORT_KEY).toInt
-    val httpsPort = propertyRetriever(HTTPS_PORT_KEY).toInt
-    val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
-    val secretKey = secret
-
-    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort)
-  }
-
-  private def createLocalPropertyRetriever:Function1[String, String] = {
-    ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
-      case Some(value) => value
-      case None => throw new ConfigurationException("Failed to get property " + key)
-    })
-  }
-
-  private def createRemotePropertyRetriever(remoteProperties:Array[Pair]):Function1[String, String] = {
-    ((key:String) => {
-      val options = remoteProperties.filter(_.key == key)
-      if(options.isEmpty){
-        throw new ConfigurationException("Failed to get remote system id")
-      }
-
-      options.head.value
-    })
-  }
-
-  private def getManagementService(host:String, user:String, password:String):PlatformManagementService = {
-    log info "Connecting to remote system..."
-    val service = ManagementConnectionFactory.connect(HttpHost(host, user, password))
-    log info "Done"
-    service
   }
 
   private def runQueueMaintainer = {
@@ -403,6 +350,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   @Autowired
   def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
+
+  @Autowired
+  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
 }
 
 class ProcessScheduler(manager:ReplicationManager) extends Runnable{

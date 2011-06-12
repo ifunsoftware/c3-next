@@ -84,9 +84,13 @@ class ConfigurationManager{
   }
 
   def getSerializedConfiguration:String = {
+    serializeConfiguration(getLocalConfiguration)
+  }
+
+  def serializeConfiguration(platformInfo:PlatformInfo):String = {
     val xStream = new XStream(new DomDriver("UTF-8"))
 
-    xStream.toXML(getLocalConfiguration)
+    xStream.toXML(platformInfo)
   }
   
   def processRemoteConfiguration(info:PlatformInfo) = {
@@ -134,9 +138,8 @@ class ConfigurationManager{
     val httpPort = propertyRetriever(HTTP_PORT_KEY).toInt
     val httpsPort = propertyRetriever(HTTPS_PORT_KEY).toInt
     val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
-    val secretKey = secret
-
-    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort, null)
+    
+    ReplicationHost(systemId, systemHost, null, httpPort, httpsPort, replicationPort, null)
   }
 
   private def createLocalPropertyRetriever:Function1[String, String] = {
