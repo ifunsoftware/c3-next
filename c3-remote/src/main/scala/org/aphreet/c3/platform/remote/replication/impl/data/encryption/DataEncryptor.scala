@@ -33,14 +33,11 @@ import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
 import org.apache.commons.codec.binary.Base64
 
-class DataEncryptor(val encodedKey:String) {
+class DataEncryptor(val sharedKey:Array[Byte]) {
 
-  private val keySpec = {
+  def this(base64EncodedKey:String) = this(Base64.decodeBase64(base64EncodedKey.getBytes()))
 
-    val rawKey = Base64.decodeBase64(encodedKey.getBytes())
-
-    new SecretKeySpec(rawKey, "AES")
-  }
+  private val keySpec = new SecretKeySpec(sharedKey, "AES")
 
   private val encCipher = {
 
@@ -61,5 +58,9 @@ class DataEncryptor(val encodedKey:String) {
 
   def decrypt(data:Array[Byte]):Array[Byte] = {
     decCipher.doFinal(data)
+  }
+
+  def decryptString(data:Array[Byte]):String = {
+    new String(decrypt(data), "UTF-8")
   }
 }

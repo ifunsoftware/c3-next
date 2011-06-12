@@ -37,11 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil
-import org.aphreet.c3.platform.remote.api.management.{StorageDescription, DomainDescription, Pair}
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import com.thoughtworks.xstream.io.xml.DomDriver
 import com.thoughtworks.xstream.XStream
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDescription, DomainDescription, Pair}
+import org.aphreet.c3.platform.exception.ConfigurationException
+import org.aphreet.c3.platform.common.Constants
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 
 @Component
 class ConfigurationManager{
@@ -70,10 +73,14 @@ class ConfigurationManager{
 
 
   def processSerializedRemoteConfiguration(configuration:String) = {
+    processRemoteConfiguration(deserializeConfiguration(configuration))
+  }
+
+  def deserializeConfiguration(configuration:String):PlatformInfo = {
     val xStream = new XStream(new DomDriver("UTF-8"))
     xStream.setClassLoader(getClass.getClassLoader)
 
-    processRemoteConfiguration(xStream.fromXML(configuration).asInstanceOf[PlatformInfo])
+    xStream.fromXML(configuration).asInstanceOf[PlatformInfo]
   }
 
   def getSerializedConfiguration:String = {
@@ -85,17 +92,17 @@ class ConfigurationManager{
   def processRemoteConfiguration(info:PlatformInfo) = {
     synchronized{
 
-      log debug "Improting domains..."
+      log debug "Importing new storage ids..."
 
-      importDomains(info.domains, info.systemId)
+      importStorages(info.storages)
 
       log debug "Importing fs roots..."
 
       importFsRoots(info.fsRoots)
 
-      log debug "importing new storage ids..."
-   
-      importStorages(info.storages)
+      log debug "Improting domains..."
+
+      importDomains(info.domains, info.systemId)
     }
   }
 
@@ -108,8 +115,35 @@ class ConfigurationManager{
 
     val fsRoots = fsManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
 
-    PlatformInfo(platformConfigManager.getSystemId, storageDescriptions, domains, fsRoots)
+    PlatformInfo(platformConfigManager.getSystemId,
+      createLocalReplicationHost,
+      storageDescriptions,
+      domains,
+      fsRoots)
     
+  }
+
+  def createLocalReplicationHost:ReplicationHost = {
+    createReplicationHost(createLocalPropertyRetriever)
+  }
+
+  private def createReplicationHost(propertyRetriever:Function1[String, String]):ReplicationHost = {
+
+    val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
+    val systemHost = propertyRetriever(Constants.C3_PUBLIC_HOSTNAME)
+    val httpPort = propertyRetriever(HTTP_PORT_KEY).toInt
+    val httpsPort = propertyRetriever(HTTPS_PORT_KEY).toInt
+    val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
+    val secretKey = secret
+
+    ReplicationHost(systemId, systemHost, secretKey, httpPort, httpsPort, replicationPort, null)
+  }
+
+  private def createLocalPropertyRetriever:Function1[String, String] = {
+    ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
+      case Some(value) => value
+      case None => throw new ConfigurationException("Failed to get property " + key)
+    })
   }
 
   private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) = {

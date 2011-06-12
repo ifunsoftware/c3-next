@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.remote.replication.impl
 import data._
 import config._
 
+import encryption.AsymmetricKeyGenerator
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -49,20 +50,15 @@ import org.aphreet.c3.platform.config._
 import actors.remote.RemoteActor
 import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
 import org.aphreet.c3.platform.storage.{StorageParams, StorageManager}
-import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
 import org.aphreet.c3.platform.resource.IdGenerator
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
+import org.aphreet.c3.platform.remote.replication.{NegotiateKeyExchangeMsgReply, ReplicationException, ReplicationManager}
 
 @Component("replicationManager")
 @Scope("singleton")
 class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
-
-  val HTTP_PORT_KEY = "c3.remote.http.port"
-  val HTTPS_PORT_KEY = "c3.remote.https.port"
-  val REPLICATION_PORT_KEY = "c3.remote.replication.port"
-  val REPLICATION_QUEUE_KEY = "c3.remote.replication.queue"
-  val REPLICATION_SECURE_KEY = "c3.remote.replication.secure_data"
 
   private val DEFAULT_REPLICATION_PORT = 7375
 
@@ -218,6 +214,15 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
    * And write remote source config and local target
    */
   def establishReplication(host:String, user:String, password:String) = {
+
+    val keyPair = AsymmetricKeyGenerator.generateKeys
+
+    val actor = null //todo create remote actor
+
+    val message = (actor !? NegotiateKeyExchangeMsg(keyPair._1)).asInstanceOf[NegotiateKeyExchangeMsgReply]
+    
+
+
 
     val managementService = getManagementService(host, user, password)
 

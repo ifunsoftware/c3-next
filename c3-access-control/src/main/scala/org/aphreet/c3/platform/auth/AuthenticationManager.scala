@@ -33,6 +33,12 @@ package org.aphreet.c3.platform.auth
 
 trait AuthenticationManager{
 
+  /**
+   * Checks login and password
+   *
+   * If check passed returns User instance
+   * Otherwise returns null
+   */
   def auth(username: String, password: String): User
 
   def update(username:String, password:String, enabled:Boolean)

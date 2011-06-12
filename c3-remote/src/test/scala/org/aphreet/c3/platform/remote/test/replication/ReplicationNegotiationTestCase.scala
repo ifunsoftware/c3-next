@@ -43,12 +43,12 @@ class ReplicationNegotiationTestCase extends TestCase{
     val actor = new TargetActor
     actor.start
 
-    val peer = Node("127.0.0.1", 55555)
+    val peer = Node("localhost", 9000)
 
-    val remoteActor = RemoteActor.select(peer, 'ReplicationActora)
+    val remoteActor = RemoteActor.select(peer, 'ReplicationActor)
 
     Actor.actor{
-      actor ! TestMessage(1)
+      remoteActor ! TestMessage(1)
     }
 
 
@@ -62,7 +62,7 @@ class ReplicationNegotiationTestCase extends TestCase{
 class TargetActor extends Actor{
 
   override def act{
-    alive(55555)
+    alive(9000)
     register('ReplicationActor, this)
 
     while(true){

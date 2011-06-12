@@ -31,9 +31,10 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.aphreet.c3.platform.remote.api.management.{DomainDescription, StorageDescription, Pair}
+import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, DomainDescription, StorageDescription, Pair}
 
 case class PlatformInfo(val systemId:String,
+                        val host:ReplicationHost,
                         val storages:Array[StorageDescription],
                         val domains:Array[DomainDescription],
                         val fsRoots:Array[Pair])
