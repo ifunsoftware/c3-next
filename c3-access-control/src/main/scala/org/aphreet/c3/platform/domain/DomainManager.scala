@@ -43,6 +43,8 @@ trait DomainManager{
 
   def domainList:List[Domain]
 
+  def domainById(id:String):Option[Domain]
+
   def checkDomainAccess(name:String, hash:String, keyBase:String):Domain
 
   def getAnonymousDomain:Domain

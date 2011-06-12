@@ -56,6 +56,7 @@ class DomainManagerTestCase extends TestCase{
     assertTrue(newDomainList.contains(domain1))
     assertTrue(newDomainList.contains(domain2))
     assertTrue(newDomainList.contains(newDomain))
+    assertTrue(newDomain.name == "name3")
   }
 
   def testDomainAddWithRename() = {

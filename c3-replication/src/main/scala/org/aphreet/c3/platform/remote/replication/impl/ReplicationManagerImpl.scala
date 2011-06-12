@@ -52,6 +52,7 @@ import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import actors.remote.{Node, RemoteActor}
 import org.apache.commons.codec.binary.Base64
+import util.matching.Regex.Match
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -63,6 +64,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   val log = LogFactory getLog getClass
 
+  var localSystemId:String = ""
 
   var localReplicationActor:ReplicationTargetActor = null
 
@@ -105,7 +107,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       case None => DEFAULT_REPLICATION_PORT
     }
 
-    val localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
+    localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
       case Some(x) => x
       case None => throw new ConfigurationException("Local system ID is not found")
     }
@@ -209,18 +211,16 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   def establishReplication(host:String, user:String, password:String) = {
 
-    val localSystemId = ""
-
     val keyPair = AsymmetricKeyGenerator.generateKeys
 
     val node = Node(host, 7375)
 
     val negotiator = RemoteActor.select(node, 'ReplicationNegotiator)
 
-    val keyExchangeReply
-        = (negotiator !? (NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1)))
-              .asInstanceOf[NegotiateKeyExchangeMsgReply]
-
+    val keyExchangeReply = (negotiator !? (NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1))) match {
+      case Some(reply) => reply.asInstanceOf[NegotiateKeyExchangeMsgReply]
+      case None => throw new ReplicationException("Failed to perform key exchange")
+    }
 
     //base64-encoded key
     val sharedKey = new String(AsymmetricDataEncryptor.decrypt(keyExchangeReply.encryptedSharedKey, keyPair._2), "UTF-8")
@@ -229,14 +229,16 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val sourceConfiguration = configurationManager.getSerializedConfiguration
 
-    val registerSourceReply
-          = (negotiator !? (NEGOTIATE_MSG_TIMEOUT,
-                                NegotiateRegisterSourceMsg(
-                                  localSystemId,
-                                  dataEncryptor.encrypt(sourceConfiguration),
-                                  dataEncryptor.encrypt(user),
-                                  dataEncryptor.encrypt(password)
-                                ))).asInstanceOf[NegotiateRegisterSourceMsgReply]
+    val registerSourceReply = (negotiator !? (NEGOTIATE_MSG_TIMEOUT,
+      NegotiateRegisterSourceMsg(
+        localSystemId,
+        dataEncryptor.encrypt(sourceConfiguration),
+        dataEncryptor.encrypt(user),
+        dataEncryptor.encrypt(password)
+      ))) match {
+      case Some(reply) => reply.asInstanceOf[NegotiateRegisterSourceMsgReply]
+      case None => throw new ReplicationException("Failed to perform configuration exchange")
+    }
 
     if(registerSourceReply.status == "OK"){
       val remoteConfiguration = dataEncryptor.decryptString(registerSourceReply.configuration)
@@ -394,7 +396,7 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
       manager ! SendConfigurationMsg
 
       nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
-      
+
     }
 
   }

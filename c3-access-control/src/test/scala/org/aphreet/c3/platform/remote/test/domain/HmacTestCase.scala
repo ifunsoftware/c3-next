@@ -31,7 +31,7 @@
 
 package org.aphreet.c3.platform.remote.test.domain
 
-import org.aphreet.c3.platform.auth.impl.HashUtil
+import org.aphreet.c3.platform.auth.HashUtil
 import junit.framework.{Assert, TestCase}
 
 class HmacTestCase extends TestCase{

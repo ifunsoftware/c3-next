@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.auth.impl
+package org.aphreet.c3.platform.auth
 
 import java.security.MessageDigest
 import javax.crypto.spec.SecretKeySpec
@@ -59,6 +59,8 @@ object HashUtil{
   }
 
   def hmac(key:String, input:String):String = {
+
+    if(key.isEmpty) return ""
 
     val mac = Mac.getInstance("HmacSHA256")
 

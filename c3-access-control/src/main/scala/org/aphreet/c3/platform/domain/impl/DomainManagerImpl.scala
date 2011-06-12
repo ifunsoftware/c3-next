@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -38,10 +38,11 @@ import org.aphreet.c3.platform.exception.PlatformException
 import collection.immutable.{HashMap}
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.domain._
-import org.aphreet.c3.platform.auth.impl.HashUtil
+import org.aphreet.c3.platform.auth.HashUtil
 import java.util.{Random, UUID}
 import java.lang.Integer
 import org.apache.commons.logging.LogFactory
+import scala.Some
 
 @Component("domainManager")
 @Scope("singleton")
@@ -52,6 +53,8 @@ class DomainManagerImpl extends DomainManager{
   var domainAccessor:DomainAccessor = _
 
   private var domains:HashMap[String, Domain] = new HashMap()
+
+  private var domainById:HashMap[String, Domain] = new HashMap()
 
   @Autowired
   def setDomainAccessor(accessor:DomainAccessor) = {domainAccessor = accessor}
@@ -66,11 +69,15 @@ class DomainManagerImpl extends DomainManager{
 
     var map = new HashMap[String, Domain]
 
+    var idMap = new HashMap[String, Domain]
+
     for(domain <- domainAccessor.load){
       map += ((domain.name, domain))
+      idMap += ((domain.id, domain))
     }
 
     domains = map
+    domainById = idMap
   }
 
   private def storeDomainConfig = {
@@ -182,19 +189,46 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
+  def domainById(id:String):Option[Domain] = {
+    domainById.get(id)
+  }
+
 
   def checkDomainAccess(name:String, hash:String, keyBase:String):Domain = {
 
     domains.get(name) match{
       case Some(d) => {
         val key = d.key
-        if(HashUtil.hmac(key, keyBase) == hash){
+
+        if(key.isEmpty){
           d
         }else{
-          throw new DomainException("Incorrect signature")
+          if(HashUtil.hmac(key, keyBase) == hash){
+            d
+          }else{
+            throw new DomainException("Incorrect signature")
+          }
         }
       }
-      case None => throw new DomainException("Domain not found")
+      case None => {
+        domainById.get(name) match {
+          case Some(d) => {
+            val key = d.key
+            if(!key.isEmpty){
+              if(HashUtil.hmac(key, keyBase) == hash){
+                d
+              }else{
+                throw new DomainException("Incorrect signature")
+              }
+            }else{
+              d
+            }
+          }
+          case None => {
+            throw new DomainException("Domain not found")
+          }
+        }
+      }
     }
   }
 
@@ -203,10 +237,10 @@ class DomainManagerImpl extends DomainManager{
     val random = new Random()
 
     String.format("%08x%08x%08x%08x", new Integer(random.nextInt),
-                              new Integer(random.nextInt),
-                              new Integer(random.nextInt),
-                              new Integer(random.nextInt))
-    
+      new Integer(random.nextInt),
+      new Integer(random.nextInt),
+      new Integer(random.nextInt))
+
   }
 
 }

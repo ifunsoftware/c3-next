@@ -34,4 +34,6 @@
 
     <reference id="filesystemService" interface="org.aphreet.c3.platform.filesystem.FSManager"/>
 
+    <reference id="replicationService" interface="org.aphreet.c3.platform.remote.replication.ReplicationManager"/>
+
 </beans:beans>  

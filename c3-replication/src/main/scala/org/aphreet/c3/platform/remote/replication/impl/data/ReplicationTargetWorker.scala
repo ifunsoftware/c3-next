@@ -40,11 +40,13 @@ import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
 import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 
 class ReplicationTargetWorker(val localSystemId:String,
                               val storageManager:StorageManager,
                               val accessMediator:AccessMediator,
-                              val configurationManager:ConfigurationManager) extends WatchedActor {
+                              val configurationManager:ConfigurationManager,
+                              val domainManager:DomainManager) extends WatchedActor {
 
   val log = LogFactory getLog getClass
 
@@ -245,9 +247,17 @@ class ReplicationTargetWorker(val localSystemId:String,
   }
 
   private def fillWithData(resource:Resource, replicationHost:ReplicationHost) = {
+
+    val domainId = resource.systemMetadata.get(Domain.MD_FIELD).get
+
+    val domain = domainManager.domainById(domainId) match{
+      case Some(d) => d
+      case None => throw new ReplicationException("Failed to replicate resource: " + resource.address + " due to unknown domain")
+    }
+
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(localSystemId, replicationHost, useSecureDataConnection, resource.address, i+1)
+      val data = new RemoteSystemDataWrapper(replicationHost, useSecureDataConnection, resource.address, i+1, domain.id, domain.key)
       version.data = data
     }
   }

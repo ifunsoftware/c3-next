@@ -39,9 +39,14 @@ import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
 import java.text.SimpleDateFormat
 import java.util.Date
-import org.aphreet.c3.platform.auth.impl.HashUtil
+import org.aphreet.c3.platform.auth.HashUtil
 
-class RemoteSystemDataWrapper(val localSystemId:String, val host:ReplicationHost, val secure:Boolean, val address:String, val version:Int) extends AbstractFileDataWrapper{
+class RemoteSystemDataWrapper(val host:ReplicationHost,
+                              val secure:Boolean,
+                              val address:String,
+                              val version:Int,
+                              val domainId:String,
+                              val domainKey:String) extends AbstractFileDataWrapper{
 
   private var created = false
 
@@ -53,11 +58,11 @@ class RemoteSystemDataWrapper(val localSystemId:String, val host:ReplicationHost
 
     created = true
 
-    val requestUri = "/rest/data/replication/" + address + "/" + version
+    val requestUri = "/rest/resource/" + address + "/" + version
 
     val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 
-    addAuthHeader(getMethod, requestUri, localSystemId, host.getKey)
+    addAuthHeader(getMethod, requestUri, domainId, domainKey)
 
     try{
       val status = (new HttpClient()).executeMethod(getMethod)
@@ -81,27 +86,27 @@ class RemoteSystemDataWrapper(val localSystemId:String, val host:ReplicationHost
     file
   }
 
-  def addAuthHeader(method:HttpMethodBase, resource:String, localId:String, secret:String) = {
+  def addAuthHeader(method:HttpMethodBase, resource:String, domainId:String, domainKey:String) = {
 
     val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")
 
     val dateString = dateFormat.format(new Date())
 
-    val hashBase = resource + localId + dateString
+    val hashBase = resource + dateString + domainId
 
-    val hash = HashUtil.hmac(secret, hashBase)
+    val hash = HashUtil.hmac(domainKey, hashBase)
 
-    val header = new Header("x-c3-repl", hash)
+    val header = new Header("x-c3-domain", domainId)
     method.addRequestHeader(header)
 
     val dateHeader = new Header("x-c3-date", dateString)
     method.addRequestHeader(dateHeader)
 
-    val hostHeader = new Header("x-c3-host", localId)
+    val hostHeader = new Header("x-c3-sign", hash)
     method.addRequestHeader(hostHeader)
   }
 
-  override def copy:RemoteSystemDataWrapper = new RemoteSystemDataWrapper(localSystemId, host, secure, address, version)
+  override def copy:RemoteSystemDataWrapper = new RemoteSystemDataWrapper(host, secure, address, version, domainId, domainKey)
 
   override def finalize{
     if(created){

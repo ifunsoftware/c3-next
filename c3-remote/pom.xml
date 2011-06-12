@@ -48,6 +48,12 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-replication</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-remote-api</artifactId>
             <scope>provided</scope>
         </dependency>

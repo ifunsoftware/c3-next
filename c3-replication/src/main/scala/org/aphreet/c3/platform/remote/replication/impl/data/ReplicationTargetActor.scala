@@ -46,6 +46,7 @@ import actors.remote.{RemoteActor, Node}
 import impl.config.ConfigurationManager
 import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.domain.DomainManager
 
 @Component
 @Scope("singleton")
@@ -60,6 +61,8 @@ class ReplicationTargetActor extends WatchedActor{
   var storageManager:StorageManager = null
 
   var configurationManager:ConfigurationManager = null
+
+  var domainManager:DomainManager = null
 
   var sourceReplicationActor:ReplicationSourceActor = null
 
@@ -89,6 +92,9 @@ class ReplicationTargetActor extends WatchedActor{
   @Autowired
   def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
 
+  @Autowired
+  def setDomainManager(manager:DomainManager) = {domainManager = manager}
+
   def setUseSecureDataConnection(use:Boolean) = {
     secureDataConnection = use
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
@@ -105,7 +111,7 @@ class ReplicationTargetActor extends WatchedActor{
     this.config = config
 
     for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator, configurationManager)
+      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator, configurationManager, domainManager)
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers

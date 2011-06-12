@@ -47,6 +47,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.filesystem.FSManager
+import org.aphreet.c3.platform.remote.replication.ReplicationManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -56,7 +57,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   private var _authenticationManager:AuthenticationManager = _
 
-  //private var _replicationManager:ReplicationManager = _
+  private var _replicationManager:ReplicationManager = _
 
   private var _domainManager:DomainManager = _
 
@@ -72,10 +73,10 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     _authenticationManager = manager
   }
 
-//  @Autowired
-//  private def setReplicationManager(manager:ReplicationManager) = {
-//    _replicationManager = manager
-//  }
+  @Autowired
+  private def setReplicationManager(manager:ReplicationManager) = {
+    _replicationManager = manager
+  }
 
   @Autowired
   private def setDomainManager(manager:DomainManager) = {
@@ -101,12 +102,12 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     _authenticationManager
   }
 
-//  private def replicationManager:ReplicationManager = {
-//    if(_replicationManager == null){
-//      _replicationManager = ContextLoader.getCurrentWebApplicationContext.getBean("replicationManager", classOf[ReplicationManager])
-//    }
-//    _replicationManager
-//  }
+  private def replicationManager:ReplicationManager = {
+    if(_replicationManager == null){
+      _replicationManager = ContextLoader.getCurrentWebApplicationContext.getBean("replicationService", classOf[ReplicationManager])
+    }
+    _replicationManager
+  }
 
   private def domainManager:DomainManager = {
     if(_domainManager == null){
@@ -419,7 +420,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def registerReplicationSource(host:ReplicationHost) = {
     try{
-      //replicationManager.registerReplicationSource(host)
+      replicationManager.registerReplicationSource(host)
     }catch{
       case e => {
         e.printStackTrace
@@ -430,7 +431,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def establishReplication(host:String, username:String, password:String) = {
     try{
-      //replicationManager.establishReplication(host, username, password)
+      replicationManager.establishReplication(host, username, password)
     }catch{
       case e => {
         e.printStackTrace
@@ -441,7 +442,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def removeReplicationTarget(id:String) = {
     try{
-      //replicationManager.cancelReplication(id)
+      replicationManager.cancelReplication(id)
     }catch{
       case e => {
         e.printStackTrace
@@ -452,8 +453,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def listReplicationTargets:Array[ReplicationHost] = {
     try{
-      Array()
-     // replicationManager.listReplicationTargets
+      replicationManager.listReplicationTargets
     }catch{
       case e => {
         e.printStackTrace
@@ -464,7 +464,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def replayReplicationQueue = {
     try{
-      //replicationManager.replayReplicationQueue
+      replicationManager.replayReplicationQueue
     }catch{
       case e => {
         e.printStackTrace

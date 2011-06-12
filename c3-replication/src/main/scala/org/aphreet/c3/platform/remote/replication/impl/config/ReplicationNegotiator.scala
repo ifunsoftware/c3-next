@@ -41,8 +41,11 @@ import collection.mutable.HashMap
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.resource.IdGenerator
+import org.springframework.stereotype.Component
+import scala.None
 
 //TODO clear sharedKeys map after unsuccessful negotiations
+@Component
 class ReplicationNegotiator extends WatchedActor{
 
   val log = LogFactory getLog getClass
@@ -66,7 +69,7 @@ class ReplicationNegotiator extends WatchedActor{
 
   @PostConstruct
   def init{
-    log info "Starting replication negotiator"
+    log info "Starting replication negotiator..."
 
     this.start
   }
@@ -88,7 +91,7 @@ class ReplicationNegotiator extends WatchedActor{
         case DestroyMsg => this.exit
 
         case NegotiateKeyExchangeMsg(systemId, publicKey) => {
-
+          try{
           log info "Received negotiation request from: " + systemId
 
           val sharedKey = SymmetricKeyGenerator.generateAESKey
@@ -103,6 +106,14 @@ class ReplicationNegotiator extends WatchedActor{
 
           reply{
             NegotiateKeyExchangeMsgReply(encryptedSharedKey)
+          }
+          }catch{
+            case e => {
+              log.warn("Failed to esablish replication", e)
+              reply{
+                None
+              }
+            }
           }
         }
 
