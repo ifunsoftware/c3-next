@@ -34,7 +34,6 @@ import org.aphreet.c3.platform.remote.api.management.StorageDescription
 import org.aphreet.c3.platform.storage.{StorageModeParser, Storage}
 import org.aphreet.c3.platform.exception.StorageException
 import collection.mutable.{ArrayBuffer, HashSet, HashMap}
-import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil
 
 
 /*        .==.        .==.          
@@ -47,7 +46,7 @@ import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil
     -----------------------------
 */
 
-class StorageSynchronizer {
+class StorageSynchronizer extends DtoConvertor{
 
   /**
    * Compare storages from this and other machines and
@@ -55,7 +54,7 @@ class StorageSynchronizer {
    * to remote machine
    */
   def getAdditionalIds(remoteStorages:List[StorageDescription], localStorages:List[Storage]):List[(String, String)] = {
-    val localStorageDescriptions = localStorages.map(s => PlatformManagementServiceUtil.storageToDescription(s)).toList
+    val localStorageDescriptions = localStorages.map(s => storageToDescription(s)).toList
 
     compareStorageConfigs(localStorageDescriptions, remoteStorages)
 

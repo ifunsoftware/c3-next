@@ -13,7 +13,6 @@
     <context:annotation-config />
 
     <context:component-scan base-package="org.aphreet.c3.platform.remote.impl" />
-    <context:component-scan base-package="org.aphreet.c3.platform.remote.replication" />
 
     <bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">
         <property name="serviceName" value="PlatformRmiManagementEndPoint" />

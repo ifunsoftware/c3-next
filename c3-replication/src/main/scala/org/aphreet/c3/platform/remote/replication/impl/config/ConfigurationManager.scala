@@ -34,20 +34,19 @@ package org.aphreet.c3.platform.remote.replication.impl.config
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.domain.DomainManager
-import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import com.thoughtworks.xstream.io.xml.DomDriver
 import com.thoughtworks.xstream.XStream
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDescription, DomainDescription, Pair}
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
+import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageManager}
+import org.aphreet.c3.platform.remote.api.management._
+import org.aphreet.c3.platform.domain.{DomainMode, Domain, DomainManager}
 
 @Component
-class ConfigurationManager{
+class ConfigurationManager extends DtoConvertor{
 
   val log = LogFactory getLog getClass
 
@@ -113,7 +112,7 @@ class ConfigurationManager{
   def getLocalConfiguration:PlatformInfo = {
 
     val storageDescriptions = storageManager.listStorages
-      .map(s => PlatformManagementServiceUtil.storageToDescription(s)).toSeq.toArray
+      .map(s => storageToDescription(s)).toSeq.toArray
 
     val domains = domainManager.domainList.map(d => new DomainDescription(d.id, d.name, d.key, d.mode.name)).toSeq.toArray
 
@@ -152,7 +151,7 @@ class ConfigurationManager{
   private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) = {
 
     for(domain <- remoteDomains){
-      domainManager.importDomain(PlatformManagementServiceUtil.domainFromDescription(domain), remoteSystemId)
+      domainManager.importDomain(domainFromDescription(domain), remoteSystemId)
     }
 
   }
@@ -166,7 +165,7 @@ class ConfigurationManager{
 
   private def importStorages(remoteStorages:Array[StorageDescription]) = {
     val storageDescriptions = storageManager.listStorages
-         .map(s => PlatformManagementServiceUtil.storageToDescription(s)).toSeq.toArray
+         .map(s => storageToDescription(s)).toSeq.toArray
 
 
     val synchronizer = new StorageSynchronizer
@@ -177,5 +176,4 @@ class ConfigurationManager{
       storageManager.addSecondaryId(storageId, additional)
     }
   }
-
 }
