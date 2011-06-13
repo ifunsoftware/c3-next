@@ -30,6 +30,7 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
+import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import actors.remote.{RemoteActor, Node}
@@ -42,7 +43,9 @@ import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsMana
 import actors.{AbstractActor, Actor}
 import org.aphreet.c3.platform.common.WatchedActor
 
-class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val statisticsManager:StatisticsManager) extends WatchedActor{
+class ReplicationLink(val localSystemId:String,
+                      val host:ReplicationHost,
+                      val statisticsManager:StatisticsManager) extends WatchedActor{
 
   val log = LogFactory getLog getClass
 
@@ -53,6 +56,8 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
   val replicationTimeout = 1000 * 60 * 5
 
   private val queue = new HashMap[ReplicationTask, Long]
+
+  private val dataEncryptor = new DataEncryptor(host.encryptionKey)
 
   override def act{
 
@@ -74,8 +79,9 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
         case ResourceAddedMsg(resource, source) => {
           val bytes = resource.toByteArray
 
+          val encrypted = dataEncryptor.encrypt(bytes)
 
-          sendRemoteMessage(remoteActor, ReplicateAddMsg(bytes, calculator.calculate(bytes)))
+          sendRemoteMessage(remoteActor, ReplicateAddMsg(encrypted, calculator.calculate(encrypted)))
 
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.add." + host.systemId, 1l)
 
@@ -96,12 +102,12 @@ class ReplicationLink(val localSystemId:String, val host:ReplicationHost, val st
           }
         }
 
-
-
         case ResourceUpdatedMsg(resource, source) => {
           val bytes = resource.toByteArray
 
-          sendRemoteMessage(remoteActor, ReplicateUpdateMsg(bytes, calculator.calculate(bytes)))
+          val encrypted = dataEncryptor.encrypt(bytes)
+
+          sendRemoteMessage(remoteActor, ReplicateUpdateMsg(encrypted, calculator.calculate(encrypted)))
 
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.update." + host.systemId, 1l)
 

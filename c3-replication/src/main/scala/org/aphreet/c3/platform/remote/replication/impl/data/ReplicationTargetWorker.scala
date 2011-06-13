@@ -30,6 +30,7 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
+import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.commons.logging.LogFactory
@@ -41,6 +42,7 @@ import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.domain.{Domain, DomainManager}
+import collection.mutable.HashMap
 
 class ReplicationTargetWorker(val localSystemId:String,
                               val storageManager:StorageManager,
@@ -52,19 +54,29 @@ class ReplicationTargetWorker(val localSystemId:String,
 
   var config:Map[String, ReplicationHost] = Map()
 
+  var decryptors:HashMap[String, DataEncryptor] = new HashMap()
+
   var useSecureDataConnection = false
 
   def startWithConfig(config:Map[String, ReplicationHost]) = {
 
     log info "Starting replication worker"
 
-    this.config = config
+    updateConfig(config)
 
     this.start
   }
 
   def updateConfig(config:Map[String, ReplicationHost]) = {
     this.config = config
+
+    val map = new HashMap[String, DataEncryptor]
+
+    for((id, host) <- config){
+      map.put(id, new DataEncryptor(host.encryptionKey))
+    }
+
+    decryptors = map
   }
 
   override def act{
@@ -83,8 +95,6 @@ class ReplicationTargetWorker(val localSystemId:String,
           log info "Stopping replication worker"
           this.exit
         }
-
-
       }
     }
   }
@@ -100,7 +110,9 @@ class ReplicationTargetWorker(val localSystemId:String,
         return
       }
 
-      val resource = Resource.fromByteArray(bytes)
+      val decryptor = decryptors.get(signature.systemId).get
+
+      val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
       fillWithData(resource, host)
 
@@ -140,7 +152,9 @@ class ReplicationTargetWorker(val localSystemId:String,
         return
       }
 
-      val resource:Resource = Resource.fromByteArray(bytes)
+      val decryptor = decryptors.get(signature.systemId).get
+
+      val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
       val storageId = AddressGenerator.storageForAddress(resource.address)
       
