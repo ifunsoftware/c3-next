@@ -34,8 +34,6 @@ import org.aphreet.c3.platform.exception._
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
 
-import eu.medsea.mimeutil.MimeUtil
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -47,6 +45,8 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
 import collection.mutable.HashSet
+import eu.medsea.util.EncodingGuesser
+import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
@@ -67,6 +67,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   {
     log info "Starting AccessManager"
+
+    configureDefaultMimeDetector
+
     start
   }
 
@@ -317,6 +320,20 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   def defaultValues:Map[String,String] =
-    Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
+    Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
 
+  def configureDefaultMimeDetector = {
+
+    MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
+
+    val encodings = new java.util.HashSet[String]
+    encodings.add("UTF-8")
+    encodings.add("cp1251")
+    encodings.add("US-ASCII")
+    encodings.add("UTF-16")
+    encodings.add("KOI8-R")
+
+    EncodingGuesser.setSupportedEncodings(encodings)
+    TextMimeDetector.setPreferredEncodings(Array("UTF-8"))
+  }
 }
