@@ -51,7 +51,7 @@ class QueryController extends DataController{
                   method = Array(RequestMethod.GET))
   def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
 
-    val domain = getRequestDomain(request, true)
+    val domain = getRequestDomain(req, true)
 
     val map = new HashMap[String, String]
 
