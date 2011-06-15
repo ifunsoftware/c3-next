@@ -37,9 +37,10 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
 import query.RestQueryConsumer
+import org.aphreet.c3.platform.domain.Domain
 
 @Controller
-class QueryController{
+class QueryController extends DataController{
 
   var queryManager:QueryManager = _
 
@@ -50,6 +51,7 @@ class QueryController{
                   method = Array(RequestMethod.GET))
   def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
 
+    val domain = getRequestDomain(request, true)
 
     val map = new HashMap[String, String]
 
@@ -63,7 +65,7 @@ class QueryController{
 
     val consumer = new RestQueryConsumer(resp.getWriter)
 
-    queryManager.executeQuery(Map[String, String]() ++ map, Map(), consumer)
+    queryManager.executeQuery(Map[String, String]() ++ map, Map(Domain.MD_FIELD -> domain), consumer)
     resp.flushBuffer
 
   }
