@@ -204,14 +204,14 @@ class ResourceTestCase extends TestCase {
     resource.isVersioned = true
 
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap("my data here")
+    version.data = DataStream.create("my data here")
     version.systemMetadata.put("rkey1", "rvalue1")
     version.date = new Date(1273087676152l)
 
     resource.addVersion(version)
 
     val version2 = new ResourceVersion
-    version2.data = DataWrapper.wrap("my data here")
+    version2.data = DataStream.create("my data here")
     version2.systemMetadata.put("rkey331", "rvalu3e1")
     version2.date = new Date(1273087676195l)
 
@@ -256,14 +256,14 @@ class ResourceTestCase extends TestCase {
     resource.isVersioned = true
 
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap("my data here")
+    version.data = DataStream.create("my data here")
     version.systemMetadata.put("rkey1", "Значение")
     version.date = new Date(1273087676152l)
 
     resource.addVersion(version)
 
     val version2 = new ResourceVersion
-    version2.data = DataWrapper.wrap("my data here")
+    version2.data = DataStream.create("my data here")
     version2.systemMetadata.put("rkey331", "rvalu3e1")
     version2.date = new Date(1273087676195l)
 
@@ -320,7 +320,7 @@ class ResourceTestCase extends TestCase {
     resource.isVersioned = true
 
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap("my data here")
+    version.data = DataStream.create("my data here")
     version.systemMetadata.put("rkey1", "value1")
     version.date = new Date(1273087676152l)
 
@@ -334,7 +334,7 @@ class ResourceTestCase extends TestCase {
 
 
     val resourceVersion = new ResourceVersion
-    resourceVersion.data = new StringDataWrapper("testme")
+    resourceVersion.data = DataStream.create("testme")
 
     val resource = new Resource
 

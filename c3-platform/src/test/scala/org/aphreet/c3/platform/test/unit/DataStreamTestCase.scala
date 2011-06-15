@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2011, Mikhail Malygin
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -28,56 +27,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.filesystem.test
 
-import org.aphreet.c3.platform.filesystem.Directory
+package org.aphreet.c3.platform.test.unit
+
 import junit.framework.TestCase
 import junit.framework.Assert._
-import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
+import org.aphreet.c3.platform.resource.BytesDataStream
 
-class DirectorySerializationTestCase extends TestCase{
+class DataStreamTestCase extends TestCase{
 
-  def testIncorrectContent = {
-    val serializedData:Array[Byte] = Array(
-      0, 0, 23, 41, 48,
-      101, 54, 51, 49, 53, 101, 97, 45, 99, 50,
-      102, 100, 45, 52, 98, 101, 102, 45, 57, 51,
-      54, 101, 45, 53, 57, 99, 101, 102, 55, 57,
-      52, 51, 56, 52, 49, 45, 54, 97, 52, 55,
-      0, 0, 0, 0, 0, 0, 39, 16, 0, 0,
-      0, 2, 0, 0, 0, 4, 107, 101, 121, 50,
-      0, 0, 0, 6, 118, 97, 108, 117, 101, 50,
-      0, 0, 0, 4, 107, 101, 121, 49, 0, 0,
-      0, 6, 118, 97, 108, 117, 101, 49, 0, 0,
-      0, 2, 0, 0, 0, 5, 115, 107, 101, 121,
-      49, 0, 0, 0, 7, 115, 118, 97, 108, 117,
-      101, 49, 0, 0, 0, 5, 115, 107, 101, 121,
-      50, 0, 0, 0, 7, 115, 118, 97, 108, 117,
-      101, 50, 0, 0, 0, 0, 0, 0, 0, 1,
-      0, 0, 0, 0, 0, 0, 1, 39, -121, -85,
-      30, -104, 0, 0, 0, 1, 0, 0, 0, 5,
-      114, 107, 101, 121, 49, 0, 0, 0, 7, 114,
-      118, 97, 108, 117, 101, 49, 1, 126, 9, -127,
-      -41, -102, -13, -115)
+  def testByteDataWrapper = {
+
+    val data:Array[Byte] = Array(-128,-127,-1,-2,-3,4,-5,1,2,3,4,126,127)
+
+    val dataStream = new BytesDataStream(data)
 
 
-    val resource = new Resource
+    val expectedData:Array[Byte] = Array(-128,-127,-1,-2,-3,4,-5,1,2,3,4,126,127)
 
-    val version = new ResourceVersion
-    version.data = DataStream.create(serializedData)
-
-    resource.addVersion(version)
-
-    try{
-      val directory = Directory(resource)
-
-      for(child <- directory.getChildren){
-        println(child)
-      }
-      assertFalse(false)
-    }catch{
-      case e => assertTrue(true)
+    for(i:Int <- 0 to (dataStream.length-1).asInstanceOf[Int]){
+      assertEquals("step " + i, dataStream.getBytes(i), expectedData(i))
     }
-  }
 
+    assertTrue(expectedData.length == dataStream.length)
+    assertTrue(expectedData.length == dataStream.getBytes.length)
+
+
+    assertEquals("d603d18ba16942356bb70b82a6d2f9a4", dataStream.hash)
+
+
+  }
+  
 }

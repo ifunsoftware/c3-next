@@ -573,15 +573,15 @@ class PureBDBStorageTest extends TestCase{
     }
   }
 
-  private def isDatumEqual(d0:DataWrapper, d1:DataWrapper):Boolean = {
+  private def isDatumEqual(d0:DataStream, d1:DataStream):Boolean = {
 
     if(d0.length != d1.length){
-      println("datum lengths are not equal " + d0.length + " " + d1.length )
+      println("data lengths are not equal " + d0.length + " " + d1.length )
       return false
     }
 
     if(d0.mimeType != d1.mimeType){
-      println("datum mime types are not equal " + d0.mimeType + " " + d1.mimeType)
+      println("data mime types are not equal " + d0.mimeType + " " + d1.mimeType)
       return false
     }
 
@@ -607,7 +607,7 @@ class PureBDBStorageTest extends TestCase{
     val resVersion = new ResourceVersion
     resVersion.systemMetadata.put("key2", "some_other_value")
 
-    resVersion.data = DataWrapper.wrap("This is data")
+    resVersion.data = DataStream.create("This is data")
 
     resource.addVersion(resVersion)
 
@@ -619,7 +619,7 @@ class PureBDBStorageTest extends TestCase{
 
     version.systemMetadata.put("key3", "some_value3")
 
-    version.data = DataWrapper.wrap("This is new data")
+    version.data = DataStream.create("This is new data")
 
     version
   }

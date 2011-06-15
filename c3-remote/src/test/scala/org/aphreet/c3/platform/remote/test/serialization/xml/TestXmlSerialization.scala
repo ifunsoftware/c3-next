@@ -40,7 +40,7 @@ import java.io.{StringReader, FileInputStream, File}
 import javax.xml.validation.SchemaFactory
 import org.aphreet.c3.platform.remote.rest.response._
 import fs.FSDirectory
-import org.aphreet.c3.platform.resource.{DataWrapper, Resource, ResourceVersion}
+import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
 import org.aphreet.c3.platform.filesystem.NodeRef
 
@@ -67,7 +67,7 @@ class TestXmlSerialization extends TestCase{
     resource.metadata.put("md_key2", "md\"value2")
 
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap("string")
+    version.data = DataStream.create("string")
     version.systemMetadata.put("sys_key", "sys_value")
 
     resource.addVersion(version)

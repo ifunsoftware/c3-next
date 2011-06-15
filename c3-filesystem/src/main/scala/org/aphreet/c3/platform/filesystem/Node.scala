@@ -32,7 +32,7 @@
 package org.aphreet.c3.platform.filesystem
 
 import collection.mutable.HashMap
-import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
 
@@ -141,7 +141,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
     resource.addVersion(version)
   }
 
-  private def getData(children:HashMap[String, NodeRef]):DataWrapper = {
+  private def getData(children:HashMap[String, NodeRef]):DataStream = {
 
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
@@ -155,7 +155,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
       dataOs.writeUTF(name)
     }
 
-    DataWrapper.wrap(byteOs.toByteArray)
+    DataStream.create(byteOs.toByteArray)
   }
 
   private def readData = {

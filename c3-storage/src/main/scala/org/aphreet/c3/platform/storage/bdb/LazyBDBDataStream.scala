@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2011, Mikhail Malygin
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -29,27 +28,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.filesystem
+package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.resource.Resource
+import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry, Database}
+import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.resource._
 
-trait FSManager{
+class LazyBDBDataStream(val key: String, val database: Database) extends AbstractBytesDataStream {
 
-  def getNode(domainId:String, path:String):Node
+  lazy val loadedBytes: Array[Byte] = fetchBytesFromDb
 
-  def deleteNode(domainId:String, path:String)
+  private var loaded = false
 
-  def createFile(domainId:String, path:String, resource:Resource)
+  private def fetchBytesFromDb: Array[Byte] = {
+    val valueEntry = new DatabaseEntry()
 
-  def createDirectory(domainId:String, path:String)
+    val status = database.get(null, new DatabaseEntry(key.getBytes), valueEntry, LockMode.DEFAULT)
 
-  def moveNode(domainId:String, oldPath:String, newPath:String)
+    loaded = true
 
-  def lookupResourcePath(address:String):String
+    if (status == OperationStatus.SUCCESS)
+      valueEntry.getData
+    else
+      throw new StorageException("Failed to load lazy data for key " + key + "; Operation status is " + status.toString)
 
-  def fileSystemRoots:Map[String, String]
+  }
 
-  def importFileSystemRoot(domainId:String, address:String)
+  override def loadBytes: Array[Byte] = loadedBytes
 
-  def startFilesystemCheck
+  override def copy:DataStream =
+  {
+    if(this.loaded)
+      if(this.loadedBytes.length < 102400)
+         return new BytesDataStream(this.loadedBytes)
+
+    new LazyBDBDataStream(key, database)
+  }
 }

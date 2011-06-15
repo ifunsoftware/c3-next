@@ -271,7 +271,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
     for(i <- 0 to resource.versions.size - 1){
       val version = resource.versions(i)
-      val data = new RemoteSystemDataWrapper(replicationHost, useSecureDataConnection, resource.address, i+1, domain.id, domain.key)
+      val data = new RemoteSystemDataStream(replicationHost, useSecureDataConnection, resource.address, i+1, domain.id, domain.key)
       version.data = data
     }
   }

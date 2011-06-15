@@ -37,7 +37,7 @@ import org.aphreet.c3.platform.filesystem.impl.FSManagerImpl
 import junit.framework.Assert._
 import org.easymock.EasyMock._
 import org.aphreet.c3.platform.filesystem._
-import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 
 class FSManagerTestCase extends TestCase{
 
@@ -137,7 +137,7 @@ class FSManagerTestCase extends TestCase{
     val resource0 = new Resource
 
     val version = new ResourceVersion
-    version.data = DataWrapper.wrap(serializedData)
+    version.data = DataStream.create(serializedData)
 
     resource0.addVersion(version)
 

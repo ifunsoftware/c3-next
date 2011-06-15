@@ -31,8 +31,8 @@ package org.aphreet.c3.platform.storage.bdb.impl
 
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
-import org.aphreet.c3.platform.resource.{Resource, DataWrapper, ResourceVersion}
-import org.aphreet.c3.platform.storage.bdb.{FailoverStrategy, LazyBDBDataWrapper, DatabaseProvider, DataManipulator}
+import org.aphreet.c3.platform.resource.{Resource, DataStream, ResourceVersion}
+import org.aphreet.c3.platform.storage.bdb.{FailoverStrategy, LazyBDBDataStream, DatabaseProvider, DataManipulator}
 
 trait BDBDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy{
 
@@ -76,7 +76,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
         case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
       }
 
-      version.data = new LazyBDBDataWrapper(versionKey, getDatabase(false))
+      version.data = new LazyBDBDataStream(versionKey, getDatabase(false))
     }
   }
 
@@ -126,7 +126,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
       }
     }
 
-    version.data = DataWrapper.wrap(version.data.getBytes)
+    version.data = DataStream.create(version.data.getBytes)
     version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
   }
 

@@ -41,7 +41,7 @@ import collection.mutable.HashMap
 import java.io.{File, BufferedOutputStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import org.apache.commons.io.FileCleaningTracker
-import org.aphreet.c3.platform.resource.{DataWrapper, ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
@@ -218,7 +218,7 @@ class DataController extends AbstractController with ServletContextAware{
 
       val metadata = new HashMap[String, String]
 
-      var data:DataWrapper = null
+      var data:DataStream = null
       var tmpFile:File = null
 
       while (iterator.hasNext) {
@@ -234,14 +234,13 @@ class DataController extends AbstractController with ServletContextAware{
           }
 
           if (item.isInMemory) {
-            data = DataWrapper.wrap(item.get)
+            data = DataStream.create(item.get)
           } else {
             tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
             item.write(tmpFile)
-            data = DataWrapper.wrap(tmpFile)
+            data = DataStream.create(tmpFile)
           }
         }
-
       }
 
       log debug "Parse complete"

@@ -31,8 +31,7 @@ package org.aphreet.c3.platform.storage.file
 
 import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry}
 import java.io.{IOException, File}
-import org.aphreet.c3.platform.resource.DataWrapper._
-import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataWrapper}
+import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataStream}
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.storage.bdb.{DatabaseProvider, DataManipulator}
 
@@ -77,7 +76,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
         case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
       }
 
-      version.data = DataWrapper.wrap(findFileForName(fileName))
+      version.data = DataStream.create(findFileForName(fileName))
     }
   }
 
@@ -131,7 +130,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
       targetTempFile.renameTo(targetFile)
 
       //version.data writeTo targetFile
-      version.data = DataWrapper.wrap(targetFile)
+      version.data = DataStream.create(targetFile)
       version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
 
     }catch{

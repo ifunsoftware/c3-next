@@ -57,7 +57,7 @@ class ResourceVersion{
   /**
    * Version's data
    */
-  var data:DataWrapper = null
+  var data:DataStream = null
 
   /**
    * Flag indicates if resource has been written to storage
@@ -77,7 +77,7 @@ class ResourceVersion{
     builder.toString
   }
 
-  def setData(_data:DataWrapper) = {data = _data}
+  def setData(_data:DataStream) = {data = _data}
 
   def calculateHash = {
     systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)

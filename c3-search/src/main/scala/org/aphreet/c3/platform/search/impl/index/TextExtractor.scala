@@ -5,7 +5,7 @@ import org.aphreet.c3.search.tika.TikaProvider
 import org.aphreet.c3.platform.search.impl.rmi.SearchRmiProxyFactoryBean
 import java.io.{FileOutputStream, File}
 import java.nio.channels.WritableByteChannel
-import org.aphreet.c3.platform.resource.{FileDataWrapper, Resource}
+import org.aphreet.c3.platform.resource.{FileDataStream, Resource}
 import collection.JavaConversions._
 /**
  * Copyright (c) 2010, Mikhail Malygin
@@ -50,17 +50,17 @@ class TextExtractor{
     try{
       if(tikaProvider == null) tikaProvider = connect
 
-      val dataWarpper = resource.versions.last.data
+      val stream = resource.versions.last.data
 
-      if(dataWarpper.isInstanceOf[FileDataWrapper]){
-        file = dataWarpper.asInstanceOf[FileDataWrapper].file
+      if(stream.isInstanceOf[FileDataStream]){
+        file = stream.asInstanceOf[FileDataStream].file
       }else{
         file = File.createTempFile("index", "tmp")
         shouldDelete = true
         var channel:WritableByteChannel = null
         try{
           channel = new FileOutputStream(file).getChannel
-          dataWarpper.writeTo(channel)
+          stream.writeTo(channel)
         }finally{
           channel.close
         }
