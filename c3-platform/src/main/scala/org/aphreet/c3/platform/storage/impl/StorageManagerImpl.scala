@@ -46,7 +46,6 @@ import java.io.File
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import javax.annotation.{PreDestroy, PostConstruct}
-import collection.immutable.HashSet
 import org.aphreet.c3.platform.resource.{IdGenerator, Resource}
 
 @Component("storageManager")
@@ -66,7 +65,7 @@ class StorageManagerImpl extends StorageManager{
 
   var platformConfigManager:PlatformConfigManager = null
 
-  var systemId:String = null
+  lazy val systemId = getSystemId
 
   @Autowired
   def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}
@@ -82,15 +81,7 @@ class StorageManagerImpl extends StorageManager{
 
   @PostConstruct
   def init{
-
-    log info "Starting StorageManager"
-
-    platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
-      case Some(value) => systemId = value
-      case None => throw new ConfigurationException("Failed to get systemId from params")
-    }
-
-    log info "StorageManager started"
+    log info "Starting StorageManager..."
   }
 
   @PreDestroy
@@ -325,6 +316,13 @@ class StorageManagerImpl extends StorageManager{
       file.delete
     }
     removeDir(storage.fullPath.file)
+  }
+
+  private def getSystemId:String = {
+    platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
+      case Some(value) => value
+      case None => throw new ConfigurationException("Failed to get systemId from params")
+    }
   }
 
 }

@@ -72,9 +72,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     foundListeners ++ Set.apply(listeners)
   }
 
-
-  @PostConstruct
-  def init = {
+  {
     var configPath = System.getProperty("c3.home")
 
     if (configPath == null) {
@@ -93,7 +91,11 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     configPath = path.toString
     configDir = path.file
     if (!configDir.exists) configDir.mkdirs
+  }
 
+  @PostConstruct
+  def init = {
+   
     configAccessor.configDirectory = configDir
 
     //before actor start verify that systemId property exists in config
