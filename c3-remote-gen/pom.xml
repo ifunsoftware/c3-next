@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-remote-gen</artifactId>
@@ -11,7 +9,7 @@
     <parent>
         <artifactId>main</artifactId>
         <groupId>org.aphreet.c3</groupId>
-        <version>1.1.0.SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <dependencies>
@@ -136,7 +134,7 @@
                         <phase>install</phase>
                         <configuration>
                             <tasks>
-                                <echo message="Deploying to Spring DM Server"/>
+                                <echo message="Deploying to Spring DM Server" />
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${virgo.path.libs}" overwrite="true" />
                             </tasks>
                         </configuration>
@@ -149,13 +147,10 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <echo message="Updating manifest file with current build number"/>
-                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
-                                      overwrite="true"/>
-                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED"
-                                         value="Bundle-Version: ${project.version}" />
-                                <replace file="target/MANIFEST.MF" token="Fragment-Host: org.aphreet.c3.platform.remote;bundle-version=&quot;1.0.0&quot;"
-                                         value="Fragment-Host: org.aphreet.c3.platform.remote;bundle-version=&quot;${project.version}&quot;" />
+                                <echo message="Updating manifest file with current build number" />
+                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
+                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
+                                <replace file="target/MANIFEST.MF" token="Fragment-Host: org.aphreet.c3.platform.remote;bundle-version=&quot;1.0.0&quot;" value="Fragment-Host: org.aphreet.c3.platform.remote;bundle-version=&quot;${project.version}&quot;" />
                             </tasks>
                         </configuration>
                         <goals>
