@@ -11,9 +11,6 @@ to your local settings.xml file, otherwise you can just copy this file to ~/.m2 
 
         <profile>
             <id>development</id>
-            <activation>
-                <activeByDefault/>
-            </activation>
             <properties>
                 <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
                 <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
@@ -22,5 +19,9 @@ to your local settings.xml file, otherwise you can just copy this file to ~/.m2 
         </profile>
 
     </profiles>
+
+    <activeProfiles>
+        <activeProfile>development</activeProfile>
+    </activeProfiles>
 
 </settings>
