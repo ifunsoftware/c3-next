@@ -1,16 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.aphreet.c3</groupId>
     <artifactId>c3-replication</artifactId>
-    <version>${bundleVersion}</version>
     <packaging>jar</packaging>
     <name>C3 Replication</name>
 
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>main</artifactId>
-        <version>${bundleVersion}</version>
+        <version>1.1.0.SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -154,7 +152,7 @@
 				<configuration>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 					<archive>
-						<manifestFile>${bundleManifestPath}</manifestFile>
+						<manifestFile>target/MANIFEST.MF</manifestFile>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
@@ -192,7 +190,23 @@
                         <configuration>
                             <tasks>
                                 <echo message="Deploying to Spring DM Server"/>
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${artPath}" overwrite="true" />
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${virgo.path.libs}" overwrite="true" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>manifest</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Updating manifest file with current build number"/>
+                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
+                                      overwrite="true"/>
+                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED"
+                                         value="Bundle-Version: ${project.version}"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -248,42 +262,11 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${dependencyPath}</outputDirectory>
+                            <outputDirectory>${virgo.path.libs}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>manifest</id>
-                                <phase>prepare-package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <echo message="Updating manifest file with current build number"/>
-                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
-                                              overwrite="true"/>
-                                        <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
-                                                 value="Bundle-Version: ${bundleVersion}"/>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>

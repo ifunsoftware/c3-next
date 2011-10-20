@@ -5,9 +5,9 @@
     <groupId>org.aphreet.c3</groupId>
     <artifactId>main</artifactId>
     <packaging>pom</packaging>
-    <version>${bundleVersion}</version>
+    <version>1.1.0.SNAPSHOT</version>
     <name>C3 Main project</name>
-    <url>http://dev.aphreet.org</url>
+    <url>https://github.com/aphreet/c3-next</url>
     <modules>
         <module>c3-remote-api</module>
         <module>c3-platform</module>
@@ -23,8 +23,19 @@
         <module>c3-remote-webclient</module>
     </modules>
 
+    <scm>
+        <url>https://github.com/aphreet/c3-next</url>
+        <connection>scm:git:https://github.com/aphreet/c3-next.git</connection>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Properties below are commented because they must be defined in the user's local settings.xml file -->
+        <!--
+        <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
+        <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
+        <client.path>target/dist</client.path>
+        -->
     </properties>
 
     <dependencyManagement>
@@ -197,7 +208,36 @@
             <url>http://c3-system.googlecode.com/svn/maven</url>
         </repository>
 
+        <repository>
+            <id>libs-release</id>
+            <name>iFunSoftware release repository</name>
+            <url>http://repository.ifunsoftware.com/artifactory/libs-release</url>
+        </repository>
+
+        <repository>
+            <id>libs-snapshot</id>
+            <name>iFunSoftware snapshot repository</name>
+            <url>http://repository.ifunsoftware.com/artifactory/libs-snapshot</url>
+            <snapshots>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>ifunsoftware</id>
+            <name>iFunSoftware release repository</name>
+            <url>http://repository.ifunsoftware.com/artifactory/libs-release-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>ifunsoftware-snap</id>
+            <name>iFunSoftware snapshot repository</name>
+            <url>http://repository.ifunsoftware.com/artifactory/libs-snapshot-local</url>
+        </snapshotRepository>
+        
+    </distributionManagement>
 
     <pluginRepositories>
         <pluginRepository>
@@ -206,14 +246,6 @@
             <url>http://scala-tools.org/repo-releases</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <distributionManagement>
-        <site>
-            <id>site</id>
-            <name>C3 site</name>
-            <url>http://darkstar.aphreet.org/docs</url>
-        </site>
-    </distributionManagement>
 
     <build>
         <plugins>
@@ -230,60 +262,24 @@
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>plan</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <copy file="${basedir}/config/c3.plan" toDir="${virgo.path.pickup}" overwrite="true"
+                                      failonerror="false"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>plan</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy file="${basedir}/config/c3.plan" toDir="${installPath}/plan" overwrite="true"
-                                              failonerror="false"/>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>development</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>plan</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy file="${basedir}/config/c3-web.plan" toDir="${artPath}/../../pickup" overwrite="true"
-                                              failonerror="false"/>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>

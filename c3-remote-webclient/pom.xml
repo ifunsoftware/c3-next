@@ -4,21 +4,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.aphreet.c3</groupId>
     <artifactId>c3-remote-webclient</artifactId>
-    <version>${bundleVersion}</version>
     <packaging>war</packaging>
     <name>C3 Remote Web Client</name>
 
     <parent>
         <artifactId>main</artifactId>
         <groupId>org.aphreet.c3</groupId>
-        <version>${bundleVersion}</version>
+        <version>1.1.0.SNAPSHOT</version>
     </parent>
 
     <build>
         <defaultGoal>package</defaultGoal>
-        
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -26,88 +33,47 @@
                 <configuration>
                     <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
-                    <webResources>
-                        <resource>
-                            <directory>src/main/webapp</directory>
-                            <targetPath>WEB-INF/classes</targetPath>
-                        </resource>
-                    </webResources>
                     <archive>
-                        <manifestFile>${bundleManifestPath}</manifestFile>
+                        <manifestFile>target/MANIFEST.MF</manifestFile>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>deploy</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Deploying to Spring DM Server"/>
+                                <copy file="${project.build.directory}/${project.build.finalName}.war" toDir="${virgo.path.libs}" overwrite="true" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>manifest</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Updating manifest file with current build number"/>
+                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
+                                      overwrite="true"/>
+                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED"
+                                         value="Bundle-Version: ${project.version}"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>manifest</id>
-                                <phase>prepare-package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <echo message="Updating manifest file with current build number"/>
-                                        <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target"
-                                              overwrite="true"/>
-                                        <replace file="target/MANIFEST.MF" token="Bundle-Version: 1.0.0"
-                                                 value="Bundle-Version: ${bundleVersion}"/>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>deploy</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <tasks>
-                                        <echo message="Deploying to Spring DM Server"/>
-                                        <copy file="${project.build.directory}/${project.build.finalName}.war" toDir="${artPath}" overwrite="true" />
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>development</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>deploy</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <tasks>
-                                        <echo message="Deploying to Spring DM Server"/>
-                                        <copy file="${project.build.directory}/${project.build.finalName}.war" toDir="${artPath}/../../pickup" overwrite="true" />
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>

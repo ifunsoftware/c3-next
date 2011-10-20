@@ -1,42 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+This is example settings.xml file with configuration required for c3 development
+If you already have your settings.xml file please, add properties from the profile below
+to your local settings.xml file, otherwise you can just copy this file to ~/.m2 directory
+-->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-	<profiles>
-		
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <profiles>
+
         <profile>
-			<id>development</id>
-			<properties>
-				<serverHome>/Users/Aphreet/Soft/virgo-web-server-2.1.0.RELEASE</serverHome>
-				<bundleManifestPath>src/main/resources/META-INF/MANIFEST.MF</bundleManifestPath>
-				<bundleVersion>1.0.0</bundleVersion>
-				<dependencyPath>${serverHome}/repository/usr</dependencyPath>
-				<artPath>${serverHome}/repository/usr</artPath>
-			</properties>
-		</profile>
-        
-		<profile>
-			<id>release</id>
-			<properties>
-				<bundleManifestPath>target/MANIFEST.MF</bundleManifestPath>
-				<artPath>${installPath}/jars</artPath>
-				<dependencyPath>${installPath}/jars</dependencyPath>
-			</properties>
+            <id>development</id>
+            <activation>
+                <activeByDefault/>
+            </activation>
+            <properties>
+                <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
+                <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
+                <client.path>target/dist</client.path>
+            </properties>
+        </profile>
 
-		</profile>
-		
-        <profile>
-			<id>remote</id>
-			<properties>
-				<serverHome>/Volumes/data/soft/bin/springsource-dm-server-1.0.2.SR02</serverHome>
-				<bundleManifestPath>src/main/resources/META-INF/MANIFEST.MF</bundleManifestPath>
-				<bundleVersion>1.0.0</bundleVersion>
-			</properties>
-		</profile>
+    </profiles>
 
-	</profiles>
-
-	<activeProfiles>
-		<activeProfile>development</activeProfile>
-	</activeProfiles>
 </settings>
