@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>main</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.1.0.SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -49,9 +49,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.aphreet.c3</groupId>
+            <groupId>com.ifunsoftware.s4</groupId>
             <artifactId>language-guesser</artifactId>
-            <version>1.0.541</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
@@ -159,7 +159,7 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.aphreet.c3</groupId>
+                                    <groupId>com.ifunsoftware.s4</groupId>
                                     <artifactId>language-guesser</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
