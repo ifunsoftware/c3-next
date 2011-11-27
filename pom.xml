@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.aphreet.c3</groupId>
-    <artifactId>main</artifactId>
+    <artifactId>c3-next</artifactId>
     <packaging>pom</packaging>
     <version>1.1.0.SNAPSHOT</version>
     <name>C3 Main project</name>
@@ -19,6 +19,7 @@
         <module>c3-client</module>
         <module>c3-access-control</module>
         <module>c3-remote-webclient</module>
+        <module>c3-deploy</module>
     </modules>
 
     <scm>
@@ -28,6 +29,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scala.version>2.8.0</scala.version>
+        <spring.version>3.0.0.RELEASE</spring.version>
+        <md5.version>1.0.539</md5.version>
         <!-- Properties below are commented because they must be defined in the user's local settings.xml file -->
         <!--
         <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
@@ -38,6 +42,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Internal dependencies -->
             <dependency>
                 <groupId>org.aphreet.c3</groupId>
                 <artifactId>c3-platform</artifactId>
@@ -80,6 +85,15 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- External dependencies-->
+
+            <dependency>
+                <groupId>com.springsource.json</groupId>
+                <artifactId>com.springsource.json</artifactId>
+                <version>1.0.1.RELEASE</version>
+                <scope>provided</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -103,7 +117,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>org.springframework.spring-library</artifactId>
             <type>libd</type>
-            <version>3.0.0.RELEASE</version>
+            <version>${spring.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -234,7 +248,7 @@
             <name>iFunSoftware snapshot repository</name>
             <url>http://repository.ifunsoftware.com/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
-        
+
     </distributionManagement>
 
     <pluginRepositories>
@@ -246,6 +260,80 @@
     </pluginRepositories>
 
     <build>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.scala-tools</groupId>
+                    <artifactId>maven-scala-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <args>
+                            <arg>-deprecation</arg>
+                        </args>
+                        <jvmArgs>
+                            <jvmArg>-Xms64m</jvmArg>
+                            <jvmArg>-Xmx1024m</jvmArg>
+                        </jvmArgs>
+                    </configuration>
+                </plugin>
+
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>deploy</id>
+                            <phase>install</phase>
+                            <configuration>
+                                <tasks>
+                                    <echo message="Deploying to Spring DM Server" />
+                                    <copy file="${project.build.directory}/${project.build.finalName}.${project.packaging}" toDir="${virgo.path.libs}" overwrite="true" />
+                                </tasks>
+                            </configuration>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>manifest</id>
+                            <phase>prepare-package</phase>
+                            <configuration>
+                                <tasks>
+                                    <echo message="Updating manifest file with current build number" />
+                                    <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
+                                    <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
+                                </tasks>
+                            </configuration>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                        <archive>
+                            <manifestFile>target/MANIFEST.MF</manifestFile>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -260,23 +348,7 @@
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>plan</id>
-                        <phase>install</phase>
-                        <configuration>
-                            <tasks>
-                                <copy file="${basedir}/config/c3.plan" toDir="${virgo.path.pickup}" overwrite="true" failonerror="false" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>

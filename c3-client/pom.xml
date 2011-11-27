@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.aphreet.c3</groupId>
-        <artifactId>main</artifactId>
+        <artifactId>c3-next</artifactId>
         <version>1.1.0.SNAPSHOT</version>
     </parent>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.8.0</version>
+            <version>${scala.version}</version>
         </dependency>
 
         <dependency>
@@ -86,23 +86,6 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-deprecation</arg>
-                    </args>
-                    <jvmArgs>
-                        <jvmArg>-Xms64m</jvmArg>
-                        <jvmArg>-Xmx1024m</jvmArg>
-                    </jvmArgs>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -129,11 +112,22 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>manifest</id>
+                        <id>copy-client</id>
                         <phase>install</phase>
                         <configuration>
                             <tasks>
@@ -146,6 +140,10 @@
                         <goals>
                             <goal>run</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>manifest</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

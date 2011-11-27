@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.aphreet.c3</groupId>
-        <artifactId>main</artifactId>
+        <artifactId>c3-next</artifactId>
         <version>1.1.0.SNAPSHOT</version>
     </parent>
 
@@ -84,40 +84,12 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-deprecation</arg>
-                    </args>
-                    <jvmArgs>
-                        <jvmArg>-Xms64m</jvmArg>
-                        <jvmArg>-Xmx1024m</jvmArg>
-                    </jvmArgs>
-                </configuration>
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                    </execution>
-                </executions>
-                <configuration>
-                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
-                    <archive>
-                        <manifestFile>target/MANIFEST.MF</manifestFile>
-                        <addMavenDescriptor>false</addMavenDescriptor>
-                    </archive>
-                </configuration>
             </plugin>
+            
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -176,37 +148,9 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>deploy</id>
-                        <phase>install</phase>
-                        <configuration>
-                            <tasks>
-                                <echo message="Deploying to Spring DM Server" />
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${virgo.path.libs}" overwrite="true" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>manifest</id>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <tasks>
-                                <echo message="Updating manifest file with current build number" />
-                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
-                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
         </plugins>
