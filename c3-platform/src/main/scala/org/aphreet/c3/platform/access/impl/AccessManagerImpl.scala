@@ -173,6 +173,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
           }
         }
 
+        resource.systemMetadata.put(Resource.MD_UPDATED, System.currentTimeMillis().toString)
+
         val ra = storage.update(resource)
 
         for(owner <- resourceOwners){

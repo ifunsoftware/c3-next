@@ -7,7 +7,6 @@ import scala.collection.mutable.HashMap
 import java.util.concurrent.Executors
 
 import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
@@ -22,7 +21,7 @@ class TaskManagerImpl extends TaskManager{
   val executor = Executors.newCachedThreadPool
   
   @PostConstruct
-  def init{
+  def init(){
     log info "Starting task manager"
   }
   
@@ -42,13 +41,13 @@ class TaskManagerImpl extends TaskManager{
     }
     
   
-  def pauseTask(id:String) = 
+  def pauseTask(id:String) =
     tasks.get(id) match {
       case Some(task) => task.pause
       case None => log warn "Can't pause task with id " + id + ": task does not exist"
     }
   
-  def resumeTask(id:String) = 
+  def resumeTask(id:String) =
     tasks.get(id) match {
       case Some(task) => task.resume
       case None => log warn "Can't resume task with id " + id + ": task does not exist"
@@ -64,11 +63,11 @@ class TaskManagerImpl extends TaskManager{
     }
   
   @PreDestroy
-  def destroy{
+  def destroy(){
 
     tasks.foreach(e => e._2.stop)
 
-    executor.shutdown
+    executor.shutdown()
     
     log info "Stopping task manager"
   }

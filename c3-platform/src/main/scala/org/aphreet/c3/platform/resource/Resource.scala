@@ -222,6 +222,7 @@ class Resource {
 object Resource {
 
   /**
+   * OBSOLETE. Now comparing md5 hash of the serialized resource
    * Last 8 bytes in the serialized resource version 1. If after deserializing them do not match
    * resource is considered to be broken
    */
@@ -234,6 +235,7 @@ object Resource {
   val MD_TAGS = "c3.tags"
   val MD_USER = "c3.user"
   val SMD_LOCK = "c3.lock"
+  val MD_UPDATED = "c3.updated"
 
   /**
    * String encoding for metadata storing
