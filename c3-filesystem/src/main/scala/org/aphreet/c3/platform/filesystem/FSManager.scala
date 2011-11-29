@@ -51,5 +51,5 @@ trait FSManager{
 
   def importFileSystemRoot(domainId:String, address:String)
 
-  def startFilesystemCheck
+  def startFilesystemCheck()
 }

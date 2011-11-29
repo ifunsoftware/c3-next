@@ -31,7 +31,8 @@ package org.aphreet.c3.platform.storage.updater.impl
 
 import org.aphreet.c3.platform.storage.updater.Transformation
 import org.aphreet.c3.platform.task.Task
-import org.aphreet.c3.platform.storage.{StorageIterator, Storage}
+import org.aphreet.c3.platform.storage.StorageIterator
+import org.aphreet.c3.platform.storage.Storage
 
 class StorageUpdateTask(val storages:List[Storage], val transformations:List[Transformation]) extends Task{
 
@@ -39,12 +40,12 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
   var currentStorage:Storage = null
   var currentIterator:StorageIterator = null
 
-  var totalObjectsToProcess = 0
-  var processedObjects = 0
+  var totalObjectsToProcess = 0l
+  var processedObjects = 0l
 
 
   override def preStart{
-    totalResourcesToProcess = storages.reduceLeft((total, storage) => total + storage.count)
+    totalObjectsToProcess = storages.foldLeft(0l)(_ + _.count)
 
     log.info("Starting StorageUpdate task. Estimated entries to process " + totalObjectsToProcess)
   }
@@ -52,27 +53,29 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
   override def step{
 
     if(currentStorage == null){
-      currentStorage = selectStorage()
+      currentStorage = selectStorage match {
+        case Some(storage) => {
+          log.info("Starting update for storage with id " + storage.id)
+          storage
+        }
+        case None => {
+          log.info("All storages processed")
+          shouldStopFlag = true
+          null
+        }
+      }
     }else{
       processNextResource()
     }
 
   }
 
-  def selectStorage():Storage = {
+  def selectStorage:Option[Storage] = {
 
-    val s = storagesToProcess.headOption match{
-      case Some(value) => value
-      case None => {
-        shouldStopFlag = true
-        log.info("All storages processed")
-      }
-    }
+    val s = storagesToProcess.headOption
 
     storagesToProcess = storagesToProcess.tail
-
-    log.info("Starting update for storage with id " + s.id)
-
+    
     s
   }
 
@@ -82,7 +85,7 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
     }
 
     if(currentIterator.hasNext){
-      val resource = iterator.next
+      val resource = currentIterator.next
       transformations.foreach(t => t(resource))
       currentStorage.update(resource)
     }else{
@@ -98,9 +101,9 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
 
   override def progress:Int = {
     if(currentIterator != null){
-      (processedObjects + currentIterator.objectsProcessed)/totalObjectsToProcess * 100
+      ((processedObjects + currentIterator.objectsProcessed)/totalObjectsToProcess.toFloat).toInt * 100
     }else{
-      (processedObjects)/totalObjectsToProcess * 100
+      ((processedObjects.toFloat)/totalObjectsToProcess).toInt * 100
     }
   }
 
