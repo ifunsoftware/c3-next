@@ -32,8 +32,7 @@ package org.aphreet.c3.platform.remote.test.replication
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.remote.api.management.StorageDescription
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.remote.replication.impl.config.{StorageSynchronizerException, StorageSynchronizer}
 import org.aphreet.c3.platform.common.Path
@@ -41,7 +40,7 @@ import collection.mutable.HashMap
 
 class StorageSynchronizerTestCase extends TestCase {
 
-  def testStorageSync0 = {
+  def testStorageSync0(){
 
 
     val remoteStorages = List(
@@ -65,7 +64,7 @@ class StorageSynchronizerTestCase extends TestCase {
     assertTrue(result.contains(("b111", "d111")))
   }
 
-  def testStorageSync1 = {
+  def testStorageSync1(){
 
     val remoteStorages = List(
       sd("a111", List("b222", "a333"), "PureBDBStorage", RW("")),
@@ -78,7 +77,7 @@ class StorageSynchronizerTestCase extends TestCase {
     )
 
     try{
-      val result = new StorageSynchronizer().getAdditionalIds(remoteStorages, localStorages)
+      new StorageSynchronizer().getAdditionalIds(remoteStorages, localStorages)
       assertFalse(false)
     }catch{
       case e:StorageSynchronizerException => assertTrue(true)
@@ -86,9 +85,8 @@ class StorageSynchronizerTestCase extends TestCase {
 
   }
 
-  def testStorageSync2 = {
-
-
+  def testStorageSync2(){
+    
     val remoteStorages = List(
       sd("a111", List("b222", "a333"), "PureBDBStorage", RW("")),
       sd("b111", List("d111", "c111"), "FileBDBStorage", RW(""))
@@ -104,8 +102,7 @@ class StorageSynchronizerTestCase extends TestCase {
     assertTrue(result.isEmpty)
   }
 
-  def testStorageSync3 = {
-
+  def testStorageSync3(){
 
     val remoteStorages = List(
       sd("a111", List("b222", "a333"), "PureBDBStorage", RW("")),
@@ -130,7 +127,7 @@ class StorageSynchronizerTestCase extends TestCase {
     assertTrue(result.contains(("b111", "d111")))
   }
 
-  def testAddId1 = {
+  def testAddId1(){
 
     val localStorages = List(
       st("c111", List("c222", "c333", "c444"), "PureBDBStorage"),
@@ -144,7 +141,7 @@ class StorageSynchronizerTestCase extends TestCase {
 
   }
 
-  def testAddId2 = {
+  def testAddId2(){
 
     val localStorages = List(
       st("c111", List("c222", "c333", "faaa"), "PureBDBStorage"),
@@ -158,7 +155,7 @@ class StorageSynchronizerTestCase extends TestCase {
 
   }
 
-  def testAddId3 = {
+  def testAddId3(){
 
     val localStorages = List(
       st("c111", List("c222", "c333"), "PureBDBStorage"),
@@ -172,7 +169,7 @@ class StorageSynchronizerTestCase extends TestCase {
 
   }
 
-  def testAddId4 = {
+  def testAddId4(){
 
     val localStorages = List(
       st("c111", List("c222", "c333"), "PureBDBStorage"),
@@ -205,7 +202,7 @@ class StorageSynchronizerTestCase extends TestCase {
   }
 }
 
-case class StorageMock(val mockId:String, val secIds:List[String], val stName:String) extends Storage{
+case class StorageMock(mockId:String, secIds:List[String], stName:String) extends Storage{
 
   {
     this.ids = secIds
@@ -236,11 +233,11 @@ case class StorageMock(val mockId:String, val secIds:List[String], val stName:St
                filter:Function1[Resource, Boolean]
           ):StorageIterator = null
 
-  def close = {}
+  def close{}
 
-  def lock(ra:String) = {}
+  def lock(ra:String){}
 
-  def unlock(ra:String) = {}
+  def unlock(ra:String){}
 
   def path:Path = new Path("/tmp/storage")
 
@@ -248,7 +245,7 @@ case class StorageMock(val mockId:String, val secIds:List[String], val stName:St
 
   def name:String = stName
 
-  def createIndex(index:StorageIndex) = {}
+  def createIndex(index:StorageIndex){}
 
-  def removeIndex(index:StorageIndex) = {}
+  def removeIndex(index:StorageIndex){}
 }

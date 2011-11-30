@@ -32,16 +32,15 @@ package org.aphreet.c3.platform.remote.test.replication
 import junit.framework.TestCase
 import actors.Actor
 import actors.remote.RemoteActor._
-import actors.remote.Node._
 import actors.remote.{Node, RemoteActor}
 import java.io.Serializable
 
 class ReplicationNegotiationTestCase extends TestCase{
 
-  def testReplicationNegotiation = {
+  def testReplicationNegotiation(){
 
     val actor = new TargetActor
-    actor.start
+    actor.start()
 
     val peer = Node("localhost", 9000)
 
@@ -61,7 +60,7 @@ class ReplicationNegotiationTestCase extends TestCase{
 
 class TargetActor extends Actor{
 
-  override def act{
+  override def act(){
     alive(9000)
     register('ReplicationActor, this)
 
@@ -72,7 +71,7 @@ class TargetActor extends Actor{
 
         case DestroyMsg(i) =>
           println("Actor destroyed")
-          this.exit
+          this.exit()
 
         case _ =>
           println("Unknown message received")
