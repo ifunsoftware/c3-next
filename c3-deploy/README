@@ -1,0 +1,10 @@
+Directory structure for c3-next project archive:
+
+c3-all-1.1.0.zip/
+    /server - files that must be deployed to server
+        /libs
+        /pickup
+    /client - client files
+
+c3-client-1.1.0.zip
+    /client - client jar and other files

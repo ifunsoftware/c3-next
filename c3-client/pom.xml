@@ -127,13 +127,13 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-client</id>
-                        <phase>install</phase>
-                        <configuration>
+                        <id>prepare-deploy</id>
+                        <phase>pre-integration-test</phase>
+                        <configuration combine.self="override">
                             <tasks>
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar" toDir="${client.path}" overwrite="true" />
-                                <copy todir="${client.path}">
-                                    <fileset dir="${basedir}/scripts" />
+                                <copy toDir="${project.client.tmp.dir}/lib" file="${project.build.directory}/${project.build.finalName}.${project.packaging}" overwrite="true"/>
+                                <copy toDir="${project.client.tmp.dir}/bin">
+                                    <fileset dir="${basedir}/src/main/scripts"/>
                                 </copy>
                             </tasks>
                         </configuration>
@@ -147,6 +147,39 @@
                     </execution>
                 </executions>
             </plugin>
+
+
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>development</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy</id>
+                                <phase>install</phase>
+                                <configuration combine.self="override">
+                                    <tasks>
+                                        <!-- We don't need to copy artifact to virgo server, overriding execution-->
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>manifest</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

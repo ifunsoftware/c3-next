@@ -158,7 +158,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -201,7 +201,7 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${virgo.path.libs}</outputDirectory>
+                            <outputDirectory>${project.deploy.tmp.dir}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

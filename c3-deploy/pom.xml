@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-deploy</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>C3 Deployment</name>
 
     <parent>
         <groupId>org.aphreet.c3</groupId>
-        <artifactId>main</artifactId>
+        <artifactId>c3-next</artifactId>
         <version>1.1.0.SNAPSHOT</version>
     </parent>
 
@@ -17,19 +17,98 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>plan</id>
-                        <phase>install</phase>
-                        <configuration>
+                        <id>prepare-deploy</id>
+                        <phase>pre-integration-test</phase>
+                        <configuration combine.self="override">
                             <tasks>
-                                <copy file="${basedir}/src/main/config/c3.plan" toDir="${virgo.path.pickup}" overwrite="true" failonerror="false" />
+                                <copy toDir="${project.build.directory}/server-package/server/lib">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="..">
+                                        <include name="*/target/c3deploy/*"/>
+                                    </fileset>
+                                </copy>
+
+                                <copy toDir="${project.build.directory}/server-package/server/pickup" file="${basedir}/src/main/config/c3.plan"/>
+                                <copy toDir="${project.build.directory}/server-package/server" file="${basedir}/src/main/scripts/install.sh"/>
+
+                                <copy toDir="${project.build.directory}/server-package/client/bin">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="..">
+                                        <include name="*/target/c3client/bin/*"/>
+                                    </fileset>
+                                </copy>
+
+                                <copy toDir="${project.build.directory}/server-package/client/lib">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="..">
+                                        <include name="*/target/c3client/lib/*"/>
+                                    </fileset>
+                                </copy>
+
+                                <zip basedir="${project.build.directory}/server-package" destfile="${project.build.directory}/c3-all-${project.version}.zip"/>
+
+                                <copy toDir="${project.build.directory}/client-package/client/bin">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="..">
+                                        <include name="*/target/c3client/bin/*"/>
+                                    </fileset>
+                                </copy>
+
+                                <copy toDir="${project.build.directory}/client-package/client/lib">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="..">
+                                        <include name="*/target/c3client/lib/*"/>
+                                    </fileset>
+                                </copy>
+
+                                <zip basedir="${project.build.directory}/client-package" destfile="${project.build.directory}/c3-client-${project.version}.zip"/>
+
                             </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                            <id>manifest</id>
+                            <phase>prepare-package</phase>
+                            <configuration combine.self="override">
+                                <tasks>
+                                </tasks>
+                            </configuration>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>development</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy</id>
+                                <phase>install</phase>
+                                <configuration combine.self="override">
+                                    <tasks>
+                                        <copy file="${basedir}/src/main/config/c3.plan" toDir="${virgo.path.pickup}" overwrite="true" failonerror="false" />
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
