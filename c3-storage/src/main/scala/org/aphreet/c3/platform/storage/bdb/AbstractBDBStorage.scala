@@ -60,7 +60,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   def count:Long = objectCount;
 
-  override protected def updateObjectCount = {
+  override protected def updateObjectCount() {
     log trace "Updating object count"
     val cnt = getDatabase(true).count
     this.synchronized{
@@ -135,20 +135,20 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         }
       }
 
-      tx.commit
+      tx.commit()
 
       postSave(resource)
 
       ra
     }catch{
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
   }
 
-  def put(resource:Resource) = {
+  def put(resource:Resource) {
 
     val tx = getEnvironment.beginTransaction(null, null)
 
@@ -166,16 +166,16 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         }
       }
 
-      tx.commit
+      tx.commit()
     }catch{
       case e=> {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
   }
 
-  def delete(ra:String) = {
+  def delete(ra:String) {
     val key = new DatabaseEntry(ra.getBytes)
 
     val tx = getEnvironment.beginTransaction(null, null)
@@ -190,10 +190,10 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           throw new StorageException("Failed to delete data from DB, op status: " + status.toString)
 
       }
-      tx.commit
+      tx.commit()
     }catch{
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
@@ -222,14 +222,14 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           getDatabase(true).put(tx, key, value)
         }
         
-        tx.commit
+        tx.commit()
       } else {
         throw new ResourceNotFoundException(
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
     } catch {
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
@@ -256,14 +256,14 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           getDatabase(true).put(tx, key, value)
         }
 
-        tx.commit
+        tx.commit()
       }else{
         throw new ResourceNotFoundException(
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
     }catch{
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
@@ -300,10 +300,10 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         }
       }
 
-      tx.commit
+      tx.commit()
     }catch{
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
@@ -334,7 +334,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       }
 
       //Replacing metadata
-      savedResource.metadata.clear
+      savedResource.metadata.clear()
       savedResource.metadata ++= resource.metadata
 
       //Appending system metadata
@@ -356,14 +356,14 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         }
       }
 
-      tx.commit
+      tx.commit()
 
       postSave(savedResource)
 
       ra
     }catch{
       case e => {
-        tx.abort
+        tx.abort()
         throw e
       }
     }
@@ -373,7 +373,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   def iterator(fields:Map[String,String],
                systemFields:Map[String,String],
-               filter:Function1[Resource, Boolean]):StorageIterator = {
+               filter:(Resource) => Boolean):StorageIterator = {
 
     if(log.isDebugEnabled){
       log debug "Creating iterator; fields: " + fields + " sysFields: " + systemFields
@@ -407,7 +407,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase]
 
-  protected def getEnvironment() : Environment
+  protected def getEnvironment: Environment
 
 }
 

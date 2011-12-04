@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.apache.commons.logging.LogFactory
-import javax.annotation.{PreDestroy, PostConstruct}
+import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
 import collection.mutable.HashSet
@@ -53,12 +53,16 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
 
+  @Autowired
   var storageManager:StorageManager = _
 
+  @Autowired
   var accessMediator:AccessMediator = _
 
+  @Autowired
   var configManager:PlatformConfigManager = _
 
+  @Autowired
   var accessCache:AccessCache = _
 
   val log = LogFactory.getLog(getClass)
@@ -68,28 +72,16 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   {
     log info "Starting AccessManager"
 
-    configureDefaultMimeDetector
+    configureDefaultMimeDetector()
 
     start
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping AccessManager"
     this ! DestroyMsg
   }
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
-
-  @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {configManager = manager}
-
-  @Autowired
-  def setAccessCache(cache:AccessCache) = {accessCache = cache}
 
   def get(ra:String):Resource = {
 
@@ -195,7 +187,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def delete(ra:String) = {
+  def delete(ra:String) {
 
     if(log.isDebugEnabled){
       log.debug("Deleting resource with address: " + ra)
@@ -236,7 +228,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def lock(ra:String) = {
+  def lock(ra:String) {
 
     if(log.isDebugEnabled){
       log.debug("Locking address: " + ra)
@@ -255,7 +247,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def unlock(ra:String) = {
+  def unlock(ra:String) {
 
     if(log.isDebugEnabled){
       log.debug("Unlocking address: " + ra)
@@ -275,21 +267,21 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   }
 
-  def registerOwner(owner:ResourceOwner) = {
+  def registerOwner(owner:ResourceOwner) {
     resourceOwners.synchronized{
       log debug "Registering owner " + owner
       resourceOwners += owner
     }
   }
 
-  def unregisterOwner(owner:ResourceOwner) = {
+  def unregisterOwner(owner:ResourceOwner) {
     resourceOwners.synchronized{
       log debug "Unregistering owner " + owner
       resourceOwners -= owner
     }
   }
 
-  def act{
+  def act(){
     loop{
       react{
         case UpdateMetadataMsg(address, metadata) =>{
@@ -310,7 +302,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def propertyChanged(event:PropertyChangeEvent) = {
+  def propertyChanged(event:PropertyChangeEvent) {
 
     log info "Received new value for mime detector: " + event.newValue
 
@@ -324,7 +316,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   def defaultValues:Map[String,String] =
     Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
 
-  def configureDefaultMimeDetector = {
+  def configureDefaultMimeDetector() {
 
     MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
 

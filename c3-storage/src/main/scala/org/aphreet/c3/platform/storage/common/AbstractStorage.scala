@@ -48,10 +48,10 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
     new StorageParams(id, ids, parameters.path, parameters.storageType, parameters.mode, indexes, new HashMap[String, String])
   }
 
-  def startObjectCounter = {
+  def startObjectCounter() {
     counter = new Thread(new ObjectCounter(this))
     counter.setDaemon(true)
-    counter.start
+    counter.start()
     log info "Started object counter for storage " + this.id
   }
 
@@ -70,15 +70,15 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
 
   def isAddressExists(address:String):Boolean
 
-  protected def updateObjectCount;
+  protected def updateObjectCount();
 
   override def close{
-    counter.interrupt
+    counter.interrupt()
   }
 
   class ObjectCounter(val storage:AbstractStorage) extends Runnable {
 
-    override def run{
+    override def run(){
       ThreadWatcher + this
       try{
 
@@ -91,7 +91,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
           }
         }
         while(!Thread.currentThread.isInterrupted){
-          storage.updateObjectCount
+          storage.updateObjectCount()
           try{
             Thread.sleep(60 * 1000)
           }catch{
