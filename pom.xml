@@ -11,6 +11,7 @@
         <module>c3-platform</module>
         <module>c3-remote</module>
         <module>c3-remote-gen</module>
+        <module>c3-remote-rest</module>
         <module>c3-replication</module>
         <module>c3-storage</module>
         <module>c3-storage-file</module>

@@ -3,18 +3,18 @@
     <endpoint
             name="AccessService"
             implementation="org.aphreet.c3.platform.remote.impl.PlatformAccessServiceImpl"
-            url-pattern="/ws/access"
+            url-pattern="/access"
             />
 
     <endpoint
             name="RemoteApiService"
             implementation="org.aphreet.c3.platform.remote.impl.RemoteApiServiceImpl"
-            url-pattern="/ws/remote"
+            url-pattern="/remote"
             />
 
     <endpoint
             name="ManagementService"
             implementation="org.aphreet.c3.platform.remote.impl.PlatformManagementServiceImpl"
-            url-pattern="/ws/management"
+            url-pattern="/management"
             />
 </endpoints>

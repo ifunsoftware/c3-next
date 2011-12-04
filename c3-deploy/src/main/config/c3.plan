@@ -16,6 +16,7 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.replication" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote.gen" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.remote.rest" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.remote.webclient" version="[1.0.0, 2.0.0)"/>
 
 </plan>

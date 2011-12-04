@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans                                                                             
+   xmlns="http://www.springframework.org/schema/osgi"                                    
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:beans="http://www.springframework.org/schema/beans"                             
+   xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd">                    
+    
+	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
+
+    <reference id="authService" interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>
+
+    <reference id="domainService" interface="org.aphreet.c3.platform.domain.DomainManager"/>
+
+    <reference id="queryService" interface="org.aphreet.c3.platform.query.QueryManager"/>
+
+    <reference id="searchService" interface="org.aphreet.c3.platform.search.SearchManager"/>
+
+    <reference id="filesystemService" interface="org.aphreet.c3.platform.filesystem.FSManager"/>
+
+</beans:beans>  

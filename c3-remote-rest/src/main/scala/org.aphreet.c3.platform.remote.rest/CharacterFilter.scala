@@ -1,12 +1,15 @@
+package org.aphreet.c3.platform.remote.rest
+
+import javax.servlet._
+
 /**
- * Copyright (c) 2011, Mikhail Malygin
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -29,20 +32,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.test.rest
+class CharacterFilter extends Filter {
 
-import org.aphreet.c3.platform.remote.rest.FSController
-import junit.framework.{Assert, TestCase}
+  override def init(config:FilterConfig){}
 
-class FSControllerTestCase extends TestCase{
+  override def destroy(){}
 
-  def testUriDecoding = {
+  override def doFilter(request: ServletRequest, response: ServletResponse, chain:FilterChain) {
 
-    val fsController = new FSController
+    request.setCharacterEncoding("UTF-8")
 
-    //println(fsController.decodeFSPath("/group0/wiki/%D0%BC%D0%BE%D1%8F%20%D0%BB%D1%8E%D0%B1%D0%B8%D0%BC%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"))
-
-    Assert.assertEquals("/group0/wiki/Some Page", fsController.decodeFSPath("/group0/wiki/Some%20Page"))
+    chain.doFilter(request, response);
 
   }
 }

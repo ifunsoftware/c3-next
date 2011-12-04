@@ -5,31 +5,33 @@
          version="2.5">
 
     <filter>
-        <filter-name>WSAuthFilter</filter-name>
-        <filter-class>org.aphreet.c3.platform.remote.ws.WSAuthFilter</filter-class>
+        <filter-name>CharacterFilter</filter-name>
+        <filter-class>org.aphreet.c3.platform.remote.rest.CharacterFilter</filter-class>
     </filter>
 
     <filter-mapping>
-        <filter-name>WSAuthFilter</filter-name>
-        <servlet-name>WSService</servlet-name>
+        <filter-name>CharacterFilter</filter-name>
+        <servlet-name>DispatcherServlet</servlet-name>
     </filter-mapping>
 
-
     <servlet>
-        <servlet-name>WSService</servlet-name>
-        <servlet-class>
-            com.sun.xml.ws.transport.http.servlet.WSServlet
-        </servlet-class>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/rest-servlet.xml</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>WSService</servlet-name>
+        <servlet-name>DispatcherServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
     <listener>
         <listener-class>
-            com.sun.xml.ws.transport.http.servlet.WSServletContextListener
+            org.apache.commons.fileupload.servlet.FileCleanerCleanup
         </listener-class>
     </listener>
 
@@ -52,4 +54,6 @@
             org.springframework.web.context.ContextLoaderListener
         </listener-class>
     </listener>
+
+
 </web-app>

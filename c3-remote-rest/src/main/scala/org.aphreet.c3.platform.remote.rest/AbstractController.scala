@@ -35,11 +35,12 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
-import org.springframework.web.bind.annotation.{ExceptionHandler}
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.aphreet.c3.platform.domain.DomainException
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
+import org.springframework.web.HttpRequestMethodNotSupportedException
 
 class AbstractController{
 
@@ -48,7 +49,7 @@ class AbstractController{
   var writerSelector:ResultWriterSelector = _
 
   @Autowired
-  def setResultWriterSelector(selector:ResultWriterSelector) = {
+  def setResultWriterSelector(selector:ResultWriterSelector) {
     writerSelector = selector
   }
 
@@ -62,6 +63,16 @@ class AbstractController{
     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
 
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
+  }
+
+  def handleUnsupportedMethodException(e:HttpRequestMethodNotSupportedException,
+                                       request:HttpServletRequest,
+                                       response:HttpServletResponse) {
+    
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
   }
 
   @ExceptionHandler(Array(classOf[ResourceNotFoundException]))

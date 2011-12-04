@@ -29,15 +29,14 @@
  */
 package org.aphreet.c3.platform.remote.rest
 
-import org.aphreet.c3.platform.resource._
-import org.aphreet.c3.platform.remote.rest.response._
-
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
 
 import javax.servlet.http._
 import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.filesystem.Node
+import org.aphreet.c3.platform.resource.Resource
+import response.{Result, ResourceAddress, UploadResult}
 
 @Controller
 @RequestMapping(Array("/resource"))
@@ -50,8 +49,7 @@ class ResourceController extends DataController{
                       @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
                       @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                       request:HttpServletRequest,
-                      response:HttpServletResponse) =
-  {
+                      response:HttpServletResponse) {
 
     val domain = getRequestDomain(request, true)
 
@@ -85,8 +83,7 @@ class ResourceController extends DataController{
                              @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                              @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
                              request:HttpServletRequest,
-                             response:HttpServletResponse) =
-  {
+                             response:HttpServletResponse) {
 
     val domain = getRequestDomain(request, true)
 
@@ -107,8 +104,7 @@ class ResourceController extends DataController{
   @RequestMapping(method = Array(RequestMethod.POST))
   def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                    request:HttpServletRequest,
-                   response:HttpServletResponse) =
-  {
+                   response:HttpServletResponse) {
 
     val domain = getRequestDomain(request, false)
 
@@ -127,9 +123,7 @@ class ResourceController extends DataController{
   def updateResource(@PathVariable address:String,
                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
-                     response:HttpServletResponse) =
-
-  {
+                     response:HttpServletResponse) {
     val domain = getRequestDomain(request, false)
 
     val resource = accessManager.get(address)
@@ -148,7 +142,7 @@ class ResourceController extends DataController{
   def deleteResource(@PathVariable address:String,
                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
-                     response:HttpServletResponse) = {
+                     response:HttpServletResponse) {
 
     val domain = getRequestDomain(request, false)
 

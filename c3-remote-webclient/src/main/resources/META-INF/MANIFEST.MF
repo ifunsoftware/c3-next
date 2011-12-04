@@ -3,4 +3,4 @@ Bundle-Version: 9.9.9-TO_BE_REPLACED
 Bundle-Name: C3 Remote Web Client
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.remote.webclient
-Web-ContextPath: /c3-web
+Web-ContextPath: /manage
