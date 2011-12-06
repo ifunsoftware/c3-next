@@ -7,19 +7,19 @@
     <name>C3 Main project</name>
     <url>https://github.com/aphreet/c3-next</url>
     <modules>
-        <module>c3-remote-api</module>
         <module>c3-platform</module>
-        <module>c3-remote</module>
-        <module>c3-remote-gen</module>
-        <module>c3-remote-rest</module>
-        <module>c3-replication</module>
         <module>c3-storage</module>
         <module>c3-storage-file</module>
-        <module>c3-search</module>
         <module>c3-filesystem</module>
-        <module>c3-client</module>
         <module>c3-access-control</module>
-        <module>c3-remote-webclient</module>
+        <module>c3-search</module>
+        <module>c3-management-api</module>
+        <module>c3-management</module>
+        <module>c3-management-gen</module>
+        <module>c3-access-rest</module>
+        <module>c3-replication</module>
+        <module>c3-client</module>
+        <module>c3-management-web</module>
         <module>c3-deploy</module>
     </modules>
 
@@ -60,7 +60,7 @@
 
             <dependency>
                 <groupId>org.aphreet.c3</groupId>
-                <artifactId>c3-remote-api</artifactId>
+                <artifactId>c3-management-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -176,11 +176,19 @@
     </dependencies>
 
     <repositories>
+
+        <repository>
+            <id>repository.ifunsoftware.com</id>
+            <name>repository.ifunsoftware.com-releases</name>
+            <url>http://repository.ifunsoftware.com/artifactory/repo1</url>
+        </repository>
+
         <repository>
             <id>spring-ext</id>
             <name>Spring External Depenencies Repository</name>
             <url>http://springframework.svn.sourceforge.net/svnroot/springframework/repos/repo-ext/</url>
         </repository>
+        
         <repository>
             <id>spring-osgi-artifacts</id>
             <name>Spring Portfolio OSGi Artifacts Repository</name>

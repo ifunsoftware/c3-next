@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-remote-api</artifactId>
+            <artifactId>c3-management-api</artifactId>
         </dependency>
 
         <dependency>

@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-Version: 9.9.9-TO_BE_REPLACED
+Bundle-Name: C3 Management Generated code
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.aphreet.c3.platform.management.gen
+Fragment-Host: org.aphreet.c3.platform.management;bundle-version="1.0.0"
+
