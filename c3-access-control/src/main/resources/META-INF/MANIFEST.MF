@@ -19,4 +19,5 @@ Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  javax.crypto.spec
 Export-Package: org.aphreet.c3.platform.auth,
  org.aphreet.c3.platform.auth.exception,
- org.aphreet.c3.platform.domain
+ org.aphreet.c3.platform.domain,
+ org.aphreet.c3.platform.accesscontrol

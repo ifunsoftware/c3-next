@@ -39,7 +39,6 @@
         <!--
         <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
         <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
-        <client.path>target/dist</client.path>
         -->
     </properties>
 

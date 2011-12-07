@@ -1,10 +1,11 @@
 package org.aphreet.c3.platform.domain.impl
 
-import org.aphreet.c3.platform.accesscontrol.{Action, ResourceAccessChecker}
 import org.aphreet.c3.platform.resource.Resource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.domain._
+import org.aphreet.c3.platform.accesscontrol.{AccessControlManager, READ, Action, ResourceAccessChecker}
+import javax.annotation.{PreDestroy, PostConstruct}
 
 /**
  * Copyright iFunSoftware 2011
@@ -16,6 +17,19 @@ class DomainResourceAccessChecker extends ResourceAccessChecker{
 
   @Autowired
   var domainManager:DomainManager = null
+
+  @Autowired
+  var accessControlManager:AccessControlManager = null
+
+  @PostConstruct
+  def init(){
+    accessControlManager.registerChecker(this)
+  }
+
+  @PreDestroy
+  def destroy(){
+    accessControlManager.unregisterChecker(this)
+  }
 
   def canPerformActionWithResource(action:Action, resource:Resource, accessParams:Map[String, String]):Boolean = {
 
@@ -29,12 +43,16 @@ class DomainResourceAccessChecker extends ResourceAccessChecker{
 
         val date = accessParams.getOrElse(DATE_HEADER, "")
 
+        if(date == ""){
+          throw new DomainException("x-c3-date is empty")
+        }
+
         val hashBase = requestUri + date + requestedDomain
 
         val hash = accessParams.getOrElse(SIGN_HEADER, "")
 
-        if(hash == null){
-          throw new DomainException("Signature is empty")
+        if(hash == ""){
+          throw new DomainException("x-c3-sign is empty")
         }
 
         domainManager.checkDomainAccess(requestedDomain, hash, hashBase)
@@ -45,7 +63,7 @@ class DomainResourceAccessChecker extends ResourceAccessChecker{
       case DisabledMode => throw new DomainException("Domain is disabled")
       case FullMode => domain.id
       case ReadOnlyMode =>
-        if(readonly){
+        if(action == READ){
           domain.id
         }else{
           throw new DomainException("Domain is readonly")
@@ -57,7 +75,7 @@ class DomainResourceAccessChecker extends ResourceAccessChecker{
       case None =>
     }
 
-    false
+    true
   }
 
 

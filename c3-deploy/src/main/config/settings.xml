@@ -14,7 +14,6 @@ to your local settings.xml file, otherwise you can just copy this file to ~/.m2 
             <properties>
                 <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
                 <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
-                <client.path>target/dist</client.path>
             </properties>
         </profile>
 
