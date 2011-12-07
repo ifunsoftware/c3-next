@@ -31,9 +31,9 @@
 
 package org.aphreet.c3.platform.domain
 
-import org.aphreet.c3.platform.exception.PlatformException
+import org.aphreet.c3.platform.accesscontrol.AccessControlException
 
-class DomainException(override val message:String, override val cause:Throwable) extends PlatformException(message, cause){
+class DomainException(override val message:String, override val cause:Throwable) extends AccessControlException(message, cause){
 
   def this(message:String) = this(message, null)
 

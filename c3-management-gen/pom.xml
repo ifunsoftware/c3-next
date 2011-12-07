@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-management-gen</artifactId>
     <packaging>jar</packaging>
-    <name>C3 Remote Generated</name>
+    <name>C3 Management Endpoint Generated code</name>
 
     <parent>
         <artifactId>c3-next</artifactId>
