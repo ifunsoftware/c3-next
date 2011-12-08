@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val map:Map[String, String],
                          val systemMap:Map[String, String],
-                         val filter:Function1[Resource, Boolean]) extends StorageIterator with ComponentGuard{
+                         val filter:(Resource) => Boolean) extends StorageIterator with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
@@ -54,8 +54,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   private val usedIndexes:Map[StorageIndex, String] = indexesForQuery(map, systemMap)
 
-  private val mapFilter:Function1[Resource, Boolean] = createMapFilter(map)
-  private val systemMapFilter:Function1[Resource, Boolean] = createSystemMapFilter(systemMap)
+  private val mapFilter:(Resource) => Boolean = createMapFilter(map)
+  private val systemMapFilter:(Resource) => Boolean = createSystemMapFilter(systemMap)
 
 
   private var bdbEntriesProcessed = 0
@@ -71,9 +71,17 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   var disableFunctionFilter = false
 
   {
+
+    log.debug("Creating storage iterator for " + storage.id)
+
     useIndexes = !usedIndexes.isEmpty
 
     if(useIndexes){
+      
+      if(log.isDebugEnabled){
+        log.debug("Using indexes " + usedIndexes.toString())
+        log.debug("Opening secondary cursors")
+      }
 
       for((index, value) <- usedIndexes){
 
@@ -93,6 +101,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if(status == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
         }else{
+          log.warn("failed to open cursor for index: " + index)
           isEmptyIterator = true
         }
 
@@ -103,7 +112,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
 
     }else{
-      //cursor = storage.database.openCursor(null, null)
+      log.debug("No indexes can be used for specified query")
       cursor = storage.getDatabase(true).openCursor(null, null)
     }
 
@@ -138,31 +147,28 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     map
   }
 
-  private def createMapFilter(map:Map[String, String]):Function1[Resource, Boolean] = {
+  private def createMapFilter(map:Map[String, String]):(Resource) => Boolean = {
 
-    val ordIndex = new HashSet[String]
+    log.debug("Creading filter function for user metadata")
 
-    storage.indexes.map((i:StorageIndex) =>
-      if(!i.system){
-        ordIndex += i.fields.head
-      }
-    )
+    //TODO rewrite last map call if we ever will have multi-field indexes
+    val indexedFields = storage.indexes.filter(!_.system).map(_.fields.head).toSet
 
-    var ordFields = new HashMap[String,String]() ++ map
+    val fieldsToCheck = map -- indexedFields
 
-    for(field <- ordIndex){
-      ordFields = ordFields - field
-    }
+    log.debug("Function will check the following user md fields: " + fieldsToCheck)
 
-    if(!ordFields.isEmpty){
+    if(!fieldsToCheck.isEmpty){
 
       ((res:Resource) => {
         var result = true
 
-        for((key, value) <- ordFields){
+        for((key, value) <- fieldsToCheck){
           res.metadata.get(key) match{
-            case Some(x) => if(x != value) result = false
-            case None => result = false
+            case Some(x) =>
+              if(x != value) result = false
+            case None =>
+              result = false
           }
         }
 
@@ -175,30 +181,28 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   }
 
-  private def createSystemMapFilter(map:Map[String, String]):Function1[Resource, Boolean] = {
-    val sysIndex = new HashSet[String]
+  private def createSystemMapFilter(map:Map[String, String]):(Resource) => Boolean = {
 
-    storage.indexes.map((i:StorageIndex) =>
-      if(i.system){
-        sysIndex += i.fields.head
-      }
-    )
+    log.debug("Creading filter function for system metadata")
 
-    var sysFields = new HashMap[String, String]() ++ systemMap
+    //TODO rewrite last map call if we ever will have multi-field indexes
+    val indexedFields = storage.indexes.filter(_.system).map(_.fields.head).toSet
 
-    for(field <- sysIndex){
-      sysFields = sysFields - field
-    }
+    val fieldsToCheck = map -- indexedFields
 
-    if(!sysFields.isEmpty){
+    log.debug("Function will check the following sys md fields: " + fieldsToCheck)
+
+    if(!fieldsToCheck.isEmpty){
 
       ((res:Resource) => {
         var result = true
 
-        for((key, value) <- sysFields){
+        for((key, value) <- fieldsToCheck){
           res.systemMetadata.get(key) match{
-            case Some(x) => if(x != value) result = false
-            case None => result = false
+            case Some(x) =>
+              if(x != value) result = false
+            case None =>
+              result = false
           }
         }
 
@@ -301,13 +305,15 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
 
 
-  protected def loadData(resource: Resource) = storage.loadData(resource)
+  protected def loadData(resource: Resource) {
+    storage.loadData(resource)
+  }
 
 
 
   override def objectsProcessed: Int = bdbEntriesProcessed
 
-  def close = {
+  def close {
     try {
 
       log debug "Closing itertor"
@@ -321,7 +327,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
         for(secCursor <- secCursors){
           letItFall{
-            secCursor.close
+            secCursor.close()
           }
         }
         secCursors = null
@@ -332,7 +338,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if(joinCursor != null){
           log debug "Closing joint cursor"
           
-          joinCursor.close
+          joinCursor.close()
           joinCursor = null
         }
       }
@@ -342,26 +348,26 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if (cursor != null) {
           log debug "Closing cursor"
 
-          cursor.close
+          cursor.close()
           cursor = null
         }
       }
     } catch {
-      case e: DatabaseException => e.printStackTrace
+      case e: DatabaseException => e.printStackTrace()
     } finally {
       storage.removeIterator(this)
       log debug "Iterator closed"
     }
   }
 
-  override def finalize = {
+  override def finalize() {
     try {
       if(!closed){
         log debug "Finalize block called, closing iterator"
         this.close
       }
     } catch {
-      case e => e.printStackTrace
+      case e => e.printStackTrace()
     }
   }
 }

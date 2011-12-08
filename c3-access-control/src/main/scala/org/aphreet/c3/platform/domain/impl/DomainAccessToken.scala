@@ -49,5 +49,7 @@ class DomainAccessToken(override val action:Action,
     resource.systemMetadata.put(Domain.MD_FIELD, domain.id)
   }
 
+  override def metadataRestrictions:Map[String, String] = Map(Domain.MD_FIELD -> domain.id)
+
   override def id:String = domain.id
 }

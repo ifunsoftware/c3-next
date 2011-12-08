@@ -59,6 +59,10 @@ class QueryManagerImpl extends QueryManager{
                    systemFields:Map[String, String],
                    consumer:QueryConsumer){
 
+    if(log.isDebugEnabled){
+      log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
+    }
+
     val storages = storageManager.listStorages
 
     for(storage <- storages){

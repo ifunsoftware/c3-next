@@ -39,4 +39,6 @@ trait AccessTokens {
   def updateMetadata(resource:Resource)
 
   def tokenForName(name:String):Option[AccessToken]
+
+  def metadataRestrictions:Map[String, String]
 }

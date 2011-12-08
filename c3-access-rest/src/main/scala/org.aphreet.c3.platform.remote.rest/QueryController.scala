@@ -51,7 +51,6 @@ class QueryController extends DataController{
   def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
 
     val accessTokens = getAccessTokens(READ, req)
-    val domain = getCurrentDomainId(accessTokens)
 
     val map = new HashMap[String, String]
 
@@ -65,8 +64,9 @@ class QueryController extends DataController{
 
     val consumer = new RestQueryConsumer(resp.getWriter)
 
-    queryManager.executeQuery(Map[String, String]() ++ map, Map(Domain.MD_FIELD -> domain), consumer)
-    resp.flushBuffer
+    queryManager.executeQuery(map.toMap, accessTokens.metadataRestrictions, consumer)
+
+    resp.flushBuffer()
 
   }
 }

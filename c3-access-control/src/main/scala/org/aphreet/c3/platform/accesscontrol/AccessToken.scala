@@ -33,9 +33,28 @@ import org.aphreet.c3.platform.resource.Resource
 
 abstract class AccessToken(val name:String, val action:Action) {
 
+  /**
+   * Check if this token allows to perform specified action with
+   * resource.
+   *
+   * @throws AccessControlException in case of error
+   */
   def checkAccess(resource:Resource)
 
+  /**
+   * In this method we can update some metadata fields
+   * before updating or writing resource to storage
+   */
   def updateResource(resource:Resource)
 
+  /**
+   * Whan system metadata should contain resource to match this
+   * access token
+   */
+  def metadataRestrictions:Map[String, String] = Map()
+
+  /**
+   * Optional identifier fo the access token
+   */
   def id:String = null
 }
