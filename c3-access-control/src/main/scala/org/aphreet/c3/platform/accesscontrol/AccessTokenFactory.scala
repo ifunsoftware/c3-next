@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,39 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.accesscontrol
 
-package org.aphreet.c3.platform.remote.rest
+trait AccessTokenFactory {
 
-import org.aphreet.c3.platform.search.SearchManager
-import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import response.SearchResult
-import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
-import org.aphreet.c3.platform.accesscontrol.READ
+  def createAccessToken(action:Action, accessParams:Map[String, String]):AccessToken
 
-@Controller
-@RequestMapping(Array("/search"))
-class SearchController extends DataController{
-
-  @Autowired
-  var searchManager:SearchManager = _
-
-  @RequestMapping(value =  Array("/{query}"),
-                  method = Array(RequestMethod.GET))
-  def search(@PathVariable query:String,
-             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-             req:HttpServletRequest,
-             resp:HttpServletResponse){
-
-    val accessTokens = getAccessTokens(READ, req)
-    val domain = getCurrentDomainId(accessTokens)
-
-    val results = searchManager.search(domain, query)
-
-    resp.setStatus(HttpServletResponse.SC_OK)
-
-    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
-    
-  }
 }

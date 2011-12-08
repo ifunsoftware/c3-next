@@ -34,10 +34,11 @@ import org.springframework.stereotype.Controller
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.resource.Resource
-import response.{Result, DirectoryResult}
+import response.Result
 import org.aphreet.c3.platform.domain.Domain
 import org.apache.commons.httpclient.util.URIUtil
 import java.io.{BufferedReader, Reader}
+import org.aphreet.c3.platform.accesscontrol._
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -52,7 +53,9 @@ class FSController extends DataController{
               request:HttpServletRequest,
               response:HttpServletResponse){
 
-    val domain = getRequestDomain(request, true)
+    val accessTokens = getAccessTokens(READ, request)
+
+    val domain = getCurrentDomainId(accessTokens)
 
     val fsPath = getFilesystemPath(request)
 
@@ -61,14 +64,14 @@ class FSController extends DataController{
     if(metadata == null){
 
       if(node.isDirectory){
-        sendDirectoryContents(node, contentType, domain, response)
+        sendDirectoryContents(node, contentType, accessTokens, response)
       }else{
-        sendResourceData(node.resource, -1, domain, response)
+        sendResourceData(node.resource, -1, accessTokens, response)
       }
 
     }else{
       addNonPersistentMetadata(node.resource, extMeta)
-      sendMetadata(node.resource, contentType, domain, response)
+      sendMetadata(node.resource, contentType, accessTokens, response)
     }
   }
 
@@ -78,7 +81,9 @@ class FSController extends DataController{
                request:HttpServletRequest,
                response:HttpServletResponse){
 
-    val domain = getRequestDomain(request, false)
+    val accessTokens = getAccessTokens(CREATE, request)
+
+    val domain = getCurrentDomainId(accessTokens)
 
     val fsPath = getFilesystemPath(request)
 
@@ -91,8 +96,7 @@ class FSController extends DataController{
 
       val resource = new Resource
 
-      executeDataUpload(resource, domain, request, response, () => {
-        resource.systemMetadata.put(Domain.MD_FIELD, domain)
+      executeDataUpload(resource, accessTokens, request, response, () => {
 
         filesystemManager.createFile(domain, fsPath, resource)
 
@@ -108,7 +112,8 @@ class FSController extends DataController{
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
-    val domain = getRequestDomain(request, false)
+    val accessTokens = getAccessTokens(UPDATE, request)
+    val domain = getCurrentDomainId(accessTokens)
 
     val fsPath = getFilesystemPath(request)
 
@@ -116,7 +121,7 @@ class FSController extends DataController{
 
     val resource = node.resource
 
-    checkDomainAccess(node.resource, domain)
+    accessTokens.checkAccess(resource)
 
     if(operation != null && operation == "move"){
 
@@ -129,8 +134,8 @@ class FSController extends DataController{
       reportSuccess(HttpServletResponse.SC_OK, contentType, response)
 
     }else{
-      executeDataUpload(resource, domain, request, response, () => {
-        val ra = accessManager.update(resource)
+      executeDataUpload(resource, accessTokens, request, response, () => {
+        accessManager.update(resource)
         reportSuccess(HttpServletResponse.SC_OK, contentType, response)
       })
     }
@@ -141,7 +146,8 @@ class FSController extends DataController{
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
-    val domain = getRequestDomain(request, false)
+    val accessTokens = getAccessTokens(DELETE, request)
+    val domain = getCurrentDomainId(accessTokens)
 
     val fsPath = getFilesystemPath(request)
 

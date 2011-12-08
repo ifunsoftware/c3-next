@@ -38,20 +38,20 @@ import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
 import query.RestQueryConsumer
 import org.aphreet.c3.platform.domain.Domain
+import org.aphreet.c3.platform.accesscontrol.READ
 
 @Controller
 class QueryController extends DataController{
 
-  var queryManager:QueryManager = _
-
   @Autowired
-  def setQueryManager(manager:QueryManager) = {queryManager = manager}
+  var queryManager:QueryManager = _
 
   @RequestMapping(value =  Array("/query"),
                   method = Array(RequestMethod.GET))
   def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
 
-    val domain = getRequestDomain(req, true)
+    val accessTokens = getAccessTokens(READ, req)
+    val domain = getCurrentDomainId(accessTokens)
 
     val map = new HashMap[String, String]
 

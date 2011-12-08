@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,39 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.domain.impl
 
-package org.aphreet.c3.platform.remote.rest
+import org.aphreet.c3.platform.accesscontrol.{Action, AccessToken}
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.domain.{DomainException, Domain}
 
-import org.aphreet.c3.platform.search.SearchManager
-import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import response.SearchResult
-import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
-import org.aphreet.c3.platform.accesscontrol.READ
+class DomainAccessToken(override val action:Action,
+                        val domain:Domain) extends AccessToken(Domain.ACCESS_TOKEN_NAME, action)
+{
+  override def checkAccess(resource:Resource){
 
-@Controller
-@RequestMapping(Array("/search"))
-class SearchController extends DataController{
+    resource.systemMetadata.get(Domain.MD_FIELD) match{
+      case Some(id) => if(id != domain.id) throw new DomainException("Requested resource does not belong to specified domain")
+      case None =>
+    }
 
-  @Autowired
-  var searchManager:SearchManager = _
-
-  @RequestMapping(value =  Array("/{query}"),
-                  method = Array(RequestMethod.GET))
-  def search(@PathVariable query:String,
-             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-             req:HttpServletRequest,
-             resp:HttpServletResponse){
-
-    val accessTokens = getAccessTokens(READ, req)
-    val domain = getCurrentDomainId(accessTokens)
-
-    val results = searchManager.search(domain, query)
-
-    resp.setStatus(HttpServletResponse.SC_OK)
-
-    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
-    
   }
+
+  override def updateResource(resource:Resource){
+    resource.systemMetadata.put(Domain.MD_FIELD, domain.id)
+  }
+
+  override def id:String = domain.id
 }

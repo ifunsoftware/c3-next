@@ -33,10 +33,10 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
 
 import javax.servlet.http._
-import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.filesystem.Node
 import org.aphreet.c3.platform.resource.Resource
 import response.{Result, ResourceAddress, UploadResult}
+import org.aphreet.c3.platform.accesscontrol.{DELETE, UPDATE, CREATE, READ}
 
 @Controller
 @RequestMapping(Array("/resource"))
@@ -51,13 +51,13 @@ class ResourceController extends DataController{
                       request:HttpServletRequest,
                       response:HttpServletResponse) {
 
-    val domain = getRequestDomain(request, true)
+    val accessTokens = getAccessTokens(READ, request)
 
     val resource = accessManager.get(address)
 
     if(metadata != null){
       addNonPersistentMetadata(resource, extMeta)
-      sendMetadata(resource, contentType, domain, response)
+      sendMetadata(resource, contentType, accessTokens, response)
     }else{
 
       val directoryNode:Node =
@@ -68,9 +68,9 @@ class ResourceController extends DataController{
         }else null
 
       if(directoryNode != null){
-        sendDirectoryContents(directoryNode, contentType, domain, response)
+        sendDirectoryContents(directoryNode, contentType, accessTokens, response)
       }else{
-        sendResourceData(resource, -1, domain, response)
+        sendResourceData(resource, -1, accessTokens, response)
       }
     }
   }
@@ -85,17 +85,17 @@ class ResourceController extends DataController{
                              request:HttpServletRequest,
                              response:HttpServletResponse) {
 
-    val domain = getRequestDomain(request, true)
+    val accessTokens = getAccessTokens(READ, request)
 
     val resource = accessManager.get(address)
 
     if(metadata != null){
 
       addNonPersistentMetadata(resource, extMeta)
+      sendMetadata(resource, contentType, accessTokens, response)
 
-      sendMetadata(resource, contentType, domain, response)
     }else{
-      sendResourceData(resource, version, domain, response)
+      sendResourceData(resource, version, accessTokens, response)
     }
   }
 
@@ -106,15 +106,16 @@ class ResourceController extends DataController{
                    request:HttpServletRequest,
                    response:HttpServletResponse) {
 
-    val domain = getRequestDomain(request, false)
+    val accessTokens = getAccessTokens(CREATE, request)
 
     val resource = new Resource
 
-    executeDataUpload(resource, domain, request, response, () => {
-      resource.systemMetadata.put(Domain.MD_FIELD, domain)
+    executeDataUpload(resource, accessTokens, request, response, () => {
+
       val ra = accessManager.add(resource)
       response.setStatus(HttpServletResponse.SC_CREATED)
       getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
+
     })
 
   }
@@ -124,15 +125,17 @@ class ResourceController extends DataController{
                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
                      request:HttpServletRequest,
                      response:HttpServletResponse) {
-    val domain = getRequestDomain(request, false)
+
+    val accessTokens = getAccessTokens(UPDATE, request)
 
     val resource = accessManager.get(address)
 
-    checkDomainAccess(resource, domain)
+    accessTokens.checkAccess(resource)
 
-    executeDataUpload(resource, domain, request, response, () => {
+    executeDataUpload(resource, accessTokens, request, response, () => {
       val ra = accessManager.update(resource)
-      getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
+      getResultWriter(contentType)
+        .writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
     })
 
   }
@@ -144,11 +147,11 @@ class ResourceController extends DataController{
                      request:HttpServletRequest,
                      response:HttpServletResponse) {
 
-    val domain = getRequestDomain(request, false)
+    val accessTokens = getAccessTokens(DELETE, request)
 
     val resource = accessManager.get(address)
 
-    checkDomainAccess(resource, domain)
+    accessTokens.checkAccess(resource)
 
     accessManager.delete(address)
     

@@ -30,14 +30,13 @@
  */
 package org.aphreet.c3.platform.accesscontrol
 
-import org.aphreet.c3.platform.resource.Resource
 
 trait AccessControlManager {
 
-  def registerChecker(checker:ResourceAccessChecker)
+  def registerFactory(factory:AccessTokenFactory)
 
-  def unregisterChecker(checker:ResourceAccessChecker)
+  def unregisterFactory(factory:AccessTokenFactory)
 
-  def canPerformActionWithResource(action:Action, resource:Resource, accessParams:Map[String, String]):Boolean
+  def retrieveAccessTokens(action:Action, accessParams:Map[String, String]):AccessTokens
 
 }

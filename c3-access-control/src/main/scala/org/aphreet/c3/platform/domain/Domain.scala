@@ -54,5 +54,6 @@ case class Domain(val id:String, var name:String, var key:String, var mode:Domai
 object Domain{
 
   val MD_FIELD = "c3.domain.id"
+  val ACCESS_TOKEN_NAME = "DomainAccessToken"
   
 }

@@ -30,44 +30,48 @@
  */
 package org.aphreet.c3.platform.accesscontrol.impl
 
-import org.aphreet.c3.platform.accesscontrol.{Action, ResourceAccessChecker, AccessControlManager}
-import org.aphreet.c3.platform.resource.Resource
 import collection.mutable.HashSet
 import org.springframework.stereotype.Component
 import org.apache.commons.logging.LogFactory
 import javax.annotation.PostConstruct
+import org.aphreet.c3.platform.accesscontrol._
 
 @Component("accessControlManager")
 class AccessControlManagerImpl extends AccessControlManager {
 
   val log = LogFactory.getLog(getClass)
 
-  val checkers = new HashSet[ResourceAccessChecker]
+  val factories = new HashSet[AccessTokenFactory]
 
   @PostConstruct
   def init(){
     log.info("Starting access control manager")
   }
 
-  def registerChecker(checker:ResourceAccessChecker) {
+  def registerFactory(factory:AccessTokenFactory) {
     this.synchronized{
       
-      log.debug("Registering checker " + checker.toString)
+      log.debug("Registering factory " + factory.toString)
       
-      checkers += checker
+      factories += factory
     }
   }
 
-  def unregisterChecker(checker:ResourceAccessChecker) {
+  def unregisterFactory(factory:AccessTokenFactory) {
     this.synchronized{
 
-      log.debug("Unregistering checker " + checker.toString)
+      log.debug("Unregistering factory " + factory.toString)
 
-      checkers -= checker
+      factories -= factory
     }
   }
 
-  def canPerformActionWithResource(action:Action, resource:Resource, accessParams:Map[String, String]):Boolean = {
-    checkers.forall(c => c.canPerformActionWithResource(action, resource, accessParams))
+  def retrieveAccessTokens(action:Action, accessParams:Map[String, String]):AccessTokens = {
+    try{
+      new AccessTokensImpl(factories.map(f => f.createAccessToken(action, accessParams)).toList)
+    }catch{
+      case e => throw new AccessControlException(e.getMessage, e)
+    }
   }
+
 }

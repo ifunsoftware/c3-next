@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,39 +27,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.accesscontrol.impl
 
-package org.aphreet.c3.platform.remote.rest
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessToken, AccessTokens}
 
-import org.aphreet.c3.platform.search.SearchManager
-import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import response.SearchResult
-import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
-import org.aphreet.c3.platform.accesscontrol.READ
 
-@Controller
-@RequestMapping(Array("/search"))
-class SearchController extends DataController{
+class AccessTokensImpl(val tokens:List[AccessToken]) extends AccessTokens{
 
-  @Autowired
-  var searchManager:SearchManager = _
+  def checkAccess(resource:Resource){
+    try{
+      tokens.foreach(_.checkAccess(resource))
+    }catch{
+      case e => throw new AccessControlException(e.getMessage, e)
+    }
+  }
 
-  @RequestMapping(value =  Array("/{query}"),
-                  method = Array(RequestMethod.GET))
-  def search(@PathVariable query:String,
-             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-             req:HttpServletRequest,
-             resp:HttpServletResponse){
-
-    val accessTokens = getAccessTokens(READ, req)
-    val domain = getCurrentDomainId(accessTokens)
-
-    val results = searchManager.search(domain, query)
-
-    resp.setStatus(HttpServletResponse.SC_OK)
-
-    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
-    
+  def updateMetadata(resource:Resource){
+    tokens.foreach(_.updateResource(resource))
+  }
+  
+  def tokenForName(name:String):Option[AccessToken] = {
+    for(token <- tokens){
+      if(token.name == name)
+        return Some(token)
+    }
+    None
   }
 }

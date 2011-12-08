@@ -48,38 +48,31 @@ import org.apache.commons.fileupload.FileItem
 import response.fs.FSDirectory
 import response.{DirectoryResult, ResourceResult}
 import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
-import org.aphreet.c3.platform.domain._
+import org.aphreet.c3.platform.domain.Domain
+import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessTokens, Action, AccessControlManager}
 
 class DataController extends AbstractController with ServletContextAware{
 
   var servletContext:ServletContext = _
 
-  var domainManager:DomainManager = _
+  @Autowired
+  var accessControlManager:AccessControlManager = _
 
+  @Autowired
   var accessManager:AccessManager = _
 
+  @Autowired
   var filesystemManager:FSManager = _
 
-  @Autowired
-  def setAccessManager(manager:AccessManager) {
-    accessManager = manager
-  }
-
-  @Autowired
-  def setDomainManager(manager:DomainManager) {
-    domainManager = manager
-  }
 
   def setServletContext(context:ServletContext) {
     servletContext = context
   }
 
-  @Autowired
-  def setFilesystemManager(manager:FSManager) {filesystemManager = manager}
 
-  protected def sendResourceData(resource:Resource, versionNumber:Int, domain:String, resp:HttpServletResponse) {
+  protected def sendResourceData(resource:Resource, versionNumber:Int, accessTokens:AccessTokens, resp:HttpServletResponse) {
 
-    checkDomainAccess(resource, domain)
+    accessTokens.checkAccess(resource)
 
     val version =
       if(versionNumber == -1) resource.versions.size
@@ -112,67 +105,41 @@ class DataController extends AbstractController with ServletContextAware{
     }
   }
 
-  protected def sendDirectoryContents(node:Node, contentType:String, domain:String, response:HttpServletResponse) {
-    checkDomainAccess(node.resource, domain)
+  protected def sendDirectoryContents(node:Node, contentType:String, accessTokens:AccessTokens, response:HttpServletResponse) {
+    accessTokens.checkAccess(node.resource)
     getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
   }
 
-  protected def checkDomainAccess(resource:Resource, domainId:String) {
-    resource.systemMetadata.get(Domain.MD_FIELD) match{
-      case Some(id) => if(id != domainId) throw new DomainException("Requested resource does not belong to specified domain")
-      case None =>
+  protected def getAccessTokens(action:Action, request:HttpServletRequest):AccessTokens = {
+
+    val map = new HashMap[String, String]
+
+    val headerEnum = request.getHeaderNames
+
+    while(headerEnum.hasMoreElements){
+      val headerName = headerEnum.nextElement().toString
+
+      val headerValue = request.getHeader(headerName)
+
+      map.put(headerName, headerValue)
     }
+
+    map.put("x-c3-request-uri", request.getRequestURI)
+
+    accessControlManager.retrieveAccessTokens(action, map.toMap)
   }
 
-  protected def getRequestDomain(request:HttpServletRequest, readonly:Boolean):String = {
-
-    var domain:Domain = null
-
-    val requestDomain = request.getHeader("x-c3-domain")
-
-    if(requestDomain != null){
-
-      val requestUri = request.getRequestURI
-      val date = request.getHeader("x-c3-date")
-
-      val hashBase = requestUri + date + requestDomain
-
-      val hash = request.getHeader("x-c3-sign")
-
-      if(hash == null){
-        throw new DomainException("Signature is empty")
-      }
-
-      domain = domainManager.checkDomainAccess(requestDomain, hash, hashBase)
-
-    }else{
-      domain = domainManager.getAnonymousDomain
-    }
-
-    domain.mode match{
-      case DisabledMode => throw new DomainException("Domain is disabled")
-      case FullMode => domain.id
-      case ReadOnlyMode =>
-        if(readonly){
-          domain.id
-        }else{
-          throw new DomainException("Domain is readonly")
-        }
-    }
-
-  }
-
-  protected def sendResourceMetadata(address:String, contentType:String, domain:String, system:Boolean, resp:HttpServletResponse) {
+  protected def sendResourceMetadata(address:String, contentType:String, accessTokens:AccessTokens, system:Boolean, resp:HttpServletResponse) {
 
     val resource = accessManager.get(address)
 
-    sendMetadata(resource, contentType, domain, resp)
+    sendMetadata(resource, contentType, accessTokens, resp)
 
   }
 
-  protected def sendMetadata(resource:Resource, contentType:String, domain:String, resp:HttpServletResponse){
+  protected def sendMetadata(resource:Resource, contentType:String, accessTokens:AccessTokens, resp:HttpServletResponse){
 
-    checkDomainAccess(resource, domain)
+    accessTokens.checkAccess(resource)
 
     resp.setStatus(HttpServletResponse.SC_OK)
 
@@ -198,10 +165,10 @@ class DataController extends AbstractController with ServletContextAware{
   }
 
   protected def executeDataUpload(resource:Resource,
-                                  domain:String,
+                                  accessTokens:AccessTokens,
                                   request:HttpServletRequest,
                                   response:HttpServletResponse,
-                                  processUpload:() => Unit) {
+                                  processStore:() => Unit) {
 
     if(isMultipartRequest(request)){
 
@@ -253,9 +220,11 @@ class DataController extends AbstractController with ServletContextAware{
 
         resource.metadata ++= metadata
 
+        accessTokens.updateMetadata(resource)
+
         log debug "Executing callback"
 
-        processUpload()
+        processStore()
 
         log debug "Upload done"
 
@@ -287,5 +256,12 @@ class DataController extends AbstractController with ServletContextAware{
     }
 
     false
+  }
+
+  protected def getCurrentDomainId(tokens:AccessTokens):String = {
+    tokens.tokenForName(Domain.ACCESS_TOKEN_NAME) match {
+      case Some(token) => token.id
+      case None => throw new AccessControlException("Failed to locate current domain in the access tokens")
+    }
   }
 }

@@ -10,9 +10,7 @@
     
 	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 
-    <reference id="authService" interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>
-
-    <reference id="domainService" interface="org.aphreet.c3.platform.domain.DomainManager"/>
+    <reference id="accessControlService" interface="org.aphreet.c3.platform.accesscontrol.AccessControlManager"/>
 
     <reference id="queryService" interface="org.aphreet.c3.platform.query.QueryManager"/>
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
@@ -6,7 +6,6 @@
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -31,51 +30,53 @@
 package org.aphreet.c3.platform.remote.test.domain
 
 import junit.framework.TestCase
-import junit.framework.Assert._
 import org.easymock.EasyMock._
-import org.aphreet.c3.platform.domain.impl.DomainResourceAccessChecker
-import org.aphreet.c3.platform.resource.Resource
+import junit.framework.Assert._
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, UPDATE, READ}
 import org.aphreet.c3.platform.domain._
+import impl.{DomainAccessToken, DomainAccessTokenFactory}
 
-class DomainResourceAccessCheckerTestCase extends TestCase{
 
+class DomainAccessTokenFactoryTestCase extends TestCase{
 
   def testAnonymousDomain(){
 
+    val expectedDomain = Domain("anonymous-id", "anonymous", "", FullMode)
+
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-
-    expect(domainManager.getAnonymousDomain).andReturn(Domain("anonymous-id", "anonymous", "", FullMode))
-
+    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain)
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
-    val accessGranted = accessChecker.canPerformActionWithResource(READ, createResourceForDomain("anonymous-id"), Map("some key" -> "some value"))
+    val token = tokenFactory.createAccessToken(READ, Map("some key" -> "some value"))
 
-    assertEquals(true, accessGranted)
-
-    verify(domainManager)
+    assertEquals(Domain.ACCESS_TOKEN_NAME, token.name)
+    assertEquals(READ, token.action)
+    assertEquals(expectedDomain, token.asInstanceOf[DomainAccessToken].domain)
   }
 
   def testAnonymousDomainRO(){
 
+    val expectedDomain = Domain("anonymous-id", "anonymous", "", ReadOnlyMode)
+
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-
-    expect(domainManager.getAnonymousDomain).andReturn(Domain("anonymous-id", "anonymous", "", ReadOnlyMode)).anyTimes()
-
+    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
-    val accessGranted = accessChecker.canPerformActionWithResource(READ, createResourceForDomain("anonymous-id"), Map("some key" -> "some value"))
+    val token = tokenFactory.createAccessToken(READ, Map("" -> ""))
 
-    assertEquals(true, accessGranted)
+    assertEquals(Domain.ACCESS_TOKEN_NAME, token.name)
+    assertEquals(READ, token.action)
+    assertEquals(expectedDomain, token.asInstanceOf[DomainAccessToken].domain)
 
     try{
-      accessChecker.canPerformActionWithResource(UPDATE, createResourceForDomain("anonymous-id"), Map("some key" -> "some value"))
+      tokenFactory.createAccessToken(UPDATE, Map("" -> ""))
+
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
@@ -86,18 +87,18 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
   }
 
   def testAnonymousDomainDisabled(){
+    val expectedDomain = Domain("anonymous-id", "anonymous", "", DisabledMode)
 
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-
-    expect(domainManager.getAnonymousDomain).andReturn(Domain("anonymous-id", "anonymous", "", DisabledMode)).anyTimes()
-
+    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
     try{
-      accessChecker.canPerformActionWithResource(READ, createResourceForDomain("anonymous-id"), Map("some key" -> "some value"))
+      tokenFactory.createAccessToken(READ, Map("" -> ""))
+
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
@@ -105,7 +106,8 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
     }
 
     try{
-      accessChecker.canPerformActionWithResource(UPDATE, createResourceForDomain("anonymous-id"), Map("some key" -> "some value"))
+      tokenFactory.createAccessToken(UPDATE, Map("" -> ""))
+
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
@@ -125,16 +127,18 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
 
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
-    val accessGranted = accessChecker.canPerformActionWithResource(READ, createResourceForDomain("domain-id"),
+    val token = tokenFactory.createAccessToken(READ,
       Map("x-c3-domain" -> "plab",
-          "x-c3-sign" -> hash,
-          "x-c3-date" -> "Sun, 13 Mar 2011 23:37:51 MSK",
-          "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
+        "x-c3-sign" -> hash,
+        "x-c3-date" -> "Sun, 13 Mar 2011 23:37:51 MSK",
+        "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
 
-    assertEquals(true, accessGranted)
+    assertEquals(Domain.ACCESS_TOKEN_NAME, token.name)
+    assertEquals(READ, token.action)
+    assertEquals(Domain("domain-id", "plab", "", FullMode), token.asInstanceOf[DomainAccessToken].domain)
 
     verify(domainManager)
   }
@@ -144,14 +148,14 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
 
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
     try{
-      accessChecker.canPerformActionWithResource(READ, createResourceForDomain("domain-id"),
+      tokenFactory.createAccessToken(READ,
         Map("x-c3-domain" -> "plab",
-            "x-c3-date" -> "Sun, 13 Mar 2011 23:37:51 MSK",
-            "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
+          "x-c3-date" -> "Sun, 13 Mar 2011 23:37:51 MSK",
+          "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
 
       assertTrue(false)
     }catch{
@@ -167,11 +171,11 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
 
     replay(domainManager)
 
-    val accessChecker = new DomainResourceAccessChecker()
-    accessChecker.domainManager = domainManager
+    val tokenFactory = new DomainAccessTokenFactory
+    tokenFactory.domainManager = domainManager
 
     try{
-      accessChecker.canPerformActionWithResource(READ, createResourceForDomain("domain-id"),
+      tokenFactory.createAccessToken(READ,
         Map("x-c3-domain" -> "plab",
           "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
 
@@ -183,13 +187,4 @@ class DomainResourceAccessCheckerTestCase extends TestCase{
 
     verify(domainManager)
   }
-
-
-  def createResourceForDomain(domainId:String):Resource = {
-    val resource = new Resource
-    resource.systemMetadata.put(Domain.MD_FIELD, domainId)
-
-    resource
-  }
-
 }

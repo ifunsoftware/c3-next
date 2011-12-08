@@ -37,10 +37,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
-import org.aphreet.c3.platform.domain.DomainException
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
 import org.springframework.web.HttpRequestMethodNotSupportedException
+import org.aphreet.c3.platform.accesscontrol.AccessControlException
 
 class AbstractController{
 
@@ -97,8 +97,8 @@ class AbstractController{
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Authentication failed")), response)
   }
 
-  @ExceptionHandler(Array(classOf[DomainException]))
-  def handleDomainException(e:DomainException,
+  @ExceptionHandler(Array(classOf[AccessControlException]))
+  def handleDomainException(e:AccessControlException,
                                       request:HttpServletRequest,
                                       response:HttpServletResponse) {
 
