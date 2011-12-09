@@ -44,9 +44,7 @@ class FSConfigAccessorImpl extends AbstractDictionaryConfigAccessor with FSConfi
 
   def configFileName: String = "c3-fs-config.json"
 
-  var configManager: PlatformConfigManager = _
-
   @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+  var configManager: PlatformConfigManager = _
 
 }

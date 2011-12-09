@@ -37,7 +37,7 @@ import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
 
 class DirectorySerializationTestCase extends TestCase{
 
-  def testIncorrectContent = {
+  def testIncorrectContent() {
     val serializedData:Array[Byte] = Array(
       0, 0, 23, 41, 48,
       101, 54, 51, 49, 53, 101, 97, 45, 99, 50,

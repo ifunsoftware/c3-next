@@ -50,30 +50,22 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
+  @Autowired
   var accessManager:AccessManager = _
 
+  @Autowired
   var configAccessor:FSConfigAccessor = _
 
+  @Autowired
   var statisticsManager:StatisticsManager = _
 
+  @Autowired
   var taskManager:TaskManager = _
 
   var fsRoots:Map[String, String] = Map()
 
-  @Autowired
-  def setAccessManager(manager:AccessManager) = {accessManager = manager}
-
-  @Autowired
-  def setConfigAccessor(accessor:FSConfigAccessor) = {configAccessor = accessor}
-
-  @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
-
   @PostConstruct
-  def init{
+  def init(){
 
     log info "Starting Filesystem manager"
 
@@ -83,7 +75,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
 
     letItFall{
       accessManager.unregisterOwner(this)
@@ -94,7 +86,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     getFSNode(domainId, path)
   }
 
-  def deleteNode(domainId:String, path:String) = {
+  def deleteNode(domainId:String, path:String) {
 
     val node = getNode(domainId, path)
 
@@ -203,7 +195,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
       case Some(nodeType) =>
         if(nodeType == Node.NODE_TYPE_DIR){
           try{
-            //trying to create a directory from provided bytestream
+            //trying to create a directory from provided ByteStream
             Directory(resource)
             true
           }catch{
@@ -215,7 +207,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     }
   }
 
-  override def deleteResource(resource:Resource) = {
+  override def deleteResource(resource:Resource) {
 
     resource.systemMetadata.get(Node.NODE_FIELD_NAME) match {
       case None => //it seems that resource is not a part of FS, skipping
@@ -232,7 +224,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     }
   }
 
-  def createFile(domainId:String, fullPath:String, resource:Resource) = {
+  def createFile(domainId:String, fullPath:String, resource:Resource) {
 
     val pathAndName = splitPath(fullPath)
 
@@ -247,7 +239,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   }
 
-  def createDirectory(domainId:String, fullPath:String) = {
+  def createDirectory(domainId:String, fullPath:String) {
 
     val pathAndName = splitPath(fullPath)
 
@@ -292,7 +284,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   def fileSystemRoots:Map[String, String] = fsRoots
 
-  def importFileSystemRoot(domainId:String, address:String) = {
+  def importFileSystemRoot(domainId:String, address:String) {
 
     fsRoots.get(domainId) match{
       case Some(x) =>
@@ -443,7 +435,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   }
 
-  def startFilesystemCheck{
+  def startFilesystemCheck(){
 
     if(taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty){
       val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)

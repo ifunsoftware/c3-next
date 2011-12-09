@@ -41,7 +41,7 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 
 class FSManagerTestCase extends TestCase{
 
-  def testDeletePermission = {
+  def testDeletePermission() {
 
     val fsManager = new FSManagerImpl
 
@@ -87,7 +87,7 @@ class FSManagerTestCase extends TestCase{
     assertTrue(fsManager.resourceCanBeDeleted(file.resource))
   }
 
-  def testUpdatePermission = {
+  def testUpdatePermission() {
 
     val fsManager = new FSManagerImpl
 
@@ -149,7 +149,7 @@ class FSManagerTestCase extends TestCase{
 
   }
 
-  def testAddressToPathConversion = {
+  def testAddressToPathConversion() {
 
     val accessManager = createMock(classOf[AccessManager])
     expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
@@ -160,7 +160,7 @@ class FSManagerTestCase extends TestCase{
 
     val fsManager = new FSManagerImpl
 
-    fsManager.setAccessManager(accessManager)
+    fsManager.accessManager = accessManager
 
     assertEquals("/second_level_dir/third_level_dir/file0", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals("/second_level_dir/third_level_dir", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
@@ -171,7 +171,7 @@ class FSManagerTestCase extends TestCase{
     verify(accessManager)
   }
 
-  def testNonFileAddressToPathConversion = {
+  def testNonFileAddressToPathConversion() {
 
     val accessManager = createMock(classOf[AccessManager])
     expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
@@ -182,7 +182,7 @@ class FSManagerTestCase extends TestCase{
 
     val fsManager = new FSManagerImpl
 
-    fsManager.setAccessManager(accessManager)
+    fsManager.accessManager = accessManager
 
     assertEquals("", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals("", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
@@ -208,7 +208,7 @@ class FSManagerTestCase extends TestCase{
     resource
   }
 
-  def testSplitPath = {
+  def testSplitPath() {
 
     val manager = new FSManagerImpl
 

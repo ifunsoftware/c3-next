@@ -82,7 +82,7 @@ object Node{
   }
 }
 
-case class NodeRef(val name:String, val address:String, val leaf:Boolean)
+case class NodeRef(name:String, address:String, leaf:Boolean)
 
 case class File(override val resource:Resource) extends Node(resource){
 
@@ -118,15 +118,15 @@ case class Directory(override val resource:Resource) extends Node(resource){
     children.get(name)
   }
 
-  def addChild(node:NodeRef) = {
+  def addChild(node:NodeRef) {
     children.put(node.name, node)
 
-    updateResource
+    updateResource()
   }
 
-  def removeChild(name:String) = {
+  def removeChild(name:String) {
     children.remove(name)
-    updateResource
+    updateResource()
   }
 
   def getChildren:Array[NodeRef] = {
@@ -134,7 +134,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
   }
 
 
-  protected def updateResource = {
+  protected def updateResource() {
     val version = new ResourceVersion
     version.data = getData(children)
     version.persisted = false
@@ -198,7 +198,7 @@ object Directory{
 
     val directory = Directory(resource)
 
-    directory.updateResource
+    directory.updateResource()
 
     directory
   }
