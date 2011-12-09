@@ -87,7 +87,7 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
     }
   }
 
-  def register(command:Command) = {
+  def register(command:Command) {
     HelpCommand.addCommand(command)
     root.addCommand(command.name, command.getClass)
   }
@@ -137,7 +137,7 @@ class CommandTreeNode(val commandClass:Class[_]) {
       foundNode
     }
 
-    def addCommand(input:List[String], commandClass:Class[_]):Unit = {
+    def addCommand(input:List[String], commandClass:Class[_]) {
       if(input.size == 1){
         map.put(input.head, new CommandTreeNode(commandClass))
       }else{

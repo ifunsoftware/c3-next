@@ -46,7 +46,7 @@ object PlatformPropertiesCommands extends Commands {
 
 class SetPlatformPropertyCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 2){
       "Not enought params\nUsage: set platform property <key> <value>"
@@ -67,7 +67,7 @@ class ListPlatformPropertiesCommand extends Command{
 
   val footer = "|--------------------------------------------|----------------------------------------------------|\n"
 
-  def execute:String = {
+  def execute():String = {
     val set = new TreeSet[Pair]()(
       new Ordering[Pair] {
         override def compare(x:Pair, y:Pair):Int = x.key.compareTo(y.key)
@@ -90,7 +90,7 @@ class ListStatisticsCommand extends Command{
 
   val footer = "|------------------------------------------|-----------------|\n"
 
-  def execute:String = {
+  def execute():String = {
 
     management.statistics
       .map(e => (String.format("| %-40s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer

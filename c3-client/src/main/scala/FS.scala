@@ -33,5 +33,7 @@ import org.aphreet.c3.platform.client.access.filesystem.FSClient
 
 object FS{
 
-  def main(args:Array[String]) = new FSClient(args).run
+  def main(args:Array[String]) {
+    new FSClient(args).run()
+  }
 }

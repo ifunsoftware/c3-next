@@ -48,14 +48,14 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
     HELP_ARG
     )
 
-  def run{
+  def run(){
     val file:String = IN_ARG
 
     if(file == null){
       throw new IllegalAccessException("File argument is mandatory")
     }
 
-    parseCLI
+    parseCLI()
 
     consumeResources(HOST_ARG, USER_ARG, KEY_ARG, THREADS_ARG, file)
   }
@@ -112,8 +112,8 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
     println(processed(consumers) + " resources " + actionName + " in " + (endTime - startTime)/1000)
     println("Done")
 
-    addressReader.close
-    executor.shutdown
+    addressReader.close()
+    executor.shutdown()
 
   }
 

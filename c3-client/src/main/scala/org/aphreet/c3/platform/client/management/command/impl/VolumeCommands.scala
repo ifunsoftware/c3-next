@@ -44,7 +44,7 @@ class ListVolumesCommand extends Command {
 
   override def name:List[String] = List("list", "volumes")
 
-  override def execute:String = {
+  override def execute():String = {
 
     def format(desc:VolumeDescription):String =
       String.format("| %-31s | %8d | %13d | %13d | %13d |\n",

@@ -41,7 +41,7 @@ object MigrationCommands extends Commands{
 }
 class StartMigrationCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 2){
       "Not enought params.\nUsage: start migration <source id> <target id>"
     }else{

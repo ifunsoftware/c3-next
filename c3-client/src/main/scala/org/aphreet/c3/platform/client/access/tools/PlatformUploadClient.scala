@@ -18,7 +18,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     HELP_ARG
   )
 
-  def run{    
+  def run(){
     val path = cliValue(FILE_ARG)
 
     if(path == null){
@@ -66,7 +66,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
       if(fos != null) fos.write((ra + "\n").getBytes)
     }
 
-    if(fos != null) fos.close
+    if(fos != null) fos.close()
 
     println("Upload complete")
   }

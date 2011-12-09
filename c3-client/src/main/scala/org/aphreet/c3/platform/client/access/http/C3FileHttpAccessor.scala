@@ -88,11 +88,11 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
     }
   }
 
-  def uploadFile(path:String, file:File) = {
+  def uploadFile(path:String, file:File) {
     writeData(path, new FilePart("data", new FilePartSource(file)), Map[String, String]())
   }
 
-  def updateFile(path:String, file:File, metadata:Map[String, String]) = {
+  def updateFile(path:String, file:File, metadata:Map[String, String]) {
 
     val putMethod = new PutMethod(url + path)
 
@@ -116,11 +116,11 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
           throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
       }
     }finally {
-      putMethod.releaseConnection
+      putMethod.releaseConnection()
     }
   }
 
-  def moveFile(path:String, newPath:String) = {
+  def moveFile(path:String, newPath:String) {
 
     val putMethod = new PutMethod(url + path)
 
@@ -139,11 +139,11 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
           throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
       }
     }finally {
-      putMethod.releaseConnection
+      putMethod.releaseConnection()
     }
   }
 
-  private def writeData(path:String, filePart:FilePart, metadata:Map[String, String]) = {
+  private def writeData(path:String, filePart:FilePart, metadata:Map[String, String]) {
     val postMethod = new PostMethod(url + path)
 
     addAuthHeader(postMethod, requestUri + path)
@@ -163,11 +163,11 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
           throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
       }
     }finally {
-      postMethod.releaseConnection
+      postMethod.releaseConnection()
     }
   }
 
-  def makeDir(path:String) = {
+  def makeDir(path:String) {
 
     val postMethod = new PostMethod(url + path)
 
@@ -227,7 +227,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
     }
   }
 
-  def delete(path:String) = {
+  def delete(path:String) {
     val deleteMethod = new DeleteMethod(url + path)
 
     addAuthHeader(deleteMethod, requestUri + path)

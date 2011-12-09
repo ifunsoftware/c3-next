@@ -40,7 +40,7 @@ import org.aphreet.c3.platform.client.common.HashUtil
 
 abstract class AbstractHttpAccessor(val domain:String, val secret:String){
 
-  def addAuthHeader(method:HttpMethodBase, resource:String) = {
+  def addAuthHeader(method:HttpMethodBase, resource:String) {
     if(domain != "anonymous"){
 
       val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")

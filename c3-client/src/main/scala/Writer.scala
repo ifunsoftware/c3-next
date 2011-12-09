@@ -32,6 +32,8 @@ import org.aphreet.c3.platform.client.access.tools.PlatformWriteClient
 
 object Writer {
 
-  def main(args:Array[String]) = new PlatformWriteClient(args).launch
+  def main(args:Array[String]) {
+    new PlatformWriteClient(args).launch()
+  }
   
 }

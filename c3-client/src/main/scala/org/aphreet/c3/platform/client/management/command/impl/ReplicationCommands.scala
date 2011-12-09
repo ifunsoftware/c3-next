@@ -48,7 +48,7 @@ object ReplicationCommands extends Commands {
 
 class AddReplicationTarget extends Command {
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 3){
       wrongParameters("create replication target <hostname> <username> <password>")
     }else{
@@ -65,7 +65,7 @@ class AddReplicationTarget extends Command {
 
 class RemoveReplicationTarget extends Command {
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 1){
       "Not enough params.\nUsage: remove replication target <systemid>"
     }else{
@@ -79,7 +79,7 @@ class RemoveReplicationTarget extends Command {
 
 class ListReplicationTargets extends Command {
 
-  def execute:String = {
+  def execute():String = {
     val targets = management.listReplicationTargets
 
     val header = "|        ID       |              Host              |\n" +
@@ -103,13 +103,13 @@ class PrepareForReplication extends Command {
     }
   }
 
-  def setProperty(key:String, value:String) = {
+  def setProperty(key:String, value:String) {
     if(!value.isEmpty)
       //println("Setting " + key + " to " + value)
       management.setPlatformProperty(key, value)
   }
 
-  def execute:String = {
+  def execute():String = {
 
     val properties = management.platformProperties
 
@@ -142,7 +142,7 @@ class PrepareForReplication extends Command {
 
 class ReplayReplicationQueueCommand extends Command {
 
-  override def execute:String = {
+  override def execute():String = {
     management.replayReplicationQueue
     "Retry started"
   }

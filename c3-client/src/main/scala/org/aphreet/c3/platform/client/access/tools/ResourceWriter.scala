@@ -49,7 +49,7 @@ class ResourceWriter(val host:String, val user:String, val key:String, val count
 
   def queue(queue:LinkedBlockingQueue[String]):ResourceWriter = {_queue = queue; this}
 
-  override def run{
+  override def run(){
 
     val client = new C3HttpAccessor(host, user, key)
 

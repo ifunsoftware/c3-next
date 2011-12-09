@@ -38,7 +38,7 @@ trait SpringRmiAccessor {
     val rmiBean = new RmiProxyFactoryBean
     rmiBean.setServiceUrl(url)
     rmiBean.setServiceInterface(clazz)
-    rmiBean.afterPropertiesSet
+    rmiBean.afterPropertiesSet()
     rmiBean.getObject.asInstanceOf[T]
   }
 }

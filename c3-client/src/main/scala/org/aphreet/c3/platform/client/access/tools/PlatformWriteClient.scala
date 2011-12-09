@@ -54,7 +54,7 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
     HELP_ARG
     )
 
-  def run {
+  def run() {
     val objectType:String = TYPE_ARG
     val pool:String = POOL_ARG
 
@@ -143,8 +143,8 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
     val endTime = System.currentTimeMillis
     println(count + " objects written in " + (endTime - startTime) / 1000)
 
-    if (fos != null) fos.close
-    executor.shutdown
+    if (fos != null) fos.close()
+    executor.shutdown()
 
   }
 

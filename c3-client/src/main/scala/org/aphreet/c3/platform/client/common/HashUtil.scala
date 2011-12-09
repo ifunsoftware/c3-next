@@ -55,7 +55,7 @@ object HashUtil{
       }
     }
 
-    hexString.toString
+    hexString.toString()
   }
   
 }

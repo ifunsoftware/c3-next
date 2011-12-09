@@ -82,7 +82,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
 
           val xml = XML.load(postMethod.getResponseBodyAsStream)
 
-          (xml \\ "uploaded")(0) \ "@address" text
+          ((xml \\ "uploaded")(0) \ "@address").text
 
         }
         case _ =>
@@ -90,7 +90,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
           throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
       }
     }finally {
-      postMethod.releaseConnection
+      postMethod.releaseConnection()
     }
   }
 
@@ -110,8 +110,8 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
           try{
             fileChannel.transferFrom(inChannel, 0, getMethod.getResponseContentLength)
           }finally{
-            fileChannel.close
-            inChannel.close
+            fileChannel.close()
+            inChannel.close()
           }
         }
         case _ =>
@@ -139,7 +139,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
           try{
             fileChannel.write(ByteBuffer.wrap(getMethod.getResponseBody))
           }finally{
-            fileChannel.close
+            fileChannel.close()
           }
         }
         case _ =>
@@ -176,7 +176,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
 
     try{
       val status = httpClient.executeMethod(getMethod)
-      return status match {
+      status match {
         case HttpStatus.SC_OK => {
           val stream = getMethod.getResponseBodyAsStream
           var read = 0
@@ -200,7 +200,7 @@ class ByteArrayPartSource(val data:Array[Byte]) extends PartSource {
   }
 
   override def getFileName:String = {
-    return "array"
+    "array"
   }
 
   override def getLength:Long = data.length

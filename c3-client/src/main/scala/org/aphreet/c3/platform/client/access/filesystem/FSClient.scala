@@ -56,11 +56,11 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     "help" described "Prints this message"
   )
 
-  def run = {
+  def run() {
     
     if(cli.hasOption("help")) helpAndExit(clientName)
 
-    if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification
+    if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification()
 
     val host = cliValue("h", "http://localhost:7373")
     val user = cliValue("u", "anonymous")
@@ -118,7 +118,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     println("upload <remote file> <local file>   - Upload file to c3")
   }
 
-  def mv(args:List[String]) = {
+  def mv(args:List[String]) {
     val name = workDir(args)
 
     val newName = args.tail.head
@@ -126,7 +126,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     fileAccessor.moveFile(name, newName)
   }
 
-  def setmd(args:List[String]) = {
+  def setmd(args:List[String]) {
     val directory = workDir(args)
 
     val key = args.tail.head
@@ -136,12 +136,12 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
   }
 
-  def rm(args:List[String]) = {
+  def rm(args:List[String]) {
     val directory = workDir(args)
     fileAccessor.delete(directory)
   }
 
-  def ls(args:List[String]) : Unit = {
+  def ls(args:List[String]) {
 
     val directory = workDir(args)
 
@@ -155,7 +155,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     val nodes = ((directoryData \\ "directory")(0) \\ "nodes")(0) \\ "node"
 
     for(node <- nodes){
-      val name = (node \ "@name") text
+      val name = (node \ "@name").text
       val isFile = if((((node \ "@leaf") text) toBoolean)){
         "f"
       }else{
@@ -165,7 +165,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     }
   }
 
-  def cd(args:List[String]) : Unit = {
+  def cd(args:List[String]) {
 
     val directory = workDir(args)
 
@@ -182,12 +182,12 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
   }
 
-  def mkdir(args:List[String]) = {
+  def mkdir(args:List[String]) {
 
     fileAccessor.makeDir(workDir(args))
   }
 
-  def upload(args:List[String]) = {
+  def upload(args:List[String]) {
 
     val directory = workDir(args)
     val fileToUpload = new File(args.tail.head)
@@ -198,7 +198,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     fileAccessor.uploadFile(directory, fileToUpload)
   }
 
-  def download(args:List[String]):Unit = {
+  def download(args:List[String]) {
 
     val directory = workDir(args)
 
@@ -207,7 +207,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
         val fos = new FileOutputStream(new File(x))
         fos.write(fileAccessor.getNodeData(directory))
-        fos.close
+        fos.close()
 
       case None => val directoryData = new String(fileAccessor.getNodeData(directory), "UTF-8")
 
@@ -229,7 +229,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
     for(element <- mdElements){
       if(((element \ "@key") text) == "c3.fs.nodetype"){
-        val nodeType = (element \\ "value")(0) text
+        val nodeType = (element \\ "value")(0).text
 
         return nodeType == "directory"
       }
@@ -252,7 +252,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     directoryToList
   }
 
-  def disableHostNameVerification = {
+  def disableHostNameVerification() {
     javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
       new javax.net.ssl.HostnameVerifier() {
         override def verify(hostname: String, sslSession: javax.net.ssl.SSLSession): Boolean = true

@@ -44,7 +44,7 @@ object SizeMappingCommands extends Commands{
 
 class AddSizeMappingCommand extends Command {
 
-  def execute = {
+  def execute() = {
     if (params.size < 3)
       wrongParameters("create size mapping <size> <storagetype> <versioned>")
     else {
@@ -65,7 +65,7 @@ class AddSizeMappingCommand extends Command {
 
 class DeleteSizeMappingCommand extends Command {
 
-  def execute = {
+  def execute() = {
 
     if (params.size < 1) {
       wrongParameters("remove size mapping <size>")
@@ -81,14 +81,14 @@ class DeleteSizeMappingCommand extends Command {
 
 class ListSizeMappingCommand extends Command {
 
-  def execute = {
+  def execute() = {
     val builder = new StringBuilder
 
     for (mapping <- management.listSizeMappings)
       builder.append(String.format("%10d %20s %b\n", mapping.size, mapping.storage, mapping.versioned))
 
 
-    builder.toString
+    builder.toString()
   }
 
   def name = List("list", "size", "mappings")

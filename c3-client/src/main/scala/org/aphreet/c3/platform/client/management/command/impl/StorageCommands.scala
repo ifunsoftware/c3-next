@@ -49,7 +49,7 @@ object StorageCommands extends Commands{
 
 class AddStorageCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 2){
       wrongParameters("create storage <type> <path>")
     }else{
@@ -65,7 +65,7 @@ class AddStorageCommand extends Command{
 
 class DeleteStorageCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 1){
       wrongParameters("remove storage <storage id>")
     }else{
@@ -80,7 +80,7 @@ class DeleteStorageCommand extends Command{
 
 class SetStorageModeCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 2){
       "Not enought params.\nUsage: set storage mode <id> <mode>"
@@ -107,7 +107,7 @@ class ListStorageCommand extends Command {
           "|----------------------|------|------------|--------|--------------------------------|\n"
   val footer = "|----------------------|------|------------|--------|--------------------------------|\n"
 
-  def execute:String = {
+  def execute():String = {
 
     management.listStorages.map(s => format(s)).foldLeft(header)(_ + _) + footer
 
@@ -118,7 +118,7 @@ class ListStorageCommand extends Command {
 
 class ListStorageTypesCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
     val types = management.listStorageTypes
 
     val builder = new StringBuilder
@@ -127,7 +127,7 @@ class ListStorageTypesCommand extends Command{
       builder.append(tp).append("\n")
     }
 
-    builder.toString
+    builder.toString()
 
   }
 
@@ -136,7 +136,7 @@ class ListStorageTypesCommand extends Command{
 
 class ShowResourceCommand extends Command {
 
-  def execute = {
+  def execute() = {
 
     if(params.length < 1){
       "Not enought params.\nUsage: show resource <address>"
@@ -155,7 +155,7 @@ class ShowResourceCommand extends Command {
 
 class ShowStorageCommand extends Command {
 
-  def execute = {
+  def execute() = {
     if(params.length < 1){
       "Not enough params.\nUsage: show storage <storage id>"
     }else{
@@ -198,7 +198,7 @@ class ShowStorageCommand extends Command {
 
 class CreateStorageIndexCommand extends Command {
 
-  def execute = {
+  def execute() = {
     if(params.length < 5){
       "Not enough arguments.\nUsage: create storage index <storage id> <index name> <system?> <multi?> <field0> <field1> ..."
     }else{
@@ -223,7 +223,7 @@ class CreateStorageIndexCommand extends Command {
 
 class RemoveStorageIndexCommand extends Command {
 
-  def execute = {
+  def execute() = {
     if(params.length < 2){
       "Not enough arguments.\nUsage: remove storage index <storage id> <index name>"
     }else{

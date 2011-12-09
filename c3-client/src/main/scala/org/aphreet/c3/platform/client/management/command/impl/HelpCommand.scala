@@ -18,7 +18,7 @@ object HelpCommand{
 
   var commands:TreeSet[String] = new TreeSet
 
-  def addCommand(command:Command) = {
+  def addCommand(command:Command) {
 
     val commandLine:String = command.name.foldRight("")(_ + " " + _)
 

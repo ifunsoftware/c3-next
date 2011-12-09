@@ -45,7 +45,7 @@ trait SpringWsAccessor {
       factory.setPassword(password)
       factory.setPortName(port)
       factory.setMaintainSession(true)
-      factory.afterPropertiesSet
+      factory.afterPropertiesSet()
 
       factory.getObject.asInstanceOf[T]
     } catch {

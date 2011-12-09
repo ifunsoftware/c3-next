@@ -49,7 +49,7 @@ class PlatformDownloadClient (override val args:Array[String]) extends ConsumerC
     HELP_ARG
   )
 
-  override def parseCLI{
+  override def parseCLI(){
 
     val directoryName:String = OUT_ARG
 

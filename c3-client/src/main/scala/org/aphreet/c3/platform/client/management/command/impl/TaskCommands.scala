@@ -44,7 +44,7 @@ object TaskCommands extends Commands{
 
 abstract class ListTasksCommand extends Command {
 
-  def execute:String = {
+  def execute():String = {
 
     val tasks = getTasks
 
@@ -63,7 +63,7 @@ abstract class ListTasksCommand extends Command {
       builder.append(String.format("%-40s %-25s %-10s %s\n", t.id, t.name, t.status, progress))
     }
 
-    builder.toString
+    builder.toString()
 
   }
 
@@ -89,7 +89,7 @@ class ListFinishedTasksCommand extends ListTasksCommand {
 
 class SetTaskMode extends Command {
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 2){
       wrongParameters("set task mode <id> <pause|resume>")

@@ -42,7 +42,7 @@ object UserCommands extends Commands {
 }
 
 class ListUsersCommand extends Command {
-  def execute: String = {
+  def execute(): String = {
 
     val users = management.listUsers
 
@@ -56,7 +56,7 @@ class ListUsersCommand extends Command {
 
     }
 
-    builder.toString
+    builder.toString()
   }
 
   def name = List("list", "users")
@@ -64,7 +64,7 @@ class ListUsersCommand extends Command {
 }
 
 class AddUserCommand extends Command {
-  def execute = {
+  def execute() = {
 
     if (params.size < 3) {
       wrongParameters("create user <name> <password>")
@@ -81,7 +81,7 @@ class AddUserCommand extends Command {
 }
 
 class UpdateUserCommand extends Command {
-  def execute = {
+  def execute() = {
     if (params.size < 3) {
       wrongParameters("update user <name> <password> <enabled>")
     } else {
@@ -99,7 +99,7 @@ class UpdateUserCommand extends Command {
 }
 
 class DeleteUserCommand extends Command {
-  def execute = {
+  def execute() = {
     if (params.size < 1) {
       wrongParameters("remove user <name>")
     } else {

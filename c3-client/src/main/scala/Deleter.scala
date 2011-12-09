@@ -32,6 +32,8 @@ import org.aphreet.c3.platform.client.access.tools.PlatformDeleteClient
 
 object Deleter{
 
-   def main(args:Array[String]) = new PlatformDeleteClient(args).launch
+   def main(args:Array[String]) {
+     new PlatformDeleteClient(args).launch()
+   }
 
 }

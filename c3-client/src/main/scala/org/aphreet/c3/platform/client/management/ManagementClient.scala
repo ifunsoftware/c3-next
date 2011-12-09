@@ -61,7 +61,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     if(cli.hasOption("help")) helpAndExit(clientName)
 
-    if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification
+    if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification()
 
     val connectionType = cliValue("t", "ws").toLowerCase
 
@@ -101,7 +101,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
 
 
-  def run = {
+  def run() {
 
     var shouldExit = false
 
@@ -132,7 +132,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
         success = commandFactory.getCommand(line) match {
           case Some(command) => {
         	  try{
-        	    println(command.execute)
+        	    println(command.execute())
         	    true
         	  }catch{
         	    case e:RemoteConnectFailureException=> {
@@ -143,7 +143,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
         	    }
         	    case e =>{
         	      println("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage)
-        	      e.printStackTrace
+        	      e.printStackTrace()
                 true
                 }
         	  }
@@ -188,7 +188,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     null
   }
 
-  def disableHostNameVerification = {
+  def disableHostNameVerification() {
     javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
       new javax.net.ssl.HostnameVerifier() {
         override def verify(hostname: String, sslSession: javax.net.ssl.SSLSession): Boolean = true

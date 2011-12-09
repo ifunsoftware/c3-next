@@ -59,15 +59,15 @@ abstract class CLI(val args:Array[String]) {
 
   val cli = (new PosixParser).parse(cliDescription, args)
 
-  def launch{
+  def launch(){
     if(cli.getOptions.length == 0) helpAndExit(clientName)
 
     if(cli.hasOption(HELP_ARG.name)) helpAndExit(clientName)
 
-    run
+    run()
   }
 
-  def run
+  def run()
 
   def cliDescription:Options
   
@@ -85,7 +85,7 @@ abstract class CLI(val args:Array[String]) {
     }
   }
   
-  def helpAndExit(name:String) = {
+  def helpAndExit(name:String) {
     new HelpFormatter().printHelp(name, cliDescription)
     System.exit(0)
   }

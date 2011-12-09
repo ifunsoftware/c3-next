@@ -32,6 +32,8 @@ import org.aphreet.c3.platform.client.access.tools.PlatformReadClient
 
 object Reader{
 
-  def main(args:Array[String]) = new PlatformReadClient(args).launch
+  def main(args:Array[String]) {
+    new PlatformReadClient(args).launch()
+  }
 
 }

@@ -41,7 +41,7 @@ class ConsumerWorker(val host:String, val user:String, val key:String, val queue
   var bytesRead:Long = 0l
   val client = new C3HttpAccessor(host, user, key)
 
-  override def run{
+  override def run(){
 
     var address = queue.poll(5, TimeUnit.SECONDS)
 

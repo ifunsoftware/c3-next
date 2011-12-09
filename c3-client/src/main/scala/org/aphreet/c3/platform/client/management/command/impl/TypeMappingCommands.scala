@@ -43,7 +43,7 @@ object TypeMappingCommands extends Commands{
 
 class AddTypeMappingCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
     if(params.size < 3)
       wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
     else{
@@ -64,7 +64,7 @@ class AddTypeMappingCommand extends Command{
 
 class DeleteTypeMappingCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 1){
       wrongParameters("remove type mapping <mimetype>")
@@ -79,7 +79,7 @@ class DeleteTypeMappingCommand extends Command{
 
 class ListTypeMappingCommand extends Command{
 
-  def execute:String = {
+  def execute():String = {
 
     val builder = new StringBuilder
 
@@ -87,7 +87,7 @@ class ListTypeMappingCommand extends Command{
       builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
 
 
-    builder.toString
+    builder.toString()
 
   }
 

@@ -11,7 +11,7 @@ object FilesystemCommands extends Commands{
 
 class StartFilesystemCheck extends Command{
 
-  def execute:String = {
+  def execute():String = {
     management.startFilesystemCheck
 
     "Check started"

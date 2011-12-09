@@ -47,7 +47,7 @@ object DomainCommands  extends Commands{
 }
 
 class CreateDomainCommand extends Command {
-  def execute:String = {
+  def execute():String = {
 
     if (params.size < 1) {
       wrongParameters("create domain <name>")
@@ -63,7 +63,7 @@ class CreateDomainCommand extends Command {
 
 class UpdateDomainNameCommand extends Command {
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 2){
       wrongParameters("update domain set name <old name> <new name>")
@@ -78,7 +78,7 @@ class UpdateDomainNameCommand extends Command {
 
 class ResetDomainKeyCommand extends Command {
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 1){
       wrongParameters("update domain reset key <name>")
@@ -94,7 +94,7 @@ class ResetDomainKeyCommand extends Command {
 
 class SetDomainModeCommand extends Command {
 
-  def execute:String = {
+  def execute():String = {
 
     if(params.size < 2){
       wrongParameters("update domain set mode <name> <available|readonly|disabled>")
@@ -120,7 +120,7 @@ class ListDomainsCommand extends Command {
                "|----------------------|------------|\n"
   val footer = "|----------------------|------------|\n"
 
-  def execute:String =
+  def execute():String =
     management.listDomains.map(d => format(d)).foldLeft(header)(_ + _) + footer
 
 
@@ -129,7 +129,7 @@ class ListDomainsCommand extends Command {
 
 class ShowDomainCommand extends Command {
 
-  def execute:String = {
+  def execute():String = {
     if(params.length < 1){
       wrongParameters("show domain <name>")
     }else{
