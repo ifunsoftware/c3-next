@@ -36,19 +36,11 @@ import org.aphreet.c3.platform.remote.rest.WrongRequestException
 @Component
 class ResultWriterSelector{
 
+  @Autowired
   var xmlResultWriter:XmlResultWriter = _
 
+  @Autowired
   var jsonResultWriter:JsonResultWriter = _
-
-  @Autowired
-  def setXmlResultWriter(resultWriter:XmlResultWriter) = {
-    xmlResultWriter = resultWriter
-  }
-
-  @Autowired
-  def setJsonResultWriter(resultWriter:JsonResultWriter) = {
-    jsonResultWriter = resultWriter
-  }
 
   def selectWriterForType(contentType:String):ResultWriter = {
 

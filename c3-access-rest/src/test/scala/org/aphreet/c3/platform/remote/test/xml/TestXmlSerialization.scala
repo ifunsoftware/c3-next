@@ -46,7 +46,7 @@ import org.aphreet.c3.platform.filesystem.NodeRef
 
 class TestXmlSerialization extends TestCase{
 
-  def testError{
+  def testError(){
 
     val e = new Exception("test")
 
@@ -59,7 +59,7 @@ class TestXmlSerialization extends TestCase{
     verifyXml(xml)
   }
 
-  def testResource{
+  def testResource(){
 
     val resource = new Resource
     resource.address = "my_resource_address"
@@ -82,7 +82,7 @@ class TestXmlSerialization extends TestCase{
 
   }
 
-  def testSearch{
+  def testSearch(){
     val entry = SearchResultElement("address", 0.12f,
       Array(SearchResultFragment("content", Array("qwe", "qweqwe", "qwewqe")),
         SearchResultFragment("name", Array("sdfsdf"))))
@@ -98,7 +98,7 @@ class TestXmlSerialization extends TestCase{
     verifyXml(xml)
   }
 
-  def testUpload{
+  def testUpload(){
 
     val xStream = new XStreamFactory().createXMLStream
 
@@ -110,7 +110,7 @@ class TestXmlSerialization extends TestCase{
 
   }
 
-  def testDirectory{
+  def testDirectory(){
 
     val xStream = new XStreamFactory().createXMLStream
 
@@ -123,7 +123,7 @@ class TestXmlSerialization extends TestCase{
     verifyXml(xml)
   }
 
-  def testEmpty{
+  def testEmpty(){
 
     val xStream = new XStreamFactory().createXMLStream
 

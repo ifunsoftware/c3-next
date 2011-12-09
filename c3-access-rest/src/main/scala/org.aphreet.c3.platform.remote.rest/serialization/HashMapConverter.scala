@@ -43,7 +43,7 @@ class HashMapConverter extends Converter{
 
 
   override def marshal(value:java.lang.Object, writer:HierarchicalStreamWriter ,
-                       context:MarshallingContext) = {
+                       context:MarshallingContext) {
     val map = value.asInstanceOf[HashMap[String, String]]
 
     for((k, v) <- map){
@@ -52,8 +52,8 @@ class HashMapConverter extends Converter{
       writer.addAttribute("key", k)
       writer.startNode("value")
       writer.setValue(v)
-      writer.endNode
-      writer.endNode
+      writer.endNode()
+      writer.endNode()
     }
 
 

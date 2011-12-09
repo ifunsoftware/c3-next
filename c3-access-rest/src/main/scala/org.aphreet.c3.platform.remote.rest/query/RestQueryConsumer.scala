@@ -42,13 +42,13 @@ class RestQueryConsumer(val writer: PrintWriter) extends QueryConsumer {
     addressesWritten = addressesWritten + 1
 
     if (addressesWritten >= 100) {
-      writer.flush
+      writer.flush()
       addressesWritten = 0
     }
 
   }
 
   override def close {
-    writer.close
+    writer.close()
   }
 }

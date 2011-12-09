@@ -45,7 +45,7 @@ class ArrayBufferConverter(val mMapper:Mapper) extends AbstractCollectionConvert
 
 
   override def marshal(value:java.lang.Object, writer:HierarchicalStreamWriter ,
-                       context:MarshallingContext) = {
+                       context:MarshallingContext) {
     val buffer = value.asInstanceOf[ArrayBuffer[_]]
 
     for(e <- buffer){

@@ -27,24 +27,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.rest.response.fs
+package org.aphreet.c3.platform.remote.rest.response
 
-import org.aphreet.c3.platform.filesystem.{NodeRef, Directory}
+import java.io.{PrintWriter, StringWriter}
 
-case class FSDirectory(name:String, address:String, nodes:Array[NodeRef])
 
-object FSDirectory{
+class ErrorDescription(val message:String, val exception:String){
 
-  def fromNode(node:Directory):FSDirectory = {
-    val resource = node.resource
+  def this(message:String) = this(message, "")
 
-    val name = resource.systemMetadata.get("c3.fs.nodename") match{
-      case Some(x) => x
-      case None => ""
-    }
+  def this(message:String, e:Throwable) = this(message, {
+    val writer = new StringWriter
 
-    val address = resource.address
+    e.printStackTrace(new PrintWriter(writer))
 
-    FSDirectory(name, address, node.getChildren)
+    val result = writer.toString
+
+    writer.close()
+
+    result
+  })
+
+  private def buildDescriptionFromException(e:Throwable):String = {
+
+    val writer = new StringWriter
+
+    e.printStackTrace(new PrintWriter(writer))
+
+    val result = writer.toString
+
+    writer.close()
+
+    result
   }
+
 }

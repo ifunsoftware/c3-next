@@ -38,35 +38,5 @@ class ErrorResult(override val info:ResultInfo, val errorDescription:ErrorDescri
 
 }
 
-class ErrorDescription(val message:String, val exception:String){
-
-  def this(message:String) = this(message, "")
-
-  def this(message:String, e:Throwable) = this(message, {
-    val writer = new StringWriter
-
-    e.printStackTrace(new PrintWriter(writer))
-
-    val result = writer.toString
-
-    writer.close
-
-    result
-  })
-
-  private def buildDescriptionFromException(e:Throwable):String = {
-
-    val writer = new StringWriter
-
-    e.printStackTrace(new PrintWriter(writer))
-
-    val result = writer.toString
-
-    writer.close
-
-    result
-  }
-
-}
 
 

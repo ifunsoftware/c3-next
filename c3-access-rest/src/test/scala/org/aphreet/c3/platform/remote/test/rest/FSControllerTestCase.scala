@@ -36,11 +36,9 @@ import junit.framework.{Assert, TestCase}
 
 class FSControllerTestCase extends TestCase{
 
-  def testUriDecoding = {
+  def testUriDecoding() {
 
     val fsController = new FSController
-
-    //println(fsController.decodeFSPath("/group0/wiki/%D0%BC%D0%BE%D1%8F%20%D0%BB%D1%8E%D0%B1%D0%B8%D0%BC%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"))
 
     Assert.assertEquals("/group0/wiki/Some Page", fsController.decodeFSPath("/group0/wiki/Some%20Page"))
 

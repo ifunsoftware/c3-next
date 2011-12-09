@@ -67,4 +67,4 @@ class DirectoryResult(override val info:ResultInfo, val directory:FSDirectory) e
   def this(directory:FSDirectory) = this(new ResultInfo("1.0", "OK"), directory)
 }
 
-case class ResourceAddress(val address:String, val version:Int)
+case class ResourceAddress(address:String, version:Int)
