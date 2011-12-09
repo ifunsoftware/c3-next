@@ -52,10 +52,10 @@ class AuthenticationManagerImpl extends AuthenticationManager {
   var configAccessor: AuthConfigAccessor = _
 
   @Autowired
-  def setConfigAccessor(accessor: AuthConfigAccessor) = {configAccessor = accessor}
+  def setConfigAccessor(accessor: AuthConfigAccessor) {configAccessor = accessor}
 
   @PostConstruct
-  def init {
+  def init() {
     log info "Starting AuthManager"
     users ++= configAccessor.load
   }
@@ -74,7 +74,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def update(username: String, password: String, enabled:Boolean) = {
+  def update(username: String, password: String, enabled:Boolean) {
     users.get(username) match {
       case Some(user) => {
         user.password = password
@@ -87,7 +87,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
     }
   }
 
-  def create(username: String, password: String) = {
+  def create(username: String, password: String) {
     users.get(username) match {
       case Some(user) => throw new UserExistsException
       case None => {
@@ -102,7 +102,7 @@ class AuthenticationManagerImpl extends AuthenticationManager {
 
   }
 
-  def delete(username: String) = {
+  def delete(username: String) {
     users.get(username) match {
       case Some(user) => {
         users.synchronized {

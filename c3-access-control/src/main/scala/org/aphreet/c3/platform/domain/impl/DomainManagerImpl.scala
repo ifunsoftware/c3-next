@@ -57,15 +57,15 @@ class DomainManagerImpl extends DomainManager{
   private var domainById:HashMap[String, Domain] = new HashMap()
 
   @Autowired
-  def setDomainAccessor(accessor:DomainAccessor) = {domainAccessor = accessor}
+  def setDomainAccessor(accessor:DomainAccessor) {domainAccessor = accessor}
 
 
   @PostConstruct
-  def init{
-    reloadDomainConfig
+  def init(){
+    reloadDomainConfig()
   }
 
-  private def reloadDomainConfig = {
+  private def reloadDomainConfig() {
 
     var map = new HashMap[String, Domain]
 
@@ -80,11 +80,11 @@ class DomainManagerImpl extends DomainManager{
     domainById = idMap
   }
 
-  private def storeDomainConfig = {
+  private def storeDomainConfig() {
     domainAccessor.store(domains.values.toList)
   }
 
-  def addDomain(name:String) = {
+  def addDomain(name:String) {
 
     domains.get(name) match {
       case Some(x) => throw new PlatformException("Domain with such name already exists")
@@ -95,36 +95,36 @@ class DomainManagerImpl extends DomainManager{
 
     domainAccessor.update(l => domain :: l)
 
-    reloadDomainConfig
+    reloadDomainConfig()
   }
 
   def generateKey(name:String):String = {
     domains.get(name) match {
       case Some(d) =>
         d.key = generateKey
-        storeDomainConfig
-        reloadDomainConfig
+        storeDomainConfig()
+        reloadDomainConfig()
         d.key
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
 
-  def setMode(name:String, mode:String) = {
+  def setMode(name:String, mode:String) {
     domains.get(name) match {
       case Some(d) =>
         d.mode = DomainMode.byName(mode)
-        storeDomainConfig
-        reloadDomainConfig
+        storeDomainConfig()
+        reloadDomainConfig()
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
 
-  def updateName(name:String, newName:String) = {
+  def updateName(name:String, newName:String) {
     domains.get(name) match {
       case Some(d) =>
         d.name = newName
-        storeDomainConfig
-        reloadDomainConfig
+        storeDomainConfig()
+        reloadDomainConfig()
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
@@ -148,7 +148,7 @@ class DomainManagerImpl extends DomainManager{
 
     domainAccessor.store(newDomainList)
 
-    reloadDomainConfig
+    reloadDomainConfig()
   }
 
   def addDomainToList(importedDomain:Domain, remoteSystemId:String, domainList:List[Domain]):List[Domain] = {

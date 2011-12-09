@@ -55,7 +55,7 @@ object HashUtil{
       }
     }
 
-    hexString.toString
+    hexString.toString()
   }
 
   def hmac(key:String, input:String):String = {
@@ -79,7 +79,7 @@ object HashUtil{
       }
     }
 
-    hexString.toString
+    hexString.toString()
   }
 
   def md5hash(input: String): String = hash(input, MD5)

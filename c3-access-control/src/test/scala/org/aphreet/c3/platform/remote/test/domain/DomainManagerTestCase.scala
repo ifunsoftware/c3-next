@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.domain.{ReadOnlyMode, FullMode, Domain}
 
 class DomainManagerTestCase extends TestCase{
 
-  def testDomainAdd() = {
+  def testDomainAdd() {
 
     val domain1 = Domain("1", "name", "key", FullMode)
     val domain2 = Domain("2", "name2", "key2", FullMode)
@@ -59,7 +59,7 @@ class DomainManagerTestCase extends TestCase{
     assertTrue(newDomain.name == "name3")
   }
 
-  def testDomainAddWithRename() = {
+  def testDomainAddWithRename() {
 
     val domain1 = Domain("1", "name", "key", FullMode)
     val domain2 = Domain("2", "name2", "key2", FullMode)
@@ -80,7 +80,7 @@ class DomainManagerTestCase extends TestCase{
     assertTrue(newDomain.name == "name-systemId")
   }
 
-  def testDomainUpdate() = {
+  def testDomainUpdate() {
 
     val domain1 = Domain("1", "name", "key", FullMode)
     val domain2 = Domain("2", "name2", "key2", FullMode)
@@ -107,7 +107,7 @@ class DomainManagerTestCase extends TestCase{
 
   }
 
-  def testDomainUpdateWithoutRename() = {
+  def testDomainUpdateWithoutRename() {
 
     val domain1 = Domain("1", "name-systemId", "key", FullMode)
     val domain2 = Domain("2", "name2", "key2", FullMode)
@@ -134,7 +134,7 @@ class DomainManagerTestCase extends TestCase{
 
   }
 
-  def testDomainUpdateWithRename() = {
+  def testDomainUpdateWithRename() {
 
     val domain1 = Domain("1", "name", "key", FullMode)
     val domain2 = Domain("2", "name2", "key2", FullMode)

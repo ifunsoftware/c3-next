@@ -48,14 +48,12 @@ import org.aphreet.c3.platform.domain.{FullMode, DomainMode, Domain}
 @Scope("singleton")
 class DomainAccessor extends ConfigAccessor[List[Domain]]{
 
+  @Autowired
   var configManager: PlatformConfigManager = _
 
   def configDir: File = configManager.configDir
 
   def configFileName: String = "c3-domain-config.json"
-
-  @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
   def defaultConfig:List[Domain] = {
     List(Domain(UUID.randomUUID.toString, "anonymous", "", FullMode))
@@ -82,14 +80,12 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
     list
   }
 
-  def storeConfig(list: List[Domain], configFile: File) = {
+  def storeConfig(list: List[Domain], configFile: File) {
     this.synchronized {
-      val swriter = new StringWriter()
-
-      val fileWriter: FileWriter = null
+      val sWriter = new StringWriter()
 
       try {
-        val writer = new JSONWriterImpl(swriter)
+        val writer = new JSONWriterImpl(sWriter)
 
         writer.`object`
 
@@ -114,14 +110,14 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
         writer.endObject
 
 
-        swriter.flush
+        sWriter.flush()
 
-        val result = JSONFormatter.format(swriter.toString)
+        val result = JSONFormatter.format(sWriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        sWriter.close()
       }
     }
   }

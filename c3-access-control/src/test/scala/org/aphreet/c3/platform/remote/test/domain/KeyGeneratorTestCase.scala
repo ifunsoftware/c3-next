@@ -37,7 +37,7 @@ import junit.framework.{Assert, TestCase}
 
 class KeyGeneratorTestCase extends TestCase{
 
-  def testGenerateKey = {
+  def testGenerateKey() {
 
     val random = new Random(0l)
 

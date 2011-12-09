@@ -48,7 +48,7 @@ abstract class AccessToken(val name:String, val action:Action) {
   def updateResource(resource:Resource)
 
   /**
-   * Whan system metadata should contain resource to match this
+   * What system metadata should contain resource to match this
    * access token
    */
   def metadataRestrictions:Map[String, String] = Map()

@@ -49,14 +49,12 @@ import org.aphreet.c3.platform.auth.User
 @Scope("singleton")
 class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
+  @Autowired
   var configManager: PlatformConfigManager = _
 
   def configDir: File = configManager.configDir
 
   def configFileName: String = "c3-auth-config.json"
-
-  @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
 
   def defaultConfig:Map[String, User] = {
     val map = new HashMap[String, User]
@@ -86,14 +84,12 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
     map
   }
 
-  def storeConfig(map: Map[String, User], configFile: File) = {
+  def storeConfig(map: Map[String, User], configFile: File) {
     this.synchronized {
-      val swriter = new StringWriter()
-
-      var fileWriter: FileWriter = null
+      val sWriter = new StringWriter()
 
       try {
-        val writer = new JSONWriterImpl(swriter)
+        val writer = new JSONWriterImpl(sWriter)
 
         writer.`object`
 
@@ -116,14 +112,14 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
         writer.endObject
 
 
-        swriter.flush
+        sWriter.flush()
 
-        val result = JSONFormatter.format(swriter.toString)
+        val result = JSONFormatter.format(sWriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        sWriter.close()
       }
     }
   }
