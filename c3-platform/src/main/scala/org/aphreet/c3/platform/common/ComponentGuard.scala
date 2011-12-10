@@ -35,7 +35,7 @@ import org.springframework.osgi.service.importer.ServiceProxyDestroyedException
 
 trait ComponentGuard{
 
-  def letItFall(block: => Any):Unit = {
+  def letItFall(block: => Any) {
     try{
       block
     }catch{

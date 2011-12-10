@@ -74,7 +74,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
     configureDefaultMimeDetector()
 
-    start
+    start()
   }
 
   @PreDestroy
@@ -296,7 +296,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
         }
         case DestroyMsg => {
           log info "Stopping AccessManagerActor"
-          exit
+          exit()
         }
       }
     }

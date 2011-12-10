@@ -68,28 +68,28 @@ class StorageManagerImpl extends StorageManager{
   lazy val systemId = getSystemId
 
   @Autowired
-  def setConfigAccessor(accessor:StorageConfigAccessor) = {configAccessor = accessor}
+  def setConfigAccessor(accessor:StorageConfigAccessor) {configAccessor = accessor}
 
   @Autowired
-  def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
+  def setVolumeManager(manager:VolumeManager) {volumeManager = manager}
 
   @Autowired
-  def setStorageDispatcher(dispatcher:StorageDispatcher) = {storageDispatcher = dispatcher}
+  def setStorageDispatcher(dispatcher:StorageDispatcher) {storageDispatcher = dispatcher}
 
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+  def setPlatformConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
 
   @PostConstruct
-  def init{
+  def init(){
     log info "Starting StorageManager..."
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping StorageManager..."
   }
 
-  def registerFactory(factory:StorageFactory) = {
+  def registerFactory(factory:StorageFactory) {
     factories.synchronized{
       factories.put(factory.name, factory)
     }
@@ -97,7 +97,7 @@ class StorageManagerImpl extends StorageManager{
     createExistentStoragesForFactory(factory)
   }
 
-  def unregisterFactory(factory:StorageFactory) ={
+  def unregisterFactory(factory:StorageFactory) {
 
     storages.synchronized{
       factory.storages.foreach(s => unregisterStorage(s))
@@ -107,7 +107,7 @@ class StorageManagerImpl extends StorageManager{
       factories - factory.name
     }
 
-    updateDispatcher
+    updateDispatcher()
 
   }
 
@@ -152,7 +152,7 @@ class StorageManagerImpl extends StorageManager{
   def listStorages:List[Storage] =
     storages.map(_._2).toList.distinct
 
-  def removeStorage(storage:Storage) = {
+  def removeStorage(storage:Storage) {
 
     if(storage.count == 0
             || storage.mode == U(Constants.STORAGE_MODE_MIGRATION)){
@@ -165,8 +165,8 @@ class StorageManagerImpl extends StorageManager{
 
       configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
 
-      updateDispatcher
-      storage.close
+      updateDispatcher()
+      storage.close()
 
       removeStorageData(storage)
 
@@ -203,7 +203,7 @@ class StorageManagerImpl extends StorageManager{
     }
   }
 
-  def createIndex(id:String, index:StorageIndex) = {
+  def createIndex(id:String, index:StorageIndex) {
     val storage = storageForId(id)
 
     if(storage.count != 0){
@@ -215,7 +215,7 @@ class StorageManagerImpl extends StorageManager{
     updateStorageParams(storage)
   }
 
-  def removeIndex(id:String, name:String) = {
+  def removeIndex(id:String, name:String) {
     val storage = storageForId(id)
 
     val indexes = storage.params.indexes.filter(_.name != name)
@@ -229,7 +229,7 @@ class StorageManagerImpl extends StorageManager{
 
   }
 
-  def addSecondaryId(id:String, secondaryId:String) = {
+  def addSecondaryId(id:String, secondaryId:String) {
 
     this.synchronized{
       val storageParams = configAccessor.load
@@ -262,7 +262,7 @@ class StorageManagerImpl extends StorageManager{
 
     volumeManager register storage
 
-    updateDispatcher
+    updateDispatcher()
   }
 
   private def unregisterStorage(storage:Storage){
@@ -272,7 +272,7 @@ class StorageManagerImpl extends StorageManager{
   }
 
 
-  private def updateDispatcher{
+  private def updateDispatcher(){
     storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).toList)
   }
 
@@ -309,7 +309,7 @@ class StorageManagerImpl extends StorageManager{
     }
   }
 
-  private def removeStorageData(storage:Storage) = {
+  private def removeStorageData(storage:Storage) {
     def removeDir(file:File){
       if(file.isDirectory)
         file.listFiles.foreach(removeDir(_))

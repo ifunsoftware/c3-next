@@ -36,7 +36,7 @@ import java.io.File
 
 class PlatformConfigTest extends AbstractTestWithFileSystem{
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
 
     val configAccessor = new PlatformConfigAccessor
     

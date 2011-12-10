@@ -49,7 +49,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
   var configManager: PlatformConfigManager = null
 
   @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
 
   def configFileName: String = "c3-storage-config.json"
 
@@ -154,7 +154,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
     list
   }
 
-  def storeConfig(params: List[StorageParams], configFile: File) = {
+  def storeConfig(params: List[StorageParams], configFile: File) {
     this.synchronized {
 
       val swriter = new StringWriter()
@@ -205,14 +205,14 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
         writer.endArray
         writer.endObject
 
-        swriter.flush
+        swriter.flush()
 
         val result = JSONFormatter.format(swriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        swriter.close()
       }
     }
   }

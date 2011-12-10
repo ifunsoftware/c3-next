@@ -41,7 +41,7 @@ import org.scalatest.mock.EasyMockSugar
 
 class VersionManagerTestCase extends TestCase with EasyMockSugar{
 
-  def testVersions = {
+  def testVersions() {
     val manager = new VersionManagerImpl
 
     manager.setBundleContext(createBundleContext)

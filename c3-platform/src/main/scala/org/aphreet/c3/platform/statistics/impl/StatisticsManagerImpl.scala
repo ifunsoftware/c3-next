@@ -48,16 +48,16 @@ class StatisticsManagerImpl extends StatisticsManager{
 
   {
     log info "Starting Statistics manager"
-    this.start
+    this.start()
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping Statistics manager"
     this ! DestroyMsg
   }
 
-  def act{
+  def act(){
     loop{
       react{
         case SetStatisticsMsg(key, value) =>{
@@ -86,7 +86,7 @@ class StatisticsManagerImpl extends StatisticsManager{
 
         case DestroyMsg => {
           log info "Statistics Manager's actor stopped"
-          this.exit
+          this.exit()
         }
       }
     }

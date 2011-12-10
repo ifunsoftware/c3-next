@@ -44,12 +44,16 @@ trait ConfigAccessor[T] {
     loadConfig(file)
   }
 
-  def store(data: T) = storeConfig(data, new File(configDir, configFileName))
+  def store(data: T) {
+    storeConfig(data, new File(configDir, configFileName))
+  }
 
-  def update(f: Function1[T, T]) = store(f.apply(load))
+  def update(f: (T) => T) {
+    store(f.apply(load))
+  }
 
 
-  protected def writeToFile(text: String, configFile: File) = {
+  protected def writeToFile(text: String, configFile: File) {
 
     if (!configFile.exists)
       configFile.createNewFile
@@ -58,9 +62,9 @@ trait ConfigAccessor[T] {
     val fileWriter = new FileWriter(configFile, false)
     try {
       fileWriter write text
-      fileWriter.flush
+      fileWriter.flush()
     } finally {
-      fileWriter.close
+      fileWriter.close()
     }
 
   }

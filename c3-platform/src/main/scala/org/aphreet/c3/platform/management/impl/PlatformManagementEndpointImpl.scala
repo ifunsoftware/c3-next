@@ -42,36 +42,38 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   var volumeManager:VolumeManager = _
 
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
 
   @Autowired
-  def setMigrationManager(manager:MigrationManager) = {migrationManager = manager}
+  def setMigrationManager(manager:MigrationManager) {migrationManager = manager}
   
   @Autowired
-  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) = {mimeSelector = selector}
+  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) {mimeSelector = selector}
   
   @Autowired
-  def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
+  def setSizeStorageSelector(selector:SizeStorageSelector) {sizeSelector = selector}
 
   @Autowired
-  def setTaskExecutor(manager:TaskManager) = {taskManager = manager}
+  def setTaskExecutor(manager:TaskManager) {taskManager = manager}
 
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setPlatformConfigManager(manager:PlatformConfigManager) {configManager = manager}
 
   @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
+  def setStatisticsManager(manager:StatisticsManager) {statisticsManager = manager}
 
   @Autowired
-  def setVolumeManager(manager:VolumeManager) = {volumeManager = manager}
+  def setVolumeManager(manager:VolumeManager) {volumeManager = manager}
 
   def listStorages:List[Storage] = storageManager.listStorages
   
   def listStorageTypes:List[String] = storageManager.listStorageTypes
   
-  def createStorage(storageType:String, path:String) = storageManager.createStorage(storageType, new Path(path))
+  def createStorage(storageType:String, path:String) {
+    storageManager.createStorage(storageType, new Path(path))
+  }
   
-  def removeStorage(id:String) = {
+  def removeStorage(id:String) {
     val storage = storageManager.storageForId(id)
     if(storage != null){
       storageManager.removeStorage(storage)
@@ -80,9 +82,11 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     }
   }
   
-  def setStorageMode(id:String, mode:StorageMode) = storageManager.setStorageMode(id, mode)
+  def setStorageMode(id:String, mode:StorageMode) {
+    storageManager.setStorageMode(id, mode)
+  }
  
-  def migrateFromStorageToStorage(sourceId:String, targetId:String) = {
+  def migrateFromStorageToStorage(sourceId:String, targetId:String) {
     migrationManager.migrateStorageToStorage(sourceId, targetId)
   }
   
@@ -95,7 +99,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     properties
   }
 
-  def setPlatformProperty(key:String, value:String) = {
+  def setPlatformProperty(key:String, value:String) {
 
     if(key == null || value == null){
       throw new NullPointerException("Properties must be not-null")
@@ -108,7 +112,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   def listFinishedTasks:List[TaskDescription] = taskManager.finishedTaskList
   
-  def setTaskMode(taskId:String, state:TaskState) ={
+  def setTaskMode(taskId:String, state:TaskState) {
     state match {
       case PAUSED => taskManager.pauseTask(taskId)
       case RUNNING => taskManager.resumeTask(taskId)
@@ -120,34 +124,38 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     mimeSelector.configEntries
   }
   
-  def addTypeMapping(mapping:(String, String, Boolean)) = {
+  def addTypeMapping(mapping:(String, String, Boolean)) {
     mimeSelector.addEntry(mapping)
   }
   
-  def removeTypeMapping(mimeType:String) = {
+  def removeTypeMapping(mimeType:String) {
     mimeSelector.removeEntry(mimeType)
   }
   
   def listSizeMappings:List[(Long, String, Boolean)] = sizeSelector.configEntries
   
-  def addSizeMapping(mapping:(Long, String, Boolean)) = sizeSelector.addEntry(mapping)
+  def addSizeMapping(mapping:(Long, String, Boolean)) {
+    sizeSelector.addEntry(mapping)
+  }
   
-  def removeSizeMaping(size:Long) = sizeSelector.removeEntry(size)
+  def removeSizeMaping(size:Long) {
+    sizeSelector.removeEntry(size)
+  }
 
 
   def statistics:Map[String,String] = statisticsManager.fullStatistics
 
   def listVolumes:List[Volume] = volumeManager.volumeList
 
-  def createIndex(id:String, index:StorageIndex) = {
+  def createIndex(id:String, index:StorageIndex) {
     storageManager.createIndex(id, index)
   }
 
-  def removeIndex(id:String, name:String) = {
+  def removeIndex(id:String, name:String) {
     storageManager.removeIndex(id, name)
   }
 
-  def addStorageSecondaryId(id:String, secId:String) = {
+  def addStorageSecondaryId(id:String, secId:String) {
     storageManager.addSecondaryId(id, secId)
   }
 

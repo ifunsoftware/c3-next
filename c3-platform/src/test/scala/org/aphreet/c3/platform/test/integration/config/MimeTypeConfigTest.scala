@@ -37,7 +37,7 @@ import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 class MimeTypeConfigTest extends AbstractTestWithFileSystem{
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
     
     val configAccessor = new MimeTypeConfigAccessor
     

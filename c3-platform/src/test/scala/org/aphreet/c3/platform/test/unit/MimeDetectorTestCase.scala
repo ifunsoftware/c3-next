@@ -8,7 +8,7 @@ import junit.framework.{Assert, TestCase}
 
 class MimeDetectorTestCase extends TestCase {
 
-  def testDetector = {
+  def testDetector() {
 
     val string = "this is my text!"
     

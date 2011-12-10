@@ -71,11 +71,11 @@ class Volume(val mountPoint:String, var size:Long, var available:Long){
     
   }
   
-  def setLowLimit(value:Long) = {
+  def setLowLimit(value:Long) {
     lowLimit = value
   }
   
-  def setHighLimit(value:Long) = {
+  def setHighLimit(value:Long) {
     highLimit = value
   }
   

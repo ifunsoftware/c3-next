@@ -47,10 +47,10 @@ class QueryManagerImpl extends QueryManager{
   var storageManager:StorageManager = _
 
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
 
   @PostConstruct
-  def init = {
+  def init() {
     log info "Starting QueryManager"
   }
 
@@ -74,13 +74,13 @@ class QueryManagerImpl extends QueryManager{
           consumer.addResource(iterator.next)
 
       }finally{
-        iterator.close
+        iterator.close()
       }
     } 
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping QueryManager"
   }
 

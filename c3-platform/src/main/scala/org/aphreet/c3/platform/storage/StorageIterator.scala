@@ -33,9 +33,9 @@ import org.aphreet.c3.platform.resource.Resource
 
 trait StorageIterator extends java.util.Iterator[Resource]{
 
-  def close
+  def close()
   
-  def remove = {
+  def remove() {
     throw new UnsupportedOperationException
   }
   

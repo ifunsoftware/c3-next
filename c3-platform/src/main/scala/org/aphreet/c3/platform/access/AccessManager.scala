@@ -52,4 +52,4 @@ trait AccessManager extends WatchedActor{
   def unregisterOwner(owner:ResourceOwner)
 }
 
-case class UpdateMetadataMsg(val address:String, val metadata:Map[String,String])
+case class UpdateMetadataMsg(address:String, metadata:Map[String,String])

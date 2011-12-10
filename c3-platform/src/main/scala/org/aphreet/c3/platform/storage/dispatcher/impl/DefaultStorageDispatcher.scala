@@ -55,12 +55,12 @@ class DefaultStorageDispatcher extends StorageDispatcher {
   var sizeSelector:SizeStorageSelector = null
   
   @Autowired
-  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) = {mimeSelector = selector}
+  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) {mimeSelector = selector}
   
   @Autowired
-  def setSizeStorageSelector(selector:SizeStorageSelector) = {sizeSelector = selector}
+  def setSizeStorageSelector(selector:SizeStorageSelector) {sizeSelector = selector}
   
-  def setStorages(sts:List[Storage]) = {
+  def setStorages(sts:List[Storage]) {
     val newStorages = new HashMap[String, List[Storage]]
     
     for(s <- sts){

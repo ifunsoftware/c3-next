@@ -97,12 +97,12 @@ object ResourceSerializer {
 
 
       writer.endObject
-      swriter.flush
+      swriter.flush()
 
       JSONFormatter.format(swriter.toString)
 
     }finally{
-      swriter.close
+      swriter.close()
     }
   }
 

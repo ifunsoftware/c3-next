@@ -36,7 +36,7 @@ import org.aphreet.c3.platform.resource.BytesDataStream
 
 class DataStreamTestCase extends TestCase{
 
-  def testByteDataWrapper = {
+  def testByteDataWrapper() {
 
     val data:Array[Byte] = Array(-128,-127,-1,-2,-3,4,-5,1,2,3,4,126,127)
 

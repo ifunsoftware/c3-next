@@ -43,7 +43,7 @@ import collection.mutable.HashMap
 class StorageConfigTest extends AbstractTestWithFileSystem{
 
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
 
     val paramsMap1 = new HashMap[String, String]
     val paramsMap2 = new HashMap[String, String]
@@ -102,7 +102,7 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     
   }
 
-  def testIdCheck = {
+  def testIdCheck() {
     val paramsMap1 = new HashMap[String, String]
     val paramsMap2 = new HashMap[String, String]
 

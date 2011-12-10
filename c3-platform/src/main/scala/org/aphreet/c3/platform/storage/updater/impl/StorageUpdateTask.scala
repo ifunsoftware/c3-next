@@ -44,13 +44,13 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
   var processedObjects = 0l
 
 
-  override def preStart{
+  override def preStart(){
     totalObjectsToProcess = storages.foldLeft(0l)(_ + _.count)
 
     log.info("Starting StorageUpdate task. Estimated entries to process " + totalObjectsToProcess)
   }
 
-  override def step{
+  override def step(){
 
     if(currentStorage == null){
       currentStorage = selectStorage match {
@@ -93,7 +93,7 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
       log.info("Storage " + currentStorage.id + " processing complete")
 
       processedObjects = processedObjects + currentIterator.objectsProcessed
-      currentIterator.close
+      currentIterator.close()
       currentIterator = null
       currentStorage = null
     }
@@ -107,9 +107,9 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
     }
   }
 
-  override def postFailure{
+  override def postFailure(){
     if(currentIterator != null){
-      currentIterator.close
+      currentIterator.close()
     }
   }
 

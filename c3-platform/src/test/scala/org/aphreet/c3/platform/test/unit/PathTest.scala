@@ -37,14 +37,14 @@ import junit.framework.TestCase
 
 
 class PathTest extends TestCase {
-  def testUnixPaths {
+  def testUnixPaths() {
     assertEquals(path("/usr/bin/test").toString, "/usr/bin/test")
     assertEquals(path("/uSr/bin/teSt").toString, "/uSr/bin/teSt")
     assertEquals(path("/usr/bin/test/").toString, "/usr/bin/test")
     assertEquals(true, true)
   }
 
-  def testWinPaths {
+  def testWinPaths() {
     assertEquals(path("D:\\my\\path").toString, "D:/my/path")
     assertEquals(path("d:\\my\\path").toString, "D:/my/path")
     assertEquals(path("d:/my/path").toString, "D:/my/path")

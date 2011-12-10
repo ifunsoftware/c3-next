@@ -42,7 +42,7 @@ abstract sealed class StorageMode(val name:String, val message:String){
   
 }
 
-case class RW(val msg:String) extends StorageMode("RW", msg){
+case class RW(msg:String) extends StorageMode("RW", msg){
   
   def this() = this(STORAGE_MODE_NONE)
   
@@ -52,7 +52,7 @@ case class RW(val msg:String) extends StorageMode("RW", msg){
   
 }
 
-case class RO(val msg:String) extends StorageMode("RO", msg){
+case class RO(msg:String) extends StorageMode("RO", msg){
   
   def this() = this(STORAGE_MODE_NONE)
   
@@ -62,7 +62,7 @@ case class RO(val msg:String) extends StorageMode("RO", msg){
   
 }
 
-case class U(val msg:String) extends StorageMode("U", msg){
+case class U(msg:String) extends StorageMode("U", msg){
   
   def this() = this(STORAGE_MODE_NONE)
   

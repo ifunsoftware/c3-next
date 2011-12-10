@@ -75,7 +75,7 @@ abstract class DataStream {
   /**
    * Write content to the channel
    */
-  def writeTo(channel:WritableByteChannel):Unit
+  def writeTo(channel:WritableByteChannel)
 
   /**
    * Get content as a string. As far as we can have binary data, string may not be readable
@@ -103,20 +103,22 @@ abstract class DataStream {
    * Writes content to the specified file.
    * All previous file content will be lost
    */
-  def writeTo(targetFile:File):Unit = {
-    val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel()
+  def writeTo(targetFile:File) {
+    val channel : WritableByteChannel = new FileOutputStream(targetFile).getChannel
 
     try{
       this writeTo channel
     }finally{
-      channel.close
+      channel.close()
     }
   }
 
   /**
    * Writes content to the specified output stream
    */
-  def writeTo(out:OutputStream):Unit = this.writeTo(Channels.newChannel(out))
+  def writeTo(out:OutputStream) {
+    this.writeTo(Channels.newChannel(out))
+  }
 
   /**
    * Get data as byte array.
@@ -145,17 +147,17 @@ abstract class AbstractFileDataStream extends DataStream{
 
   def inputStream = new FileInputStream(file)
 
-  def writeTo(channel:WritableByteChannel) = {
+  def writeTo(channel:WritableByteChannel) {
     val fileChannel = new FileInputStream(file).getChannel
 
     try{
       fileChannel.transferTo(0, file.length, channel)
     }finally{
-      fileChannel.close
+      fileChannel.close()
     }
   }
 
-  override def writeTo(targetFile:File) = {
+  override def writeTo(targetFile:File) {
 
     if(file.getCanonicalFile != targetFile.getCanonicalFile)
        super.writeTo(targetFile)
@@ -201,7 +203,9 @@ abstract class AbstractBytesDataStream extends DataStream {
 
   def inputStream = new ByteArrayInputStream(loadBytes)
 
-  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(loadBytes))
+  def writeTo(channel:WritableByteChannel) {
+    channel.write(ByteBuffer.wrap(loadBytes))
+  }
 
   override def getBytes:Array[Byte] = loadBytes
 
@@ -238,7 +242,9 @@ class StringDataStream(val value:String) extends DataStream {
   
   def inputStream = new ByteArrayInputStream(value.getBytes("UTF-8"))
   
-  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(value.getBytes("UTF-8")))
+  def writeTo(channel:WritableByteChannel) {
+    channel.write(ByteBuffer.wrap(value.getBytes("UTF-8")))
+  }
   
   def stringValue:String = value
   
@@ -263,7 +269,9 @@ class StringDataStream(val value:String) extends DataStream {
 class EmptyDataStream extends DataStream {
   def inputStream = new ByteArrayInputStream(new Array[Byte](0))
   
-  def writeTo(channel:WritableByteChannel) = channel.write(ByteBuffer.wrap(new Array[Byte](0)))
+  def writeTo(channel:WritableByteChannel) {
+    channel.write(ByteBuffer.wrap(new Array[Byte](0)))
+  }
   
   def stringValue:String = ""
   
@@ -271,7 +279,7 @@ class EmptyDataStream extends DataStream {
 
   def calculateHash:String = MD5.asHex({
     val md5 = new MD5
-    md5.Update("".getBytes())
+    md5.Update("".getBytes)
     md5.Final
   })
 

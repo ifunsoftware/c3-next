@@ -48,7 +48,7 @@ class StorageManagerTestCase extends TestCase{
   val storageId = "1234"
   val storageName = "StorageMock"
 
-  def testRegisterFactory = {
+  def testRegisterFactory() {
 
     val volumeManager = createMock(classOf[VolumeManager])
     expect(volumeManager.register(StorageMock(storageId, storagePath)))
@@ -85,7 +85,7 @@ class StorageManagerTestCase extends TestCase{
     storageManager.setStorageDispatcher(storageDispatcher)
     storageManager.setPlatformConfigManager(configManager)
 
-    storageManager.init
+    storageManager.init()
 
 
     storageManager.registerFactory(storageFactory)

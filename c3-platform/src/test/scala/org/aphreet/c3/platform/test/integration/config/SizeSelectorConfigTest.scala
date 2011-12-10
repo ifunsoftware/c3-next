@@ -37,7 +37,7 @@ import java.io.File
 
 class SizeSelectorConfigTest extends AbstractTestWithFileSystem{
 
-  def testConfigPersistence {
+  def testConfigPersistence() {
     
     val configAccessor = new SizeSelectorConfigAccessor
     

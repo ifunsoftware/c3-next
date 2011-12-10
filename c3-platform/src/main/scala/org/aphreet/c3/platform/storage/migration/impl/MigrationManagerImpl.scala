@@ -50,12 +50,12 @@ class MigrationManagerImpl extends MigrationManager{
   val log = LogFactory getLog getClass
   
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
   
   @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
+  def setTaskManager(manager:TaskManager) {taskManager = manager}
   
-  def migrateStorageToStorage(sourceId:String, targetId:String) = {
+  def migrateStorageToStorage(sourceId:String, targetId:String) {
     val source = storageManager storageForId sourceId
     val target = storageManager storageForId targetId
     
@@ -68,7 +68,7 @@ class MigrationManagerImpl extends MigrationManager{
   }
   
   
-  def migrateStorageToStorage(source:Storage, target:Storage) = {
+  def migrateStorageToStorage(source:Storage, target:Storage) {
     
     log info "Starting migration from " + source.name + " " + source.id + " to " + target.name + " " + target.id
     
@@ -88,7 +88,7 @@ class MigrationManagerImpl extends MigrationManager{
     }
   }
   
-  private def checkPreconditions(source:Storage, target:Storage) = {
+  private def checkPreconditions(source:Storage, target:Storage) {
   
     log info "Checking preconditions"
     

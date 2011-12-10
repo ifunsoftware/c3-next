@@ -36,6 +36,6 @@ trait QueryConsumer{
 
   def addResource(resource:Resource)
 
-  def close
+  def close()
 
 }

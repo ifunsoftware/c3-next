@@ -46,7 +46,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
   var configManager: PlatformConfigManager = null
 
   @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
 
   def configDir: File = configManager.configDir
 
@@ -79,7 +79,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
     node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[T]
   }
 
-  def storeConfig(data: Map[T, (String, Boolean)], configFile: File) = {
+  def storeConfig(data: Map[T, (String, Boolean)], configFile: File) {
     this.synchronized {
 
 
@@ -99,14 +99,14 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
 
         writer.endObject
 
-        swriter.flush
+        swriter.flush()
 
         val result = JSONFormatter.format(swriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        swriter.close()
       }
     }
   }

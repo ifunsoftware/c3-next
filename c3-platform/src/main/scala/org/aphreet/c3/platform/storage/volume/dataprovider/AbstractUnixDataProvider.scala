@@ -72,7 +72,7 @@ abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeData
 	    
 	    result
 
-    }finally reader.close 
+    }finally reader.close()
   }
   
   def toBytes(size:Long):Long = size

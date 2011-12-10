@@ -38,8 +38,8 @@ trait ResourceOwner {
 
   def resourceCanBeUpdated(resource:Resource):Boolean = true
 
-  def deleteResource(resource:Resource) = {}
+  def deleteResource(resource:Resource) {}
 
-  def updateResource(resource:Resource) = {}
+  def updateResource(resource:Resource) {}
 
 }

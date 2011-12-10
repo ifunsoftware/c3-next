@@ -74,16 +74,16 @@ class ResourceVersion{
       builder.append("\n\t\t").append(key).append(" => ").append(value)
     }
 
-    builder.toString
+    builder.toString()
   }
 
-  def setData(_data:DataStream) = {data = _data}
+  def setData(_data:DataStream) {data = _data}
 
   def calculateHash = {
     systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
   }
 
-  def verifyCheckSum = {
+  def verifyCheckSum() {
     systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
       case Some(value) => {
         if(value != data.hash) throw new ResourceException("Checksum verification failed")
@@ -98,7 +98,7 @@ class ResourceVersion{
     version.date = if(this.date != null) this.date.clone.asInstanceOf[Date] else null
 
     version.revision = this.revision
-    version.systemMetadata = this.systemMetadata.clone
+    version.systemMetadata = this.systemMetadata.clone()
     version.data = if(this.data != null) this.data.copy else null
 
     version

@@ -36,7 +36,7 @@ import org.aphreet.c3.platform.storage.{RW, RO, StorageModeParser}
 
 class StorageModeParserTestCase extends TestCase {
 
-  def testComplexParse = {
+  def testComplexParse() {
     val modeStr = "RO(capacity)"
 
     val mode = StorageModeParser.valueOf(modeStr)

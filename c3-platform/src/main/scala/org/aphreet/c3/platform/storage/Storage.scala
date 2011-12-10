@@ -131,7 +131,7 @@ abstract class Storage {
   /**
    * Set storage mode
    */
-  def mode_=(newMode:StorageMode) = {
+  def mode_=(newMode:StorageMode) {
 
     log info "Setting storage mode " + newMode
 
@@ -233,13 +233,13 @@ abstract class Storage {
    */
   def iterator(fields:Map[String,String] = Map(),
                systemFields:Map[String,String] = Map(),
-               filter:Function1[Resource, Boolean] = ((resource:Resource) => true)
+               filter:(Resource) => Boolean = ((resource:Resource) => true)
           ):StorageIterator
 
   /**
    * Close storage
    */
-  def close;
+  def close();
 
 
   /**

@@ -36,7 +36,7 @@ import junit.framework.Assert._
 
 class JSONFormatting extends TestCase{
 
-  def testFormatting{
+  def testFormatting(){
     
     val source = """{"firstName":"John","lastName":"Smith","address":{"streetAddress":"2d Street","city":"NY","postalCode":101101},"phoneNumbers":["812 123-1234","916 123-4567"]}"""
     

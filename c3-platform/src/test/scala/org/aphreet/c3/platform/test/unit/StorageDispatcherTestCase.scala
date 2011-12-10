@@ -40,7 +40,7 @@ import junit.framework.{AssertionFailedError, TestCase}
 class StorageDispatcherTestCase extends TestCase{
 
 
-  def testRandom{
+  def testRandom(){
 
     val storageDispatcher = new DefaultStorageDispatcher
 
@@ -85,7 +85,7 @@ class StorageStub0(storageId:String) extends Storage{
     this.mode = RW("")
   }
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]) {}
 
   def id:String = storageId
 
@@ -95,13 +95,13 @@ class StorageStub0(storageId:String) extends Storage{
 
   def update(resource:Resource):String = ""
 
-  def delete(ra:String) = {}
+  def delete(ra:String) {}
 
-  def put(resource:Resource) = {}
+  def put(resource:Resource) {}
 
-  def lock(ra:String) = {}
+  def lock(ra:String) {}
 
-  def unlock(ra:String) = {}
+  def unlock(ra:String) {}
 
   def params:StorageParams = null
 
@@ -111,10 +111,10 @@ class StorageStub0(storageId:String) extends Storage{
 
   def iterator(fields:Map[String,String],
                systemFields:Map[String,String],
-               filter:Function1[Resource, Boolean]
+               filter:(Resource) => Boolean
           ):StorageIterator = null
 
-  def close = {}
+  def close() {}
 
 
   def path:Path = null
@@ -123,8 +123,8 @@ class StorageStub0(storageId:String) extends Storage{
 
   def name:String = ""
 
-  def createIndex(index:StorageIndex) = {}
+  def createIndex(index:StorageIndex) {}
 
-  def removeIndex(index:StorageIndex) = {}
+  def removeIndex(index:StorageIndex) {}
   
 }

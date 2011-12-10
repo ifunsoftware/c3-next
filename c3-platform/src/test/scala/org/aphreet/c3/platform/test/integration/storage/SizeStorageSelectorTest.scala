@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 
 class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
     
     val configAccessor = new SizeSelectorConfigAccessor
     
@@ -55,7 +55,7 @@ class SizeStorageSelectorTest extends AbstractTestWithFileSystem{
     
     val selector = new SizeStorageSelector
     selector.setSizeSelectorConfigAccessor(configAccessor)
-    selector.init
+    selector.init()
     
     val entries = selector.configEntries
     

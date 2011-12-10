@@ -50,17 +50,17 @@ class AccessMediatorImpl extends AccessMediator {
   var accessListeners = new HashMap[Actor, Symbol]
 
   @PostConstruct
-  def init {
+  def init() {
     log info "Starting access mediator"
-    this.start
+    this.start()
   }
 
-  override def act {
+  override def act() {
     loop{
       react{
         case DestroyMsg => {
           log info "AccessMediator stopped"
-          this.exit
+          this.exit()
         }
 
         case RegisterNamedListenerMsg(actor, name) =>
@@ -103,7 +103,7 @@ class AccessMediatorImpl extends AccessMediator {
   }
 
   @PreDestroy
-  def destroy {
+  def destroy() {
     log info "Stopping access mediator..."
     this ! DestroyMsg
   }

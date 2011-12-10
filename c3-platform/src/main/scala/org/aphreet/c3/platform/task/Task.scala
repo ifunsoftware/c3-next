@@ -17,7 +17,7 @@ abstract class Task extends Runnable{
 
   def state:TaskState = taskState
 
-  override def run = {
+  override def run() {
 
     ThreadWatcher + this
 
@@ -30,13 +30,13 @@ abstract class Task extends Runnable{
       if(!shouldStop && !Thread.currentThread.isInterrupted){
         taskState = RUNNING
         log.info(id + " started")
-        preStart
+        preStart()
         while(!shouldStop && !Thread.currentThread.isInterrupted){
           if(!isPaused){
-            step
+            step()
           }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
         }
-        postComplete
+        postComplete()
         taskState = FINISHED
         log.info(id + " stopped")
       }else{
@@ -47,20 +47,20 @@ abstract class Task extends Runnable{
       case e => {
         taskState = CRASHED
         log error e
-        postFailure
+        postFailure()
       }
     }finally {
       ThreadWatcher - this
     }
   }
 
-  protected def step;
+  protected def step();
 
-  protected def preStart = {};
+  protected def preStart() {};
 
-  protected def postComplete = {};
+  protected def postComplete() {};
 
-  protected def postFailure = {}
+  protected def postFailure() {}
 
   protected def canStart:Boolean = true
 
@@ -74,19 +74,19 @@ abstract class Task extends Runnable{
 
   protected def isPaused:Boolean = {taskState == PAUSED}
 
-  def stop = {
-    Thread.currentThread.interrupt
+  def stop() {
+    Thread.currentThread.interrupt()
     shouldStopFlag = true
     taskState = INTERRUPTED
   }
 
-  def pause = {
+  def pause() {
     if(taskState == RUNNING){
       taskState = PAUSED
     }
   }
 
-  def resume = {
+  def resume() {
     if(taskState == PAUSED)
       taskState = RUNNING
   }

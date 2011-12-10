@@ -36,7 +36,7 @@ import java.util.Random
 
 class AddressGeneratorTestCase extends TestCase {
 
-  def testAddressGeneration = {
+  def testAddressGeneration() {
 
     val systemId:Int = 0xAFAFBDFD
     val storageId = "1234"
@@ -95,7 +95,7 @@ class AddressGeneratorTestCase extends TestCase {
       builder.append(chars(res0)).append(chars(res1)).append(chars(res2)).append(chars(res3))
     }
 
-    builder.toString
+    builder.toString()
   }
 
 }

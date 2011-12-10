@@ -91,6 +91,6 @@ object IdGenerator{
       builder.append(chars(res0)).append(chars(res1)).append(chars(res2)).append(chars(res3))
     }
 
-    builder.toString
+    builder.toString()
   }
 }

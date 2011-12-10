@@ -43,7 +43,7 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
   private var sizeRanges:SortedMap[Long, (String, Boolean)] = null
   
   @Autowired
-  def setSizeSelectorConfigAccessor(accessor:SizeSelectorConfigAccessor) = {configAccessor = accessor}
+  def setSizeSelectorConfigAccessor(accessor:SizeSelectorConfigAccessor) {configAccessor = accessor}
   
   override def storageTypeForResource(resource:Resource):(String,Boolean) = {
     val size = resource.versions(0).data.length
@@ -58,7 +58,7 @@ class SizeStorageSelector extends AbstractStorageSelector[Long]{
     null
   }
   
-  override def updateConfig(config:Map[Long, (String,Boolean)]) = {
+  override def updateConfig(config:Map[Long, (String,Boolean)]) {
     sizeRanges = new TreeMap[Long, (String,Boolean)]()(new ReverseOrdering) ++ config
   }
   

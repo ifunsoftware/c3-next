@@ -37,17 +37,17 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
 
   var iterator:StorageIterator = _
   
-  override def preStart = {
+  override def preStart() {
     iterator = source.iterator()
   }
   
-  override def step = {
+  override def step() {
     val resource = iterator.next
     target.put(resource)
   }
   
-  override def postComplete = {
-    iterator.close
+  override def postComplete() {
+    iterator.close()
     iterator = null
     
     target.ids = source.id :: source.ids ::: target.ids
@@ -58,9 +58,9 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
     manager removeStorage source
   }
   
-  override def postFailure = {
+  override def postFailure() {
     try{
-      iterator.close
+      iterator.close()
       iterator = null
     }catch{
       case e=> log error e
@@ -89,12 +89,12 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
      }else -1
   }
   
-  override def finalize = {
+  override def finalize() {
     if(iterator != null)
       try{
-        iterator.close
+        iterator.close()
       }catch{
-        case e => e.printStackTrace
+        case e => e.printStackTrace()
       }
   }
 }

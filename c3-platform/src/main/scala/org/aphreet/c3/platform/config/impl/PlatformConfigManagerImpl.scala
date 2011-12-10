@@ -63,7 +63,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
 
   @Autowired
-  def setConfigAccessor(accessor: PlatformConfigAccessor) = {
+  def setConfigAccessor(accessor: PlatformConfigAccessor) {
     configAccessor = accessor
   }
 
@@ -94,7 +94,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   }
 
   @PostConstruct
-  def init = {
+  def init() {
    
     configAccessor.configDirectory = configDir
 
@@ -116,7 +116,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     
     //Starting listening for events
     log info "Starting config manager actor"
-    this.start
+    this.start()
 
 
     if (foundListeners != null)
@@ -127,12 +127,12 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   }
 
   @PreDestroy
-  def destroy = {
+  def destroy() {
     log info "Stopping PlatformConfigManager"
     this ! DestroyMsg
   }
 
-  def act {
+  def act() {
     loop {
       react {
         case RegisterMsg(listener) => {
@@ -203,7 +203,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
         case DestroyMsg => {
           log info "Stopped config manager actor"
-          this.exit
+          this.exit()
         }
       }
     }
@@ -227,7 +227,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
 
   override
-  def setPlatformProperty(key: String, value: String) = {
+  def setPlatformProperty(key: String, value: String) {
 
     this ! SetPropertyMsg(key, value)
 

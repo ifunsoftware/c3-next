@@ -143,7 +143,7 @@ class ResourceTestCase extends TestCase {
 
   }*/
 
-  def testDeserializeVersion0 = {
+  def testDeserializeVersion0() {
     val resource = Resource.fromByteArray(serializedResourceVersion0)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
@@ -158,7 +158,7 @@ class ResourceTestCase extends TestCase {
 
   }
 
-  def testDeserializeVersion1 = {
+  def testDeserializeVersion1() {
     val resource = Resource.fromByteArray(serializedResourceVersion1)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
@@ -173,7 +173,7 @@ class ResourceTestCase extends TestCase {
 
   }
 
-  def testDeserializeVersion2 = {
+  def testDeserializeVersion2() {
     val resource = Resource.fromByteArray(serializedResourceVersion2)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
@@ -188,7 +188,7 @@ class ResourceTestCase extends TestCase {
 
   }
   
-  def testUnicodeChars{
+  def testUnicodeChars(){
      val resource = new Resource
 
     resource.address = "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47"
@@ -213,7 +213,7 @@ class ResourceTestCase extends TestCase {
 
   }
 
-  def testClone {
+  def testClone() {
 
 
     val resourceVersion = new ResourceVersion

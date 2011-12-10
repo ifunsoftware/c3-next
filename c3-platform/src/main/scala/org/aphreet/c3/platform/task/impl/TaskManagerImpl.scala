@@ -34,24 +34,27 @@ class TaskManagerImpl extends TaskManager{
     (for((taskId, task) <- tasks if task.state.isFinalState)
       yield task.description).toList
   
-  def stopTask(id:String)  = 
+  def stopTask(id:String) {
     tasks.get(id) match {
-      case Some(task) => task.stop
+      case Some(task) => task.stop()
       case None => log warn "Can't stop task with id " + id + ": task does not exist"
     }
+  }
     
   
-  def pauseTask(id:String) =
+  def pauseTask(id:String) {
     tasks.get(id) match {
-      case Some(task) => task.pause
+      case Some(task) => task.pause()
       case None => log warn "Can't pause task with id " + id + ": task does not exist"
     }
+  }
   
-  def resumeTask(id:String) =
+  def resumeTask(id:String) {
     tasks.get(id) match {
-      case Some(task) => task.resume
+      case Some(task) => task.resume()
       case None => log warn "Can't resume task with id " + id + ": task does not exist"
     }
+  }
   
   def submitTask(task:Task):String =
     this.synchronized{
@@ -65,7 +68,7 @@ class TaskManagerImpl extends TaskManager{
   @PreDestroy
   def destroy(){
 
-    tasks.foreach(e => e._2.stop)
+    tasks.foreach(e => e._2.stop())
 
     executor.shutdown()
     

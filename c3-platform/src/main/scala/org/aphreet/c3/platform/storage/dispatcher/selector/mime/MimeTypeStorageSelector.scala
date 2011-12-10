@@ -46,7 +46,7 @@ class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
   private var typeMap = new HashMap[String, (String, Boolean)]
   
   @Autowired
-  def setConfigAccessor(accessor:MimeTypeConfigAccessor) = {configAccessor = accessor}
+  def setConfigAccessor(accessor:MimeTypeConfigAccessor) {configAccessor = accessor}
   
   override def storageTypeForResource(resource:Resource):(String,Boolean) = {
     
@@ -75,7 +75,7 @@ class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
     typeMap.map(entry => (entry._1, entry._2._1, entry._2._2)).toList
   
   
-  override def updateConfig(config:Map[String, (String,Boolean)]) = {
+  override def updateConfig(config:Map[String, (String,Boolean)]) {
     val map = new HashMap[String, (String,Boolean)]
     for(entry <- config)
       map += entry

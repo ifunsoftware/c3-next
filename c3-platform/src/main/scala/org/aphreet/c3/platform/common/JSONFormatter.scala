@@ -112,7 +112,7 @@ object JSONFormatter {
     }
       
     
-    builder.toString
+    builder.toString()
   }
   
   private def nTimesTab(n:Int, builder:StringBuilder) ={

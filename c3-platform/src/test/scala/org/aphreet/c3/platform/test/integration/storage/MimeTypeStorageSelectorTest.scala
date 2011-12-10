@@ -40,7 +40,7 @@ import java.io.File
 
 class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
     
     val configAccessor = new MimeTypeConfigAccessor
     
@@ -62,7 +62,7 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
     
     val selector = new MimeTypeStorageSelector
     selector.setConfigAccessor(configAccessor)
-    selector.init
+    selector.init()
     
     assertEquals(("PureBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/png")))
     assertEquals(("FileBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/jpeg")))

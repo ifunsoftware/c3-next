@@ -89,7 +89,7 @@ class Resource {
       if(data != null) return data.mimeType
     }
 
-    return Resource.MD_CONTENT_TYPE_DEFAULT
+    Resource.MD_CONTENT_TYPE_DEFAULT
   }
 
   /**
@@ -104,11 +104,11 @@ class Resource {
     }
   }
 
-  def verifyCheckSums = {
+  def verifyCheckSums() {
     if(!this.isVersioned){
-      versions(0).verifyCheckSum
+      versions(0).verifyCheckSum()
     }else{
-      versions.filter(!_.persisted).foreach(_.verifyCheckSum)
+      versions.filter(!_.persisted).foreach(_.verifyCheckSum())
     }
   }
 
@@ -117,7 +117,7 @@ class Resource {
    */
   def addVersion(version:ResourceVersion){
     if(!isVersioned){
-      versions.clear
+      versions.clear()
     }
     versions += version
   }
@@ -137,13 +137,13 @@ class Resource {
    */
   def toByteArray:Array[Byte] = {
 
-    def writeDate(value:Date, dataOs:DataOutputStream) = {
+    def writeDate(value:Date, dataOs:DataOutputStream) {
       var date = new Date(0)
       if(value != null) date = value
       dataOs.writeLong(date.getTime)
     }
 
-    def writeString(value:String, dataOs:DataOutputStream) = {
+    def writeString(value:String, dataOs:DataOutputStream) {
 
       var string:String = ""
 
@@ -154,7 +154,7 @@ class Resource {
       dataOs.write(bytes)
     }
 
-    def writeMap(map:Map[String, String], dataOs:DataOutputStream) = {
+    def writeMap(map:Map[String, String], dataOs:DataOutputStream) {
       dataOs.writeInt(map.size)
 
       for(key <- map.keySet){
@@ -163,7 +163,7 @@ class Resource {
       }
     }
 
-    def writeVersions(versions:Buffer[ResourceVersion], dataOs:DataOutputStream) = {
+    def writeVersions(versions:Buffer[ResourceVersion], dataOs:DataOutputStream) {
       dataOs.writeInt(0) //version class version, for future
       dataOs.writeInt(versions.size)
 
@@ -205,8 +205,8 @@ class Resource {
     resource.address = this.address
     resource.createDate = this.createDate.clone.asInstanceOf[Date]
 
-    resource.metadata = this.metadata.clone
-    resource.systemMetadata = this.systemMetadata.clone
+    resource.metadata = this.metadata.clone()
+    resource.systemMetadata = this.systemMetadata.clone()
 
     resource.isVersioned = this.isVersioned
 
@@ -341,7 +341,7 @@ object Resource {
 
 
 
-    dataIn.close
+    dataIn.close()
 
     resource
   }

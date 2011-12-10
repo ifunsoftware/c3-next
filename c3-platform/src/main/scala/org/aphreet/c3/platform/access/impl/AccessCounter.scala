@@ -49,29 +49,29 @@ class AccessCounter extends Actor{
   var statisticsManger:StatisticsManager = _
 
   @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
+  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
 
   @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManger = manager}
+  def setStatisticsManager(manager:StatisticsManager) {statisticsManger = manager}
 
   {
-    this.start
+    this.start()
   }
 
   @PostConstruct
-  def init{
+  def init(){
     log info "Starting AccessCounter"
     accessMediator ! RegisterNamedListenerMsg(this, 'AccessCounter)
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping AccessCounter"
     accessMediator ! UnregisterNamedListenerMsg(this, 'AccessCounter)
     this ! DestroyMsg
   }
 
-  def act{
+  def act(){
     loop{
       react{
         case ResourceAddedMsg(resource, source) => {
@@ -88,7 +88,7 @@ class AccessCounter extends Actor{
 
         case DestroyMsg =>{
           log info "AccessCounter actor stopped"
-          this.exit
+          this.exit()
         }
 
         case _ => log warn "Ignorring wrong message"

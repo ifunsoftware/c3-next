@@ -58,14 +58,14 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
 
   @Autowired
   @Qualifier("AccessMediator")
-  def setAccessMediator(mediator:Actor) = {accessMediator = mediator}
+  def setAccessMediator(mediator:Actor) {accessMediator = mediator}
 
   @Autowired
   @Qualifier("StatisticsService")
-  def setStatisticsService(service:Actor) = {statisticsService = service}
+  def setStatisticsService(service:Actor) {statisticsService = service}
 
   @PostConstruct
-  def init{
+  def init(){
 
     val cacheManager = CacheManager.create;
 
@@ -74,12 +74,12 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     cacheManager.addCache(cache)
 
     accessMediator ! RegisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
-    this.start
+    this.start()
 
     log info "Access cache started"
   }
 
-  def act = {
+  def act() {
 
     loop{
       react{
@@ -92,16 +92,16 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
 
         case DestroyMsg =>
           letItFall{
-            CacheManager.getInstance.shutdown
+            CacheManager.getInstance.shutdown()
             accessMediator ! UnregisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
           }
           log info "AccessCache stopped"
-          this.exit
+          this.exit()
       }
     }
   }
 
-  override def put(resource:Resource) = {
+  override def put(resource:Resource) {
     cache.put(new Element(resource.address, resource))
   }
 
@@ -116,12 +116,12 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     }
   }
 
-  override def remove(address:String) = {
+  override def remove(address:String) {
     cache.remove(address)
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     this ! DestroyMsg
   }
 

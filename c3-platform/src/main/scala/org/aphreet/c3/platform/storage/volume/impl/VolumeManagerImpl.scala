@@ -59,16 +59,16 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
   var taskManager:TaskManager = null
 
   @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
+  def setTaskManager(manager:TaskManager) {taskManager = manager}
 
   @PostConstruct
-  def init{
+  def init(){
     taskManager.submitTask(new VolumeUpdater(volumes, dataProvider))
   }
 
   def volumeList:List[Volume] = volumes
 
-  def register(storage:Storage) = {
+  def register(storage:Storage) {
     val volume = volumeForPath(storage.path.toString)
 
     if(volume != null){
@@ -78,7 +78,7 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
       throw new StorageException("Can't find volume for path: " + storage.path.toString)
   }
 
-  def unregister(storage:Storage) = {
+  def unregister(storage:Storage) {
     val volume = volumeForPath(storage.path.toString)
     if(volume != null)
       volume.storages -= storage
@@ -112,7 +112,7 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
   def defaultValues:Map[String,String] =
     Map(LIMITS -> "50000000,100000000")
 
-  def propertyChanged(event:PropertyChangeEvent) = {
+  def propertyChanged(event:PropertyChangeEvent) {
 
     val newLimits:Array[Long] = event.newValue.split(",").map(_.toLong)
 
@@ -134,7 +134,7 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
 
   class VolumeUpdater(val volumes:List[Volume], dataProvider:VolumeDataProvider) extends Task {
 
-    override def step{
+    override def step(){
       log.trace("Updating volume state")
 
       val newVolumeList = dataProvider.getVolumeList
@@ -145,7 +145,7 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
             volume.updateState(newVolume.size, newVolume.available)
 
 
-      log.trace(volumes.toString)
+      log.trace(volumes.toString())
       Thread.sleep(10000)
     }
 

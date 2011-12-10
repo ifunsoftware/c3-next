@@ -34,14 +34,14 @@ import actors.Actor
 
 trait WatchedActor extends Actor{
 
-  override def start = {
+  override def start() = {
     ThreadWatcher + this
-    super.start
+    super.start()
   }
 
-  override def exit = {
+  override def exit() = {
     ThreadWatcher - this
-    super.exit
+    super.exit()
   }
 
 }

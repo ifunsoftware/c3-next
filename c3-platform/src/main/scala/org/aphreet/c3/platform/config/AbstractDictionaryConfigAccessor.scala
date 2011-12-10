@@ -63,7 +63,7 @@ abstract class AbstractDictionaryConfigAccessor extends DictionaryConfigAccessor
     map
   }
 
-  def storeConfig(map: Map[String, String], configFile: File) = {
+  def storeConfig(map: Map[String, String], configFile: File) {
 
     this.synchronized {
       val swriter = new StringWriter()
@@ -77,14 +77,14 @@ abstract class AbstractDictionaryConfigAccessor extends DictionaryConfigAccessor
 
         writer.endObject
 
-        swriter.flush
+        swriter.flush()
 
         val result = JSONFormatter.format(swriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        swriter.close()
       }
     }
   }
