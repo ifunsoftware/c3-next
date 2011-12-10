@@ -47,7 +47,7 @@ class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with Platfor
   private var _accessManager:AccessManager = _
 
   @Autowired
-  private def setAccessManager(manager:AccessManager) = {_accessManager = manager}
+  private def setAccessManager(manager:AccessManager) {_accessManager = manager}
 
   private def accessManager:AccessManager = {
     if(_accessManager == null){

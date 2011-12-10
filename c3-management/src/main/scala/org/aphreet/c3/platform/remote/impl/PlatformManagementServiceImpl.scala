@@ -64,27 +64,27 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _filesystemManager:FSManager = _
 
   @Autowired
-  private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) = {
+  private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) {
     _managementEndpoint = endPoint
   }
 
   @Autowired
-  private def setAuthenticationManager(manager:AuthenticationManager) = {
+  private def setAuthenticationManager(manager:AuthenticationManager) {
     _authenticationManager = manager
   }
 
   @Autowired
-  private def setReplicationManager(manager:ReplicationManager) = {
+  private def setReplicationManager(manager:ReplicationManager) {
     _replicationManager = manager
   }
 
   @Autowired
-  private def setDomainManager(manager:DomainManager) = {
+  private def setDomainManager(manager:DomainManager) {
     _domainManager = manager
   }
 
   @Autowired
-  private def setFSManager(manager:FSManager) = {
+  private def setFSManager(manager:FSManager) {
     _filesystemManager = manager
   }
 
@@ -123,22 +123,23 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     _filesystemManager
   }
 
-  def removeStorage(id:String) =
-    try{
+  def removeStorage(id:String) {
+    try {
       managementEndpoint.removeStorage(id)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
   def listStorages:Array[StorageDescription] =
     try{
       managementEndpoint.listStorages.map(storageToDescription(_)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -148,34 +149,36 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       managementEndpoint.listStorageTypes.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
 
 
-  def createStorage(stType:String, path:String) =
-    try{
+  def createStorage(stType:String, path:String) {
+    try {
       managementEndpoint.createStorage(stType, path)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
-  def migrate(source:String, target:String) =
-    try{
+  def migrate(source:String, target:String) {
+    try {
       managementEndpoint.migrateFromStorageToStorage(source, target)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
-  def setStorageMode(id:String, mode:String) =
-    try{
+  def setStorageMode(id:String, mode:String) {
+    try {
       val storageMode = mode match {
         case "RW" => RW(STORAGE_MODE_USER)
         case "RO" => RO(STORAGE_MODE_USER)
@@ -183,23 +186,25 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
         case _ => throw new StorageException("No mode named " + mode)
       }
       managementEndpoint.setStorageMode(id, storageMode)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
 
-  def setPlatformProperty(key:String, value:String) =
-    try{
+  def setPlatformProperty(key:String, value:String) {
+    try {
       managementEndpoint.setPlatformProperty(key, value)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
   def platformProperties:Array[Pair] =
     try{
@@ -207,7 +212,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new Pair(e._1, e._2)).toSeq.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -217,7 +222,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       managementEndpoint.listTasks.map(fromLocalDescription(_)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -227,28 +232,29 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       managementEndpoint.listFinishedTasks.map(fromLocalDescription(_)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
 
 
-  def setTaskMode(taskId:String, mode:String) =
-    try{
-      val state:TaskState = mode match {
+  def setTaskMode(taskId:String, mode:String) {
+    try {
+      val state: TaskState = mode match {
         case "pause" => PAUSED
-        case "resume"   => RUNNING
+        case "resume" => RUNNING
         case _ => throw new PlatformException("mode is not valid")
 
       }
 
       managementEndpoint.setTaskMode(taskId, state)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
   def listTypeMappings:Array[TypeMapping] =
     try{
@@ -256,30 +262,32 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean) =
-    try{
+  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean) {
+    try {
       managementEndpoint.addTypeMapping((mimeType, storage, versioned.booleanValue))
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
-  def removeTypeMapping(mimeType:String) =
-    try{
+  def removeTypeMapping(mimeType:String) {
+    try {
       managementEndpoint.removeTypeMapping(mimeType)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
   def listSizeMappings:Array[SizeMapping] =
     try{
@@ -287,69 +295,71 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new SizeMapping(entry._1, entry._2, entry._3)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
 
-  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean) =
-    try{
+  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean) {
+    try {
       managementEndpoint.addSizeMapping((size.longValue, storage, versioned.booleanValue))
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
-  def removeSizeMapping(size:java.lang.Long) =
-    try{
+  def removeSizeMapping(size:java.lang.Long) {
+    try {
       managementEndpoint.removeSizeMaping(size.longValue)
-    }catch{
+    } catch {
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
+  }
 
   def listUsers:Array[UserDescription] =
     try{
       authenticationManager.list.map(e => new UserDescription(e.name, e.enabled)).toSeq.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
 
-  def addUser(name:String, password:String) = {
+  def addUser(name:String, password:String) {
     try{
       authenticationManager.create(name, password)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def updateUser(name:String, password:String, enabled:java.lang.Boolean) = {
+  def updateUser(name:String, password:String, enabled:java.lang.Boolean) {
     try{
       authenticationManager.update(name, password, enabled.booleanValue)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def deleteUser(name:String) = {
+  def deleteUser(name:String) {
     try{
       authenticationManager.delete(name)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -361,7 +371,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new Pair(key, value)).toSeq.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -373,13 +383,13 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) = {
+  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
     try{
       val idx = new StorageIndex(name,
         fields.toList,
@@ -390,62 +400,62 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       managementEndpoint.createIndex(id, idx)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def removeIndex(id:String, name:String) = {
+  def removeIndex(id:String, name:String) {
     try{
       managementEndpoint.removeIndex(id, name)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def addStorageSecondaryId(id:String, secId:String) = {
+  def addStorageSecondaryId(id:String, secId:String) {
     try{
       managementEndpoint.addStorageSecondaryId(id, secId)
     }catch{
       case e=> {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def registerReplicationSource(host:ReplicationHost) = {
+  def registerReplicationSource(host:ReplicationHost) {
     try{
       replicationManager.registerReplicationSource(host)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def establishReplication(host:String, username:String, password:String) = {
+  def establishReplication(host:String, username:String, password:String) {
     try{
       replicationManager.establishReplication(host, username, password)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def removeReplicationTarget(id:String) = {
+  def removeReplicationTarget(id:String) {
     try{
       replicationManager.cancelReplication(id)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -456,29 +466,29 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       replicationManager.listReplicationTargets
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def replayReplicationQueue = {
+  def replayReplicationQueue {
     try{
       replicationManager.replayReplicationQueue
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def createDomain(name:String) = {
+  def createDomain(name:String) {
     try{
       domainManager.addDomain(name)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -490,18 +500,18 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name)).toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def updateDomainName(name:String, newName:String) = {
+  def updateDomainName(name:String, newName:String) {
     try{
       domainManager.updateName(name, newName)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -512,18 +522,18 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       domainManager.generateKey(name)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def setDomainMode(name:String, mode:String) = {
+  def setDomainMode(name:String, mode:String) {
     try{
       domainManager.setMode(name, mode)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
@@ -534,29 +544,29 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       filesystemManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def importFileSystemRoot(domainId:String, address:String) = {
+  def importFileSystemRoot(domainId:String, address:String) {
     try{
       filesystemManager.importFileSystemRoot(domainId, address)
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }
   }
 
-  def startFilesystemCheck = {
+  def startFilesystemCheck {
     try{
-      filesystemManager.startFilesystemCheck
+      filesystemManager.startFilesystemCheck()
     }catch{
       case e => {
-        e.printStackTrace
+        e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
       }
     }

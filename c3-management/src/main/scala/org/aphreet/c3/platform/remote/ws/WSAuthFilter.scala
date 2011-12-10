@@ -45,7 +45,7 @@ class WSAuthFilter extends Filter{
   var authManager:AuthenticationManager = null
 
   @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {
+  def setAuthManager(manager:AuthenticationManager) {
     authManager = manager
     log info "AuthManager setter invoked"
   }
@@ -57,7 +57,7 @@ class WSAuthFilter extends Filter{
     filterConfig = config
   }
 
-  override def destroy{}
+  override def destroy(){}
 
   override def doFilter(request: ServletRequest, response: ServletResponse, chain:FilterChain) {
 
@@ -92,7 +92,7 @@ class WSAuthFilter extends Filter{
           authOk = authManager.auth(user, password) != null
         }
       }catch{
-        case e => e.printStackTrace
+        case e => e.printStackTrace()
       }
     }
 

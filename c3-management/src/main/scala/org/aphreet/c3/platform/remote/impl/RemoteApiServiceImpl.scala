@@ -45,7 +45,7 @@ class RemoteApiServiceImpl extends SpringBeanAutowiringSupport with RemoteApiSer
   private var _versionManager:VersionManager = null
 
   @Autowired
-  private def setVersionManager(manager:VersionManager) = {_versionManager = manager}
+  private def setVersionManager(manager:VersionManager) {_versionManager = manager}
 
   private def versionManager:VersionManager = {
     if(_versionManager == null){
