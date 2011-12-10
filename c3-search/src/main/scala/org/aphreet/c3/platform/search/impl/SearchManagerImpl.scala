@@ -65,16 +65,22 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   val log = LogFactory.getLog(getClass)
 
 
+  @Autowired
   var accessManager: AccessManager = _
 
+  @Autowired
   var accessMediator: AccessMediator = _
 
+  @Autowired
   var configManager: PlatformConfigManager = _
 
+  @Autowired
   var taskManager: TaskManager = _
 
+  @Autowired
   var storageManager: StorageManager = _
 
+  @Autowired
   var statisticsManager: StatisticsManager = _
 
   val configuration = SearchConfigurationUtil.createSearchConfiguration
@@ -101,29 +107,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   var extractDocumentContent = false
 
-  @Autowired
-  def setAccessManager(manager: AccessManager) = {accessManager = manager}
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
-
-  @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
-
-  @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
-
   @PostConstruct
-  def init {
+  def init() {
 
     if (indexPath != null) {
-      initialize
+      initialize()
     } else {
       log warn "Index path is not set. Waiting for property to appear"
     }
@@ -142,25 +130,25 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       searcher = new Searcher(indexPath, ramIndexers, configuration)
       fileIndexer.searcher = searcher
 
-      searcher.start
+      searcher.start()
 
-      fileIndexer.start
+      fileIndexer.start()
 
-      ramIndexers.foreach(_.start)
+      ramIndexers.foreach(_.start())
 
-      this.start
+      this.start()
       accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
       indexerTaskId = taskManager.submitTask(backgroundIndexTask)
 
-      indexScheduler.start
+      indexScheduler.start()
     }
   }
 
   @PreDestroy
-  def destroy {
+  def destroy() {
     log info "Destroying SearchManager"
 
     this ! DestroyMsg
@@ -177,7 +165,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     else searcher.search(domain, query)
   }
 
-  def act {
+  def act() {
     while (true) {
       receive {
         case ResourceAddedMsg(resource, source) => selectIndexer ! IndexMsg(resource)
@@ -214,10 +202,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
             }
 
 
-            indexScheduler.interrupt
+            indexScheduler.interrupt()
 
             if(searcher != null){
-              searcher.close
+              searcher.close()
               searcher = null
             }
 
@@ -229,13 +217,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
             fileIndexer ! DestroyMsg
 
           }finally{
-            this.exit
+            this.exit()
           }
       }
     }
   }
 
-  def flushIndexes {
+  def flushIndexes() {
     ramIndexers.foreach(_ ! FlushIndex(true))
   }
 
@@ -264,7 +252,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         if(indexPath == null){
           log info "Found path to store index: " + newPath.path
           indexPath = newPath
-          initialize
+          initialize()
         }else{
 
           if(newPath != indexPath){
@@ -285,7 +273,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
           for (i <- 1 to indexersToAdd) {
             val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent)
-            indexer.start
+            indexer.start()
             ramIndexers = indexer :: ramIndexers
           }
         } else if (ramIndexers.size > newCount) {
@@ -331,7 +319,7 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
     this.setDaemon(true)
   }
 
-  override def run{
+  override def run(){
 
     log info "Started scheduler"
 
@@ -341,7 +329,7 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
       }catch{
         case e:InterruptedException =>
           log info "Thread interrupted"
-          Thread.currentThread.interrupt
+          Thread.currentThread.interrupt()
       }
       searchManager.ramIndexers.foreach(_ ! FlushIndex(false))
     }

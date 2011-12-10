@@ -65,13 +65,13 @@ class RamIndexer(val fileIndexer: FileIndexer,
   var documentBuilderFactory:DocumentBuilderFactory = _
 
   {
-    createNewWriter
+    createNewWriter()
 
     documentBuilderFactory = new DocumentBuilderFactory(configuration)
   }
 
 
-  def createNewWriter = {
+  def createNewWriter() {
 
     val oldWriter = writer
     val oldDirectory = directory
@@ -81,7 +81,7 @@ class RamIndexer(val fileIndexer: FileIndexer,
     writer = new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
 
     if (oldWriter != null) {
-      oldWriter.close
+      oldWriter.close()
       fileIndexer ! MergeIndexMsg(oldDirectory)
     }
   }
@@ -99,7 +99,7 @@ class RamIndexer(val fileIndexer: FileIndexer,
               sender ! ResourceIndexedMsg(resource.address)
               lastDocumentTime = System.currentTimeMillis
               if (writer.numDocs > maxDocsCount) {
-                createNewWriter
+                createNewWriter()
               }
             }
           } catch {
@@ -112,11 +112,11 @@ class RamIndexer(val fileIndexer: FileIndexer,
         case FlushIndex(force) => {
           if (writer.numDocs > 0) {
             if (force)
-              createNewWriter
+              createNewWriter()
             else {
               //More than 30 seconds between resources
               if (System.currentTimeMillis - lastDocumentTime > 30 * 1000)
-                createNewWriter
+                createNewWriter()
             }
           }else{
             log trace num + ": Writer is empty, flush skipped"
@@ -137,14 +137,14 @@ class RamIndexer(val fileIndexer: FileIndexer,
             reply {
               DestroyMsgReply
             }
-            this.exit
+            this.exit()
           }
         }
       }
     }
   }
 
-  def indexResource(resource: Resource) = {
+  def indexResource(resource: Resource) {
     log debug num + ": Indexing resource " + resource.address
 
     val extractedMeta =

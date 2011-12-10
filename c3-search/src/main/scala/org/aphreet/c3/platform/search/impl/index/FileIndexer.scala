@@ -62,14 +62,14 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
     new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
   }
 
-  def act{
+  def act(){
     loop{
       react{
         case MergeIndexMsg(directory) =>
           try{
             indexWriter.addIndexesNoOptimize(Array(directory))
-            indexWriter.commit
-            indexWriter.optimize
+            indexWriter.commit()
+            indexWriter.optimize()
             log debug "Index merged"
             searcher ! ReopenSearcher
           }catch{
@@ -86,7 +86,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
           try{
             log info "Changing index path to " + path
             indexPath = path
-            indexWriter.close
+            indexWriter.close()
             indexWriter = createWriter(indexPath)
             log info "Index path changed"
             searcher ! NewIndexPathMsg(path)
@@ -98,20 +98,20 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
 
         case DestroyMsg => {
           try{
-            indexWriter.close
+            indexWriter.close()
           }catch{
             case e => log.warn("Failed to close index", e)
             throw e
           }finally {
             log info "IndexWriter closed"
-            this.exit
+            this.exit()
           }
         }
       }
     }
   }
 
-  def deleteResource(address:String) = {
+  def deleteResource(address:String) {
     try{
       val term = new Term(Fields.ADDRESS, address)
       indexWriter.deleteDocuments(term)
@@ -122,7 +122,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
   }
 }
 
-case class MergeIndexMsg(val directory:Directory)
+case class MergeIndexMsg(directory:Directory)
 case class DeleteMsg(address:String)
 case class DeleteForUpdateMsg(resource:Resource)
 case class UpdateIndexCreationTimestamp(time:Long)

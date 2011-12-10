@@ -60,15 +60,15 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     System.currentTimeMillis > startTime || shouldStop || Thread.currentThread.isInterrupted
   }
 
-  override def preStart = {
+  override def preStart() {
     log info "Starting BackgroundIndexTask"
     storagesToIndex = storageManager.listStorages
   }
 
-  override def step {
+  override def step() {
 
     if (iterator == null) {
-      initIterator
+      initIterator()
     } else {
       try {
         if (iterator.hasNext) {
@@ -80,13 +80,13 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
           }
         } else {
           log debug "Iteration over storage " + currentStorage.id + " has competed"
-          iterator.close
+          iterator.close()
           iterator = null
         }
       } catch {
         case e: StorageException => {
           if (iterator != null) {
-            iterator.close
+            iterator.close()
             iterator = null
           }
         }
@@ -96,9 +96,9 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     Thread.sleep(1000)
   }
 
-  override def postFailure = {
+  override def postFailure() {
     if (iterator != null)
-      iterator.close
+      iterator.close()
   }
 
   private def shouldIndex(resource: Resource): Boolean = {
@@ -121,7 +121,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     }
   }
 
-  private def initIterator = {
+  private def initIterator() {
 
     if (storagesToIndex.size > 0) {
       currentStorage = storagesToIndex.head
@@ -143,4 +143,4 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   override def name = "BackgroundIndexer"
 }
 
-case class BackgroundIndexMsg(val resource:Resource)
+case class BackgroundIndexMsg(resource:Resource)

@@ -55,7 +55,7 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
   var indexSearcher = createSearcher
 
 
-  def act{
+  def act(){
     loop{
       react{
         case ReopenSearcher => {
@@ -66,7 +66,7 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
 
           Thread.sleep(1000 * 5) //May be some threads is still using old searcher
 
-          oldSearcher.close
+          oldSearcher.close()
         }
 
         case NewIndexPathMsg(path) => {
@@ -78,9 +78,9 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
         case DestroyMsg => {
           log info "Destroying searcher"
           try{
-            indexSearcher.close
+            indexSearcher.close()
           }finally{
-            this.exit
+            this.exit()
           }
 
         }
@@ -120,7 +120,7 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
   }
 
 
-  def close {
+  def close() {
     this ! DestroyMsg
   }
 

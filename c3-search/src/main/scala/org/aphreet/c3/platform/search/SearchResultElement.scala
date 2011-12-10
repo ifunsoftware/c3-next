@@ -34,13 +34,13 @@ package org.aphreet.c3.platform.search
 import scala.collection.JavaConversions._
 import org.aphreet.c3.search.ext.SearchResultEntry
 
-case class SearchResultElement(val address:String,
-                             val score:Float,
-                             val fragments:Array[SearchResultFragment]){
+case class SearchResultElement(address:String,
+                               score:Float,
+                             fragments:Array[SearchResultFragment]){
 
 }
 
-case class SearchResultFragment(val field:String, val foundStrings:Array[String])
+case class SearchResultFragment(field:String, foundStrings:Array[String])
 
 
 object SearchResultElement{

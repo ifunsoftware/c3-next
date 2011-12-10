@@ -62,7 +62,7 @@ class TextExtractor{
           channel = new FileOutputStream(file).getChannel
           stream.writeTo(channel)
         }finally{
-          channel.close
+          channel.close()
         }
       }
 
@@ -85,7 +85,7 @@ class TextExtractor{
     val rmiBean = new SearchRmiProxyFactoryBean
     rmiBean.setServiceUrl("rmi://localhost:1399/TikaProvider")
     rmiBean.setServiceInterface(classOf[TikaProvider])
-    rmiBean.afterPropertiesSet
+    rmiBean.afterPropertiesSet()
     log debug "Connected"
     rmiBean.getObject.asInstanceOf[TikaProvider]
   }
