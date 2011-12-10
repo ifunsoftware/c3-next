@@ -66,7 +66,7 @@ trait PlatformManagementService {
 
   def listReplicationTargets:Array[ReplicationHost]
 
-  def replayReplicationQueue
+  def replayReplicationQueue()
 
 
   def createDomain(name:String)
@@ -83,6 +83,6 @@ trait PlatformManagementService {
 
   def importFileSystemRoot(domainId:String, address:String)
 
-  def startFilesystemCheck
+  def startFilesystemCheck()
 
 }
