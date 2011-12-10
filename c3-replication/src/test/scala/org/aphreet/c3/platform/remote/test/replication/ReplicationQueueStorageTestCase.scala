@@ -40,12 +40,12 @@ class ReplicationQueueStorageTestCase extends TestCase{
 
   var testDir:File = null
 
-  override def setUp{
+  override def setUp(){
     testDir = new File(System.getProperty("user.home"), "c3_int_test")
     testDir.mkdirs
   }
 
-  override def tearDown{
+  override def tearDown(){
     def delDir(directory:File) {
       if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
       directory.delete
@@ -53,7 +53,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
     delDir(testDir)
   }
 
-  def testStorage {
+  def testStorage() {
 
     val storage = createStorage("1111")
 
@@ -79,7 +79,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
       assertTrue(tasks.contains(task))
     }
 
-    iterator.close
+    iterator.close()
 
     val iterator2 = storage.iterator
 
@@ -87,10 +87,10 @@ class ReplicationQueueStorageTestCase extends TestCase{
       val task = iterator2.next
 
       println("Deleting:" + task)
-      iterator2.remove
+      iterator2.remove()
     }
 
-    iterator2.close
+    iterator2.close()
 
     val iterator3 = storage.iterator
 
@@ -101,7 +101,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
       taskCount = taskCount + 1
     }
 
-    iterator3.close
+    iterator3.close()
 
     assertEquals(0, taskCount)
     //var tasksToCheck = tasks.clone

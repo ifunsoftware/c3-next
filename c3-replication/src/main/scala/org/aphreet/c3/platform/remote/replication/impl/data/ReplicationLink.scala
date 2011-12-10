@@ -59,7 +59,7 @@ class ReplicationLink(val localSystemId:String,
 
   private val dataEncryptor = new DataEncryptor(host.encryptionKey)
 
-  override def act{
+  override def act(){
 
     val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
@@ -189,7 +189,7 @@ class ReplicationLink(val localSystemId:String,
 
         case DestroyMsg => {
           log info "Destroying replication link to " + host.toString
-          this.exit
+          this.exit()
         }
       }
     }
@@ -203,11 +203,11 @@ class ReplicationLink(val localSystemId:String,
     }
   }
 
-  def close{
+  def close(){
     log info "Closing replication link"
     this ! DestroyMsg
   }
 }
 
 object QueuedTasks
-case class QueuedTasksReply(val set:HashSet[ReplicationTask])
+case class QueuedTasksReply(set:HashSet[ReplicationTask])

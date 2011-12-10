@@ -47,12 +47,12 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
   var iterator = queueStorage.iterator
 
-  override def step{
+  override def step(){
 
     for(i <- 1 to 100){
       if(iterator.hasNext){
         val task = iterator.next
-        iterator.remove
+        iterator.remove()
 
         submitTask(task)
       }
@@ -60,7 +60,7 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
   }
 
-  private def submitTask(task:ReplicationTask) = {
+  private def submitTask(task:ReplicationTask) {
 
     if(task.action == DeleteAction){
 
@@ -95,18 +95,18 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
   override def shouldStop:Boolean = !iterator.hasNext
 
-  protected override def postComplete = {
+  protected override def postComplete() {
     replicationManager.isTaskRunning = false
     if(iterator != null){
-      iterator.close
+      iterator.close()
       iterator = null
     }
   }
 
-  protected override def postFailure = {
+  protected override def postFailure() {
     replicationManager.isTaskRunning = false
     if(iterator != null){
-      iterator.close
+      iterator.close()
       iterator = null
     }
   }

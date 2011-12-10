@@ -59,16 +59,16 @@ class ConfigurationManager extends DtoConvertor{
   var platformConfigManager:PlatformConfigManager = _
 
   @Autowired
-  def setFsManager(manager:FSManager) = {fsManager = manager}
+  def setFsManager(manager:FSManager) {fsManager = manager}
 
   @Autowired
-  def setDomainManager(manager:DomainManager) = {domainManager = manager}
+  def setDomainManager(manager:DomainManager) {domainManager = manager}
 
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
 
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+  def setPlatformConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
 
 
   def processSerializedRemoteConfiguration(configuration:String) = {
@@ -130,7 +130,7 @@ class ConfigurationManager extends DtoConvertor{
     createReplicationHost(createLocalPropertyRetriever)
   }
 
-  private def createReplicationHost(propertyRetriever:Function1[String, String]):ReplicationHost = {
+  private def createReplicationHost(propertyRetriever:(String) => String):ReplicationHost = {
 
     val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
     val systemHost = propertyRetriever(Constants.C3_PUBLIC_HOSTNAME)
@@ -141,7 +141,7 @@ class ConfigurationManager extends DtoConvertor{
     ReplicationHost(systemId, systemHost, null, httpPort, httpsPort, replicationPort, null)
   }
 
-  private def createLocalPropertyRetriever:Function1[String, String] = {
+  private def createLocalPropertyRetriever:(String) => String = {
     ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get property " + key)
@@ -163,7 +163,7 @@ class ConfigurationManager extends DtoConvertor{
     }
   }
 
-  private def importStorages(remoteStorages:Array[StorageDescription]) = {
+  private def importStorages(remoteStorages:Array[StorageDescription]) {
     val storageDescriptions = storageManager.listStorages
          .map(s => storageToDescription(s)).toSeq.toArray
 

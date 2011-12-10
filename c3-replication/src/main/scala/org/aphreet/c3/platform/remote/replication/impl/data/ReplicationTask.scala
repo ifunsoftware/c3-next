@@ -34,7 +34,7 @@ import org.aphreet.c3.platform.remote.replication.ReplicationException
 import java.io.{DataOutputStream, ByteArrayInputStream, DataInputStream}
 import org.apache.commons.io.output.ByteArrayOutputStream
 
-case class ReplicationTask(val systemId:String, val address:String, val action:ReplicationAction) {
+case class ReplicationTask(systemId:String, address:String, action:ReplicationAction) {
 
   def getKeyBytes:Array[Byte] = {
     val byteOs = new ByteArrayOutputStream
@@ -113,7 +113,7 @@ object ReplicationAction {
   }
 }
 
-case class UpdateAction(val timestamp:Long) extends ReplicationAction {
+case class UpdateAction(timestamp:Long) extends ReplicationAction {
 
   def isStronger(action:ReplicationAction):Boolean = {
     action match {

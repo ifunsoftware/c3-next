@@ -35,7 +35,7 @@ import org.apache.commons.codec.binary.Base64
 
 class DataEncryptor(val sharedKey:Array[Byte]) {
 
-  def this(base64EncodedKey:String) = this(Base64.decodeBase64(base64EncodedKey.getBytes()))
+  def this(base64EncodedKey:String) = this(Base64.decodeBase64(base64EncodedKey.getBytes))
 
   private val keySpec = new SecretKeySpec(sharedKey, "AES")
 

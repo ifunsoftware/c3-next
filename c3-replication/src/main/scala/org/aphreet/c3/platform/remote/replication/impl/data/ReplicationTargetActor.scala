@@ -81,26 +81,26 @@ class ReplicationTargetActor extends WatchedActor{
   var localSystemId:String = _
 
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
 
   @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
+  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
 
   @Autowired
-  def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
+  def setSourceReplicationActor(actor:ReplicationSourceActor) {sourceReplicationActor = actor}
 
   @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
 
   @Autowired
-  def setDomainManager(manager:DomainManager) = {domainManager = manager}
+  def setDomainManager(manager:DomainManager) {domainManager = manager}
 
   def setUseSecureDataConnection(use:Boolean) = {
     secureDataConnection = use
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
   }
 
-  def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) = {
+  def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) {
 
     log info "Starting ReplicationTargetActor..."
 
@@ -119,7 +119,7 @@ class ReplicationTargetActor extends WatchedActor{
 
     iterator = workers.iterator
 
-    this.start
+    this.start()
 
     log info "ReplicationTargetActor started"
   }
@@ -130,7 +130,7 @@ class ReplicationTargetActor extends WatchedActor{
     workers.foreach(_.updateConfig(this.config))
   }
 
-  override def act{
+  override def act(){
 
     alive(replicationPort)
     register('ReplicationActor, this)
@@ -142,7 +142,7 @@ class ReplicationTargetActor extends WatchedActor{
 
           workers.foreach(_ ! DestroyMsg)
 
-          this.exit
+          this.exit()
         }
 
         case ReplicateAddMsg(resource, signature) => {
@@ -167,8 +167,8 @@ class ReplicationTargetActor extends WatchedActor{
             getNextWorker ! ProcessDeleteMsg(address, signature, target)
         }
 
-        case ReplicateSystemConfigMsg(config, signature) => {
-          getNextWorker ! ReplicateSystemConfigMsg(config, signature)
+        case ReplicateSystemConfigMsg(configuration, signature) => {
+          getNextWorker ! ReplicateSystemConfigMsg(configuration, signature)
         }
 
         case ReplicateAddAckMsg(address, signature) =>
@@ -185,10 +185,10 @@ class ReplicationTargetActor extends WatchedActor{
 
   private def getNextWorker:ReplicationTargetWorker = {
     if(iterator.hasNext){
-      iterator.next
+      iterator.next()
     }else{
       iterator = workers.iterator
-      iterator.next
+      iterator.next()
     }
   }
 
@@ -225,7 +225,7 @@ class ReplicationTargetActor extends WatchedActor{
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping ReplicationTarget Actor..."
     this ! DestroyMsg
   }

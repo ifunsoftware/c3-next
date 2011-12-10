@@ -53,10 +53,10 @@ class ReplicationQueueStorage(val path:Path) {
   protected var database : Database = null
 
   {
-    open
+    open()
   }
 
-  private def open {
+  private def open() {
     log info "Opening ReplicationQueueDB..."
 
     val envConfig = new EnvironmentConfig
@@ -81,7 +81,7 @@ class ReplicationQueueStorage(val path:Path) {
     log info "ReplicationQueueDB opened"
   }
 
-  def add(tasks:Set[ReplicationTask]) = {
+  def add(tasks:Set[ReplicationTask]) {
     for(task <- tasks){
       try{
         val key = new DatabaseEntry(task.getKeyBytes)
@@ -119,18 +119,18 @@ class ReplicationQueueStorage(val path:Path) {
 
   def iterator:ReplicationQueueIterator = new ReplicationQueueIterator(database)
 
-  def close = {
+  def close() {
 
     log info "Closing ReplicationQueueDB..."
 
     if(database != null){
-      database.close
+      database.close()
       database = null
     }
 
     if(env != null){
       env.cleanLog;
-      env.close
+      env.close()
       env = null
     }
 
@@ -166,7 +166,7 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
     result
   }
 
-  override def remove = {
+  override def remove() {
 
     val key = new DatabaseEntry
     val value = new DatabaseEntry
@@ -192,8 +192,8 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
     }
   }
 
-  def close = {
-    cursor.close
+  def close() {
+    cursor.close()
   }
 
 }

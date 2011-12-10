@@ -64,10 +64,10 @@ class ReplicationTargetWorker(val localSystemId:String,
 
     updateConfig(config)
 
-    this.start
+    this.start()
   }
 
-  def updateConfig(config:Map[String, ReplicationHost]) = {
+  def updateConfig(config:Map[String, ReplicationHost]) {
     this.config = config
 
     val map = new HashMap[String, DataEncryptor]
@@ -79,7 +79,7 @@ class ReplicationTargetWorker(val localSystemId:String,
     decryptors = map
   }
 
-  override def act{
+  override def act(){
     loop{
       react{
 
@@ -93,7 +93,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
         case DestroyMsg => {
           log info "Stopping replication worker"
-          this.exit
+          this.exit()
         }
       }
     }
@@ -126,7 +126,7 @@ class ReplicationTargetWorker(val localSystemId:String,
       }
 
 
-      resource.verifyCheckSums
+      resource.verifyCheckSums()
       storage.put(resource)
 
       val calculator = new ReplicationSignatureCalculator(localSystemId, host)
@@ -171,14 +171,14 @@ class ReplicationTargetWorker(val localSystemId:String,
       storage.get(resource.address) match{
         case Some(r) => {
           compareUpdatedResource(resource, r)
-          resource.verifyCheckSums
+          resource.verifyCheckSums()
           storage.update(resource)
 
           accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
 
         }
         case None => {
-          resource.verifyCheckSums
+          resource.verifyCheckSums()
           storage.put(resource)
 
           accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
@@ -295,20 +295,20 @@ class ReplicationTargetWorker(val localSystemId:String,
 }
 
 case class ProcessAddMsg(
-            val resource:Array[Byte],
-            val signature:ReplicationSignature,
-            val target:AbstractActor
+                          resource:Array[Byte],
+            signature:ReplicationSignature,
+            target:AbstractActor
         )
 
 case class ProcessUpdateMsg(
-            val resource:Array[Byte],
-            val signature:ReplicationSignature,
-            val target:AbstractActor
+                             resource:Array[Byte],
+            signature:ReplicationSignature,
+            target:AbstractActor
         )
 
 
 case class ProcessDeleteMsg(
-            val address:String,
-            val signature:ReplicationSignature,
-            val target:AbstractActor
+                             address:String,
+            signature:ReplicationSignature,
+            target:AbstractActor
         )

@@ -36,7 +36,7 @@ import java.io.{ByteArrayInputStream, ObjectInputStream, ObjectOutputStream, Byt
 
 class ReplicationSerializationTestCase extends TestCase {
 
-  def testSerialization = {
+  def testSerialization() {
 
     val message = ReplicateAddAckMsg("address", ReplicationSignature("ssss", "ssss"))
 

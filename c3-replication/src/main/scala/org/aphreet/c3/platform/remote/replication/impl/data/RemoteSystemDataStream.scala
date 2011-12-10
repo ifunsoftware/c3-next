@@ -54,7 +54,7 @@ class RemoteSystemDataStream(val host:ReplicationHost,
 
     val file:File = File.createTempFile(address, version.toString)
 
-    file.deleteOnExit
+    file.deleteOnExit()
 
     created = true
 
@@ -73,8 +73,8 @@ class RemoteSystemDataStream(val host:ReplicationHost,
           try{
             fileChannel.transferFrom(inChannel, 0, getMethod.getResponseContentLength)
           }finally{
-            fileChannel.close
-            inChannel.close
+            fileChannel.close()
+            inChannel.close()
           }
         }
         case _ => throw new StorageException(("Failed to get resource data, code " + status).asInstanceOf[String])
@@ -86,7 +86,7 @@ class RemoteSystemDataStream(val host:ReplicationHost,
     file
   }
 
-  def addAuthHeader(method:HttpMethodBase, resource:String, domainId:String, domainKey:String) = {
+  def addAuthHeader(method:HttpMethodBase, resource:String, domainId:String, domainKey:String) {
 
     val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")
 
@@ -108,13 +108,13 @@ class RemoteSystemDataStream(val host:ReplicationHost,
 
   override def copy:DataStream = new RemoteSystemDataStream(host, secure, address, version, domainId, domainKey)
 
-  override def finalize{
+  override def finalize(){
     if(created){
       try{
         file.delete
         RemoteSystemDataWrapper.log.debug("Deleted tmp file for ra " + address)
       }catch{
-        case e=> e.printStackTrace
+        case e=> e.printStackTrace()
       }
     }
   }

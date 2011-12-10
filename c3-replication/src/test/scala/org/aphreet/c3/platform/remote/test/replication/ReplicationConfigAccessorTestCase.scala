@@ -40,12 +40,12 @@ class ReplicationConfigAccessorTestCase extends TestCase {
 
   var testDir:File = null
 
-  override def setUp{
+  override def setUp(){
     testDir = new File(System.getProperty("user.home"), "c3_int_test")
     testDir.mkdirs
   }
 
-  override def tearDown{
+  override def tearDown(){
     def delDir(directory:File) {
       if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
       directory.delete
@@ -53,7 +53,7 @@ class ReplicationConfigAccessorTestCase extends TestCase {
     delDir(testDir)
   }
 
-  def testConfigPersistence = {
+  def testConfigPersistence() {
 
     val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),
                      "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2", 7373, 7374, 7375, "my_encoded_aes_key2"))

@@ -130,10 +130,10 @@ class StorageSynchronizer extends DtoConvertor{
         if(!remoteIdsSet.contains(localId)){
 
           val currentRemotePrimId = if(iterator.hasNext){
-            iterator.next
+            iterator.next()
           }else{
             iterator = remoteBuffer.iterator
-            iterator.next
+            iterator.next()
           }
           result = (currentRemotePrimId, localId) :: result
         }

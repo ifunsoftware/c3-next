@@ -40,7 +40,7 @@ import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDe
 
 class ConfigSerialization extends TestCase{
 
-  def testPlatformConfig = {
+  def testPlatformConfig() {
 
     val platformConfig = PlatformInfo("systemId",
       ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),

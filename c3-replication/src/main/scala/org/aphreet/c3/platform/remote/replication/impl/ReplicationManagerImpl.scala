@@ -45,14 +45,12 @@ import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config._
 import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
-import org.aphreet.c3.platform.storage.{StorageManager}
+import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import actors.remote.{Node, RemoteActor}
-import org.apache.commons.codec.binary.Base64
-import util.matching.Regex.Match
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -94,7 +92,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   var isTaskRunning = false
 
   @PostConstruct
-  def init{
+  def init(){
 
     //Overriding classLoader
     RemoteActor.classLoader = getClass.getClassLoader
@@ -118,9 +116,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     currentTargetConfig = targetsConfigAccessor.load
     sourceReplicationActor.startWithConfig(currentTargetConfig, this, localSystemId)
 
-    runQueueMaintainer
+    runQueueMaintainer()
 
-    this.start
+    this.start()
 
     platformConfigManager ! RegisterMsg(this)
 
@@ -128,13 +126,13 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Destroying ReplicationManager"
 
     this ! DestroyMsg
   }
 
-  override def act{
+  override def act(){
     loop{
       react{
         case QueuedTasks => {
@@ -167,7 +165,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           }
 
           log info "RemoteManagerActor stopped"
-          this.exit
+          this.exit()
 
         }
       }
@@ -194,7 +192,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     throw new PlatformException("Is not implemented yet")
   }
 
-  def retryFailedReplicationQueue(index:Int) = {
+  def retryFailedReplicationQueue(index:Int) {
     throw new PlatformException("Is not implemented yet")
   }
 
@@ -209,7 +207,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-  def establishReplication(host:String, user:String, password:String) = {
+  def establishReplication(host:String, user:String, password:String) {
 
     val keyPair = AsymmetricKeyGenerator.generateKeys
 
@@ -254,14 +252,14 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-  def cancelReplication(id:String) = {
+  def cancelReplication(id:String) {
     targetsConfigAccessor.update(config => config - id)
     currentTargetConfig = targetsConfigAccessor.load
 
     sourceReplicationActor.removeReplicationTarget(id)
   }
 
-  def registerReplicationSource(host:ReplicationHost) = {
+  def registerReplicationSource(host:ReplicationHost) {
     sourcesConfigAccessor.update(config => config + ((host.systemId, host)))
 
     currentSourceConfig = sourcesConfigAccessor.load
@@ -270,7 +268,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     log info "Registered replication source " + host.hostname + " with id " + host.systemId
   }
 
-  private def registerReplicationTarget(host:ReplicationHost) = {
+  private def registerReplicationTarget(host:ReplicationHost) {
 
     targetsConfigAccessor.update(config => config + ((host.systemId, host)))
     currentTargetConfig = targetsConfigAccessor.load
@@ -280,10 +278,10 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
   }
 
-  private def runQueueMaintainer = {
+  private def runQueueMaintainer() {
     val thread = new Thread(new ProcessScheduler(this))
     thread.setDaemon(true)
-    thread.start
+    thread.start()
   }
 
   override def defaultValues:Map[String, String] =
@@ -293,7 +291,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       REPLICATION_QUEUE_KEY -> "",
       REPLICATION_SECURE_KEY -> "false")
 
-  override def propertyChanged(event:PropertyChangeEvent) = {
+  override def propertyChanged(event:PropertyChangeEvent) {
 
     event.name match {
       case REPLICATION_QUEUE_KEY =>
@@ -302,7 +300,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }else{
           replicationQueuePath = new Path(event.newValue)
           if(replicationQueueStorage != null){
-            replicationQueueStorage.close
+            replicationQueueStorage.close()
           }
           replicationQueueStorage = new ReplicationQueueStorage(replicationQueuePath)
         }
@@ -315,7 +313,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-  override def replayReplicationQueue = {
+  override def replayReplicationQueue() {
     this.synchronized{
       if(isTaskRunning) throw new ReplicationException("Task already started")
       if(replicationQueueStorage != null){
@@ -333,28 +331,28 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   //--------------------------------------------------------------------------------------------------------------------//
 
   @Autowired
-  def setStorageManager(manager:StorageManager) = {storageManager = manager}
+  def setStorageManager(manager:StorageManager) {storageManager = manager}
 
   @Autowired
-  def setSourcesConfigAccessor(accessor:ReplicationSourcesConfigAccessor) = {sourcesConfigAccessor = accessor}
+  def setSourcesConfigAccessor(accessor:ReplicationSourcesConfigAccessor) {sourcesConfigAccessor = accessor}
 
   @Autowired
-  def setTargetsConfigAccessor(accessor:ReplicationTargetsConfigAccessor) = {targetsConfigAccessor = accessor}
+  def setTargetsConfigAccessor(accessor:ReplicationTargetsConfigAccessor) {targetsConfigAccessor = accessor}
 
   @Autowired
-  def setConfigManager(manager:PlatformConfigManager) = {platformConfigManager = manager}
+  def setConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
 
   @Autowired
-  def setTaskManager(manager:TaskManager) = {taskManager = manager}
+  def setTaskManager(manager:TaskManager) {taskManager = manager}
 
   @Autowired
-  def setLocalReplicationActor(actor:ReplicationTargetActor) = {localReplicationActor = actor}
+  def setLocalReplicationActor(actor:ReplicationTargetActor) {localReplicationActor = actor}
 
   @Autowired
-  def setSourceReplicationActor(actor:ReplicationSourceActor) = {sourceReplicationActor = actor}
+  def setSourceReplicationActor(actor:ReplicationSourceActor) {sourceReplicationActor = actor}
 
   @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
 }
 
 class ProcessScheduler(manager:ReplicationManager) extends Runnable{
@@ -367,7 +365,7 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
 
   var nextQueueProcessTime = System.currentTimeMillis + FIVE_MINUTES
 
-  override def run{
+  override def run(){
 
     ThreadWatcher + this
     try{
@@ -376,8 +374,8 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
       while(!Thread.currentThread.isInterrupted){
 
         while(!Thread.currentThread.isInterrupted){
-          triggerConfigExchange
-          triggerQueueProcess
+          triggerConfigExchange()
+          triggerQueueProcess()
 
           Thread.sleep(60 * 1000)
         }
@@ -388,7 +386,7 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
     }
   }
 
-  def triggerConfigExchange{
+  def triggerConfigExchange(){
 
     if(nextConfigSendTime - System.currentTimeMillis < 0){
       log debug "Sending configuration to targets"
@@ -401,7 +399,7 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
 
   }
 
-  def triggerQueueProcess{
+  def triggerQueueProcess(){
 
     if(nextQueueProcessTime - System.currentTimeMillis < 0){
       log debug "Getting replication queue"

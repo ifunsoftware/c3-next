@@ -216,11 +216,11 @@ case class StorageMock(mockId:String, secIds:List[String], stName:String) extend
 
   def update(resource:Resource):String = null
 
-  def delete(ra:String) = {}
+  def delete(ra:String) {}
 
-  def put(resource:Resource) = {}
+  def put(resource:Resource) {}
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]) = {}
+  def appendSystemMetadata(ra:String, metadata:Map[String, String]) {}
 
   def params:StorageParams = StorageParams(mockId, secIds, path, stName, this.mode, List(), new HashMap[String, String])
 
@@ -230,10 +230,10 @@ case class StorageMock(mockId:String, secIds:List[String], stName:String) extend
 
   def iterator(fields:Map[String,String],
                systemFields:Map[String,String],
-               filter:Function1[Resource, Boolean]
+               filter:(Resource) => Boolean
           ):StorageIterator = null
 
-  def close{}
+  def close(){}
 
   def lock(ra:String){}
 

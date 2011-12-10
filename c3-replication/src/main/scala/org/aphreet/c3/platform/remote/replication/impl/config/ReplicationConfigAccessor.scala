@@ -49,7 +49,7 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
   def configDir: File = configManager.configDir
 
   @Autowired
-  def setConfigManager(manager: PlatformConfigManager) = {configManager = manager}
+  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
 
   override def defaultConfig:Map[String, ReplicationHost] = {
     Map()
@@ -78,7 +78,7 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
     map
   }
 
-  def storeConfig(map:Map[String, ReplicationHost], configFile: File) = {
+  def storeConfig(map:Map[String, ReplicationHost], configFile: File) {
     this.synchronized {
       val swriter = new StringWriter()
 
@@ -123,14 +123,14 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
         writer.endObject
 
 
-        swriter.flush
+        swriter.flush()
 
         val result = JSONFormatter.format(swriter.toString)
 
         writeToFile(result, configFile)
 
       } finally {
-        swriter.close
+        swriter.close()
       }
     }
   }

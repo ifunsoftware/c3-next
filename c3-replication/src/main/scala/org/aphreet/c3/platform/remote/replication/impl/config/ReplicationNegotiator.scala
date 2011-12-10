@@ -59,36 +59,36 @@ class ReplicationNegotiator extends WatchedActor{
   var replicationManager:ReplicationManager = null
 
   @Autowired
-  def setAuthManager(manager:AuthenticationManager) = {authManager = manager}
+  def setAuthManager(manager:AuthenticationManager) {authManager = manager}
 
   @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
 
   @Autowired
-  def setReplicationManager(manager:ReplicationManager) = {replicationManager = manager}
+  def setReplicationManager(manager:ReplicationManager) {replicationManager = manager}
 
   @PostConstruct
-  def init{
+  def init(){
     log info "Starting replication negotiator..."
 
-    this.start
+    this.start()
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping replication negotiator"
 
     this ! DestroyMsg
   }
 
-  override def act{
+  override def act(){
 
     alive(7375)
     register('ReplicationNegotiator, this)
 
     loop{
       react{
-        case DestroyMsg => this.exit
+        case DestroyMsg => this.exit()
 
         case NegotiateKeyExchangeMsg(systemId, publicKey) => {
           try{
@@ -191,10 +191,10 @@ class ReplicationNegotiator extends WatchedActor{
   }
 }
 
-case class NegotiateKeyExchangeMsg(val systemId:String, val publicKey:Array[Byte]) extends java.io.Serializable
+case class NegotiateKeyExchangeMsg(systemId:String, publicKey:Array[Byte]) extends java.io.Serializable
 
-case class NegotiateKeyExchangeMsgReply(val encryptedSharedKey:Array[Byte]) extends java.io.Serializable
+case class NegotiateKeyExchangeMsgReply(encryptedSharedKey:Array[Byte]) extends java.io.Serializable
 
-case class NegotiateRegisterSourceMsg(val systemId:String, val configuration:Array[Byte], val login:Array[Byte], val password:Array[Byte]) extends java.io.Serializable
+case class NegotiateRegisterSourceMsg(systemId:String, configuration:Array[Byte], login:Array[Byte], password:Array[Byte]) extends java.io.Serializable
 
-case class NegotiateRegisterSourceMsgReply(val status:String, val configuration:Array[Byte]) extends java.io.Serializable
+case class NegotiateRegisterSourceMsgReply(status:String, configuration:Array[Byte]) extends java.io.Serializable

@@ -30,44 +30,44 @@
 
 package org.aphreet.c3.platform.remote.replication
 
-case class ReplicationSignature(val systemId:String, val hash:String)
+case class ReplicationSignature(systemId:String, hash:String)
 
 class ReplicationMsg(val signature:ReplicationSignature) extends java.io.Serializable
 
 
 case class ReplicateAddMsg(
-            val resource:Array[Byte],
+                            resource:Array[Byte],
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 case class ReplicateUpdateMsg(
-            val resource:Array[Byte],
+                               resource:Array[Byte],
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 
 case class ReplicateDeleteMsg(
-            val address:String,
+                               address:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 case class ReplicateAddAckMsg(
-            val address:String,
+                               address:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 case class ReplicateUpdateAckMsg(
-            val address:String,
-            val timestamp:java.lang.Long,
+                                  address:String,
+            timestamp:java.lang.Long,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 case class ReplicateDeleteAckMsg(
-            val address:String, 
+                                  address:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)
 
 case class ReplicateSystemConfigMsg(
-            val configuration:String,
+                                     configuration:String,
             override val signature:ReplicationSignature
         ) extends ReplicationMsg(signature)

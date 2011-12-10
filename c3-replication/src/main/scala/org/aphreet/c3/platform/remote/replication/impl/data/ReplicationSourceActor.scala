@@ -64,16 +64,16 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
   var localSystemId:String = _
 
   @Autowired
-  def setAccessMediator(mediator:AccessMediator) = {accessMediator = mediator}
+  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
 
   @Autowired
-  def setStatisticsManager(manager:StatisticsManager) = {statisticsManager = manager}
+  def setStatisticsManager(manager:StatisticsManager) {statisticsManager = manager}
   
   @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) = {configurationManager = manager}
+  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
 
 
-  def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager, localSystemId:String) = {
+  def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager, localSystemId:String) {
 
     log info "Starting ReplicationSourceActor..."
 
@@ -86,12 +86,12 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
     accessMediator ! RegisterNamedListenerMsg(this, 'ReplicationManager)
 
-    this.start
+    this.start()
 
     log info "ReplicationSourceActor started"
   }
 
-  override def act{
+  override def act(){
     loop{
       react{
         case ResourceAddedMsg(resource, source) => sendToAllLinks(ResourceAddedMsg(resource, source))
@@ -144,13 +144,13 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
           }
 
           log info "ReplicationSourceActor stopped"
-          this.exit
+          this.exit()
         }
       }
     }
   }
 
-  def addReplicationTarget(host:ReplicationHost) = {
+  def addReplicationTarget(host:ReplicationHost) {
     remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(localSystemId, host, statisticsManager)))
   }
 
@@ -187,17 +187,17 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
   }
 
   @PreDestroy
-  def destroy{
+  def destroy(){
     log info "Stopping ReplicationSourceActor..."
     this ! DestroyMsg
   }
 
 }
 
-case class ReplicationReplayAdd(val resource:Resource, val systemId:String)
-case class ReplicationReplayDelete(val address:String, val systemId:String)
-case class ReplicationReplayUpdate(val resource:Resource, val systemId:String)
+case class ReplicationReplayAdd(resource:Resource, systemId:String)
+case class ReplicationReplayDelete(address:String, systemId:String)
+case class ReplicationReplayUpdate(resource:Resource, systemId:String)
 
 object SendConfigurationMsg
-case class SendConfigurationMsg(val configuration:String)
+case class SendConfigurationMsg(configuration:String)
 
