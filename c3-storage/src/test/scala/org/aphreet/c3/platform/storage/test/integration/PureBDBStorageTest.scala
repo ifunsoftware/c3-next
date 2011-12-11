@@ -24,13 +24,13 @@ class PureBDBStorageTest extends TestCase{
   def createStorage(id:String):Storage =
     new PureBDBStorage(new StorageParams(id, List(), storagePath, "PureBDBStorage", RW(""), List(), new HashMap[String, String]), "12341234", new BDBConfig(true, 20))
 
-  override def setUp{
+  override def setUp(){
 	testDir = new File(System.getProperty("user.home"), "c3_int_test")
     testDir.mkdirs
     storagePath = new Path(testDir.getAbsolutePath)
   }
 
-  override def tearDown{
+  override def tearDown(){
     def delDir(directory:File) {
       if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
       directory.delete
@@ -62,7 +62,7 @@ class PureBDBStorageTest extends TestCase{
         case None => assertTrue("Data length sys md is not found", false)
       }
 
-      storage.close
+      storage.close()
 
       storage = createStorage("1000")
 
@@ -73,10 +73,10 @@ class PureBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
     }finally
-      storage.close
+      storage.close()
   }
 
-  def testAppendMetadata = {
+  def testAppendMetadata() {
 
     var storage = createStorage("1000")
 
@@ -93,7 +93,7 @@ class PureBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-      storage.close
+      storage.close()
 
       storage = createStorage("1000")
 
@@ -109,10 +109,10 @@ class PureBDBStorageTest extends TestCase{
             
   
     }finally
-      storage.close
+      storage.close()
   }
 
-  def testVersionedUpdate {
+  def testVersionedUpdate() {
     var storage = createStorage("1001")
 
     try{
@@ -138,11 +138,11 @@ class PureBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close
+    }finally storage.close()
 
   }
 
-  def testUnversionedUpdate {
+  def testUnversionedUpdate() {
     var storage = createStorage("1002")
 
     try{
@@ -167,10 +167,10 @@ class PureBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-  def testDelete{
+  def testDelete(){
 
     val storage = createStorage("1003")
 
@@ -196,11 +196,11 @@ class PureBDBStorageTest extends TestCase{
       assertTrue("Resource can't be not null after delete", readAfterDelete == null)
 
 
-    }finally storage.close
+    }finally storage.close()
 
   }
 
-  def testIterator = {
+  def testIterator() {
     val storage  = createStorage("1004")
 
     try{
@@ -239,17 +239,17 @@ class PureBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertEquals(0, storage.asInstanceOf[PureBDBStorage].iterators.size)
 
       assertTrue("Not all resource was accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
 
-   def testIterator1 = {
+   def testIterator1() {
     val storage  = createStorage("1008")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -292,14 +292,14 @@ class PureBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-   def testIterator2 = {
+   def testIterator2() {
     val storage  = createStorage("1009")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=true, multi=false, created=0l))
@@ -342,14 +342,14 @@ class PureBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-   def testIterator3 = {
+   def testIterator3() {
     val storage  = createStorage("1010")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -405,14 +405,14 @@ class PureBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-  def testIterator4 = {
+  def testIterator4() {
     val storage  = createStorage("1011")
 
     //storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -468,11 +468,11 @@ class PureBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
   def testSize = {
@@ -481,7 +481,7 @@ class PureBDBStorageTest extends TestCase{
     try{
       storage.add(createResource)
       println(storage.size)
-    }finally storage.close
+    }finally storage.close()
   }
 
   def testPut = {
@@ -507,13 +507,13 @@ class PureBDBStorageTest extends TestCase{
       compareResources(readResource, readFrom1)
 
     }finally{
-      storage0.close
-      storage1.close
+      storage0.close()
+      storage1.close()
     }
 
   }
 
-  def testLock = {
+  def testLock() {
     val storage = createStorage("1012")
 
     val resource = createResource

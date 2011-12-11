@@ -102,7 +102,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
 
     log info "Storage " + id + " opened"
 
-    startObjectCounter
+    startObjectCounter()
   }
 
   def createIndex(index:StorageIndex){
@@ -125,7 +125,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     secondaryDatabases.get(idxName) match{
       case None => {}
       case Some(secDb) => {
-        secDb.close
+        secDb.close()
         env.removeDatabase(null, idxName)
       }
     }
@@ -133,9 +133,9 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     indexes = indexes.filter(_.name != index.name)
   }
 
-  override def close = {
+  override def close() {
     log info "Closing storage " + id
-    super.close
+    super.close()
     if(this.mode.allowRead)
       mode = U(Constants.STORAGE_MODE_NONE)
 
@@ -147,7 +147,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
       val iteratorList = iterators.toList
 
       for(iterator <- iteratorList){
-        iterator.close
+        iterator.close()
       }
 
     }catch{
@@ -156,19 +156,19 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
 
 
     for((name, secDb) <- secondaryDatabases){
-      secDb.close
+      secDb.close()
     }
 
-    secondaryDatabases.clear
+    secondaryDatabases.clear()
 
     if(database != null){
-      database.close
+      database.close()
       database = null
     }
 
     if(env != null){
       env.cleanLog;
-      env.close
+      env.close()
       env = null
     }
 
@@ -184,11 +184,11 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     secondaryDatabases
   }
 
-  override def getEnvironment() : Environment = {
+  override def getEnvironment: Environment = {
     env
   }
 
-  protected def failuresArePossible(block: => Any):Unit = {
+  protected def failuresArePossible(block: => Any) {
     //Do nothing here
     //Nothing to do if operation falls
     block

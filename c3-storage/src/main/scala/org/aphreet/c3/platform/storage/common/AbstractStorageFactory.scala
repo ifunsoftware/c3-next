@@ -47,7 +47,7 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
   var storageManager :StorageManager = null
   
   @Autowired
-  def setStorageManager(_manager:StorageManager) = {storageManager = _manager}
+  def setStorageManager(_manager:StorageManager) {storageManager = _manager}
   
   
   def createStorage(params:StorageParams, systemId:String):Storage = {
@@ -64,21 +64,21 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
   protected def createNewStorage(params:StorageParams, systemId:String):Storage
   
   @PostConstruct
-  def init = {
+  def init() {
     log info "Starting " + this.name + " storage factory"
     storageManager.registerFactory(this)
   }
   
   @PreDestroy
-  def destroy = {
+  def destroy() {
     log info "Stopping " + this.name + " storage factory"
     
-    createdStorages.foreach(s => s.close)
+    createdStorages.foreach(s => s.close())
 
     letItFall{
       storageManager.unregisterFactory(this)
     }
     
-    createdStorages.clear
+    createdStorages.clear()
   }
 }

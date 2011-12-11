@@ -68,7 +68,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     }
   }
 
-  def loadData(resource: Resource) = {
+  def loadData(resource: Resource) {
     for (version <- resource.versions) {
 
       val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {

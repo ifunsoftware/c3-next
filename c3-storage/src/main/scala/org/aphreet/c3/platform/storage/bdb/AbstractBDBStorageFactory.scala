@@ -46,27 +46,27 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
   var configManager:PlatformConfigManager = _
 
   @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) = {configManager = manager}
+  def setPlatformConfigManager(manager:PlatformConfigManager) {configManager = manager}
 
   def bdbConfig:BDBConfig = currentConfig
 
 
   @PostConstruct
-  override def init = {
+  override def init() {
     log info "Post construct callback invoked"
     configManager !? RegisterMsg(this) //sync call. Setting properties before opening storages
-    super.init
+    super.init()
   }
 
   @PreDestroy
-  override def destroy = {
+  override def destroy() {
     log info "Pre destroy callback invoked"
 
     letItFall{
       configManager ! UnregisterMsg(this)
     }
 
-    super.destroy
+    super.destroy()
   }
 
 
@@ -76,22 +76,22 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
       BDB_CONFIG_CACHE_PERCENT -> "20"
       )
 
-  def propertyChanged(event: PropertyChangeEvent) = {
+  def propertyChanged(event: PropertyChangeEvent) {
 
-    def updateStorageParams {
+    def updateStorageParams() {
       log info "Updating storage param " + event.name
 
       for (storage <- createdStorages) {
         if (storage.isInstanceOf[AbstractSingleInstanceBDBStorage]) {
           val mode = storage.mode
           storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-          storage.close
+          storage.close()
           storage.asInstanceOf[AbstractSingleInstanceBDBStorage].open(currentConfig)
           storage.mode = mode
         } else if (storage.isInstanceOf[AbstractReplicatedBDBStorage]) {
           val mode = storage.mode
           storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-          storage.close
+          storage.close()
           storage.asInstanceOf[AbstractReplicatedBDBStorage].open(currentConfig)
           storage.mode = mode
         }
@@ -104,7 +104,7 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
         val value = event.newValue == "true"
         if(currentConfig.txNoSync != value){
           currentConfig = new BDBConfig(value, currentConfig.cachePercent)
-          updateStorageParams
+          updateStorageParams()
         }
       }
 
@@ -112,7 +112,7 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
         val value = Integer.parseInt(event.newValue)
         if(value != currentConfig.cachePercent){
           currentConfig = new BDBConfig(currentConfig.txNoSync, value)
-          updateStorageParams
+          updateStorageParams()
         }
       }
     }

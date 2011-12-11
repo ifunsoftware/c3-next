@@ -34,7 +34,7 @@ package org.aphreet.c3.platform.storage.bdb
 import com.sleepycat.je.Transaction
 import org.aphreet.c3.platform.storage.common.SeedSource
 
-case class TransactionBasedSeedSource(val tx:Transaction) extends SeedSource{
+case class TransactionBasedSeedSource(tx:Transaction) extends SeedSource{
 
   override def getSeed:Long = tx.getId
   

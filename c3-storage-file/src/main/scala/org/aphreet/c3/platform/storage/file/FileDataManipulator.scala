@@ -67,7 +67,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     }
   }
 
-  def loadData(resource:Resource) = {
+  def loadData(resource:Resource) {
 
     for(version <- resource.versions){
 

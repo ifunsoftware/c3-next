@@ -55,7 +55,7 @@ class BDBIndexBuilder(val index: StorageIndex) {
         }
       }
 
-      builder.toString.getBytes("UTF-8")
+      builder.toString().getBytes("UTF-8")
     }
 
   }
@@ -83,7 +83,7 @@ class BDBIndexBuilder(val index: StorageIndex) {
     for(e <- list)
       appendToBuilder(e, builder)
 
-    builder.toString.getBytes("UTF-8")
+    builder.toString().getBytes("UTF-8")
   }
 
   def createKey(value: String): Array[Byte] = {

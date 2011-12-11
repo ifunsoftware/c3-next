@@ -171,8 +171,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         threads(i) = new Thread( new Runnable() {
           override def run() {
             nodesEnvironments(i) =  createNode( envConfig, groupName, nodesNames(i),
-              "localhost:" + portsNumbers(i).toString(),
-              "localhost:" + portsNumbers(0).toString(),
+              "localhost:" + portsNumbers(i).toString,
+              "localhost:" + portsNumbers(0).toString,
               nodesDirs(i))
           }
         })
@@ -190,12 +190,12 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     log info "Starting nodes..."
 
     forAllNodes(i  =>  {
-      threads(i).start
+      threads(i).start()
     })
 
     try {
       forAllNodes(i  =>   {
-        threads(i).join
+        threads(i).join()
 
         newNodeNumber += 1
       })
@@ -211,7 +211,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     })
     rga = new ReplicationGroupAdmin(groupName, helpers)
 
-    masterNodeNumber = getMasterNodeNumber
+    masterNodeNumber = getMasterNodeNumber()
 
     log info "Opening database..."
 
@@ -248,7 +248,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     log info "Storage " + id + " opened"
 
-    startObjectCounter
+    startObjectCounter()
   }
 
   def createIndex(index : StorageIndex) {
@@ -278,7 +278,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       databases(i).secondaryDatabases.get(idxName) match{
         case None => {}
         case Some(secDb) => {
-          secDb.close
+          secDb.close()
           nodesEnvironments(i).removeDatabase(null, idxName)
         }
       }
@@ -287,9 +287,9 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     indexes = indexes.filter(_.name != index.name)
   }
 
-  override def close = {
+  override def close() {
     log info "Closing storage " + id
-    super.close
+    super.close()
     if(this.mode.allowRead)
       mode = U(Constants.STORAGE_MODE_NONE)
 
@@ -301,7 +301,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       val iteratorList = iterators.toList
 
       for(iterator <- iteratorList){
-        iterator.close
+        iterator.close()
       }
 
     }catch{
@@ -312,17 +312,17 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     forAllNodes(i  =>   {
       for((name, secDb) <- databases(i).secondaryDatabases) {
-        secDb.close
+        secDb.close()
       }
 
-      databases(i).secondaryDatabases.clear
+      databases(i).secondaryDatabases.clear()
     })
 
     log info "Closing databases..."
 
     forAllNodes(i  =>   {
       if(databases(i).database != null) {
-        databases(i).database.close
+        databases(i).database.close()
         databases(i).database = null
       }
     })
@@ -332,7 +332,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     forAllNodes(i  => {
       if(nodesEnvironments(i) != null) {
         nodesEnvironments(i).cleanLog
-        nodesEnvironments(i).close
+        nodesEnvironments(i).close()
         nodesEnvironments(i) = null
       }
     })
@@ -372,7 +372,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           return new ReplicatedEnvironment(storagePathFile, repConfig, envConfig)
         } catch {
           case e : UnknownMasterException => {
-            e printStackTrace
+            e.printStackTrace()
 
             Thread.sleep(1000)
           }
@@ -392,7 +392,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     if (writeFlag) {
       forAllNodes(i  =>  {
-        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState.isMaster) {
           db = databases(i).database
         }
       })
@@ -409,7 +409,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     if (writeFlag) {
       forAllNodes(i  =>  {
-        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+        if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState.isMaster) {
           dbs = databases(i).secondaryDatabases
         }
       })
@@ -421,11 +421,11 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     dbs
   }
 
-  override def getEnvironment() : Environment = {
+  override def getEnvironment: Environment = {
     var env : ReplicatedEnvironment = null
 
     forAllNodes(i  =>   {
-      if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+      if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState.isMaster) {
         env = nodesEnvironments(i)
       }
     })
@@ -437,7 +437,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     var mNodeNumber : Int = -1
 
     forAllNodes(i  =>   {
-      if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState().isMaster) {
+      if (nodesEnvironments(i).isValid && nodesEnvironments(i).getState.isMaster) {
         mNodeNumber = i
       }
     })
@@ -445,7 +445,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     mNodeNumber
   }
 
-  protected def failuresArePossible(block: => Any):Unit = {
+  protected def failuresArePossible(block: => Any) {
     var attempts : Int = 0
     var successFlag : Boolean = false
 
@@ -472,7 +472,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       override def run() {
         tempRepEnv =  createNode( envConfig, storageName, newName,
           "localhost:" + newPort.toString,
-          "localhost:" + generatePortNumber(0).toString(),
+          "localhost:" + generatePortNumber(0).toString,
           newDir)
       }
     })
@@ -480,11 +480,11 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     log info "Creating new node \"" + newName + "\"..."
 
     try {
-      t.start
-      t.join
+      t.start()
+      t.join()
       Thread.sleep(5000)
     } catch {
-      case e : InterruptedException => e printStackTrace
+      case e : InterruptedException => e.printStackTrace()
     }
 
     val address = new InetSocketAddress("localhost", newPort)
@@ -537,7 +537,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     portsNumbers(nodeNumberToRestart) = newPort
     nodesDirs(nodeNumberToRestart) = newDir
 
-    helpers.clear
+    helpers.clear()
     forAllNodes(i  =>   {
       val address : InetSocketAddress = new InetSocketAddress("localhost", portsNumbers(i))
       helpers add address
@@ -573,17 +573,17 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     log info "Node " + nodesNames(num) + " is stopping"
 
     for((name, secDb) <- databases(num).secondaryDatabases) {
-      secDb.close
+      secDb.close()
     }
 
     log info "Closing secondary database..."
 
-    databases(num).secondaryDatabases.clear
+    databases(num).secondaryDatabases.clear()
 
     log info "Closing database..."
 
     if(databases(num).database != null) {
-      databases(num).database.close
+      databases(num).database.close()
       databases(num).database = null
     }
 
@@ -591,7 +591,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
     if(nodesEnvironments(num) != null) {
       nodesEnvironments(num).cleanLog
-      nodesEnvironments(num).close
+      nodesEnvironments(num).close()
       nodesEnvironments(num) = null
     }
 
@@ -605,8 +605,8 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
         threads(i) = new Thread( new Runnable() {
           override def run() {
             nodesEnvironments(i) =  createNode( envConfig, storageName, nodesNames(i),
-              "localhost:" + portsNumbers(i).toString(),
-              "localhost:" + portsNumbers(0).toString(),
+              "localhost:" + portsNumbers(i).toString,
+              "localhost:" + portsNumbers(0).toString,
               storagePath + "-" + i)
           }
         })
@@ -617,13 +617,13 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       log info "Starting node \"" + nodesNames(i) + "\"..."
 
       if (i != deadMasterNodeNumber) {
-        threads(i).start
+        threads(i).start()
       }
     })
 
     forAllNodes(i  =>   {
       if (i != deadMasterNodeNumber) {
-        threads(i).join
+        threads(i).join()
       }
     })
 
@@ -672,7 +672,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           restartNode(deadNodeNumber)
         }
 
-        masterNodeNumber = getMasterNodeNumber
+        masterNodeNumber = getMasterNodeNumber()
       }
 
       case e : LogWriteException => synchronized {
@@ -687,7 +687,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
             restartNode(masterNodeNumber)
 
-            masterNodeNumber = getMasterNodeNumber
+            masterNodeNumber = getMasterNodeNumber()
 
           } catch {
             case ex => {

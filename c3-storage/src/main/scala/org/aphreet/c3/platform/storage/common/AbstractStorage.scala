@@ -72,7 +72,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
 
   protected def updateObjectCount();
 
-  override def close{
+  override def close(){
     counter.interrupt()
   }
 

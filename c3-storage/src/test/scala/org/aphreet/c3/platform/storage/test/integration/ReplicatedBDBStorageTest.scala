@@ -1,3 +1,33 @@
+/*
+ * Copyright (c) 2011, Anton Krasikov
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the IFMO nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.aphreet.c3.platform.storage.test.integration
 
 import junit.framework.TestCase
@@ -14,15 +44,6 @@ import java.io.File
 
 import org.aphreet.c3.platform.storage.bdb.impl.ReplicatedBDBStorage
 import org.aphreet.c3.platform.exception.StorageException
-import java.util.Date
-
-/**
- * Created by IntelliJ IDEA.
- * User: antey
- * Date: 10.05.11
- * Time: 15:33
- * To change this template use File | Settings | File Templates.
- */
 
 class ReplicatedBDBStorageTest extends TestCase{
 
@@ -33,13 +54,13 @@ class ReplicatedBDBStorageTest extends TestCase{
   def createStorage(id:String):Storage =
     new ReplicatedBDBStorage(new StorageParams(id, List(), storagePath, "ReplicatedBDBStorage", RW(""), List(), new HashMap[String, String]), "12341234", new BDBConfig(true, 20))
 
-  override def setUp{
+  override def setUp(){
 	testDir = new File(System.getProperty("user.home"), "c3_int_test")
     testDir.mkdirs
     storagePath = new Path(testDir.getAbsolutePath)
   }
 
-  override def tearDown{
+  override def tearDown(){
     def delDir(directory:File) {
       if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
       directory.delete
@@ -71,7 +92,7 @@ class ReplicatedBDBStorageTest extends TestCase{
         case None => assertTrue("Data length sys md is not found", false)
       }
 
-      storage.close
+      storage.close()
 
       storage = createStorage("1000")
 
@@ -82,11 +103,11 @@ class ReplicatedBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
     }finally {
-      storage.close
+      storage.close()
     }
   }
 
-  def testAppendMetadata = {
+  def testAppendMetadata() {
 
     var storage = createStorage("1000")
 
@@ -103,7 +124,7 @@ class ReplicatedBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-      storage.close
+      storage.close()
 
       storage = createStorage("1000")
 
@@ -119,10 +140,10 @@ class ReplicatedBDBStorageTest extends TestCase{
 
 
     }finally
-      storage.close
+      storage.close()
   }
 
-  def testVersionedUpdate {
+  def testVersionedUpdate() {
     var storage = createStorage("1001")
 
     try{
@@ -148,11 +169,11 @@ class ReplicatedBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close
+    }finally storage.close()
 
   }
 
-  def testUnversionedUpdate {
+  def testUnversionedUpdate() {
     var storage = createStorage("1002")
 
     try{
@@ -177,10 +198,10 @@ class ReplicatedBDBStorageTest extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-  def testDelete{
+  def testDelete(){
 
     val storage = createStorage("1003")
 
@@ -206,11 +227,11 @@ class ReplicatedBDBStorageTest extends TestCase{
       assertTrue("Resource can't be not null after delete", readAfterDelete == null)
 
 
-    }finally storage.close
+    }finally storage.close()
 
   }
 
-  def testIterator = {
+  def testIterator() {
     val storage  = createStorage("1004")
 
     try{
@@ -249,17 +270,17 @@ class ReplicatedBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertEquals(0, storage.asInstanceOf[ReplicatedBDBStorage].iterators.size)
 
       assertTrue("Not all resource was accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
 
-   def testIterator1 = {
+   def testIterator1() {
     val storage  = createStorage("1008")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -302,14 +323,14 @@ class ReplicatedBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-   def testIterator2 = {
+   def testIterator2() {
     val storage  = createStorage("1009")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=true, multi=false, created=0l))
@@ -352,14 +373,14 @@ class ReplicatedBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-   def testIterator3 = {
+   def testIterator3() {
     val storage  = createStorage("1010")
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -415,16 +436,16 @@ class ReplicatedBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
     }catch{
-      case e => e.printStackTrace
+      case e => e.printStackTrace()
 
-    }finally storage.close
+    }finally storage.close()
   }
 
-  def testIterator4 = {
+  def testIterator4() {
     val storage  = createStorage("1011")
 
     //storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -480,13 +501,13 @@ class ReplicatedBDBStorageTest extends TestCase{
         }
       }
 
-      iterator.close
+      iterator.close()
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
     }catch {
-      case e => e printStackTrace
-    } finally storage.close
+      case e => e.printStackTrace()
+    } finally storage.close()
   }
 
   def testSize = {
@@ -495,7 +516,7 @@ class ReplicatedBDBStorageTest extends TestCase{
     try{
       storage.add(createResource)
       println(storage.size)
-    }finally storage.close
+    }finally storage.close()
   }
 
   def testPut = {
@@ -521,13 +542,13 @@ class ReplicatedBDBStorageTest extends TestCase{
       compareResources(readResource, readFrom1)
 
     }finally{
-      storage0.close
-      storage1.close
+      storage0.close()
+      storage1.close()
     }
 
   }
 
-  def testLock = {
+  def testLock() {
     val storage = createStorage("1012")
 
     val resource = createResource

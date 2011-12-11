@@ -246,7 +246,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       }
 
       if (!storage.mode.allowRead) {
-        this.close
+        this.close()
         throw new StorageException("Storage " + storage.id + " is not readable")
       }
 
@@ -313,7 +313,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   override def objectsProcessed: Int = bdbEntriesProcessed
 
-  def close {
+  def close() {
     try {
 
       log debug "Closing itertor"
@@ -364,7 +364,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     try {
       if(!closed){
         log debug "Finalize block called, closing iterator"
-        this.close
+        this.close()
       }
     } catch {
       case e => e.printStackTrace()
