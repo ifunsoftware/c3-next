@@ -36,7 +36,8 @@ object CommonCommands extends Commands{
 
   def instances = List(
       new EmptyCommand,
-      new QuitCommand
+      new QuitCommand,
+      new ExitCommand
     )
 }
 
@@ -58,4 +59,9 @@ class QuitCommand extends Command{
   }
 
   def name = List("quit")
+}
+
+class ExitCommand extends QuitCommand{
+
+  override def name = List("exit")
 }

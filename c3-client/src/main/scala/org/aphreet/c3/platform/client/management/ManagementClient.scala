@@ -37,8 +37,9 @@ import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnect
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.util.logging.LogManager
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
-import jline.{History, ConsoleReader}
 import java.io.File
+import jline.{ConsoleReader, History}
+import org.aphreet.c3.platform.remote.api.RemoteException
 
 class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
@@ -46,22 +47,18 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
   val clientName = "Shell"
 
-  var reader:ConsoleReader = _
+  var debugOutput = false
 
   {
     LogManager.getLogManager.readConfiguration(getClass.getClassLoader.getResourceAsStream("log.properties"))
-
-    reader = new ConsoleReader
-    reader.setUseHistory(true)
-
-    val history = new History(File.createTempFile("cli.history", ""))
-    reader.setHistory(new History())
 
     if(cli.getOptions.length == 0) helpAndExit(clientName)
 
     if(cli.hasOption("help")) helpAndExit(clientName)
 
     if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification()
+
+    if(cli.hasOption("debug")) debugOutput = true
 
     val connectionType = cliValue("t", "ws").toLowerCase
 
@@ -72,7 +69,9 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
         val user = cliValue("u", "")
         val password = {
           print("Password:")
-          reader.readLine(new java.lang.Character('*'))
+          val passwordReader = new ConsoleReader()
+          passwordReader.setUseHistory(false)
+          passwordReader.readLine(new java.lang.Character('*'))
         }
         try{
           new WSConnectionProvider(host, user, password)
@@ -89,37 +88,27 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     }
   }
 
-
   def cliDescription = parameters(
-    "t" has mandatory argument "type" described "Connection type WS|RMI. Default is RMI",
-    "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is http://localhost:9301",
+    "t" has mandatory argument "type" described "Connection type WS|RMI. Default is WS",
+    "h" has mandatory argument "hostname" described "Host to connect to. Only for WS. Default is http://localhost:80",
     "u" has mandatory argument "username" described "Only for WS",
+    "debug" described "Show debug output",
     "ignoreSSLHostname" described  "Ignore host name verification error",
     "help" described "Prints this message"
   )
 
-
-
-
   def run() {
-
-    var shouldExit = false
-
-
     val reader = new ConsoleReader
     reader.setUseHistory(true)
 
     val history = new History(File.createTempFile("cli.history", ""))
-    reader.setHistory(new History())
+    reader.setHistory(history)
 
     println("C3 Client version " + VersionUtils.clientVersion)
 
     var commandFactory = connect(reader)
-    
+
     println("Welcome to C3 shell")
-
-
-
     print("C3>")
 
 
@@ -131,27 +120,26 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
       for(i <- 1 to 5 if !success){
         success = commandFactory.getCommand(line) match {
           case Some(command) => {
-        	  try{
-        	    println(command.execute())
-        	    true
-        	  }catch{
-        	    case e:RemoteConnectFailureException=> {
-        	      println("Connection to server lost. Trying to reconnect...")
+            try{
+              printResult(command.execute())
+            }catch{
+              case e:RemoteConnectFailureException=> {
+                println("Connection to server lost. Trying to reconnect...")
 
-        	      commandFactory = connect(reader)
-        	      false
-        	    }
-        	    case e =>{
-        	      println("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage)
-        	      e.printStackTrace()
-                true
-                }
-        	  }
-          	}
-           case None => {
-             println("Command not found")
-             true
-           }
+                commandFactory = connect(reader)
+                false
+              }
+              case e:RemoteException =>
+                printResult(e.getMessage, e)
+              case e =>{
+                printResult("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage, e)
+              }
+            }
+          }
+          case None => {
+            println("Command not found")
+            true
+          }
         }
       }
 
@@ -161,6 +149,14 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
       }
       print("C3>")
     }
+  }
+
+  def printResult(message:String, e:Throwable = null):Boolean = {
+    println(message)
+    if(e != null && debugOutput){
+      e.printStackTrace()
+    }
+    true
   }
 
   def createCommandFactory(reader:ConsoleReader):CommandFactory = {
