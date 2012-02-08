@@ -61,6 +61,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val EXTRACT_DOCUMENT_CONTENT = "c3.search.index.extract_content"
 
+  var numberOfIndexers = 2
 
   val log = LogFactory.getLog(getClass)
 
@@ -111,7 +112,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   def init() {
 
     if (indexPath != null) {
-      initialize()
+      initialize(numberOfIndexers)
     } else {
       log warn "Index path is not set. Waiting for property to appear"
     }
@@ -119,13 +120,14 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     configManager ! RegisterMsg(this)
   }
 
-  def initialize() {
+  def initialize(numberOfIndexers:Int) {
     if (fileIndexer == null) {
 
       fileIndexer = new FileIndexer(indexPath)
 
-      ramIndexers = new RamIndexer(fileIndexer, configuration, 1, extractDocumentContent) :: ramIndexers
-      ramIndexers = new RamIndexer(fileIndexer, configuration, 2, extractDocumentContent) :: ramIndexers
+      for(i <- 1 to numberOfIndexers){
+        ramIndexers = new RamIndexer(fileIndexer, configuration, i, extractDocumentContent) :: ramIndexers
+      }
 
       searcher = new Searcher(indexPath, ramIndexers, configuration)
       fileIndexer.searcher = searcher
@@ -234,15 +236,15 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   }
 
   def defaultValues: Map[String, String] = Map(
-    INDEXER_COUNT -> "2",
+    INDEXER_COUNT -> numberOfIndexers.toString,
     MAX_TMP_INDEX_SIZE -> "100",
     INDEX_CREATE_TIMESTAMP -> "0",
     EXTRACT_DOCUMENT_CONTENT -> "false"
-    )
+  )
 
   override def listeningForProperties: Array[String] = Array(
     INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT
-    )
+  )
 
   def propertyChanged(event: PropertyChangeEvent) {
     event.name match {
@@ -252,7 +254,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         if(indexPath == null){
           log info "Found path to store index: " + newPath.path
           indexPath = newPath
-          initialize()
+          initialize(numberOfIndexers)
         }else{
 
           if(newPath != indexPath){
@@ -265,27 +267,32 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         }
       }
       case INDEXER_COUNT => {
-        val newCount = Integer.parseInt(event.newValue)
 
-        if (ramIndexers.size < newCount) {
+        numberOfIndexers = event.newValue.toInt
 
-          val indexersToAdd = newCount - ramIndexers.size
+        if(fileIndexer != null){
+          val newCount = Integer.parseInt(event.newValue)
 
-          for (i <- 1 to indexersToAdd) {
-            val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent)
-            indexer.start()
-            ramIndexers = indexer :: ramIndexers
+          if (ramIndexers.size < newCount) {
+
+            val indexersToAdd = newCount - ramIndexers.size
+
+            for (i <- 1 to indexersToAdd) {
+              val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent)
+              indexer.start()
+              ramIndexers = indexer :: ramIndexers
+            }
+          } else if (ramIndexers.size > newCount) {
+            val dropCount = ramIndexers.size - newCount
+            val toStop = ramIndexers.take(dropCount)
+            ramIndexers = ramIndexers.drop(dropCount)
+
+            searcher.ramIndexers = ramIndexers
+
+            toStop.foreach(_ ! DestroyMsg)
+          } else{
+            log info "New index count is the same as actual"
           }
-        } else if (ramIndexers.size > newCount) {
-          val dropCount = ramIndexers.size - newCount
-          val toStop = ramIndexers.take(dropCount)
-          ramIndexers = ramIndexers.drop(dropCount)
-
-          searcher.ramIndexers = ramIndexers
-
-          toStop.foreach(_ ! DestroyMsg)
-        } else{
-          log info "New index count is the same as actual"
         }
       }
 
@@ -294,7 +301,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
 
       case INDEX_CREATE_TIMESTAMP =>
-        log info "Index creation timestamp value: " + event.newValue 
+        log info "Index creation timestamp value: " + event.newValue
         indexCreateTimestamp = event.newValue.toLong
         if(backgroundIndexTask != null)
           backgroundIndexTask.indexCreateTimestamp = indexCreateTimestamp

@@ -53,7 +53,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   var configDir: File = _;
 
-  private var foundListeners = new HashSet[PlatformPropertyListener];
+  private val foundListeners = new HashSet[PlatformPropertyListener];
 
   private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
 
@@ -175,7 +175,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
         case SetPropertyMsg(key, value) => {
           log info "Setting platform property: " + key
 
-          var config = configAccessor.load
+          val config = configAccessor.load
 
           val oldValue: String = config.get(key) match {
             case Some(v) => v

@@ -34,7 +34,7 @@ import java.lang.Character
 
 /*
  * Abstract path representation
- * Reprepesent path with delimiters "/"
+ * Represent path with delimiters "/"
  */
 
 class Path (var path:String){
