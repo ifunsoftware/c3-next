@@ -339,8 +339,6 @@ object Resource {
       }
     }
 
-
-
     dataIn.close()
 
     resource
