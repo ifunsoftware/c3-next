@@ -36,10 +36,8 @@
         <spring.version>3.0.0.RELEASE</spring.version>
         <md5.version>1.0.539</md5.version>
         <!-- Properties below are commented because they must be defined in the user's local settings.xml file -->
-        <!--
-        <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
-        <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
-        -->
+        <!--virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
+                <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup-->
     </properties>
 
     <dependencyManagement>
