@@ -52,6 +52,8 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
     register(TypeMappingCommands)
     register(UserCommands)
 
+    register(SearchCommands)
+
     register(VolumeCommands)
 
     register(ReplicationCommands)

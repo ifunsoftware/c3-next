@@ -50,10 +50,72 @@ abstract class Command{
 
   def readInput:String = reader.readLine
 
-  def writeString(line:String) = print(line)
+  def readNumber:Option[Int] = {
+
+    var correct = false
+    var result:Option[Int] = None
+
+    while(!correct){
+      try{
+
+        val input = readInput.trim()
+
+        if(input == ""){
+          result = None
+          correct = true
+        }else{
+          result = Some(Integer.parseInt(input))
+          correct = true
+        }
+      }catch{
+        case e:NumberFormatException => writeString("Incorrect input value, expected number\nTry again: ")
+      }
+    }
+    result
+  }
+
+  def readBoolean:Option[Boolean] = {
+    var correct = false
+    var result:Option[Boolean] = None
+
+    while(!correct){
+      try{
+
+        result = readInput match {
+          case "true" => Some(true)
+          case "false" => Some(false)
+          case "" => None
+          case _ => throw new Exception("")
+        }
+
+        correct = true
+      }catch{
+        case e:Exception => writeString("Incorrect input value, expected true of false\nTry again: ")
+      }
+    }
+    result
+  }
+
+  def writeString(line:String) {
+    print(line)
+  }
 
   def wrongParameters(usage:String):String = {
     "Not enough parameters. Usage: " +usage
+  }
+
+  implicit def convertIntOptionToString(option:Option[Int]):String = {
+    option match {
+      case Some(value) => value.toString
+      case None => ""
+    }
+  }
+
+  implicit def convertBooleanOptionToString(option:Option[Boolean]):String = {
+    option match {
+      case Some(value) => value.toString
+      case None => ""
+    }
   }
 }
 

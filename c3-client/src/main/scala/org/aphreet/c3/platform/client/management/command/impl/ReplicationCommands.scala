@@ -117,13 +117,13 @@ class PrepareForReplication extends Command {
     val hostname = readInput.trim
 
     print("HTTP port [" + getValue (properties, "c3.remote.http.port") + "]: ")
-    val httpPort = readInput.trim
+    val httpPort = readNumber
 
     print("HTTPS port [" + getValue (properties, "c3.remote.https.port") + "]: ")
-    val httpsPort = readInput.trim
+    val httpsPort = readNumber
 
     print("Replication port [" + getValue (properties, "c3.remote.replication.port") + "]: ")
-    val replicationPort = readInput.trim
+    val replicationPort = readNumber
 
     print("Replication queue path [" + getValue (properties, "c3.remote.replication.queue") + "]: ")
     val queue = readInput.trim
@@ -143,7 +143,7 @@ class PrepareForReplication extends Command {
 class ReplayReplicationQueueCommand extends Command {
 
   override def execute():String = {
-    management.replayReplicationQueue
+    management.replayReplicationQueue()
     "Retry started"
   }
 
