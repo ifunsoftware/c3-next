@@ -3,7 +3,7 @@
     <groupId>org.aphreet.c3</groupId>
     <artifactId>c3-next</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0.SNAPSHOT</version>
+    <version>1.1.0</version>
     <name>C3 Main project</name>
     <url>https://github.com/aphreet/c3-next</url>
     <modules>
@@ -391,7 +391,7 @@
                                         <tasks>
                                             <echo message="Deploying to Spring DM Server" />
                                             <copy toDir="${virgo.path.libs}" overwrite="true">
-                                                <fileset dir="${project.deploy.tmp.dir}"/>
+                                                <fileset dir="${project.deploy.tmp.dir}" />
                                             </copy>
                                         </tasks>
                                     </configuration>
