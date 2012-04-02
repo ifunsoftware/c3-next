@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>c3-next</artifactId>
-        <version>1.1.0.SNAPSHOT</version>
+        <version>1.1.2.SNAPSHOT</version>
     </parent>
 
     <build>
@@ -22,46 +22,46 @@
                         <configuration combine.self="override">
                             <tasks>
                                 <copy toDir="${project.build.directory}/server-package/server/lib">
-                                    <mapper type="flatten"/>
+                                    <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3deploy/*"/>
+                                        <include name="*/target/c3deploy/*" />
                                     </fileset>
                                 </copy>
 
-                                <copy toDir="${project.build.directory}/server-package/server/pickup" file="${basedir}/src/main/config/c3.plan"/>
-                                <copy toDir="${project.build.directory}/server-package/server" file="${basedir}/src/main/scripts/install.sh"/>
+                                <copy toDir="${project.build.directory}/server-package/server/pickup" file="${basedir}/src/main/config/c3.plan" />
+                                <copy toDir="${project.build.directory}/server-package/server" file="${basedir}/src/main/scripts/install.sh" />
 
                                 <copy toDir="${project.build.directory}/server-package/client/bin">
-                                    <mapper type="flatten"/>
+                                    <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/bin/*"/>
+                                        <include name="*/target/c3client/bin/*" />
                                     </fileset>
                                 </copy>
 
                                 <copy toDir="${project.build.directory}/server-package/client/lib">
-                                    <mapper type="flatten"/>
+                                    <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/lib/*"/>
+                                        <include name="*/target/c3client/lib/*" />
                                     </fileset>
                                 </copy>
 
-                                <zip basedir="${project.build.directory}/server-package" destfile="${project.build.directory}/c3-all-${project.version}.zip"/>
+                                <zip basedir="${project.build.directory}/server-package" destfile="${project.build.directory}/c3-all-${project.version}.zip" />
 
                                 <copy toDir="${project.build.directory}/client-package/client/bin">
-                                    <mapper type="flatten"/>
+                                    <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/bin/*"/>
+                                        <include name="*/target/c3client/bin/*" />
                                     </fileset>
                                 </copy>
 
                                 <copy toDir="${project.build.directory}/client-package/client/lib">
-                                    <mapper type="flatten"/>
+                                    <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/lib/*"/>
+                                        <include name="*/target/c3client/lib/*" />
                                     </fileset>
                                 </copy>
 
-                                <zip basedir="${project.build.directory}/client-package" destfile="${project.build.directory}/c3-client-${project.version}.zip"/>
+                                <zip basedir="${project.build.directory}/client-package" destfile="${project.build.directory}/c3-client-${project.version}.zip" />
 
                             </tasks>
                         </configuration>

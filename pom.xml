@@ -3,7 +3,7 @@
     <groupId>org.aphreet.c3</groupId>
     <artifactId>c3-next</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0.SNAPSHOT</version>
+    <version>1.1.2.SNAPSHOT</version>
     <name>C3 Main project</name>
     <url>https://github.com/aphreet/c3-next</url>
     <modules>
@@ -36,10 +36,8 @@
         <spring.version>3.0.0.RELEASE</spring.version>
         <md5.version>1.0.539</md5.version>
         <!-- Properties below are commented because they must be defined in the user's local settings.xml file -->
-        <!--
-        <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
-        <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
-        -->
+        <!--virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
+                <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup-->
     </properties>
 
     <dependencyManagement>
@@ -374,6 +372,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <preparationGoals>install</preparationGoals>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
         </plugins>
@@ -396,7 +395,7 @@
                                         <tasks>
                                             <echo message="Deploying to Spring DM Server" />
                                             <copy toDir="${virgo.path.libs}" overwrite="true">
-                                                <fileset dir="${project.deploy.tmp.dir}"/>
+                                                <fileset dir="${project.deploy.tmp.dir}" />
                                             </copy>
                                         </tasks>
                                     </configuration>
