@@ -108,7 +108,6 @@ class FSController extends DataController{
   @RequestMapping(method = Array(RequestMethod.PUT))
   def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
                  @RequestHeader(value = "x-c3-op", required = false) operation:String,
-                 reader:Reader,
                  request:HttpServletRequest,
                  response:HttpServletResponse){
 
@@ -125,7 +124,7 @@ class FSController extends DataController{
 
     if(operation != null && operation == "move"){
 
-      val bufferedReader = new BufferedReader(reader)
+      val bufferedReader = new BufferedReader(request.getReader)
 
       val newPath = decodeFSPath(bufferedReader.readLine())
 
