@@ -42,13 +42,14 @@ class WSAuthFilter extends Filter{
 
   val log = LogFactory getLog getClass
 
+  @Autowired
   var authManager:AuthenticationManager = null
 
-  @Autowired
-  def setAuthManager(manager:AuthenticationManager) {
-    authManager = manager
-    log info "AuthManager setter invoked"
-  }
+//  @Autowired
+//  def setAuthManager(manager:AuthenticationManager) {
+//    authManager = manager
+//    log info "AuthManager setter invoked"
+//  }
 
   var filterConfig:FilterConfig = _
 
