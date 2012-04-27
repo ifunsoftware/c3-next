@@ -41,9 +41,9 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageManager}
+import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.remote.api.management._
-import org.aphreet.c3.platform.domain.{DomainMode, Domain, DomainManager}
+import org.aphreet.c3.platform.domain.DomainManager
 
 @Component
 class ConfigurationManager extends DtoConvertor{
