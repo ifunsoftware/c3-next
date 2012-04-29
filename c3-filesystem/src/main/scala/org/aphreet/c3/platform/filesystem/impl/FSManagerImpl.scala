@@ -214,10 +214,17 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
       case Some(name) =>
         resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
           case Some(parentAddress) => {
-            val parent = accessManager.get(parentAddress)
-            val directory = Directory(parent)
-            directory.removeChild(name)
-            accessManager.update(directory.resource)
+
+            try{
+              accessManager.lock(parentAddress)
+              val parent = accessManager.get(parentAddress)
+              val directory = Directory(parent)
+              directory.removeChild(name)
+              accessManager.update(directory.resource)
+            }finally {
+              accessManager.unlock(parentAddress)
+            }
+
           }
           case None =>
         }
@@ -337,8 +344,6 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
       accessManager.update(directory.resource)
 
-    }catch{
-      case e:StorageException =>
     }finally {
       accessManager.unlock(directory.resource.address)
     }
