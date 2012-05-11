@@ -65,6 +65,7 @@ class AbstractController{
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
   }
 
+  @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
   def handleUnsupportedMethodException(e:HttpRequestMethodNotSupportedException,
                                        request:HttpServletRequest,
                                        response:HttpServletResponse) {
