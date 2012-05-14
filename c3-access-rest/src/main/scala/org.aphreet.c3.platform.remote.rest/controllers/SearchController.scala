@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2011, Mikhail Malygin
+/**
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,21 +27,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.rest
 
-import javax.servlet._
+package org.aphreet.c3.platform.remote.rest.controllers
 
-class CharacterFilter extends Filter {
+import org.aphreet.c3.platform.search.SearchManager
+import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Controller
+import org.aphreet.c3.platform.remote.rest.response.SearchResult
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
+import org.aphreet.c3.platform.accesscontrol.READ
 
-  override def init(config:FilterConfig){}
+@Controller
+@RequestMapping(Array("/search"))
+class SearchController extends DataController {
 
-  override def destroy(){}
+  @Autowired
+  var searchManager: SearchManager = _
 
-  override def doFilter(request: ServletRequest, response: ServletResponse, chain:FilterChain) {
+  @RequestMapping(value = Array("/{query}"),
+    method = Array(RequestMethod.GET))
+  def search(@PathVariable query: String,
+             @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+             req: HttpServletRequest,
+             resp: HttpServletResponse) {
 
-    request.setCharacterEncoding("UTF-8")
+    val accessTokens = getAccessTokens(READ, req)
+    val domain = getCurrentDomainId(accessTokens)
 
-    chain.doFilter(request, response);
+    val results = searchManager.search(domain, query)
+
+    resp.setStatus(HttpServletResponse.SC_OK)
+
+    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
 
   }
 }

@@ -28,13 +28,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.rest
+package org.aphreet.c3.platform.remote.rest.controllers
 
 import org.springframework.stereotype.Controller
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.resource.Resource
-import response.Result
+import org.aphreet.c3.platform.remote.rest.response.Result
 import org.aphreet.c3.platform.domain.Domain
 import org.apache.commons.httpclient.util.URIUtil
 import java.io.{BufferedReader, Reader}
@@ -42,16 +42,16 @@ import org.aphreet.c3.platform.accesscontrol._
 
 @Controller
 @RequestMapping(Array("/fs/**"))
-class FSController extends DataController{
+class FSController extends DataController {
 
   val baseUrl = "/rest/fs"
 
   @RequestMapping(method = Array(RequestMethod.GET))
-  def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-              @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
-              @RequestParam(value = "metadata", required = false) metadata:String,
-              request:HttpServletRequest,
-              response:HttpServletResponse){
+  def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+              @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+              @RequestParam(value = "metadata", required = false) metadata: String,
+              request: HttpServletRequest,
+              response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(READ, request)
 
@@ -61,25 +61,25 @@ class FSController extends DataController{
 
     val node = filesystemManager.getNode(domain, fsPath)
 
-    if(metadata == null){
+    if (metadata == null) {
 
-      if(node.isDirectory){
+      if (node.isDirectory) {
         sendDirectoryContents(node, contentType, accessTokens, response)
-      }else{
+      } else {
         sendResourceData(node.resource, -1, accessTokens, response)
       }
 
-    }else{
+    } else {
       addNonPersistentMetadata(node.resource, extMeta)
       sendMetadata(node.resource, contentType, accessTokens, response)
     }
   }
 
   @RequestMapping(method = Array(RequestMethod.POST))
-  def makeNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-               @RequestHeader(value = "x-c3-nodetype", required = false) nodetype:String,
-               request:HttpServletRequest,
-               response:HttpServletResponse){
+  def makeNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+               @RequestHeader(value = "x-c3-nodetype", required = false) nodetype: String,
+               request: HttpServletRequest,
+               response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(CREATE, request)
 
@@ -87,12 +87,12 @@ class FSController extends DataController{
 
     val fsPath = getFilesystemPath(request)
 
-    if(nodetype == "directory"){
+    if (nodetype == "directory") {
 
       filesystemManager.createDirectory(domain, fsPath)
 
       reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
-    }else{
+    } else {
 
       val resource = new Resource
 
@@ -106,10 +106,10 @@ class FSController extends DataController{
   }
 
   @RequestMapping(method = Array(RequestMethod.PUT))
-  def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                 @RequestHeader(value = "x-c3-op", required = false) operation:String,
-                 request:HttpServletRequest,
-                 response:HttpServletResponse){
+  def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                 @RequestHeader(value = "x-c3-op", required = false) operation: String,
+                 request: HttpServletRequest,
+                 response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(UPDATE, request)
     val domain = getCurrentDomainId(accessTokens)
@@ -122,7 +122,7 @@ class FSController extends DataController{
 
     accessTokens.checkAccess(resource)
 
-    if(operation != null && operation == "move"){
+    if (operation != null && operation == "move") {
 
       val bufferedReader = new BufferedReader(request.getReader)
 
@@ -132,7 +132,7 @@ class FSController extends DataController{
 
       reportSuccess(HttpServletResponse.SC_OK, contentType, response)
 
-    }else{
+    } else {
       executeDataUpload(resource, accessTokens, request, response, () => {
         accessManager.update(resource)
         reportSuccess(HttpServletResponse.SC_OK, contentType, response)
@@ -141,9 +141,9 @@ class FSController extends DataController{
   }
 
   @RequestMapping(method = Array(RequestMethod.DELETE))
-  def deleteNode(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                 request:HttpServletRequest,
-                 response:HttpServletResponse){
+  def deleteNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                 request: HttpServletRequest,
+                 response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(DELETE, request)
     val domain = getCurrentDomainId(accessTokens)
@@ -155,17 +155,17 @@ class FSController extends DataController{
     reportSuccess(HttpServletResponse.SC_OK, contentType, response)
   }
 
-  private def reportSuccess(code:Int, contentType:String, response:HttpServletResponse){
+  private def reportSuccess(code: Int, contentType: String, response: HttpServletResponse) {
     response.setStatus(code)
     getResultWriter(contentType).writeResponse(new Result, response)
   }
 
-  private def getFilesystemPath(request:HttpServletRequest):String = {
+  private def getFilesystemPath(request: HttpServletRequest): String = {
     val path = request.getRequestURI.replaceFirst(baseUrl, "")
     decodeFSPath(path)
   }
 
-  def decodeFSPath(path:String):String = {
+  def decodeFSPath(path: String): String = {
     URIUtil.decode(path, "UTF-8")
   }
 }

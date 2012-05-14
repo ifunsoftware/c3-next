@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.rest
+package org.aphreet.c3.platform.remote.rest.controllers
 
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
@@ -35,76 +35,76 @@ import org.springframework.web.bind.annotation._
 import javax.servlet.http._
 import org.aphreet.c3.platform.filesystem.Node
 import org.aphreet.c3.platform.resource.Resource
-import response.{Result, ResourceAddress, UploadResult}
+import org.aphreet.c3.platform.remote.rest.response.{Result, ResourceAddress, UploadResult}
 import org.aphreet.c3.platform.accesscontrol.{DELETE, UPDATE, CREATE, READ}
+
 
 @Controller
 @RequestMapping(Array("/resource"))
-class ResourceController extends DataController{
+class ResourceController extends DataController {
 
-  @RequestMapping(value =  Array("/{address}"),
-                  method = Array(RequestMethod.GET))
-  def getResource(@PathVariable address:String,
-                      @RequestParam(value = "metadata", required = false) metadata:String,
-                      @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
-                      @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                      request:HttpServletRequest,
-                      response:HttpServletResponse) {
+  @RequestMapping(value = Array("/{address}"),
+    method = Array(RequestMethod.GET))
+  def getResource(@PathVariable address: String,
+                  @RequestParam(value = "metadata", required = false) metadata: String,
+                  @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+                  @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                  request: HttpServletRequest,
+                  response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(READ, request)
 
     val resource = accessManager.get(address)
 
-    if(metadata != null){
+    if (metadata != null) {
       addNonPersistentMetadata(resource, extMeta)
       sendMetadata(resource, contentType, accessTokens, response)
-    }else{
+    } else {
 
-      val directoryNode:Node =
-        if(Node.canBuildFromResource(resource)){
+      val directoryNode: Node =
+        if (Node.canBuildFromResource(resource)) {
           val node = Node.fromResource(resource)
-          if(node.isDirectory) node
+          if (node.isDirectory) node
           else null
-        }else null
+        } else null
 
-      if(directoryNode != null){
+      if (directoryNode != null) {
         sendDirectoryContents(directoryNode, contentType, accessTokens, response)
-      }else{
+      } else {
         sendResourceData(resource, -1, accessTokens, response)
       }
     }
   }
 
-  @RequestMapping(value =  Array("/{address}/{version}"),
-                  method = Array(RequestMethod.GET))
-  def getResourceVersion(@PathVariable("address") address:String,
-                             @PathVariable("version") version:Int,
-                             @RequestParam(value = "metadata", required = false) metadata:String,
-                             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                             @RequestHeader(value = "x-c3-extmeta", required = false) extMeta:String,
-                             request:HttpServletRequest,
-                             response:HttpServletResponse) {
+  @RequestMapping(value = Array("/{address}/{version}"),
+    method = Array(RequestMethod.GET))
+  def getResourceVersion(@PathVariable("address") address: String,
+                         @PathVariable("version") version: Int,
+                         @RequestParam(value = "metadata", required = false) metadata: String,
+                         @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                         @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+                         request: HttpServletRequest,
+                         response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(READ, request)
 
     val resource = accessManager.get(address)
 
-    if(metadata != null){
+    if (metadata != null) {
 
       addNonPersistentMetadata(resource, extMeta)
       sendMetadata(resource, contentType, accessTokens, response)
 
-    }else{
+    } else {
       sendResourceData(resource, version, accessTokens, response)
     }
   }
 
 
-
   @RequestMapping(method = Array(RequestMethod.POST))
-  def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                   request:HttpServletRequest,
-                   response:HttpServletResponse) {
+  def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                   request: HttpServletRequest,
+                   response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(CREATE, request)
 
@@ -120,11 +120,11 @@ class ResourceController extends DataController{
 
   }
 
-  @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.PUT))
-  def updateResource(@PathVariable address:String,
-                     @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                     request:HttpServletRequest,
-                     response:HttpServletResponse) {
+  @RequestMapping(value = Array("/{address}"), method = Array(RequestMethod.PUT))
+  def updateResource(@PathVariable address: String,
+                     @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                     request: HttpServletRequest,
+                     response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(UPDATE, request)
 
@@ -141,11 +141,11 @@ class ResourceController extends DataController{
   }
 
 
-  @RequestMapping(value=Array("/{address}"), method = Array(RequestMethod.DELETE))
-  def deleteResource(@PathVariable address:String,
-                     @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-                     request:HttpServletRequest,
-                     response:HttpServletResponse) {
+  @RequestMapping(value = Array("/{address}"), method = Array(RequestMethod.DELETE))
+  def deleteResource(@PathVariable address: String,
+                     @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                     request: HttpServletRequest,
+                     response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(DELETE, request)
 
@@ -154,7 +154,7 @@ class ResourceController extends DataController{
     accessTokens.checkAccess(resource)
 
     accessManager.delete(address)
-    
+
     getResultWriter(contentType).writeResponse(new Result, response)
   }
 }

@@ -29,12 +29,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.rest
+package org.aphreet.c3.platform.remote.rest.controllers
 
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
-import response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
+import org.aphreet.c3.platform.remote.rest.response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
 import org.apache.commons.logging.LogFactory
@@ -42,34 +42,35 @@ import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestEx
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
 
-class AbstractController{
+
+class AbstractController {
 
   val log = LogFactory getLog getClass
 
-  var writerSelector:ResultWriterSelector = _
+  var writerSelector: ResultWriterSelector = _
 
   @Autowired
-  def setResultWriterSelector(selector:ResultWriterSelector) {
+  def setResultWriterSelector(selector: ResultWriterSelector) {
     writerSelector = selector
   }
 
   @ExceptionHandler(Array(classOf[Exception]))
-  def handleException(e:Exception,
-                      request:HttpServletRequest,
-                      response:HttpServletResponse) {
+  def handleException(e: Exception,
+                      request: HttpServletRequest,
+                      response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
-    
+
     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
 
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
   }
 
   @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
-  def handleUnsupportedMethodException(e:HttpRequestMethodNotSupportedException,
-                                       request:HttpServletRequest,
-                                       response:HttpServletResponse) {
-    
+  def handleUnsupportedMethodException(e: HttpRequestMethodNotSupportedException,
+                                       request: HttpServletRequest,
+                                       response: HttpServletResponse) {
+
     val contentType = request.getHeader("x-c3-type")
 
     response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
@@ -77,9 +78,9 @@ class AbstractController{
   }
 
   @ExceptionHandler(Array(classOf[ResourceNotFoundException]))
-  def handleResourceNotFoundException(e:ResourceNotFoundException,
-                                      request:HttpServletRequest,
-                                      response:HttpServletResponse) {
+  def handleResourceNotFoundException(e: ResourceNotFoundException,
+                                      request: HttpServletRequest,
+                                      response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
 
@@ -88,9 +89,9 @@ class AbstractController{
   }
 
   @ExceptionHandler(Array(classOf[AuthFailedException]))
-  def handleAuthFailedException(e:AuthFailedException,
-                                      request:HttpServletRequest,
-                                      response:HttpServletResponse) {
+  def handleAuthFailedException(e: AuthFailedException,
+                                request: HttpServletRequest,
+                                response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
 
@@ -99,9 +100,9 @@ class AbstractController{
   }
 
   @ExceptionHandler(Array(classOf[AccessControlException]))
-  def handleDomainException(e:AccessControlException,
-                                      request:HttpServletRequest,
-                                      response:HttpServletResponse) {
+  def handleDomainException(e: AccessControlException,
+                            request: HttpServletRequest,
+                            response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
 
@@ -110,9 +111,9 @@ class AbstractController{
   }
 
   @ExceptionHandler(Array(classOf[FSNotFoundException]))
-  def handleDomainException(e:FSNotFoundException,
-                                      request:HttpServletRequest,
-                                      response:HttpServletResponse) {
+  def handleDomainException(e: FSNotFoundException,
+                            request: HttpServletRequest,
+                            response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
 
@@ -121,9 +122,9 @@ class AbstractController{
   }
 
   @ExceptionHandler(Array(classOf[FSWrongRequestException]))
-  def handleDomainException(e:FSWrongRequestException,
-                                      request:HttpServletRequest,
-                                      response:HttpServletResponse) {
+  def handleDomainException(e: FSWrongRequestException,
+                            request: HttpServletRequest,
+                            response: HttpServletResponse) {
 
     val contentType = request.getHeader("x-c3-type")
 
@@ -131,7 +132,7 @@ class AbstractController{
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
-  protected def getResultWriter(expectedType:String):ResultWriter = {
+  protected def getResultWriter(expectedType: String): ResultWriter = {
     writerSelector.selectWriterForType(expectedType)
   }
 }

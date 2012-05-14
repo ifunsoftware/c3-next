@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.remote.test.rest
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.aphreet.c3.platform.remote.rest.FSController
+import org.aphreet.c3.platform.remote.rest.controllers.FSController
 import junit.framework.{Assert, TestCase}
 
 class FSControllerTestCase extends TestCase{

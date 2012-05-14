@@ -16,6 +16,7 @@
 
     <mvc:interceptors>
         <bean class="org.aphreet.c3.platform.remote.rest.interceptors.RequestLoggingInterceptor"/>
+        <bean class="org.aphreet.c3.platform.remote.rest.interceptors.CharacterSetInterceptor"/>
     </mvc:interceptors>
     
 </beans>

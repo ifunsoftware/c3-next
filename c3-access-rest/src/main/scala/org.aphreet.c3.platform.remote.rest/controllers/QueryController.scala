@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.rest
+package org.aphreet.c3.platform.remote.rest.controllers
 
 import collection.mutable.HashMap
 import org.springframework.stereotype.Controller
@@ -36,19 +36,19 @@ import org.springframework.web.bind.annotation.{RequestMethod, RequestMapping}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
-import query.RestQueryConsumer
+import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
 import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.accesscontrol.READ
 
 @Controller
-class QueryController extends DataController{
+class QueryController extends DataController {
 
   @Autowired
-  var queryManager:QueryManager = _
+  var queryManager: QueryManager = _
 
-  @RequestMapping(value =  Array("/query"),
-                  method = Array(RequestMethod.GET))
-  def executeQuery(req:HttpServletRequest, resp:HttpServletResponse){
+  @RequestMapping(value = Array("/query"),
+    method = Array(RequestMethod.GET))
+  def executeQuery(req: HttpServletRequest, resp: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(READ, req)
 

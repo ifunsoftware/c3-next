@@ -27,39 +27,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.remote.rest.interceptors
 
-package org.aphreet.c3.platform.remote.rest
-
-import org.aphreet.c3.platform.search.SearchManager
+import org.apache.commons.logging.LogFactory
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import response.SearchResult
-import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
-import org.aphreet.c3.platform.accesscontrol.READ
+import org.springframework.web.servlet.{ModelAndView, HandlerInterceptor}
 
-@Controller
-@RequestMapping(Array("/search"))
-class SearchController extends DataController{
+class CharacterSetInterceptor extends HandlerInterceptor{
 
-  @Autowired
-  var searchManager:SearchManager = _
+  val log = LogFactory.getLog(getClass)
 
-  @RequestMapping(value =  Array("/{query}"),
-                  method = Array(RequestMethod.GET))
-  def search(@PathVariable query:String,
-             @RequestHeader(value = "x-c3-type", required = false) contentType:String,
-             req:HttpServletRequest,
-             resp:HttpServletResponse){
+  def preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any) = {
 
-    val accessTokens = getAccessTokens(READ, req)
-    val domain = getCurrentDomainId(accessTokens)
+    request.setCharacterEncoding("UTF-8")
 
-    val results = searchManager.search(domain, query)
-
-    resp.setStatus(HttpServletResponse.SC_OK)
-
-    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
-    
+    true
   }
+
+  def postHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any, mov: ModelAndView) {
+
+  }
+
+  def afterCompletion(request: HttpServletRequest, response: HttpServletResponse, handler: Any, mov: Exception) {
+
+  }
+
 }

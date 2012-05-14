@@ -4,16 +4,6 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
-    <filter>
-        <filter-name>CharacterFilter</filter-name>
-        <filter-class>org.aphreet.c3.platform.remote.rest.CharacterFilter</filter-class>
-    </filter>
-
-    <filter-mapping>
-        <filter-name>CharacterFilter</filter-name>
-        <servlet-name>DispatcherServlet</servlet-name>
-    </filter-mapping>
-
     <servlet>
         <servlet-name>DispatcherServlet</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
