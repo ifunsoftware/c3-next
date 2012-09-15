@@ -39,10 +39,10 @@ import org.xml.sax.InputSource
 import java.io.{StringReader, FileInputStream, File}
 import javax.xml.validation.SchemaFactory
 import org.aphreet.c3.platform.remote.rest.response._
-import fs.FSDirectory
+import fs.{FSNode, FSDirectory}
 import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
-import org.aphreet.c3.platform.filesystem.NodeRef
+import collection.mutable
 
 class TestXmlSerialization extends TestCase{
 
@@ -114,11 +114,18 @@ class TestXmlSerialization extends TestCase{
 
     val xStream = new XStreamFactory().createXMLStream
 
-    val directory = new FSDirectory("name", "address", Array(NodeRef("name", "address", true), NodeRef("name2", "address2", false)))
+    val metadata = new mutable.HashMap[String, String]
+    metadata.put("key", "value")
+
+    val directory = new FSDirectory("name", "address",
+      Array(FSNode("name", "address", true, metadata),
+        FSNode("name2", "address2", false, Map("key" -> "value"))))
 
     val output = xStream.toXML(new DirectoryResult(directory))
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
+
+    println(xml)
 
     verifyXml(xml)
   }

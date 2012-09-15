@@ -30,10 +30,11 @@
  */
 package org.aphreet.c3.platform.filesystem.test
 
-import org.aphreet.c3.platform.filesystem.Directory
+import org.aphreet.c3.platform.filesystem.{Node, NodeRef, Directory}
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
+import java.util.Arrays
 
 class DirectorySerializationTestCase extends TestCase{
 
@@ -78,6 +79,21 @@ class DirectorySerializationTestCase extends TestCase{
     }catch{
       case e => assertTrue(true)
     }
+  }
+
+  def testSerializeDeserialize() {
+    val directory = Directory.emptyDirectory("domain", "name")
+    directory.addChild(NodeRef("child", "address", true))
+    directory.addChild(NodeRef("achild", "address", true))
+
+    val resource = directory.resource
+
+    val node = Node.fromResource(resource)
+
+
+    assertEquals(List(NodeRef("achild", "address", true),
+      NodeRef("child", "address", true)), node.asInstanceOf[Directory].getChildren.toList)
+
   }
 
 }

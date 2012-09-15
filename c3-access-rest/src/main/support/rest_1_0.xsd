@@ -125,7 +125,9 @@
     </xs:complexType>
 
     <xs:complexType name="nodeType">
-        <xs:sequence></xs:sequence>
+        <xs:sequence>
+            <xs:element name="metadata" type="p:metadataType" minOccurs="0"/>
+        </xs:sequence>
         <xs:attribute name="address" type="xs:string" use="required"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="leaf" type="xs:boolean" use="required"/>

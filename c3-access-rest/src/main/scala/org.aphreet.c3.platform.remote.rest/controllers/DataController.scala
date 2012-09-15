@@ -45,9 +45,9 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
-import org.aphreet.c3.platform.remote.rest.response.fs.FSDirectory
+import org.aphreet.c3.platform.remote.rest.response.fs.{FSNode, FSDirectory}
 import org.aphreet.c3.platform.remote.rest.response.{DirectoryResult, ResourceResult}
-import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
+import org.aphreet.c3.platform.filesystem.{NodeRef, FSManager, Directory, Node}
 import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessTokens, Action, AccessControlManager}
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
@@ -106,9 +106,29 @@ class DataController extends AbstractController with ServletContextAware {
     }
   }
 
-  protected def sendDirectoryContents(node: Node, contentType: String, accessTokens: AccessTokens, response: HttpServletResponse) {
+  protected def sendDirectoryContents(node: Node, childMeta:String, contentType: String, accessTokens: AccessTokens, response: HttpServletResponse) {
     accessTokens.checkAccess(node.resource)
-    getResultWriter(contentType).writeResponse(new DirectoryResult(FSDirectory.fromNode(node.asInstanceOf[Directory])), response)
+
+    val directory = node.asInstanceOf[Directory]
+
+    val fsDirectory = if(childMeta != null){
+      val metaKeys = childMeta.split(",").filter(!_.isEmpty)
+
+      val children = directory.getChildren.map((child:NodeRef) => new FSNode(child, {
+
+        accessManager.getOption(child.address) match {
+          case Some(resource) => resource.metadata.filterKeys(metaKeys.contains(_))
+          case None => Map()
+        }
+      }))
+
+      FSDirectory.fromNodeAndChildren(directory, children)
+    }else{
+      FSDirectory.fromNode(directory)
+    }
+
+    getResultWriter(contentType).writeResponse(
+      new DirectoryResult(fsDirectory), response)
   }
 
   protected def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {

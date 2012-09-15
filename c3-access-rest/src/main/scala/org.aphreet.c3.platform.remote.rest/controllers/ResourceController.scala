@@ -48,6 +48,7 @@ class ResourceController extends DataController {
   def getResource(@PathVariable address: String,
                   @RequestParam(value = "metadata", required = false) metadata: String,
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+                  @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
                   @RequestHeader(value = "x-c3-type", required = false) contentType: String,
                   request: HttpServletRequest,
                   response: HttpServletResponse) {
@@ -69,7 +70,7 @@ class ResourceController extends DataController {
         } else null
 
       if (directoryNode != null) {
-        sendDirectoryContents(directoryNode, contentType, accessTokens, response)
+        sendDirectoryContents(directoryNode, childMeta, contentType, accessTokens, response)
       } else {
         sendResourceData(resource, -1, accessTokens, response)
       }

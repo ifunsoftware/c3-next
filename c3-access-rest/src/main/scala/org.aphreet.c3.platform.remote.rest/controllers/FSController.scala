@@ -49,6 +49,7 @@ class FSController extends DataController {
   @RequestMapping(method = Array(RequestMethod.GET))
   def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
               @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+              @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
               @RequestParam(value = "metadata", required = false) metadata: String,
               request: HttpServletRequest,
               response: HttpServletResponse) {
@@ -64,7 +65,7 @@ class FSController extends DataController {
     if (metadata == null) {
 
       if (node.isDirectory) {
-        sendDirectoryContents(node, contentType, accessTokens, response)
+        sendDirectoryContents(node, childMeta, contentType, accessTokens, response)
       } else {
         sendResourceData(node.resource, -1, accessTokens, response)
       }

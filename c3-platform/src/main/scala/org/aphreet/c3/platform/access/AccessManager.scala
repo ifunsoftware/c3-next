@@ -37,6 +37,8 @@ trait AccessManager extends WatchedActor{
 
   def get(ra:String):Resource
 
+  def getOption(ra:String):Option[Resource]
+
   def add(resource:Resource):String
 
   def update(resource:Resource):String

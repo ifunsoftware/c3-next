@@ -32,19 +32,19 @@ package org.aphreet.c3.platform.remote.rest.serialization
 import java.lang.{Class => JClass}
 import com.thoughtworks.xstream.converters.{UnmarshallingContext, MarshallingContext, Converter}
 import com.thoughtworks.xstream.io.{HierarchicalStreamReader, HierarchicalStreamWriter}
-import collection.mutable.HashMap
+import scala.collection.Map
 
 class HashMapConverter extends Converter{
 
 
   override def canConvert(clazz:JClass[_]):Boolean = {
-    clazz.equals(classOf[HashMap[String, String]])
+    classOf[Map[String, String]].isAssignableFrom(clazz)
   }
 
 
   override def marshal(value:java.lang.Object, writer:HierarchicalStreamWriter ,
                        context:MarshallingContext) {
-    val map = value.asInstanceOf[HashMap[String, String]]
+    val map = value.asInstanceOf[Map[String, String]]
 
     for((k, v) <- map){
 
@@ -55,8 +55,6 @@ class HashMapConverter extends Converter{
       writer.endNode()
       writer.endNode()
     }
-
-
   }
 
   override def unmarshal(reader:HierarchicalStreamReader, context:UnmarshallingContext):java.lang.Object = {

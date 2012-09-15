@@ -83,7 +83,17 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     this ! DestroyMsg
   }
 
-  def get(ra:String):Resource = {
+  def get(ra:String):Resource = getInternal(ra)
+
+  def getOption(ra:String):Option[Resource] = {
+    try{
+      Some(getInternal(ra))
+    }catch {
+      case e:Throwable => None
+    }
+  }
+
+  protected def getInternal(ra:String):Resource = {
 
     if(log.isDebugEnabled){
       log.debug("Getting resource with address: " + ra)

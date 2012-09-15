@@ -30,8 +30,16 @@
 package org.aphreet.c3.platform.remote.rest.response.fs
 
 import org.aphreet.c3.platform.filesystem.{NodeRef, Directory}
+import scala.collection.Map
 
-case class FSDirectory(name:String, address:String, nodes:Array[NodeRef])
+case class FSDirectory(name:String, address:String, nodes:Array[FSNode])
+
+case class FSNode(name:String, address:String, leaf:Boolean, metadata:Map[String, String]){
+
+  def this(nodeRef:NodeRef, metadata:Map[String, String])
+      = this(nodeRef.name, nodeRef.address, nodeRef.leaf, metadata)
+
+}
 
 object FSDirectory{
 
@@ -45,6 +53,20 @@ object FSDirectory{
 
     val address = resource.address
 
-    FSDirectory(name, address, node.getChildren)
+    FSDirectory(name, address, node.getChildren.map(new FSNode(_, scala.collection.immutable.Map())))
+  }
+
+  def fromNodeAndChildren(node:Directory, children:Seq[FSNode]):FSDirectory = {
+
+    val resource = node.resource
+
+    val name = resource.systemMetadata.get("c3.fs.nodename") match{
+      case Some(x) => x
+      case None => ""
+    }
+
+    val address = resource.address
+
+    FSDirectory(name, address, children.toArray)
   }
 }

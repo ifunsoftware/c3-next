@@ -38,7 +38,7 @@ import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
 import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement}
 import org.aphreet.c3.platform.filesystem.NodeRef
 import org.aphreet.c3.platform.remote.rest.response._
-import fs.FSDirectory
+import fs.{FSNode, FSDirectory}
 
 class XStreamFactory{
 
@@ -55,7 +55,11 @@ class XStreamFactory{
     xStream.registerConverter(new ArrayBufferConverter(xStream.getMapper))
     xStream.registerConverter(new ISO8601DateConverter)
 
-    xStream.alias("resource", classOf[Resource]);
+    xStream.setMode(XStream.NO_REFERENCES)
+
+    xStream.aliasSystemAttribute(null, "class")
+
+    xStream.alias("resource", classOf[Resource])
     xStream.alias("version", classOf[ResourceVersion])
     xStream.alias("p:response", classOf[Result])
     xStream.alias("p:response", classOf[ErrorResult])
@@ -66,7 +70,7 @@ class XStreamFactory{
     xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("info", classOf[ResultInfo])
 
-    xStream.alias("node", classOf[NodeRef])
+    xStream.alias("node", classOf[FSNode])
 
     xStream.alias("fragment", classOf[SearchResultFragment])
 
@@ -90,9 +94,9 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[ResourceAddress], "address")
     xStream.useAttributeFor(classOf[ResourceAddress], "version")
 
-    xStream.useAttributeFor(classOf[NodeRef], "address")
-    xStream.useAttributeFor(classOf[NodeRef], "leaf")
-    xStream.useAttributeFor(classOf[NodeRef], "name")
+    xStream.useAttributeFor(classOf[FSNode], "address")
+    xStream.useAttributeFor(classOf[FSNode], "leaf")
+    xStream.useAttributeFor(classOf[FSNode], "name")
 
     xStream.useAttributeFor(classOf[FSDirectory], "name")
     xStream.useAttributeFor(classOf[FSDirectory], "address")

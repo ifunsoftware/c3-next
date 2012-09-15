@@ -34,6 +34,7 @@ import collection.mutable.HashMap
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
+import collection.immutable.TreeMap
 
 abstract class Node(val resource:Resource){
 
@@ -102,10 +103,10 @@ object File{
 
 case class Directory(override val resource:Resource) extends Node(resource){
 
-  private val children = new HashMap[String, NodeRef]
+  private var children = new TreeMap[String, NodeRef]
 
   {
-    readData
+    readData()
   }
 
   override def isDirectory = true
@@ -118,13 +119,16 @@ case class Directory(override val resource:Resource) extends Node(resource){
   }
 
   def addChild(node:NodeRef) {
-    children.put(node.name, node)
+
+    children += (node.name -> node)
 
     updateResource()
   }
 
   def removeChild(name:String) {
-    children.remove(name)
+
+    children = children - name
+
     updateResource()
   }
 
@@ -140,7 +144,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
     resource.addVersion(version)
   }
 
-  private def getData(children:HashMap[String, NodeRef]):DataStream = {
+  private def getData(children:Map[String, NodeRef]):DataStream = {
 
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
@@ -157,7 +161,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
     DataStream.create(byteOs.toByteArray)
   }
 
-  private def readData = {
+  private def readData() {
 
     if(resource.versions.length > 0){
 
@@ -173,7 +177,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
         val address = dataIn.readUTF
         val leaf = dataIn.readBoolean
         val name = dataIn.readUTF
-        children.put(name, NodeRef(name, address, leaf))
+        children += (name -> NodeRef(name, address, leaf))
       }
     }
   }
