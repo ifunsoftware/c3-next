@@ -46,7 +46,7 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.ComponentGuard
 
 @Component("fsManager")
-class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
+class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
@@ -61,6 +61,9 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
   @Autowired
   var taskManager:TaskManager = _
+
+  @Autowired
+  var directoryUpdater:FSDirectoryUpdater = _
 
   var fsRoots:Map[String, String] = Map()
 
@@ -118,52 +121,28 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     val node = Node.fromResource(accessManager.get(nodeAddress))
 
     if(currentParent.resource.address == newParent.resource.address){
-      try{
-        accessManager.lock(currentParent.resource.address)
-
-        val dir = Directory(accessManager.get(currentParent.resource.address))
-
-        dir.removeChild(oldPathAndName._2)
-        dir.addChild(NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf))
-
-        accessManager.update(dir.resource)
 
         node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-
         accessManager.update(node.resource)
 
-      }finally {
-        accessManager.unlock(currentParent.resource.address)
-      }
+        directoryUpdater ! ScheduleMsg(currentParent.resource.address,
+          FSDirectoryTask(UPDATE, NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf)))
+
     }else{
-      try{
-        accessManager.lock(currentParent.resource.address)
-        accessManager.lock(newParent.resource.address)
 
-        val oldDir = Directory(accessManager.get(currentParent.resource.address))
-        val newDir = Directory(accessManager.get(newParent.resource.address))
+      val oldDir = Directory(accessManager.get(currentParent.resource.address))
+      val newDir = Directory(accessManager.get(newParent.resource.address))
 
-        newDir.addChild(NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf))
+      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+      node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
 
-        accessManager.update(newDir.resource)
+      accessManager.update(node.resource)
 
-        node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-        node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
-
-        accessManager.update(node.resource)
-
-
-        oldDir.removeChild(oldPathAndName._2)
-
-        accessManager.update(oldDir.resource)
-      }finally{
-        accessManager.unlock(newParent.resource.address)
-        accessManager.unlock(currentParent.resource.address)
-      }
+      directoryUpdater ! ScheduleMsg(oldDir.resource.address,
+        FSDirectoryTask(DELETE, NodeRef(oldPathAndName._2, nodeAddress, nodeRef.leaf)))
+      directoryUpdater ! ScheduleMsg(newParent.resource.address,
+        FSDirectoryTask(ADD, NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf)))
     }
-
-
-
   }
 
   override def resourceCanBeDeleted(resource:Resource):Boolean = {
@@ -199,7 +178,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
             Directory(resource)
             true
           }catch{
-            case e => false
+            case e: Throwable => false
           }
         }else{
           true
@@ -214,17 +193,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
       case Some(name) =>
         resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
           case Some(parentAddress) => {
-
-            try{
-              accessManager.lock(parentAddress)
-              val parent = accessManager.get(parentAddress)
-              val directory = Directory(parent)
-              directory.removeChild(name)
-              accessManager.update(directory.resource)
-            }finally {
-              accessManager.unlock(parentAddress)
-            }
-
+              directoryUpdater ! ScheduleMsg(parentAddress, FSDirectoryTask(DELETE, NodeRef(name, resource.address, false)))
           }
           case None =>
         }
@@ -269,7 +238,7 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
 
       result
     }catch{
-      case e => log.debug("Failed to get resource path", e)
+      case e: Throwable => log.debug("Failed to get resource path", e)
       ""
     }
 
@@ -329,24 +298,10 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
       case None =>
     }
 
+    newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
+    val newAddress = accessManager.add(newNode.resource)
 
-    try{
-      accessManager.lock(directory.resource.address)
-
-      //refreshing directory instance
-      directory = Node.fromResource(accessManager.get(directory.resource.address)).asInstanceOf[Directory]
-
-      newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
-
-      val newAddress = accessManager.add(newNode.resource)
-
-      directory.addChild(NodeRef(name, newAddress, !newNode.isDirectory))
-
-      accessManager.update(directory.resource)
-
-    }finally {
-      accessManager.unlock(directory.resource.address)
-    }
+    directoryUpdater ! ScheduleMsg(directory.resource.address, FSDirectoryTask(ADD, NodeRef(name, newAddress, !newNode.isDirectory)))
   }
 
   private def getFSNode(domainId:String, path:String):Node = {
@@ -448,5 +403,31 @@ class FSManagerImpl extends FSManager with ResourceOwner with ComponentGuard{
     }else{
       throw new IllegalStateException("Task already started")
     }
+  }
+
+  def executeDirectoryTasks(address:String, tasks:List[FSDirectoryTask]){
+    val directory = Node.fromResource(accessManager.get(address)).asInstanceOf[Directory]
+
+    for (task <- tasks){
+      task.action match {
+        case ADD => directory.addChild(task.nodeRef)
+        case DELETE => directory.removeChild(task.nodeRef.name)
+        case UPDATE => {
+          directory.getChildren.filter(_.address == task.nodeRef.address).headOption match {
+            case Some(oldNodeRef) => {
+              val oldName = oldNodeRef.name
+              directory.removeChild(oldName)
+              directory.addChild(task.nodeRef)
+            }
+            case None => {
+              log.warn("Request to rename missing resource " + task.nodeRef.address + " in directory " + address)
+            }
+          }
+        }
+        case _ =>
+      }
+    }
+
+    accessManager.update(directory.resource)
   }
 }

@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
+
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -27,34 +28,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.bdb.impl
+package org.aphreet.c3.platform.filesystem
 
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.{Storage, StorageParams}
-import org.aphreet.c3.platform.storage.bdb._
-import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common.WatchedActor
+import actors.Actor
 
-@Component
-class PureBDBStorageFactory extends AbstractBDBStorageFactory{
+trait FSDirectoryUpdater extends WatchedActor{
 
-  protected def createNewStorage(params:StorageParams, systemId:String):Storage = {
-    
-    val storage = new PureBDBStorage(params, systemId, bdbConfig)
-    storage.ids = params.secIds
-    storage
-    
-  }
-
-  @PostConstruct
-  override def init() {
-    super.init()
-  }
-
-  @PreDestroy
-  override def destroy() {
-    super.destroy()
-  }
-  
-  def name:String = PureBDBStorage.NAME
-  
 }
+
+sealed class FSDirectoryAction
+
+object ADD extends FSDirectoryAction
+object DELETE extends FSDirectoryAction
+object UPDATE extends FSDirectoryAction
+
+case class FSDirectoryTask(action:FSDirectoryAction, nodeRef:NodeRef)
+
+case class ScheduleMsg(address:String, task:FSDirectoryTask)
+case class TaskDoneMsg(address:String, actor:Actor)
+case class RunTasks(address:String, tasks:List[FSDirectoryTask])
