@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-Version: 9.9.9-TO_BE_REPLACED
 Bundle-Name: C3 Platform
 Bundle-ManifestVersion: 2
-Bundle-SymbolicName: org.aphreet.c3.platform
+Bundle-SymbolicName: org.aphreet.c3.platform.core
 Spring-Context: *
 Import-Bundle: com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
