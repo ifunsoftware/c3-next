@@ -140,13 +140,6 @@ var Terminal = new Class({
         $(window).scrollTo(0, this.currentPrompt.getPosition().y);
     },
 
-    guess: function() {
-        var command = this.currentCommand.get('html');
-        if (command.substr(0,1) == 'c')
-            command = 'copy';
-        this.currentCommand.set('html', command);
-    },
-
     // Executes a command
     run: function() {
         var command = this.currentCommand.get('text');

@@ -44,7 +44,8 @@ object StorageCommands extends Commands{
     new ShowResourceCommand,
     new ShowStorageCommand,
     new CreateStorageIndexCommand,
-    new RemoveStorageIndexCommand
+    new RemoveStorageIndexCommand,
+    new StorageSummaryCommand
     )
 }
 
@@ -243,4 +244,17 @@ class RemoveStorageIndexCommand extends Command {
   }
 
   def name = List("remove", "storage", "index")
+}
+
+class StorageSummaryCommand extends Command {
+
+  override
+  def execute(management:PlatformManagementService) = {
+
+    val resourceNumber = management.listStorages.foldLeft(0l)(_ + _.getCount().longValue())
+
+    "C3 is happily keeping " + resourceNumber + " resources"
+  }
+
+  def name = List("show", "system", "summary")
 }
