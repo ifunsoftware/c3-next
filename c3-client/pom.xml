@@ -151,35 +151,4 @@
 
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>development</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>deploy</id>
-                                <phase>install</phase>
-                                <configuration combine.self="override">
-                                    <tasks>
-                                        <!-- We don't need to copy artifact to virgo server, overriding execution-->
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>manifest</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

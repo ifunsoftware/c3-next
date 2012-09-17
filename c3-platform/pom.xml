@@ -25,54 +25,86 @@
     </modules>
 
     <dependencyManagement>
-            <dependencies>
-                <!-- Internal dependencies -->
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-core</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependencies>
+            <!-- Internal dependencies -->
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-storage</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-storage</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-search</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-search</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-filesystem</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-filesystem</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-access-control</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-access-control</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <dependency>
-                    <groupId>org.aphreet.c3</groupId>
-                    <artifactId>c3-replication</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-replication</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-                <!-- External dependencies-->
+            <!-- External dependencies-->
 
-                <dependency>
-                    <groupId>com.springsource.json</groupId>
-                    <artifactId>com.springsource.json</artifactId>
-                    <version>1.0.1.RELEASE</version>
-                    <scope>provided</scope>
-                </dependency>
+            <dependency>
+                <groupId>com.springsource.json</groupId>
+                <artifactId>com.springsource.json</artifactId>
+                <version>1.0.1.RELEASE</version>
+                <scope>provided</scope>
+            </dependency>
 
-            </dependencies>
-        </dependencyManagement>
+        </dependencies>
+    </dependencyManagement>
 
+    <profiles>
+        <profile>
+            <id>development</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-antrun-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>deploy</id>
+                                    <phase>install</phase>
+                                    <configuration>
+                                        <tasks>
+                                            <echo message="Deploying to Spring DM Server" />
+                                            <copy toDir="${virgo.path.libs}" overwrite="true">
+                                                <fileset dir="${project.deploy.tmp.dir}" />
+                                            </copy>
+                                        </tasks>
+                                    </configuration>
+                                    <goals>
+                                        <goal>run</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>
