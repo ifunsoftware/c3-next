@@ -34,6 +34,13 @@ import org.aphreet.c3.platform.client.management.command.InteractiveCommand
 
 import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
 import jline.ConsoleReader
+import org.aphreet.c3.platform.management.cli.command.Commands
+
+object PrepareForReplication extends Commands{
+
+  def instances = List(new PrepareForReplication)
+
+}
 
 class PrepareForReplication extends InteractiveCommand {
 

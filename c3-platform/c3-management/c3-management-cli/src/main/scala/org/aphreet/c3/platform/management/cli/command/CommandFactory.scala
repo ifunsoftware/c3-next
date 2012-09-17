@@ -34,7 +34,7 @@ import impl._
 
 import collection.mutable
 
-class CommandFactory {
+class CommandFactory(additionalCommands:List[Commands] = List()) {
 
   val root: CommandTreeNode = new CommandTreeNode(null)
 
@@ -56,6 +56,8 @@ class CommandFactory {
     register(DomainCommands)
 
     register(FilesystemCommands)
+
+    additionalCommands.foreach(register(_))
 
     register(new HelpCommand)
   }

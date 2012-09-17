@@ -30,6 +30,7 @@
 
 package org.aphreet.c3.platform.client.management
 
+import command.impl.{PrepareForReplication, SearchCommands}
 import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
 import connection.{ConnectionException, ConnectionProvider}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
@@ -106,7 +107,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     println("C3 Client version " + VersionUtils.clientVersion)
 
-    val commandFactory = new CommandFactory
+    val commandFactory = new CommandFactory(List(SearchCommands, PrepareForReplication))
 
     var commandEvaluator = connect(reader)
 
