@@ -6,7 +6,7 @@
             http://www.springsource.org/schema/dm-server/plan
             http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
 
-    <artifact type="bundle" name="org.aphreet.c3.platform" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.core" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.storage" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.storage.file" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.search" version="[1.0.0, 2.0.0)"/>
