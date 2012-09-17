@@ -28,42 +28,72 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+import org.aphreet.c3.platform.management.cli.command._
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
-object CommonCommands extends Commands{
+object SizeMappingCommands extends Commands{
 
   def instances = List(
-      new EmptyCommand,
-      new QuitCommand,
-      new ExitCommand
-    )
-}
-
-class EmptyCommand extends Command{
-
-  override
-  def execute() = ""
-
-  def name = List("")
+    new AddSizeMappingCommand,
+    new DeleteSizeMappingCommand,
+    new ListSizeMappingCommand
+  )
 
 }
 
-
-class QuitCommand extends Command{
+class AddSizeMappingCommand extends Command {
 
   override
-  def execute() = {
-    println("Bye")
-    System.exit(0)
-    ""
+  def execute(params:List[String], management:PlatformManagementService) = {
+    if (params.size < 3)
+      wrongParameters("create size mapping <size> <storagetype> <versioned>")
+    else {
+
+      val size = params.head.toLong
+      val storageType = params.tail.head
+      val versioned = (params(2) == "true")
+
+
+      management.addSizeMapping(size, storageType, versioned)
+
+      "Size mapping added"
+    }
   }
 
-  def name = List("quit")
+  def name = List("create", "size", "mapping")
 }
 
-class ExitCommand extends QuitCommand{
+class DeleteSizeMappingCommand extends Command {
 
-  override def name = List("exit")
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
+
+    if (params.size < 1) {
+      wrongParameters("remove size mapping <size>")
+    } else {
+      management.removeSizeMapping(params.head.toLong)
+      "Size mapping deleted"
+    }
+  }
+
+  def name = List("remove", "size", "mapping")
+
+}
+
+class ListSizeMappingCommand extends Command {
+
+  override
+  def execute(management:PlatformManagementService) = {
+    val builder = new StringBuilder
+
+    for (mapping <- management.listSizeMappings)
+      builder.append(String.format("%10d %20s %b\n", mapping.size, mapping.storage, mapping.versioned))
+
+
+    builder.toString()
+  }
+
+  def name = List("list", "size", "mappings")
 }

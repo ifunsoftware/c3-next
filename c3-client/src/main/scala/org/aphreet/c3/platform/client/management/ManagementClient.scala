@@ -30,7 +30,6 @@
 
 package org.aphreet.c3.platform.client.management
 
-import command.CommandFactory
 import connection.impl.{WSConnectionProvider, RmiConnectionProvider}
 import connection.{ConnectionException, ConnectionProvider}
 import org.springframework.remoting.{RemoteLookupFailureException, RemoteConnectFailureException}
@@ -40,6 +39,7 @@ import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import java.io.File
 import jline.{ConsoleReader, History}
 import org.aphreet.c3.platform.remote.api.RemoteException
+import org.aphreet.c3.platform.management.cli.command.CommandFactory
 
 class ManagementClient(override val args:Array[String]) extends CLI(args) {
 

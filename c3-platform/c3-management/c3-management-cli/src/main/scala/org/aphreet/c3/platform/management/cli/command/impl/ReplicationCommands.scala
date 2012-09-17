@@ -28,12 +28,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{InteractiveCommand, Command, Commands}
-
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
-import jline.ConsoleReader
+import org.aphreet.c3.platform.management.cli.command.{Command, Commands}
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object ReplicationCommands extends Commands {
 
@@ -41,7 +39,6 @@ object ReplicationCommands extends Commands {
       new AddReplicationTarget,
       new RemoveReplicationTarget,
       new ListReplicationTargets,
-      new PrepareForReplication,
       new ReplayReplicationQueueCommand
   )
   
@@ -96,53 +93,6 @@ class ListReplicationTargets extends Command {
   }
 
   def name:List[String] = List("list", "replication", "targets")
-}
-
-class PrepareForReplication extends InteractiveCommand {
-
-  def getValue(array:Array[Pair], key:String):String = {
-    array.filter(_.key == key).headOption match {
-      case Some(value) => value.value
-      case None => ""
-    }
-  }
-
-  def setProperty(management:PlatformManagementService, key:String, value:String) {
-    if(!value.isEmpty)
-      //println("Setting " + key + " to " + value)
-      management.setPlatformProperty(key, value)
-  }
-
-  override
-  def execute(params:List[String], management:PlatformManagementService, reader:ConsoleReader):String = {
-
-    val properties = management.platformProperties
-
-    print("Public hostname [" + getValue(properties, "c3.public.hostname") + "]: ")
-    val hostname = readInput(reader).trim
-
-    print("HTTP port [" + getValue (properties, "c3.remote.http.port") + "]: ")
-    val httpPort = readNumber(reader)
-
-    print("HTTPS port [" + getValue (properties, "c3.remote.https.port") + "]: ")
-    val httpsPort = readNumber(reader)
-
-    print("Replication port [" + getValue (properties, "c3.remote.replication.port") + "]: ")
-    val replicationPort = readNumber(reader)
-
-    print("Replication queue path [" + getValue (properties, "c3.remote.replication.queue") + "]: ")
-    val queue = readInput(reader).trim
-
-    setProperty(management, "c3.public.hostname", hostname)
-    setProperty(management, "c3.remote.http.port", httpPort)
-    setProperty(management, "c3.remote.https.port", httpsPort)
-    setProperty(management, "c3.remote.replication.port", replicationPort)
-    setProperty(management, "c3.remote.replication.queue", queue)
-
-    "Done"
-  }
-
-  def name:List[String] = List("set", "replication", "properties")
 }
 
 class ReplayReplicationQueueCommand extends Command {

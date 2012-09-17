@@ -28,36 +28,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, VolumeDescription}
+import org.aphreet.c3.platform.management.cli.command.Command
 
-object VolumeCommands extends Commands{
+class ErrorCommand(val message:String) extends Command{
 
-  override def instances = List(
-    new ListVolumesCommand
-  )
-}
-
-class ListVolumesCommand extends Command {
-
-  override def name:List[String] = List("list", "volumes")
-
-  override def execute(management:PlatformManagementService):String = {
-
-    def format(desc:VolumeDescription):String =
-      String.format("| %-31s | %8d | %13d | %13d | %13d |\n",
-      desc.path,
-      desc.storages,
-      desc.size,
-      desc.free,
-      desc.available)
-
-    val header = "|           Mount point           | Storages |     Total     |     Free      |   Available   |\n" +
-                 "|---------------------------------|----------|---------------|---------------|---------------|\n"
-    val footer = "|---------------------------------|----------|---------------|---------------|---------------|\n"
-
-    management.volumes.map(v => format(v)).foldLeft(header)(_ + _) + footer
-  }
+  override
+  def execute():String = message
+  
+  def name = List()
 }

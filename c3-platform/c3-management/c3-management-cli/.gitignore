@@ -1,0 +1,15 @@
+target
+.idea
+.manager
+.externalToolBuilders
+.settings
+.project
+.classpath
+.springBeans
+*.iml
+*.iws
+*.out
+*.log
+*.ipr
+*.tmp
+

@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command
+package org.aphreet.c3.platform.management.cli.command
 
 import impl._
 
@@ -36,7 +36,7 @@ import collection.mutable
 
 class CommandFactory {
 
-  val root : CommandTreeNode = new CommandTreeNode(null)
+  val root: CommandTreeNode = new CommandTreeNode(null)
 
   {
     register(CommonCommands)
@@ -49,8 +49,6 @@ class CommandFactory {
     register(TypeMappingCommands)
     register(UserCommands)
 
-    register(SearchCommands)
-
     register(VolumeCommands)
 
     register(ReplicationCommands)
@@ -58,95 +56,95 @@ class CommandFactory {
     register(DomainCommands)
 
     register(FilesystemCommands)
-    
+
     register(new HelpCommand)
   }
 
-  def getCommand(query:String):Option[CommandExecution] = {
+  def getCommand(query: String): Option[CommandExecution] = {
 
     val input = query.trim.split("\\s+").toList
 
     val classAndParams = root.classForInput(input)
 
-    if(classAndParams._1 != null){
+    if (classAndParams._1 != null) {
       val command = classAndParams._1.newInstance.asInstanceOf[Command]
 
       Some(CommandExecution(command, classAndParams._2))
 
-    }else{
+    } else {
       Some(CommandExecution(new ErrorCommand("Command not found. Type help to get list of all commands"), List()))
     }
   }
 
-  def register(command:Commands){
-    for(instance <- command.instances){
+  def register(command: Commands) {
+    for (instance <- command.instances) {
       register(instance)
     }
   }
 
-  def register(command:Command) {
+  def register(command: Command) {
     HelpCommand.addCommand(command)
     root.addCommand(command.name, command.getClass)
   }
 
 }
 
-class CommandTreeNode(val commandClass:Class[_]) {
-    val map = new mutable.HashMap[String, CommandTreeNode]
+class CommandTreeNode(val commandClass: Class[_]) {
+  val map = new mutable.HashMap[String, CommandTreeNode]
 
-    def classForInput(input:List[String]):(Class[_], List[String]) = {
+  def classForInput(input: List[String]): (Class[_], List[String]) = {
 
-      if(input.size > 0){
-        map.get(input.head) match {
-          case Some(node) => node.classForInput(input.tail)
-          case None => {
-            if(commandClass != null)
+    if (input.size > 0) {
+      map.get(input.head) match {
+        case Some(node) => node.classForInput(input.tail)
+        case None => {
+          if (commandClass != null)
+            (commandClass, input)
+          else {
+            val nonStrictNode = foundCommandAsSubstring(input.head)
+            if (nonStrictNode != null) {
+              nonStrictNode.classForInput(input.tail)
+            } else {
               (commandClass, input)
-            else{
-              val nonStrictNode = foundCommandAsSubstring(input.head)
-              if(nonStrictNode != null){
-                nonStrictNode.classForInput(input.tail)
-              }else{
-                (commandClass, input)
-              }
             }
           }
         }
-      }else{
-        (commandClass, List())
       }
+    } else {
+      (commandClass, List())
     }
-
-    private def foundCommandAsSubstring(token:String):CommandTreeNode = {
-
-      var foundNode:CommandTreeNode = null
-
-      for((command, node) <- map){
-        if(command.matches("^" + token + ".*")){
-          if(foundNode == null){
-            foundNode = node
-          }else{
-            return null
-          }
-        }
-      }
-
-      foundNode
-    }
-
-    def addCommand(input:List[String], commandClass:Class[_]) {
-      if(input.size == 1){
-        map.put(input.head, new CommandTreeNode(commandClass))
-      }else{
-        map.get(input.head) match {
-          case Some(node) => node.addCommand(input.tail, commandClass)
-          case None => {
-            val node = new CommandTreeNode(null)
-            map.put(input.head, node)
-            node.addCommand(input.tail, commandClass)
-          }
-        }
-      }
-    }
-
   }
+
+  private def foundCommandAsSubstring(token: String): CommandTreeNode = {
+
+    var foundNode: CommandTreeNode = null
+
+    for ((command, node) <- map) {
+      if (command.matches("^" + token + ".*")) {
+        if (foundNode == null) {
+          foundNode = node
+        } else {
+          return null
+        }
+      }
+    }
+
+    foundNode
+  }
+
+  def addCommand(input: List[String], commandClass: Class[_]) {
+    if (input.size == 1) {
+      map.put(input.head, new CommandTreeNode(commandClass))
+    } else {
+      map.get(input.head) match {
+        case Some(node) => node.addCommand(input.tail, commandClass)
+        case None => {
+          val node = new CommandTreeNode(null)
+          map.put(input.head, node)
+          node.addCommand(input.tail, commandClass)
+        }
+      }
+    }
+  }
+
+}

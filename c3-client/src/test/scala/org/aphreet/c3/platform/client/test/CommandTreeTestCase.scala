@@ -30,9 +30,9 @@
 package org.aphreet.c3.platform.client.test
 
 import junit.framework.TestCase
-import org.aphreet.c3.platform.client.management.command.CommandTreeNode
 
 import junit.framework.Assert._
+import org.aphreet.c3.platform.management.cli.command.CommandTreeNode
 
 class CommandTreeTestCase extends TestCase{
 

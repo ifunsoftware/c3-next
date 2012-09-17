@@ -1,8 +1,9 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{InteractiveCommand, Command, Commands}
+import org.aphreet.c3.platform.client.management.command.InteractiveCommand
 import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
 import jline.ConsoleReader
+import org.aphreet.c3.platform.management.cli.command.Commands
 
 
 /**

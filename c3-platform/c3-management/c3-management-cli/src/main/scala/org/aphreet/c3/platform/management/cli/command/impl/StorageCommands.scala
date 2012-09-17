@@ -27,9 +27,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{Commands, Command}
+import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, StorageIndexDescription, StorageDescription}
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 

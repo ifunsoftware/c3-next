@@ -28,74 +28,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command
 
-import org.aphreet.c3.platform.client.management.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 
-object TypeMappingCommands extends Commands{
+trait Command {
 
-  def instances = List(
-      new AddTypeMappingCommand,
-      new DeleteTypeMappingCommand,
-      new ListTypeMappingCommand
-  )
-}
+  def execute(params: List[String], access: PlatformAccessService, management: PlatformManagementService): String =
+    execute(params, management)
 
-class AddTypeMappingCommand extends Command{
+  def execute(params: List[String], management: PlatformManagementService): String =
+    execute(management)
 
-  override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 3)
-      wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
-    else{
+  def execute(management: PlatformManagementService): String =
+    execute()
 
-      val mimeType = params.head
-      val storageType = params.tail.head
-      val versioned = (params(2) == "true")
-
-      management.addTypeMapping(mimeType, storageType, versioned)
-
-      "Type mapping added"
-    }
+  def execute(): String = {
+    throw new RuntimeException("Execute method in the command is not defined")
   }
 
-  def name = List("create", "type", "mapping")
+  def name: List[String]
 
-}
-
-class DeleteTypeMappingCommand extends Command{
-
-  override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-
-    if(params.size < 1){
-      wrongParameters("remove type mapping <mimetype>")
-    }else{
-      management.removeTypeMapping(params.head)
-      "Type mapping removed"
-    }
+  def wrongParameters(usage: String): String = {
+    "Not enough parameters. Usage: " + usage
   }
-
-  def name = List("remove", "type", "mapping")
 }
 
-class ListTypeMappingCommand extends Command{
+case class CommandExecution(command: Command, params: List[String])
 
-  override
-  def execute(management:PlatformManagementService):String = {
+trait Commands {
 
-    val builder = new StringBuilder
-
-    for(mapping <- management.listTypeMappings)
-      builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
-
-
-    builder.toString()
-
-  }
-
-  def name = List("list", "type", "mappings")
-
-
+  def instances: List[Command]
 }
+

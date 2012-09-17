@@ -1,9 +1,10 @@
 package org.aphreet.c3.platform.client.management
 
-import command.{InteractiveCommand, CommandExecution}
+import command.InteractiveCommand
 import jline.ConsoleReader
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.management.cli.command.CommandExecution
 
 class CommandEvaluator(val reader:ConsoleReader, val accessService:PlatformAccessService, val managementService:PlatformManagementService) {
 

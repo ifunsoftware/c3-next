@@ -28,38 +28,74 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.management.command
+package org.aphreet.c3.platform.management.cli.command.impl
 
+import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
-import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import jline.ConsoleReader
 
-trait Command{
+object TypeMappingCommands extends Commands{
 
-  def execute(params:List[String], access:PlatformAccessService, management:PlatformManagementService):String =
-    execute(params, management)
-
-  def execute(params:List[String], management:PlatformManagementService):String =
-    execute(management)
-
-  def execute(management:PlatformManagementService):String =
-    execute()
-
-  def execute():String = {
-    throw new RuntimeException("Execute method in the command is not defined")
-  }
-
-  def name:List[String]
-
-  def wrongParameters(usage:String):String = {
-    "Not enough parameters. Usage: " +usage
-  }
+  def instances = List(
+      new AddTypeMappingCommand,
+      new DeleteTypeMappingCommand,
+      new ListTypeMappingCommand
+  )
 }
 
-case class CommandExecution(command:Command, params:List[String])
+class AddTypeMappingCommand extends Command{
 
-trait Commands{
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
+    if(params.size < 3)
+      wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
+    else{
 
-  def instances:List[Command]
+      val mimeType = params.head
+      val storageType = params.tail.head
+      val versioned = (params(2) == "true")
+
+      management.addTypeMapping(mimeType, storageType, versioned)
+
+      "Type mapping added"
+    }
+  }
+
+  def name = List("create", "type", "mapping")
+
 }
 
+class DeleteTypeMappingCommand extends Command{
+
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
+
+    if(params.size < 1){
+      wrongParameters("remove type mapping <mimetype>")
+    }else{
+      management.removeTypeMapping(params.head)
+      "Type mapping removed"
+    }
+  }
+
+  def name = List("remove", "type", "mapping")
+}
+
+class ListTypeMappingCommand extends Command{
+
+  override
+  def execute(management:PlatformManagementService):String = {
+
+    val builder = new StringBuilder
+
+    for(mapping <- management.listTypeMappings)
+      builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
+
+
+    builder.toString()
+
+  }
+
+  def name = List("list", "type", "mappings")
+
+
+}

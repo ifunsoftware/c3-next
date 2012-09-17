@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.client.management.command
 
 import jline.ConsoleReader
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.management.cli.command.Command
 
 trait InteractiveCommand extends Command {
 

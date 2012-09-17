@@ -1,6 +1,6 @@
-package org.aphreet.c3.platform.client.management.command.impl
+package org.aphreet.c3.platform.management.cli.command.impl
 
-import org.aphreet.c3.platform.client.management.command.Command
+import org.aphreet.c3.platform.management.cli.command.Command
 import collection.immutable.TreeSet
 
 class HelpCommand extends Command{

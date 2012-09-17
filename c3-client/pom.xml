@@ -30,6 +30,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-management-cli</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>org.springframework.core</artifactId>
             <version>3.0.6.RELEASE</version>
