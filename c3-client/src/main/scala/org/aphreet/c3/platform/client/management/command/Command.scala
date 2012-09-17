@@ -34,92 +34,32 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import jline.ConsoleReader
 
-abstract class Command{
+trait Command{
 
-  var reader:ConsoleReader = null
+  def execute(params:List[String], access:PlatformAccessService, management:PlatformManagementService):String =
+    execute(params, management)
 
-  var params:List[String] = List()
-  
-  var access:PlatformAccessService = null
-  
-  var management:PlatformManagementService = null
-  
-  def execute():String
-  
+  def execute(params:List[String], management:PlatformManagementService):String =
+    execute(management)
+
+  def execute(management:PlatformManagementService):String =
+    execute()
+
+  def execute():String = {
+    throw new RuntimeException("Execute method in the command is not defined")
+  }
+
   def name:List[String]
-
-  def readInput:String = reader.readLine
-
-  def readNumber:Option[Int] = {
-
-    var correct = false
-    var result:Option[Int] = None
-
-    while(!correct){
-      try{
-
-        val input = readInput.trim()
-
-        if(input == ""){
-          result = None
-          correct = true
-        }else{
-          result = Some(Integer.parseInt(input))
-          correct = true
-        }
-      }catch{
-        case e:NumberFormatException => writeString("Incorrect input value, expected number\nTry again: ")
-      }
-    }
-    result
-  }
-
-  def readBoolean:Option[Boolean] = {
-    var correct = false
-    var result:Option[Boolean] = None
-
-    while(!correct){
-      try{
-
-        result = readInput match {
-          case "true" => Some(true)
-          case "false" => Some(false)
-          case "" => None
-          case _ => throw new Exception("")
-        }
-
-        correct = true
-      }catch{
-        case e:Exception => writeString("Incorrect input value, expected true of false\nTry again: ")
-      }
-    }
-    result
-  }
-
-  def writeString(line:String) {
-    print(line)
-  }
 
   def wrongParameters(usage:String):String = {
     "Not enough parameters. Usage: " +usage
   }
-
-  implicit def convertIntOptionToString(option:Option[Int]):String = {
-    option match {
-      case Some(value) => value.toString
-      case None => ""
-    }
-  }
-
-  implicit def convertBooleanOptionToString(option:Option[Boolean]):String = {
-    option match {
-      case Some(value) => value.toString
-      case None => ""
-    }
-  }
 }
 
-abstract class Commands{
+case class CommandExecution(command:Command, params:List[String])
+
+trait Commands{
 
   def instances:List[Command]
 }
+

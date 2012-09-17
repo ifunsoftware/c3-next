@@ -30,9 +30,10 @@
 
 package org.aphreet.c3.platform.client.management.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+import org.aphreet.c3.platform.client.management.command.{InteractiveCommand, Command, Commands}
 
-import org.aphreet.c3.platform.remote.api.management.Pair
+import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
+import jline.ConsoleReader
 
 object ReplicationCommands extends Commands {
 
@@ -48,7 +49,8 @@ object ReplicationCommands extends Commands {
 
 class AddReplicationTarget extends Command {
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
     if(params.size < 3){
       wrongParameters("create replication target <hostname> <username> <password>")
     }else{
@@ -65,7 +67,8 @@ class AddReplicationTarget extends Command {
 
 class RemoveReplicationTarget extends Command {
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
     if(params.size < 1){
       "Not enough params.\nUsage: remove replication target <systemid>"
     }else{
@@ -79,7 +82,8 @@ class RemoveReplicationTarget extends Command {
 
 class ListReplicationTargets extends Command {
 
-  def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
     val targets = management.listReplicationTargets
 
     val header = "|        ID       |              Host              |\n" +
@@ -94,7 +98,7 @@ class ListReplicationTargets extends Command {
   def name:List[String] = List("list", "replication", "targets")
 }
 
-class PrepareForReplication extends Command {
+class PrepareForReplication extends InteractiveCommand {
 
   def getValue(array:Array[Pair], key:String):String = {
     array.filter(_.key == key).headOption match {
@@ -103,36 +107,37 @@ class PrepareForReplication extends Command {
     }
   }
 
-  def setProperty(key:String, value:String) {
+  def setProperty(management:PlatformManagementService, key:String, value:String) {
     if(!value.isEmpty)
       //println("Setting " + key + " to " + value)
       management.setPlatformProperty(key, value)
   }
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService, reader:ConsoleReader):String = {
 
     val properties = management.platformProperties
 
     print("Public hostname [" + getValue(properties, "c3.public.hostname") + "]: ")
-    val hostname = readInput.trim
+    val hostname = readInput(reader).trim
 
     print("HTTP port [" + getValue (properties, "c3.remote.http.port") + "]: ")
-    val httpPort = readNumber
+    val httpPort = readNumber(reader)
 
     print("HTTPS port [" + getValue (properties, "c3.remote.https.port") + "]: ")
-    val httpsPort = readNumber
+    val httpsPort = readNumber(reader)
 
     print("Replication port [" + getValue (properties, "c3.remote.replication.port") + "]: ")
-    val replicationPort = readNumber
+    val replicationPort = readNumber(reader)
 
     print("Replication queue path [" + getValue (properties, "c3.remote.replication.queue") + "]: ")
-    val queue = readInput.trim
+    val queue = readInput(reader).trim
 
-    setProperty("c3.public.hostname", hostname)
-    setProperty("c3.remote.http.port", httpPort)
-    setProperty("c3.remote.https.port", httpsPort)
-    setProperty("c3.remote.replication.port", replicationPort)
-    setProperty("c3.remote.replication.queue", queue)
+    setProperty(management, "c3.public.hostname", hostname)
+    setProperty(management, "c3.remote.http.port", httpPort)
+    setProperty(management, "c3.remote.https.port", httpsPort)
+    setProperty(management, "c3.remote.replication.port", replicationPort)
+    setProperty(management, "c3.remote.replication.queue", queue)
 
     "Done"
   }
@@ -142,7 +147,8 @@ class PrepareForReplication extends Command {
 
 class ReplayReplicationQueueCommand extends Command {
 
-  override def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
     management.replayReplicationQueue()
     "Retry started"
   }

@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.Pair
+import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
 import collection.immutable.TreeSet
 
 object PlatformPropertiesCommands extends Commands {
@@ -46,7 +46,8 @@ object PlatformPropertiesCommands extends Commands {
 
 class SetPlatformPropertyCommand extends Command{
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
 
     if(params.size < 2){
       "Not enought params\nUsage: set platform property <key> <value>"
@@ -67,7 +68,8 @@ class ListPlatformPropertiesCommand extends Command{
 
   val footer = "|--------------------------------------------|----------------------------------------------------|\n"
 
-  def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
     val set = new TreeSet[Pair]()(
       new Ordering[Pair] {
         override def compare(x:Pair, y:Pair):Int = x.key.compareTo(y.key)
@@ -90,7 +92,8 @@ class ListStatisticsCommand extends Command{
 
   val footer = "|------------------------------------------|-----------------|\n"
 
-  def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
 
     management.statistics
       .map(e => (String.format("| %-40s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer

@@ -5,6 +5,7 @@ import collection.immutable.TreeSet
 
 class HelpCommand extends Command{
 
+  override
   def execute():String = {
 
     HelpCommand.commands.reduceLeft(_ + "\n" + _)

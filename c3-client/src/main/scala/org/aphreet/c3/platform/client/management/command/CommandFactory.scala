@@ -32,12 +32,9 @@ package org.aphreet.c3.platform.client.management.command
 
 import impl._
 
-import scala.collection.mutable.HashMap
-import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
-import jline.ConsoleReader
+import collection.mutable
 
-class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessService, val managementService:PlatformManagementService) {
+class CommandFactory {
 
   val root : CommandTreeNode = new CommandTreeNode(null)
 
@@ -65,7 +62,7 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
     register(new HelpCommand)
   }
 
-  def getCommand(query:String):Option[Command] = {
+  def getCommand(query:String):Option[CommandExecution] = {
 
     val input = query.trim.split("\\s+").toList
 
@@ -73,13 +70,11 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
 
     if(classAndParams._1 != null){
       val command = classAndParams._1.newInstance.asInstanceOf[Command]
-      command.params = classAndParams._2
-      command.access = accessService
-      command.management = managementService
-      command.reader = reader
-      Some(command)
+
+      Some(CommandExecution(command, classAndParams._2))
+
     }else{
-      Some(new ErrorCommand("Command not found. Type help to get list of all commands"))
+      Some(CommandExecution(new ErrorCommand("Command not found. Type help to get list of all commands"), List()))
     }
   }
 
@@ -97,7 +92,7 @@ class CommandFactory(val reader:ConsoleReader, val accessService:PlatformAccessS
 }
 
 class CommandTreeNode(val commandClass:Class[_]) {
-    val map = new HashMap[String, CommandTreeNode]
+    val map = new mutable.HashMap[String, CommandTreeNode]
 
     def classForInput(input:List[String]):(Class[_], List[String]) = {
 

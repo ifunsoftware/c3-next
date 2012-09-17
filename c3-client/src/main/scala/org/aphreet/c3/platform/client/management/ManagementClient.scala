@@ -106,7 +106,9 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
     println("C3 Client version " + VersionUtils.clientVersion)
 
-    var commandFactory = connect(reader)
+    val commandFactory = new CommandFactory
+
+    var commandEvaluator = connect(reader)
 
     println("Welcome to C3 shell")
     print("C3>")
@@ -119,14 +121,14 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
 
       for(i <- 1 to 5 if !success){
         success = commandFactory.getCommand(line) match {
-          case Some(command) => {
+          case Some(commandExecution) => {
             try{
-              printResult(command.execute())
+              printResult(commandEvaluator.evaluate(commandExecution))
             }catch{
               case e:RemoteConnectFailureException=> {
                 println("Connection to server lost. Trying to reconnect...")
 
-                commandFactory = connect(reader)
+                commandEvaluator = connect(reader)
                 false
               }
               case e:RemoteException =>
@@ -159,14 +161,14 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
     true
   }
 
-  def createCommandFactory(reader:ConsoleReader):CommandFactory = {
-    new CommandFactory(reader, connectionProvider.access, connectionProvider.management)
+  def createCommandEvaluator(reader:ConsoleReader):CommandEvaluator = {
+    new CommandEvaluator(reader, connectionProvider.access, connectionProvider.management)
   }
 
-  def connect(reader:ConsoleReader):CommandFactory = {
+  def connect(reader:ConsoleReader):CommandEvaluator = {
     for(i <- 1 to 5){
       try{
-        return createCommandFactory(reader)
+        return createCommandEvaluator(reader)
       }catch{
         case e:RemoteLookupFailureException => {
           if(i < 5){

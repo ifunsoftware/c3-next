@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object FilesystemCommands extends Commands{
 
@@ -11,8 +12,9 @@ object FilesystemCommands extends Commands{
 
 class StartFilesystemCheck extends Command{
 
-  def execute():String = {
-    management.startFilesystemCheck
+  override
+  def execute(management:PlatformManagementService):String = {
+    management.startFilesystemCheck()
 
     "Check started"
   }

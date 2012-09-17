@@ -31,6 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Commands, Command}
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object TypeMappingCommands extends Commands{
 
@@ -43,7 +44,8 @@ object TypeMappingCommands extends Commands{
 
 class AddTypeMappingCommand extends Command{
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
     if(params.size < 3)
       wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
     else{
@@ -64,7 +66,8 @@ class AddTypeMappingCommand extends Command{
 
 class DeleteTypeMappingCommand extends Command{
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
 
     if(params.size < 1){
       wrongParameters("remove type mapping <mimetype>")
@@ -79,7 +82,8 @@ class DeleteTypeMappingCommand extends Command{
 
 class ListTypeMappingCommand extends Command{
 
-  def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
 
     val builder = new StringBuilder
 

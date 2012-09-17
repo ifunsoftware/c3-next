@@ -1,7 +1,8 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
-import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.Pair
+import org.aphreet.c3.platform.client.management.command.{InteractiveCommand, Command, Commands}
+import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
+import jline.ConsoleReader
 
 
 /**
@@ -16,7 +17,7 @@ object SearchCommands extends Commands{
 
 }
 
-class SetupSearchCommand extends Command{
+class SetupSearchCommand extends InteractiveCommand{
 
   def getValue(array:Array[Pair], key:String):String = {
     array.filter(_.key == key).headOption match {
@@ -25,31 +26,32 @@ class SetupSearchCommand extends Command{
     }
   }
 
-  def setProperty(key:String, value:String) {
+  def setProperty(management:PlatformManagementService, key:String, value:String) {
     if(!value.isEmpty)
-    management.setPlatformProperty(key, value)
+      management.setPlatformProperty(key, value)
   }
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService, reader:ConsoleReader):String = {
 
     val properties = management.platformProperties
 
     print("Search index location [" + getValue(properties, "c3.search.index.path") + "]: ")
-    val indexLocation = readInput.trim
+    val indexLocation = readInput(reader).trim
 
     print("Number of indexer threads [" + getValue (properties, "c3.search.index.count") + "]: ")
-    val indexerNumber = readNumber
+    val indexerNumber = readNumber(reader)
 
     print("Max number of documents in temp index [" + getValue (properties, "c3.search.index.max_size") + "]: ")
-    val maxIndexSize = readNumber
+    val maxIndexSize = readNumber(reader)
 
     print("Extract content of the documents [" + getValue (properties, "c3.search.index.extract_content") + "]: ")
-    val extractDocumentContent = readBoolean
+    val extractDocumentContent = readBoolean(reader)
 
-    setProperty("c3.search.index.path", indexLocation)
-    setProperty("c3.search.index.count", indexerNumber)
-    setProperty("c3.search.index.max_size", maxIndexSize)
-    setProperty("c3.search.index.extract_content", extractDocumentContent)
+    setProperty(management, "c3.search.index.path", indexLocation)
+    setProperty(management, "c3.search.index.count", indexerNumber)
+    setProperty(management, "c3.search.index.max_size", maxIndexSize)
+    setProperty(management, "c3.search.index.extract_content", extractDocumentContent)
 
     "Done"
   }

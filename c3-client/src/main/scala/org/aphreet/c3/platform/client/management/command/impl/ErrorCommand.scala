@@ -34,6 +34,7 @@ import org.aphreet.c3.platform.client.management.command.Command
 
 class ErrorCommand(val message:String) extends Command{
 
+  override
   def execute():String = message
   
   def name = List()

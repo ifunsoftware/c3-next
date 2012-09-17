@@ -43,6 +43,7 @@ object CommonCommands extends Commands{
 
 class EmptyCommand extends Command{
 
+  override
   def execute() = ""
 
   def name = List("")
@@ -52,6 +53,7 @@ class EmptyCommand extends Command{
 
 class QuitCommand extends Command{
 
+  override
   def execute() = {
     println("Bye")
     System.exit(0)

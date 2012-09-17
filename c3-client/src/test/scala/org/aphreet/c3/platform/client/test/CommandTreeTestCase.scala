@@ -59,13 +59,8 @@ class CommandTreeTestCase extends TestCase{
     assertNull(root.classForInput(List("command"))._1)
 
     assertEquals(classOf[Command1234], root.classForInput(List("command1", "command2", "c", "c"))._1)
-    
 
-  
   }
-
-
-
 }
 
 class Command0

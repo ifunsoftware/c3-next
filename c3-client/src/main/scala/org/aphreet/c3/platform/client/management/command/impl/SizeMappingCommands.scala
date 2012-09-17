@@ -31,6 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command._
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object SizeMappingCommands extends Commands{
 
@@ -44,7 +45,8 @@ object SizeMappingCommands extends Commands{
 
 class AddSizeMappingCommand extends Command {
 
-  def execute() = {
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
     if (params.size < 3)
       wrongParameters("create size mapping <size> <storagetype> <versioned>")
     else {
@@ -65,7 +67,8 @@ class AddSizeMappingCommand extends Command {
 
 class DeleteSizeMappingCommand extends Command {
 
-  def execute() = {
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
 
     if (params.size < 1) {
       wrongParameters("remove size mapping <size>")
@@ -81,7 +84,8 @@ class DeleteSizeMappingCommand extends Command {
 
 class ListSizeMappingCommand extends Command {
 
-  def execute() = {
+  override
+  def execute(management:PlatformManagementService) = {
     val builder = new StringBuilder
 
     for (mapping <- management.listSizeMappings)

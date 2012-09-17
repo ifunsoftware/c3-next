@@ -31,6 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object UserCommands extends Commands {
   def instances = List(
@@ -42,7 +43,9 @@ object UserCommands extends Commands {
 }
 
 class ListUsersCommand extends Command {
-  def execute(): String = {
+
+  override
+  def execute(management:PlatformManagementService): String = {
 
     val users = management.listUsers
 
@@ -64,7 +67,9 @@ class ListUsersCommand extends Command {
 }
 
 class AddUserCommand extends Command {
-  def execute() = {
+
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
 
     if (params.size < 3) {
       wrongParameters("create user <name> <password>")
@@ -81,7 +86,9 @@ class AddUserCommand extends Command {
 }
 
 class UpdateUserCommand extends Command {
-  def execute() = {
+
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
     if (params.size < 3) {
       wrongParameters("update user <name> <password> <enabled>")
     } else {
@@ -99,7 +106,9 @@ class UpdateUserCommand extends Command {
 }
 
 class DeleteUserCommand extends Command {
-  def execute() = {
+
+  override
+  def execute(params:List[String], management:PlatformManagementService) = {
     if (params.size < 1) {
       wrongParameters("remove user <name>")
     } else {

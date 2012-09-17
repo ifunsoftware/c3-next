@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.client.management.command.impl
 
 import org.aphreet.c3.platform.client.management.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.RemoteTaskDescription
+import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, RemoteTaskDescription}
 
 object TaskCommands extends Commands{
 
@@ -44,9 +44,10 @@ object TaskCommands extends Commands{
 
 abstract class ListTasksCommand extends Command {
 
-  def execute():String = {
+  override
+  def execute(management:PlatformManagementService):String = {
 
-    val tasks = getTasks
+    val tasks = getTasks(management)
 
     val builder = new StringBuilder
 
@@ -67,29 +68,33 @@ abstract class ListTasksCommand extends Command {
 
   }
 
-  def getTasks:Array[RemoteTaskDescription]
+  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription]
 
 }
 
 class ListRunningTasksCommand extends ListTasksCommand {
 
-  override def getTasks:Array[RemoteTaskDescription] = management.listTasks
+  override
+  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listTasks
 
-  override def name = List("list", "tasks")
+  override
+  def name = List("list", "tasks")
 
 }
 
 class ListFinishedTasksCommand extends ListTasksCommand {
 
-  override def getTasks:Array[RemoteTaskDescription] = management.listFinishedTasks
+  override
+  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listFinishedTasks
 
-  override def name = List("list", "finished", "tasks")
-
+  override
+  def name = List("list", "finished", "tasks")
 }
 
 class SetTaskMode extends Command {
 
-  def execute():String = {
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
 
     if(params.size < 2){
       wrongParameters("set task mode <id> <pause|resume>")
@@ -100,5 +105,4 @@ class SetTaskMode extends Command {
   }
 
   def name = List("set", "task", "mode")
-
 }
