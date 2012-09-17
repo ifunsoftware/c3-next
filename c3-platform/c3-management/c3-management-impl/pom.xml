@@ -21,7 +21,7 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-platform</artifactId>
+            <artifactId>c3-core</artifactId>
             <scope>provided</scope>
         </dependency>
 
