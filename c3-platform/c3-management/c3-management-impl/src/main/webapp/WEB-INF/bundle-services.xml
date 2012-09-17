@@ -7,7 +7,13 @@
        http://www.springframework.org/schema/osgi/spring-osgi-1.2.xsd
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
-    
+
+    <!--service id="platformManagementService" ref="platformManagementService"
+             interface="org.aphreet.c3.platform.remote.api.management.PlatformManagementService" />
+
+    <service id="platformAccessService" ref="platformAccessService"
+             interface="org.aphreet.c3.platform.remote.api.access.PlatformAccessService"/-->
+
 	<reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 
     <reference id="authService" interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>

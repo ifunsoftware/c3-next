@@ -39,7 +39,6 @@ class CommandFactory(additionalCommands:List[Commands] = List()) {
   val root: CommandTreeNode = new CommandTreeNode(null)
 
   {
-    register(CommonCommands)
     register(MigrationCommands)
     register(PlatformPropertiesCommands)
 
