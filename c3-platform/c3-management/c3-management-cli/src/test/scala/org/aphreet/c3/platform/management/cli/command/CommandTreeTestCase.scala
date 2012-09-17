@@ -27,16 +27,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.client.test
+package org.aphreet.c3.platform.management.cli.command
 
 import junit.framework.TestCase
 
 import junit.framework.Assert._
 import org.aphreet.c3.platform.management.cli.command.CommandTreeNode
 
-class CommandTreeTestCase extends TestCase{
+class CommandTreeTestCase extends TestCase {
 
-  def testCompleteNames(){
+  def testCompleteNames() {
 
     val root = new CommandTreeNode(null)
 
@@ -64,8 +64,13 @@ class CommandTreeTestCase extends TestCase{
 }
 
 class Command0
+
 class Command1
+
 class Command12
+
 class Command1234
+
 class Command2
+
 class SomeCommand
