@@ -125,8 +125,6 @@ class TestXmlSerialization extends TestCase{
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 
-    println(xml)
-
     verifyXml(xml)
   }
 

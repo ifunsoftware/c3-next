@@ -13,13 +13,10 @@
         <module>c3-filesystem</module>
         <module>c3-access-control</module>
         <module>c3-search</module>
-        <module>c3-management-api</module>
         <module>c3-management</module>
-        <module>c3-management-gen</module>
         <module>c3-access-rest</module>
         <module>c3-replication</module>
         <module>c3-client</module>
-        <module>c3-management-web</module>
         <module>c3-deploy</module>
     </modules>
 

@@ -24,7 +24,7 @@
                                 <copy toDir="${project.build.directory}/server-package/server/lib">
                                     <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3deploy/*" />
+                                        <include name="**/target/c3deploy/*" />
                                     </fileset>
                                 </copy>
 
@@ -34,14 +34,14 @@
                                 <copy toDir="${project.build.directory}/server-package/client/bin">
                                     <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/bin/*" />
+                                        <include name="**/target/c3client/bin/*" />
                                     </fileset>
                                 </copy>
 
                                 <copy toDir="${project.build.directory}/server-package/client/lib">
                                     <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/lib/*" />
+                                        <include name="**/target/c3client/lib/*" />
                                     </fileset>
                                 </copy>
 
@@ -50,14 +50,14 @@
                                 <copy toDir="${project.build.directory}/client-package/client/bin">
                                     <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/bin/*" />
+                                        <include name="**/target/c3client/bin/*" />
                                     </fileset>
                                 </copy>
 
                                 <copy toDir="${project.build.directory}/client-package/client/lib">
                                     <mapper type="flatten" />
                                     <fileset dir="..">
-                                        <include name="*/target/c3client/lib/*" />
+                                        <include name="**/target/c3client/lib/*" />
                                     </fileset>
                                 </copy>
 
