@@ -34,10 +34,10 @@ import scala.collection.Map
 
 case class FSDirectory(name:String, address:String, nodes:Array[FSNode])
 
-case class FSNode(name:String, address:String, leaf:Boolean, metadata:Map[String, String]){
+case class FSNode(name:String, address:String, leaf:Boolean, metadata:Map[String, String], data:Array[Byte]){
 
-  def this(nodeRef:NodeRef, metadata:Map[String, String])
-      = this(nodeRef.name, nodeRef.address, nodeRef.leaf, metadata)
+  def this(nodeRef:NodeRef, metadata:Map[String, String], data:Array[Byte])
+      = this(nodeRef.name, nodeRef.address, nodeRef.leaf, metadata, data)
 
 }
 
@@ -53,7 +53,7 @@ object FSDirectory{
 
     val address = resource.address
 
-    FSDirectory(name, address, node.getChildren.map(new FSNode(_, scala.collection.immutable.Map())))
+    FSDirectory(name, address, node.getChildren.map(new FSNode(_, null, null)))
   }
 
   def fromNodeAndChildren(node:Directory, children:Seq[FSNode]):FSDirectory = {

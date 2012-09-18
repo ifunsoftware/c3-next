@@ -29,11 +29,11 @@
  */
 package org.aphreet.c3.platform.storage.bdb
 
-import collection.mutable.HashMap
 import com.sleepycat.je.{SecondaryDatabase, Database}
+import collection.mutable
 
 class DatabasesPair  {
   var database : Database = null
 
-  var secondaryDatabases = new HashMap[String, SecondaryDatabase]
+  var secondaryDatabases = new mutable.HashMap[String, SecondaryDatabase]
 }

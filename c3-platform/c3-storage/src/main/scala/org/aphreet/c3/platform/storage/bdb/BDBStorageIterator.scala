@@ -34,8 +34,7 @@ import com.sleepycat.je._
 import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
-import collection.immutable.{HashMap}
-import collection.mutable.HashSet
+import collection.immutable.HashMap
 import org.aphreet.c3.platform.common.ComponentGuard
 import org.apache.commons.logging.LogFactory
 
@@ -85,7 +84,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val indexDb = storage.getSecondaryDatabases(true).get(index.name) match{
+        val indexDb = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
           case Some(db) => db
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
@@ -108,12 +107,12 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       }
 
       //joinCursor = storage.database.join(secCursors.toArray, null)
-      joinCursor = storage.getDatabase(true).join(secCursors.toArray, null)
+      joinCursor = storage.getRWDatabase.join(secCursors.toArray, null)
 
 
     }else{
       log.debug("No indexes can be used for specified query")
-      cursor = storage.getDatabase(true).openCursor(null, null)
+      cursor = storage.getRWDatabase.openCursor(null, null)
     }
 
 
@@ -270,7 +269,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
               }
             }
           }
-          bdbEntriesProcessed = bdbEntriesProcessed + 1;
+          bdbEntriesProcessed = bdbEntriesProcessed + 1
         } else {
           resource = null
           resultFound = true
@@ -292,7 +291,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
               }
             }
           }
-          bdbEntriesProcessed = bdbEntriesProcessed + 1;
+          bdbEntriesProcessed = bdbEntriesProcessed + 1
         } else {
           resource = null
           resultFound = true
@@ -367,7 +366,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         this.close()
       }
     } catch {
-      case e => e.printStackTrace()
+      case e: Throwable => e.printStackTrace()
     }
   }
 }

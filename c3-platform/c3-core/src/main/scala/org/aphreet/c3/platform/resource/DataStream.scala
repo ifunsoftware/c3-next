@@ -125,7 +125,7 @@ abstract class DataStream {
    * Please note, array may be huge and method can cause OutOfMemoryException
    */
   def getBytes:Array[Byte] = {
-    val stream = new ByteArrayOutputStream;
+    val stream = new ByteArrayOutputStream
     writeTo(stream)
     stream.toByteArray
   }

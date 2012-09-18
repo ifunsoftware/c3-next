@@ -31,7 +31,6 @@ package org.aphreet.c3.platform.storage.bdb.impl
 
 import org.aphreet.c3.platform.storage.StorageParams
 import org.aphreet.c3.platform.storage.bdb._
-import org.aphreet.c3.platform.resource.Resource
 
 class PureBDBStorage(override val parameters: StorageParams,
                      override val systemId:String,
@@ -40,12 +39,6 @@ class PureBDBStorage(override val parameters: StorageParams,
           with BDBDataManipulator{
 
   def name = PureBDBStorage.NAME
-
-  override protected
-  def canEmbedData(resource:Resource):Boolean = {
-    if(resource.isVersioned)  false
-    else resource.versions(0).data.length < 5120
-  }
 }
 
 object PureBDBStorage {

@@ -78,6 +78,7 @@ class XStreamFactory{
     xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
     xStream.aliasField("error", classOf[ErrorResult], "errorDescription")
 
+    xStream.omitField(classOf[Resource], "embedData")
     xStream.omitField(classOf[ResourceVersion], "data")
     xStream.omitField(classOf[ResourceVersion], "revision")
     xStream.omitField(classOf[ResourceVersion], "persisted")

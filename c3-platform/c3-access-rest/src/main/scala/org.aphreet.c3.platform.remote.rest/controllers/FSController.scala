@@ -35,9 +35,8 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.web.bind.annotation.{RequestParam, RequestHeader, RequestMethod, RequestMapping}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.remote.rest.response.Result
-import org.aphreet.c3.platform.domain.Domain
 import org.apache.commons.httpclient.util.URIUtil
-import java.io.{BufferedReader, Reader}
+import java.io.BufferedReader
 import org.aphreet.c3.platform.accesscontrol._
 
 @Controller
@@ -50,6 +49,7 @@ class FSController extends DataController {
   def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
               @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
               @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
+              @RequestHeader(value = "x-c3-data", required = false) childData:String,
               @RequestParam(value = "metadata", required = false) metadata: String,
               request: HttpServletRequest,
               response: HttpServletResponse) {
@@ -65,7 +65,7 @@ class FSController extends DataController {
     if (metadata == null) {
 
       if (node.isDirectory) {
-        sendDirectoryContents(node, childMeta, contentType, accessTokens, response)
+        sendDirectoryContents(node, childMeta, (childData != null), contentType, accessTokens, response)
       } else {
         sendResourceData(node.resource, -1, accessTokens, response)
       }
@@ -129,7 +129,7 @@ class FSController extends DataController {
 
       val newPath = decodeFSPath(bufferedReader.readLine())
 
-      filesystemManager.moveNode(domain, fsPath, newPath);
+      filesystemManager.moveNode(domain, fsPath, newPath)
 
       reportSuccess(HttpServletResponse.SC_OK, contentType, response)
 

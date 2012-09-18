@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.common.{Path, Constants}
+import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.Resource
 
 import java.io.File
@@ -62,7 +62,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   override protected def updateObjectCount() {
     log trace "Updating object count"
-    val cnt = getDatabase(true).count
+    val cnt = getRWDatabase.count
     this.synchronized{
       objectCount = cnt
     }
@@ -93,7 +93,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     val key = new DatabaseEntry(address.getBytes)
     val value = new DatabaseEntry()
 
-    getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
+    getRODatabase.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
   }
 
   def get(ra:String):Option[Resource] = {
@@ -101,7 +101,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    if (getDatabase(false).get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+    if (getRODatabase.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
       resource.address = ra
       loadData(resource)
@@ -120,7 +120,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     preSave(resource)
 
-    resource.embedData = canEmbedData(resource)
+    resource.embedData = canEmbedData(resource, config)
 
     try{
       storeData(resource, tx)
@@ -130,7 +130,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       failuresArePossible{
 
-        val status = getDatabase(true).putNoOverwrite(tx, key, value)
+        val status = getRWDatabase.putNoOverwrite(tx, key, value)
 
         if(status != OperationStatus.SUCCESS){
           throw new StorageException("Failed to store resource in database, operation status is: " + status.toString + "; address: " + ra)
@@ -161,7 +161,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       val value = new DatabaseEntry(resource.toByteArray)
 
       failuresArePossible{
-        val status = getDatabase(true).put(tx, key, value)
+        val status = getRWDatabase.put(tx, key, value)
 
         if(status != OperationStatus.SUCCESS){
           throw new StorageException("Failed to store resource in database, operation status: " + status.toString)
@@ -186,7 +186,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       failuresArePossible{
 
-        val status = getDatabase(true).delete(tx, key)
+        val status = getRWDatabase.delete(tx, key)
 
         if(status != OperationStatus.SUCCESS)
           throw new StorageException("Failed to delete data from DB, op status: " + status.toString)
@@ -208,7 +208,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     val tx = getEnvironment.beginTransaction(null, null)
 
     try{
-      val status = getDatabase(true).get(tx, key, value, LockMode.RMW)
+      val status = getRWDatabase.get(tx, key, value, LockMode.RMW)
       if(status == OperationStatus.SUCCESS){
         val res = Resource.fromByteArray(value.getData)
         res.systemMetadata.get(Resource.SMD_LOCK) match{
@@ -221,7 +221,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         value.setData(res.toByteArray)
 
         failuresArePossible{
-          getDatabase(true).put(tx, key, value)
+          getRWDatabase.put(tx, key, value)
         }
         
         tx.commit()
@@ -244,7 +244,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     val tx = getEnvironment.beginTransaction(null, null)
 
     try{
-      val status = getDatabase(true).get(tx, key, value, LockMode.RMW)
+      val status = getRWDatabase.get(tx, key, value, LockMode.RMW)
 
       if(status == OperationStatus.SUCCESS){
         val res = Resource.fromByteArray(value.getData)
@@ -255,7 +255,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         value.setData(res.toByteArray)
 
         failuresArePossible{
-          getDatabase(true).put(tx, key, value)
+          getRWDatabase.put(tx, key, value)
         }
 
         tx.commit()
@@ -282,7 +282,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         val key = new DatabaseEntry(ra.getBytes)
         val value = new DatabaseEntry()
 
-        val status = getDatabase(true).get(tx, key, value, LockMode.RMW)
+        val status = getRWDatabase.get(tx, key, value, LockMode.RMW)
         if(status == OperationStatus.SUCCESS){
           val res = Resource.fromByteArray(value.getData)
           res.address = ra
@@ -297,7 +297,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       val value = new DatabaseEntry(savedResource.toByteArray)
 
       failuresArePossible{
-        if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
+        if(getRWDatabase.put(tx, key, value) != OperationStatus.SUCCESS){
           throw new StorageException("Failed to store resource in database")
         }
       }
@@ -326,7 +326,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         val key = new DatabaseEntry(ra.getBytes)
         val value = new DatabaseEntry()
 
-        val status = getDatabase(true).get(tx, key, value, LockMode.RMW)
+        val status = getRWDatabase.get(tx, key, value, LockMode.RMW)
         if(status == OperationStatus.SUCCESS){
           val res = Resource.fromByteArray(value.getData)
           res.address = ra
@@ -346,7 +346,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       for(version <- resource.versions if !version.persisted)
         savedResource.addVersion(version)
 
-      savedResource.embedData = canEmbedData(resource)
+      savedResource.embedData = canEmbedData(resource, config)
 
       storeData(savedResource, tx)
 
@@ -354,7 +354,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       val value = new DatabaseEntry(savedResource.toByteArray)
 
       failuresArePossible{
-        if(getDatabase(true).put(tx, key, value) != OperationStatus.SUCCESS){
+        if(getRWDatabase.put(tx, key, value) != OperationStatus.SUCCESS){
           throw new StorageException("Failed to store resource in database")
         }
       }
@@ -408,8 +408,6 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     }
   }
 
-  protected def canEmbedData(resource:Resource):Boolean = false
-
   def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase]
 
   protected def getEnvironment: Environment
@@ -419,6 +417,10 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 trait DatabaseProvider{
 
   def getDatabase(writeFlag : Boolean) : Database
+
+  def getRODatabase:Database = getDatabase(writeFlag = false)
+
+  def getRWDatabase:Database = getDatabase(writeFlag = true)
 
 }
 

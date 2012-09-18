@@ -32,9 +32,9 @@ package org.aphreet.c3.platform.storage.bdb
 import java.io.File
 import com.sleepycat.je._
 import org.aphreet.c3.platform.common.Constants
-import collection.mutable.HashMap
 import org.aphreet.c3.platform.storage.{U, StorageIndex, StorageParams}
 import java.util.concurrent.TimeUnit
+import collection.mutable
 
 abstract class AbstractSingleInstanceBDBStorage (override val parameters: StorageParams,
                      override val systemId:String,
@@ -44,7 +44,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
 
   var database : Database = null
 
-  val secondaryDatabases = new HashMap[String, SecondaryDatabase]
+  val secondaryDatabases = new mutable.HashMap[String, SecondaryDatabase]
 
 
   {
@@ -151,7 +151,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
       }
 
     }catch{
-      case e => log.error(e)
+      case e: Throwable => log.error(e)
     }
 
 
@@ -167,7 +167,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     }
 
     if(env != null){
-      env.cleanLog;
+      env.cleanLog
       env.close()
       env = null
     }
@@ -180,7 +180,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     database
   }
 
-  override def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase] = {
+  override def getSecondaryDatabases(writeFlag : Boolean) : mutable.HashMap[String, SecondaryDatabase] = {
     secondaryDatabases
   }
 

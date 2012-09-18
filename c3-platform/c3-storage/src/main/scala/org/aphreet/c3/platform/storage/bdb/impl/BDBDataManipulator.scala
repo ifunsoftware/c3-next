@@ -32,7 +32,8 @@ package org.aphreet.c3.platform.storage.bdb.impl
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.resource.{Resource, DataStream, ResourceVersion}
-import org.aphreet.c3.platform.storage.bdb.{FailoverStrategy, LazyBDBDataStream, DatabaseProvider, DataManipulator}
+import org.aphreet.c3.platform.storage.bdb._
+import scala.Some
 
 trait BDBDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy{
 
@@ -44,14 +45,14 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
           if (version.persisted == false) {
             val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
             version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-            storeVersionData(versionKey, version, tx, false)
+            storeVersionData(versionKey, version, tx, allowOverwrite = false)
           }
         }
       } else {
         if(!resource.versions(0).persisted){
           val versionKey = resource.address + "-data"
           resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-          storeVersionData(versionKey, resource.versions(0), tx, true)
+          storeVersionData(versionKey, resource.versions(0), tx, allowOverwrite = true)
         }
       }
     }
@@ -66,7 +67,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
           case None => throw new StorageException("Can't find address for data in version")
         }
 
-        storeVersionData(versionKey, version, tx, false)
+        storeVersionData(versionKey, version, tx, allowOverwrite = false)
       }
     }
   }
@@ -82,7 +83,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
           case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
         }
 
-        version.data = new LazyBDBDataStream(versionKey, getDatabase(false))
+        version.data = new LazyBDBDataStream(versionKey, getRODatabase)
       }
     }
   }
@@ -93,7 +94,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = getDatabase(true).get(null, key, value, LockMode.DEFAULT)
+    val status = getRWDatabase.get(null, key, value, LockMode.DEFAULT)
 
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
@@ -106,7 +107,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
             case None => throw new StorageException("No data address in version for resource: " + ra)
           }
           failuresArePossible{
-            getDatabase(true).delete(tx, dataKey);
+            getRWDatabase.delete(tx, dataKey)
           }
         }
       }
@@ -126,9 +127,9 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     failuresArePossible{
 
       if (allowOverwrite) {
-        status = getDatabase(true).put(tx, dbKey, dbValue)
+        status = getRWDatabase.put(tx, dbKey, dbValue)
       } else {
-        status = getDatabase(true).putNoOverwrite(tx, dbKey, dbValue)
+        status = getRWDatabase.putNoOverwrite(tx, dbKey, dbValue)
       }
 
       if (status != OperationStatus.SUCCESS) {
@@ -138,6 +139,12 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
 
     version.data = DataStream.create(version.data.getBytes)
     version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+  }
+
+  override protected
+  def canEmbedData(resource:Resource, config:BDBConfig):Boolean = {
+    if(resource.isVersioned)  false
+    else resource.versions(0).data.length < config.embedThreshold
   }
 
 }

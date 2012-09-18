@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.management.cli.command
 import junit.framework.TestCase
 
 import junit.framework.Assert._
-import org.aphreet.c3.platform.management.cli.command.CommandTreeNode
 
 class CommandTreeTestCase extends TestCase {
 

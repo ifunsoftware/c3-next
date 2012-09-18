@@ -37,7 +37,6 @@ import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import collection.mutable.HashMap
 import java.io.{File, BufferedOutputStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import org.apache.commons.io.FileCleaningTracker
@@ -51,6 +50,7 @@ import org.aphreet.c3.platform.filesystem.{NodeRef, FSManager, Directory, Node}
 import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessTokens, Action, AccessControlManager}
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
+import collection.mutable
 
 class DataController extends AbstractController with ServletContextAware {
 
@@ -106,21 +106,27 @@ class DataController extends AbstractController with ServletContextAware {
     }
   }
 
-  protected def sendDirectoryContents(node: Node, childMeta:String, contentType: String, accessTokens: AccessTokens, response: HttpServletResponse) {
+  protected def sendDirectoryContents(node: Node, childMeta:String, needsData:Boolean, contentType: String, accessTokens: AccessTokens, response: HttpServletResponse) {
     accessTokens.checkAccess(node.resource)
 
     val directory = node.asInstanceOf[Directory]
 
-    val fsDirectory = if(childMeta != null){
-      val metaKeys = childMeta.split(",").filter(!_.isEmpty)
+    val fsDirectory = if(childMeta != null || needsData){
 
-      val children = directory.getChildren.map((child:NodeRef) => new FSNode(child, {
+      val metaKeys = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty) else null
 
-        accessManager.getOption(child.address) match {
-          case Some(resource) => resource.metadata.filterKeys(metaKeys.contains(_))
-          case None => Map()
-        }
-      }))
+      val children = directory.getChildren.map((child:NodeRef) => {
+
+          val dataAndMd = accessManager.getOption(child.address) match {
+            case Some(resource) => {
+              (if(metaKeys != null) resource.metadata.filterKeys(metaKeys.contains(_)) else null,
+              if(needsData) resource.versions.last.data.getBytes else null)
+            }
+            case None => (null, null)
+          }
+
+        new FSNode(child, dataAndMd._1, dataAndMd._2)
+      })
 
       FSDirectory.fromNodeAndChildren(directory, children)
     }else{
@@ -133,7 +139,7 @@ class DataController extends AbstractController with ServletContextAware {
 
   protected def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
 
-    val map = new HashMap[String, String]
+    val map = new mutable.HashMap[String, String]
 
     val headerEnum = request.getHeaderNames
 
@@ -167,7 +173,7 @@ class DataController extends AbstractController with ServletContextAware {
     getResultWriter(contentType).writeResponse(new ResourceResult(resource), resp)
   }
 
-  protected def addNonPersistentMetadata(resource: Resource, extMeta: String) = {
+  protected def addNonPersistentMetadata(resource: Resource, extMeta: String) {
 
     if (extMeta != null) {
 
@@ -203,7 +209,7 @@ class DataController extends AbstractController with ServletContextAware {
 
       val iterator = upload.parseRequest(request).iterator
 
-      val metadata = new HashMap[String, String]
+      val metadata = new mutable.HashMap[String, String]
 
       var data: DataStream = null
       var tmpFile: File = null

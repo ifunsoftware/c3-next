@@ -305,6 +305,7 @@ object Resource {
         if (embedData){
           val length = dataIs.readLong()
           val buffer = Array.ofDim[Byte](length.toInt)
+          dataIs.read(buffer)
 
           version.data = DataStream.create(buffer)
         }

@@ -53,5 +53,7 @@ trait  DataManipulator {
   protected def putData(resource:Resource, tx:Transaction) {
     putData(resource)
   }
+
+  protected def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false
   
 }

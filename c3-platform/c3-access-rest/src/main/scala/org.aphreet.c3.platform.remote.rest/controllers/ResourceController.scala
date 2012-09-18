@@ -50,6 +50,7 @@ class ResourceController extends DataController {
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
                   @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
                   @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                  @RequestHeader(value = "x-c3-data", required = false) childData:String,
                   request: HttpServletRequest,
                   response: HttpServletResponse) {
 
@@ -70,7 +71,7 @@ class ResourceController extends DataController {
         } else null
 
       if (directoryNode != null) {
-        sendDirectoryContents(directoryNode, childMeta, contentType, accessTokens, response)
+        sendDirectoryContents(directoryNode, childMeta, (childData != null), contentType, accessTokens, response)
       } else {
         sendResourceData(resource, -1, accessTokens, response)
       }

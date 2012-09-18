@@ -118,12 +118,14 @@ class TestXmlSerialization extends TestCase{
     metadata.put("key", "value")
 
     val directory = new FSDirectory("name", "address",
-      Array(FSNode("name", "address", true, metadata),
-        FSNode("name2", "address2", false, Map("key" -> "value"))))
+      Array(FSNode("name", "address", true, metadata, null),
+        FSNode("name2", "address2", false, null, "<html>my string data value".getBytes("UTF-8"))))
 
     val output = xStream.toXML(new DirectoryResult(directory))
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
+
+    println(xml)
 
     verifyXml(xml)
   }
