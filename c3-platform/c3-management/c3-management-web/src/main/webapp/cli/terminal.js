@@ -105,7 +105,11 @@ var Terminal = new Class({
             if (event.code == 46) {
                 command += '.';
             } else {
-                command += event.key;
+                if(event.shift){
+                    command += event.key.toUpperCase();
+                }else{
+                    command += event.key;
+                }
             }
             this.currentCommand.set('html', command);
             return;
