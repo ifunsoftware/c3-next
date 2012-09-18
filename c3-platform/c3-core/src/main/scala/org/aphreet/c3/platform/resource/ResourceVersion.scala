@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.resource
 
 import java.util.Date
 
-import scala.collection.mutable.HashMap
+import collection.mutable
 
 /**
  * Representation of the resource version
@@ -52,7 +52,7 @@ class ResourceVersion{
   /**
    * System metadata of the version
    */
-  var systemMetadata = new HashMap[String, String]
+  var systemMetadata = new mutable.HashMap[String, String]
 
   /**
    * Version's data
@@ -62,7 +62,7 @@ class ResourceVersion{
   /**
    * Flag indicates if resource has been written to storage
    */
-  var persisted = false;
+  var persisted = false
   
   override def toString:String = {
     val builder = new StringBuilder

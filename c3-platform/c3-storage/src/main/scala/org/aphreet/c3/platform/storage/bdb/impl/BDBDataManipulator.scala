@@ -38,45 +38,52 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
 
   override protected def storeData(resource: Resource, tx: Transaction) {
 
-    if (resource.isVersioned) {
-      for (version <- resource.versions) {
-        if (version.persisted == false) {
-          val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
-          version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-          storeVersionData(versionKey, version, tx, false)
+    if (!resource.embedData){
+      if (resource.isVersioned) {
+        for (version <- resource.versions) {
+          if (version.persisted == false) {
+            val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
+            version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+            storeVersionData(versionKey, version, tx, false)
+          }
         }
-      }
-    } else {
-      if(!resource.versions(0).persisted){
-        val versionKey = resource.address + "-data"
-        resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
-        storeVersionData(versionKey, resource.versions(0), tx, true)
+      } else {
+        if(!resource.versions(0).persisted){
+          val versionKey = resource.address + "-data"
+          resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+          storeVersionData(versionKey, resource.versions(0), tx, true)
+        }
       }
     }
   }
 
   override protected def putData(resource: Resource, tx: Transaction) {
 
-    for (version <- resource.versions) {
-      val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-        case Some(vk) => vk
-        case None => throw new StorageException("Can't find address for data in version")
+    if (!resource.embedData){
+      for (version <- resource.versions) {
+        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          case Some(vk) => vk
+          case None => throw new StorageException("Can't find address for data in version")
+        }
+
+        storeVersionData(versionKey, version, tx, false)
       }
-
-      storeVersionData(versionKey, version, tx, false)
-
     }
   }
 
   def loadData(resource: Resource) {
-    for (version <- resource.versions) {
 
-      val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-        case Some(value: String) => value
-        case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
+    if (!resource.embedData){
+
+      for (version <- resource.versions) {
+
+        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          case Some(value: String) => value
+          case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
+        }
+
+        version.data = new LazyBDBDataStream(versionKey, getDatabase(false))
       }
-
-      version.data = new LazyBDBDataStream(versionKey, getDatabase(false))
     }
   }
 
@@ -91,13 +98,16 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
 
-      for (version <- resource.versions) {
-        val dataKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-          case Some(address) => new DatabaseEntry(address.getBytes)
-          case None => throw new StorageException("No data address in version for resource: " + ra)
-        }
-        failuresArePossible{
-          getDatabase(true).delete(tx, dataKey);
+      if (!resource.embedData){
+
+        for (version <- resource.versions) {
+          val dataKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+            case Some(address) => new DatabaseEntry(address.getBytes)
+            case None => throw new StorageException("No data address in version for resource: " + ra)
+          }
+          failuresArePossible{
+            getDatabase(true).delete(tx, dataKey);
+          }
         }
       }
 

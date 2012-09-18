@@ -41,42 +41,47 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
   override protected def storeData(resource:Resource){
 
-    if(resource.isVersioned){
-      for(version <- resource.versions if (version.persisted == false)){
-        val fileName = resource.address + "-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
-        version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
-        storeVersionData(fileName, version)
-      }
-    }else{
-      val version = resource.versions(0)
-      if(!version.persisted){
-        val fileName = resource.address
-        version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
-        storeVersionData(fileName, version)
+    if (!resource.embedData){
+      if(resource.isVersioned){
+        for(version <- resource.versions if (version.persisted == false)){
+          val fileName = resource.address + "-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
+          version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+          storeVersionData(fileName, version)
+        }
+      }else{
+        val version = resource.versions(0)
+        if(!version.persisted){
+          val fileName = resource.address
+          version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+          storeVersionData(fileName, version)
+        }
       }
     }
   }
 
   override protected def putData(resource:Resource){
-    for(version <- resource.versions){
-      val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-        case Some(name) => name
-        case None => throw new StorageException("Can't find data address for version")
+    if (!resource.embedData){
+      for(version <- resource.versions){
+        val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          case Some(name) => name
+          case None => throw new StorageException("Can't find data address for version")
+        }
+        storeVersionData(fileName, version)
       }
-      storeVersionData(fileName, version)
     }
   }
 
   def loadData(resource:Resource) {
+    if (!resource.embedData){
+      for(version <- resource.versions){
 
-    for(version <- resource.versions){
+        val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          case Some(value:String) => value
+          case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
+        }
 
-      val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-        case Some(value:String) => value
-        case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
+        version.data = DataStream.create(findFileForName(fileName))
       }
-
-      version.data = DataStream.create(findFileForName(fileName))
     }
   }
 
@@ -90,16 +95,18 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     if(status == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
 
-      for(version <- resource.versions){
-        version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-          case Some(name) => {
-            try{
-              findFileForName(name).delete
-            }catch{
-              case e:IOException => throw new StorageException("Failed to delete file for ra: " + ra, e)
+      if (!resource.embedData){
+        for(version <- resource.versions){
+          version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+            case Some(name) => {
+              try{
+                findFileForName(name).delete
+              }catch{
+                case e:IOException => throw new StorageException("Failed to delete file for ra: " + ra, e)
+              }
             }
+            case None => throw new StorageException("No data address in version for resource: " + ra)
           }
-          case None => throw new StorageException("No data address in version for resource: " + ra)
         }
       }
 

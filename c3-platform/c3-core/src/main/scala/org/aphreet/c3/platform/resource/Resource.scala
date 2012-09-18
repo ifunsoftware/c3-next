@@ -73,6 +73,8 @@ class Resource {
    */
   var isVersioned = false
 
+  var embedData = false
+
   /**
    * This method tries to return mime-type of resource
    */
@@ -171,6 +173,10 @@ class Resource {
         dataOs.writeInt(version.revision)
         writeDate(version.date, dataOs)
         writeMap(version.systemMetadata, dataOs)
+        if (embedData){
+          dataOs.writeLong(version.data.length)
+          version.data.writeTo(dataOs)
+        }
       }
     }
 
@@ -178,7 +184,7 @@ class Resource {
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    dataOs.writeInt(2) //resource class version, for future
+    dataOs.writeInt(3) //resource class version, for future
 
     dataOs.writeBoolean(isVersioned)
 
@@ -188,6 +194,8 @@ class Resource {
 
     writeMap(metadata, dataOs)
     writeMap(systemMetadata, dataOs)
+
+    dataOs.writeBoolean(embedData)
 
     writeVersions(versions, dataOs)
 
@@ -209,6 +217,7 @@ class Resource {
     resource.systemMetadata = this.systemMetadata.clone()
 
     resource.isVersioned = this.isVersioned
+    resource.embedData = this.embedData
 
     for(version <- this.versions){
       resource.versions.append(version.clone)
@@ -279,7 +288,7 @@ object Resource {
       map
     }
 
-    def readVersions(dataIs:DataInputStream, serializeVersion:Int):Buffer[ResourceVersion] = {
+    def readVersions(dataIs:DataInputStream, serializeVersion:Int, embedData:Boolean):Buffer[ResourceVersion] = {
 
       val result = new ArrayBuffer[ResourceVersion]
 
@@ -292,6 +301,13 @@ object Resource {
         version.date = new Date(dataIs.readLong)
         version.systemMetadata = readMap(dataIs, serializeVersion)
         version.persisted = true
+
+        if (embedData){
+          val length = dataIs.readLong()
+          val buffer = Array.ofDim[Byte](length.toInt)
+
+          version.data = DataStream.create(buffer)
+        }
 
         result += version
       }
@@ -318,7 +334,13 @@ object Resource {
     resource.metadata ++= readMap(dataIn, serializeVersion)
     resource.systemMetadata ++= readMap(dataIn, serializeVersion)
 
-    resource.versions ++= readVersions(dataIn, serializeVersion)
+    if(serializeVersion >= 3){
+      resource.embedData = dataIn.readBoolean()
+    }else{
+      resource.embedData = false
+    }
+
+    resource.versions ++= readVersions(dataIn, serializeVersion, resource.embedData)
 
     serializeVersion match{
       case 0 => {

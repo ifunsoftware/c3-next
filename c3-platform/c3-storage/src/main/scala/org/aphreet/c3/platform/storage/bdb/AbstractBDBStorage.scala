@@ -58,7 +58,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
   val iterators = new HashSet[BDBStorageIterator]
 
 
-  def count:Long = objectCount;
+  def count:Long = objectCount
 
   override protected def updateObjectCount() {
     log trace "Updating object count"
@@ -120,6 +120,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     preSave(resource)
 
+    resource.embedData = canEmbedData(resource)
+
     try{
       storeData(resource, tx)
 
@@ -141,7 +143,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       ra
     }catch{
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -168,7 +170,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       tx.commit()
     }catch{
-      case e=> {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -192,7 +194,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       }
       tx.commit()
     }catch{
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -228,7 +230,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
     } catch {
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -262,7 +264,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
     }catch{
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -302,7 +304,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       tx.commit()
     }catch{
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -344,6 +346,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       for(version <- resource.versions if !version.persisted)
         savedResource.addVersion(version)
 
+      savedResource.embedData = canEmbedData(resource)
 
       storeData(savedResource, tx)
 
@@ -362,7 +365,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       ra
     }catch{
-      case e => {
+      case e: Throwable => {
         tx.abort()
         throw e
       }
@@ -404,6 +407,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       version.persisted = true
     }
   }
+
+  protected def canEmbedData(resource:Resource):Boolean = false
 
   def getSecondaryDatabases(writeFlag : Boolean) : HashMap[String, SecondaryDatabase]
 
