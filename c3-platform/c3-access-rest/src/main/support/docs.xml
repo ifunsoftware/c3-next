@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<api xmlns="http://www.ioexception.de/rest-api-doc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.ioexception.de/rest-api-doc rest-api-doc.xsd ">
+    <name>C3 Rest API</name>
+    <version>v1.0</version>
+    <author>Mikhail Malygin</author>
+    <description>The following document describe the REST API of the
+        C3 access service. More information about access control can be found on the wiki: https://github.com/ifunsoftware/c3-next/wiki/Access-Control</description>
+    <baseuri>http://c3.ifunsoftware.com/rest</baseuri>
+    <authentication>
+        <type>HMAC Digest Authentication</type>
+    </authentication>
+    <resources>
+
+        <resource>
+            <name>Resource</name>
+            <description>This resource represents a data stored in the C3 system. </description>
+            <path>/resource/<param description="Unique resource identifier inside C3 system">resource-address</param></path>
+            <operation>
+                <name>Get a resource</name>
+                <description>Get a resource</description>
+                <formats>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication  mandatory="false" />
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource data</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address is not found</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <description>A byte stream representing stored resource</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Get a specific resource version</name>
+                <description>Get a resource</description>
+                <path>/<param description="Number of the requested version">resource-version</param></path>
+                <formats>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication  mandatory="false" />
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource data</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address or version is not found</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <description>A byte stream representing stored resource</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Get resource metadata</name>
+                <description>Returns user and system metadata for the resource.</description>
+                <path omitResourcePath="false">?metadata</path>
+                <formats>
+                    <format>application/json</format>
+                    <format>text/xml</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication mandatory="false" />
+                    <entities >
+                        <entity>
+                            <code language="plain">
+                                x-c3-extmeta
+                            </code>
+                            <description>Optional HTTP header indicating that extended resource metadata required. All required metadata fields must be put as a comma-separated string to the header value. For now only one key supported: 'c3.ext.fs.path'.</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource metadata</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address is not found</answer>
+                    </responses>
+                    <entities >
+                        <entity>
+                            <code language="js">
+                                <![CDATA[{
+   "p:response":{
+      "info":{
+         "version":1,
+         "status":"OK"
+      },
+      "resource":{
+         "address":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2",
+         "createDate":"2012-09-18T20:25:57.488+04:00",
+         "metadata":{
+            "element":{
+               "@key":"content.type",
+               "value":"application\/x-c3-directory"
+            }
+         },
+         "systemMetadata":{
+            "element":[
+               {
+                  "@key":"c3.skip.index",
+                  "value":true
+               },
+               {
+                  "@key":"content.type",
+                  "value":"application\/x-c3-directory"
+               },
+               {
+                  "@key":"c3.updated",
+                  "value":1347986736447
+               },
+               {
+                  "@key":"c3.domain.id",
+                  "value":"f504fd45-e8e3-48c3-b653-b6074f645976"
+               },
+               {
+                  "@key":"c3.fs.nodetype",
+                  "value":"directory"
+               }
+            ]
+         },
+         "versions":{
+            "version":{
+               "date":"2012-09-18T20:45:36.446+04:00",
+               "systemMetadata":{
+                  "element":[
+                     {
+                        "@key":"c3.data.address",
+                        "value":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data"
+                     },
+                     {
+                        "@key":"c3.data.md5",
+                        "value":"c32f063baee781203ea49d37aef00806"
+                     },
+                     {
+                        "@key":"c3.data.length",
+                        "value":53899
+                     }
+                  ]
+               }
+            }
+         },
+         "trackVersions":false
+      }
+   }
+}]]></code>
+                            <description>Metadata in the JSON format</description>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <info version="1.0" status="OK"/>
+  <resource address="Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2" createDate="2012-09-18T20:25:57.488+04:00" trackVersions="false">
+    <metadata>
+      <element key="content.type">
+        <value>application/x-c3-directory</value>
+      </element>
+    </metadata>
+    <systemMetadata>
+      <element key="c3.skip.index">
+        <value>true</value>
+      </element>
+      <element key="content.type">
+        <value>application/x-c3-directory</value>
+      </element>
+      <element key="c3.updated">
+        <value>1347986736447</value>
+      </element>
+      <element key="c3.domain.id">
+        <value>f504fd45-e8e3-48c3-b653-b6074f645976</value>
+      </element>
+      <element key="c3.fs.nodetype">
+        <value>directory</value>
+      </element>
+    </systemMetadata>
+    <versions>
+      <version date="2012-09-18T20:45:36.446+04:00">
+        <systemMetadata>
+          <element key="c3.data.address">
+            <value>Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data</value>
+          </element>
+          <element key="c3.data.md5">
+            <value>c32f063baee781203ea49d37aef00806</value>
+          </element>
+          <element key="c3.data.length">
+            <value>53899</value>
+          </element>
+        </systemMetadata>
+      </version>
+    </versions>
+  </resource>
+</p:response>]]></code>
+                            <description>Metadata in the XML format</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Create a resource</name>
+                <description>Create a new resource in the C3 system</description>
+                <path omitResourcePath="true">/resource</path>
+                <formats>
+                    <format>multipart/form-data</format>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>POST</method>
+                    <authentication  mandatory="false" />
+                    <entities>
+                        <entity>
+                            <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="201">Resource created. Response contains new resource address</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                  <info version="1.0" status="OK"/>
+                                  <uploaded address="0e6315ea-c2fd-4bef-936e-59cef7943841-6a47" version="1"/>
+                                </p:response>]]>
+                            </code>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[{
+                                   "p:response":{
+                                      "info":{
+                                         "version":1,
+                                         "status":"OK"
+                                      },
+                                      "uploaded":{
+                                         "address":"5SZDupar-4UZQ-N1VR-to4ewPtY-n402zbng-LhS2",
+                                         "version":1
+                                      }
+                                   }
+                                }]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Update a resource</name>
+                <description>Create a new resource in the C3 system</description>
+                <formats>
+                    <format>multipart/form-data</format>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>PUT</method>
+                    <authentication  mandatory="false" />
+                    <entities>
+                        <entity>
+                            <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Resource updated. Response contains new resource address</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                            <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                              <info version="1.0" status="OK"/>
+                                              <uploaded address="0e6315ea-c2fd-4bef-936e-59cef7943841-6a47" version="1"/>
+                                            </p:response>]]>
+                            </code>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[{
+                                               "p:response":{
+                                                  "info":{
+                                                     "version":1,
+                                                     "status":"OK"
+                                                  },
+                                                  "uploaded":{
+                                                     "address":"5SZDupar-4UZQ-N1VR-to4ewPtY-n402zbng-LhS2",
+                                                     "version":1
+                                                  }
+                                               }
+                                            }]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Delete a resource</name>
+                <description>Delete a resource from the C3 system</description>
+                <formats>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>DELETE</method>
+                    <authentication  mandatory="false" />
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Resource deleted</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities/>
+                </response>
+            </operation>
+        </resource>
+        <resource>
+            <name>Search</name>
+            <description>This endpoint allows to search over C3 system</description>
+            <path>/search/<param description="Search query">query</param></path>
+            <operation>
+                <name>Search for resources</name>
+                <description>Search for resources in the C3 system</description>
+                <formats>
+                    <format>application/json</format>
+                    <format>text/xml</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication mandatory="false"/>
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Search operation successfully completed</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                  <info version="1.0" status="OK"/>
+                                  <searchResults>
+                                    <entry address="address" score="0.12">
+                                      <fragments>
+                                        <fragment field="content">
+                                          <foundStrings>
+                                            <string>qwe</string>
+                                            <string>qweqwe</string>
+                                            <string>qwewqe</string>
+                                          </foundStrings>
+                                        </fragment>
+                                        <fragment field="name">
+                                          <foundStrings>
+                                            <string>sdfsdf</string>
+                                          </foundStrings>
+                                        </fragment>
+                                      </fragments>
+                                    </entry>
+                                  </searchResults>
+                                </p:response>]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+        </resource>
+        <resource>
+            <name>Query</name>
+            <description>This endpoint allows to query resource addresses in the C3 system</description>
+            <path>/query?<param description="HTTP get parameters that define query metadata">parameters</param></path>
+            <operation>
+                <name>Query for resources</name>
+                <description>Query is a simple enumeration over all resources stored in the system. Via parameters you may set number of key-value pairs that must be contained in the resource metadata</description>
+                <formats>
+                    <format>text/plain</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication mandatory="false"/>
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Search operation successfully completed</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="plain">
+                                <![CDATA[0FdkZMZn-vt9D-ju61-b8HwVZ9t-n402zbng-LhS2
+                                0IVAXhJn-iEQ1-JOZD-wKxqoPhf-n402zbng-LhS2
+                                0MLo3SgR-hEvh-sw3L-jowQmCiv-n402zbng-LhS2
+                                0MaM944K-ZZ7n-AIWK-YEFIZ7T3-n402zbng-LhS2
+                                0NckRvYE-gzit-gh6q-ESDgXVuk-n402zbng-LhS2
+                                0SC0fOf1-3syw-OyCx-yRJevezi-n402zbng-LhS2
+                                0VqQnoYj-vPqi-8mKP-AZmRKZHG-n402zbng-LhS2
+                                0ZmZSmgk-W34m-t8dz-rlSJ8L8Z-n402zbng-LhS2
+                                0fLk22Zb-Bxfl-U0Zf-gSCZcZh5-n402zbng-LhS2
+                                0i8ovwiC-IGOg-l0dL-dWZfv34A-n402zbng-LhS2
+                                0u2v1l1d-6Csf-l3MJ-4YRh9Jkv-n402zbng-LhS2
+                                0zL2g7IN-TExp-QtZH-RN0O0dja-n402zbng-LhS2
+                                12tD2iZw-HCnC-Pbwl-GPP7h7oN-n402zbng-LhS2
+                                13H4E1ZZ-sZNQ-L9FO-o6uF2VhE-n402zbng-LhS2
+                                16uhhz7R-pxU2-wf64-1v9VhFpp-n402zbng-LhS2
+                                1A3KtC00-QwpI-6GtJ-5kIDEakQ-n402zbng-LhS2
+                                1ALEs8G8-22PZ-Epze-ZLctsdYr-n402zbng-LhS2
+                                1GYYSJY8-7et3-bNGZ-TfcwHZgq-n402zbng-LhS2
+                                1I5ihjKg-citF-w5Ze-vNECcTSi-n402zbng-LhS2
+                                1J1iVBa9-8bhr-uloZ-p7kJRuhu-n402zbng-LhS2
+                                1Mnnu3Ei-R02k-0TP2-1Z0Z4GZC-n402zbng-LhS2
+                                1OPSFO2i-ToBH-99TW-djAq7zwA-n402zbng-LhS2
+                                1QpW1AUF-fhZp-lc6C-keHtDgCB-n402zbng-LhS2
+                                1UeFSijq-cOEI-KDMN-PRJmSpf5-n402zbng-LhS2
+                                1YZZLiTC-8fPB-81ZJ-YpsMb4Py-n402zbng-LhS2
+                                1dZNUoZn-R7pC-gpxs-2LQW8SGl-n402zbng-LhS2
+                                1oQlTZvs-bg5n-BKEl-XrXNe2Xa-n402zbng-LhS2
+                                1p1u9ZxZ-LHAT-ahCY-u8LZZ5KW-n402zbng-LhS2
+                                1sfn7xCP-qYB9-yrO6-RMK1NKbM-n402zbng-LhS2
+                                27XTvBZk-sVZq-7Tut-ZY3JGIBi-n402zbng-LhS2
+                                28V1Xg8j-X9gO-SzDN-t6DetXkF-n402zbng-LhS2
+                                2DDQxVzB-rci3-Nj1G-adC0lBQY-n402zbng-LhS2
+                                2ETMC4ZE-i8EJ-KwmE-xeBVdWvZ-n402zbng-LhS2
+                                2GX8jUr3-MruZ-5Ij0-CZyqJoeL-n402zbng-LhS2
+                                2I60IZGh-xg8u-I6EM-zOhWvrIf-n402zbng-LhS2
+                                2MNrGSCh-4Yxv-12d9-S6OzRF2W-n402zbng-LhS2
+                                2NLsR5Jo-OQJM-rHzw-lYGo9GZw-n402zbng-LhS2
+                                2PD9gEk3-7ZCO-7MeZ-MvhaIpdf-n402zbng-LhS2
+                                2RyIjuZ8-6kaL-qNaW-vGGhOAuA-n402zbng-LhS2
+                                2WMfv1Gp-suUC-Jmod-H0xUZNxL-n402zbng-LhS2
+                                2Z9uZm3C-x5wx-Df6o-BkZgKRpZ-n402zbng-LhS2
+                                2ZrkzHVD-2Re9-UzY5-6aqLXCGE-n402zbng-LhS2
+                                2dAFvbbB-N3Zg-emgQ-PKEwZY8g-n402zbng-LhS2
+                                2dK79cbn-0Xq8-WLU3-oi1elFHQ-n402zbng-LhS2
+                                2gB68TtD-cvqf-UQhV-5CuGQGWY-n402zbng-LhS2
+                                2ioWdufw-xrQJ-V1Zp-jsisJh2o-n402zbng-LhS2]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+        </resource>
+        <resource>
+            <name>Filesystem</name>
+            <description>This endpoint defines number of method to work with virtual filesystem implemented on top of C3 resource storage</description>
+            <path>/fs/<param description="Absolute file path separated with /">file-path</param></path>
+            <operation>
+                <name>Get a file content</name>
+                <description>Get a file content</description>
+                <formats>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication  mandatory="false" />
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource data</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address is not found</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <description>A byte stream representing stored resource</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Get a directory content</name>
+                <description>Get a directory content</description>
+                <formats>
+                    <format>text/xml</format>
+                    <format>application/json</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication  mandatory="false" />
+                    <entities>
+                        <entity>
+                            <code language="plain">
+                                x-c3-meta
+                            </code>
+                            <description>Optional HTTP header specifies keys of the child metadata that must be included in the output. Keys must be submitted as a comma-separated string</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-data
+                            </code>
+                            <description>Optional HTTP header indicates that output should contain base64 encoded children data</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource data</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address is not found</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="js">
+                                <![CDATA[{
+                                   "p:response":{
+                                      "info":{
+                                         "version":1,
+                                         "status":"OK"
+                                      },
+                                      "directory":{
+                                         "name":"",
+                                         "address":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2",
+                                         "nodes":{
+                                            "node":[
+                                               {
+                                                  "name":"file-1",
+                                                  "address":"Xx65UZNY-8j6f-N4Z5-IaUSEsqy-n402zbng-LhS2",
+                                                  "leaf":true,
+                                                  "metadata":{
+                                                     "element":{
+                                                        "@key":"content.type",
+                                                        "value":"text\/plain;charset=UTF-8"
+                                                     }
+                                                  },
+                                                  "data":"TXkgZmlsZSBjb250ZW50IDE="
+                                               },
+                                               {
+                                                  "name":"file-10",
+                                                  "address":"oOZf9JV1-NfjC-DfAo-2HZqCahS-n402zbng-LhS2",
+                                                  "leaf":true,
+                                                  "metadata":{
+                                                     "element":{
+                                                        "@key":"content.type",
+                                                        "value":"text\/plain;charset=UTF-8"
+                                                     }
+                                                  },
+                                                  "data":"TXkgZmlsZSBjb250ZW50IDEw"
+                                               },
+                                               {
+                                                  "name":"file-100",
+                                                  "address":"VMybG6Jo-aGEJ-cmsr-2BtmGgl6-n402zbng-LhS2",
+                                                  "leaf":true,
+                                                  "metadata":{
+                                                     "element":{
+                                                        "@key":"content.type",
+                                                        "value":"text\/plain;charset=UTF-8"
+                                                     }
+                                                  },
+                                                  "data":"TXkgZmlsZSBjb250ZW50IDEwMA=="
+                                               },
+                                               {
+                                                  "name":"file-1000",
+                                                  "address":"ZZBNUuS5-xDdP-Vucu-DByk58nz-n402zbng-LhS2",
+                                                  "leaf":true,
+                                                  "metadata":{
+                                                     "element":{
+                                                        "@key":"content.type",
+                                                        "value":"text\/plain;charset=UTF-8"
+                                                     }
+                                                  },
+                                                  "data":"TXkgZmlsZSBjb250ZW50IDEwMDA="
+                                               }
+                                            ]
+                                         }
+                                      }
+                                   }
+                                }]]>
+                            </code>
+                            <description>JSON representation of the directory structure</description>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                  <info version="1.0" status="OK"/>
+                                  <directory name="" address="Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2">
+                                    <nodes>
+                                      <node name="file-1" address="Xx65UZNY-8j6f-N4Z5-IaUSEsqy-n402zbng-LhS2" leaf="true">
+                                        <metadata>
+                                          <element key="content.type">
+                                            <value>text/plain;charset=UTF-8</value>
+                                          </element>
+                                        </metadata>
+                                        <data>TXkgZmlsZSBjb250ZW50IDE=</data>
+                                      </node>
+                                      <node name="file-10" address="oOZf9JV1-NfjC-DfAo-2HZqCahS-n402zbng-LhS2" leaf="true">
+                                        <metadata>
+                                          <element key="content.type">
+                                            <value>text/plain;charset=UTF-8</value>
+                                          </element>
+                                        </metadata>
+                                        <data>TXkgZmlsZSBjb250ZW50IDEw</data>
+                                      </node>
+                                      <node name="file-100" address="VMybG6Jo-aGEJ-cmsr-2BtmGgl6-n402zbng-LhS2" leaf="true">
+                                        <metadata>
+                                          <element key="content.type">
+                                            <value>text/plain;charset=UTF-8</value>
+                                          </element>
+                                        </metadata>
+                                        <data>TXkgZmlsZSBjb250ZW50IDEwMA==</data>
+                                      </node>
+                                      <node name="file-1000" address="ZZBNUuS5-xDdP-Vucu-DByk58nz-n402zbng-LhS2" leaf="true">
+                                        <metadata>
+                                          <element key="content.type">
+                                            <value>text/plain;charset=UTF-8</value>
+                                          </element>
+                                        </metadata>
+                                        <data>TXkgZmlsZSBjb250ZW50IDEwMDA=</data>
+                                      </node>
+                                      <node name="file-101" address="iTtoGov1-EPdC-2AuI-6WE7DOXs-n402zbng-LhS2" leaf="true">
+                                        <metadata>
+                                          <element key="content.type">
+                                            <value>text/plain;charset=UTF-8</value>
+                                          </element>
+                                        </metadata>
+                                        <data>TXkgZmlsZSBjb250ZW50IDEwMQ==</data>
+                                      </node>
+                                    </nodes>
+                                  </directory>
+                                </p:response>]]>
+                            </code>
+                            <description>XML representation of the directory structure</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Get file metadata</name>
+                <description>Returns user and system metadata for the file.</description>
+                <path omitResourcePath="false">?metadata</path>
+                <formats>
+                    <format>application/json</format>
+                    <format>text/xml</format>
+                </formats>
+                <request>
+                    <method>GET</method>
+                    <authentication mandatory="false" />
+                    <entities >
+                        <entity>
+                            <code language="plain">
+                                x-c3-extmeta
+                            </code>
+                            <description>Optional HTTP header indicating that extended resource metadata required. All required metadata fields must be put as a comma-separated string to the header value. For now only one key supported: 'c3.ext.fs.path'.</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">HTTP response body contains resource metadata</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                        <answer code="404">Resource with provided address is not found</answer>
+                    </responses>
+                    <entities >
+                        <entity>
+                            <code language="js">
+                                <![CDATA[{
+               "p:response":{
+                  "info":{
+                     "version":1,
+                     "status":"OK"
+                  },
+                  "resource":{
+                     "address":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2",
+                     "createDate":"2012-09-18T20:25:57.488+04:00",
+                     "metadata":{
+                        "element":{
+                           "@key":"content.type",
+                           "value":"application\/x-c3-directory"
+                        }
+                     },
+                     "systemMetadata":{
+                        "element":[
+                           {
+                              "@key":"c3.skip.index",
+                              "value":true
+                           },
+                           {
+                              "@key":"content.type",
+                              "value":"application\/x-c3-directory"
+                           },
+                           {
+                              "@key":"c3.updated",
+                              "value":1347986736447
+                           },
+                           {
+                              "@key":"c3.domain.id",
+                              "value":"f504fd45-e8e3-48c3-b653-b6074f645976"
+                           },
+                           {
+                              "@key":"c3.fs.nodetype",
+                              "value":"directory"
+                           }
+                        ]
+                     },
+                     "versions":{
+                        "version":{
+                           "date":"2012-09-18T20:45:36.446+04:00",
+                           "systemMetadata":{
+                              "element":[
+                                 {
+                                    "@key":"c3.data.address",
+                                    "value":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data"
+                                 },
+                                 {
+                                    "@key":"c3.data.md5",
+                                    "value":"c32f063baee781203ea49d37aef00806"
+                                 },
+                                 {
+                                    "@key":"c3.data.length",
+                                    "value":53899
+                                 }
+                              ]
+                           }
+                        }
+                     },
+                     "trackVersions":false
+                  }
+               }
+            }]]></code>
+                            <description>Metadata in the JSON format</description>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+            <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+              <info version="1.0" status="OK"/>
+              <resource address="Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2" createDate="2012-09-18T20:25:57.488+04:00" trackVersions="false">
+                <metadata>
+                  <element key="content.type">
+                    <value>application/x-c3-directory</value>
+                  </element>
+                </metadata>
+                <systemMetadata>
+                  <element key="c3.skip.index">
+                    <value>true</value>
+                  </element>
+                  <element key="content.type">
+                    <value>application/x-c3-directory</value>
+                  </element>
+                  <element key="c3.updated">
+                    <value>1347986736447</value>
+                  </element>
+                  <element key="c3.domain.id">
+                    <value>f504fd45-e8e3-48c3-b653-b6074f645976</value>
+                  </element>
+                  <element key="c3.fs.nodetype">
+                    <value>directory</value>
+                  </element>
+                </systemMetadata>
+                <versions>
+                  <version date="2012-09-18T20:45:36.446+04:00">
+                    <systemMetadata>
+                      <element key="c3.data.address">
+                        <value>Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data</value>
+                      </element>
+                      <element key="c3.data.md5">
+                        <value>c32f063baee781203ea49d37aef00806</value>
+                      </element>
+                      <element key="c3.data.length">
+                        <value>53899</value>
+                      </element>
+                    </systemMetadata>
+                  </version>
+                </versions>
+              </resource>
+            </p:response>]]></code>
+                            <description>Metadata in the XML format</description>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Create a file or directory</name>
+                <description>Create a new file or directory in the C3 system. Request URL must point on the directory node of the file system</description>
+                <formats>
+                    <format>multipart/form-data</format>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>POST</method>
+                    <authentication  mandatory="false" />
+                    <entities>
+                        <entity>
+                            <code language="plain">
+                                x-c3-nodetype
+                            </code>
+                            <description>Option HTTP header that indicates type of the created node. By default it is 'file'. Possible values 'file' and 'directory'</description>
+                        </entity>
+                        <entity>
+                            <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'. This is applicable only to file creation</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="201">Resource created. Response contains new resource address</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                            <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                              <info version="1.0" status="OK"/>
+                                              <uploaded address="0e6315ea-c2fd-4bef-936e-59cef7943841-6a47" version="1"/>
+                                            </p:response>]]>
+                            </code>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[{
+                                               "p:response":{
+                                                  "info":{
+                                                     "version":1,
+                                                     "status":"OK"
+                                                  },
+                                                  "uploaded":{
+                                                     "address":"5SZDupar-4UZQ-N1VR-to4ewPtY-n402zbng-LhS2",
+                                                     "version":1
+                                                  }
+                                               }
+                                            }]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Update a file</name>
+                <description>Updates a file or directory. Directory content can't be updated, only metadata.</description>
+                <formats>
+                    <format>multipart/form-data</format>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>PUT</method>
+                    <authentication  mandatory="false" />
+                    <entities>
+                        <entity>
+                            <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'</description>
+                        </entity>
+                        <entity>
+                            <code language="plain">
+                                x-c3-type
+                            </code>
+                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
+                        </entity>
+                    </entities>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Resource updated. Response contains new resource address</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                                                        <p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                                          <info version="1.0" status="OK"/>
+                                                          <uploaded address="0e6315ea-c2fd-4bef-936e-59cef7943841-6a47" version="1"/>
+                                                        </p:response>]]>
+                            </code>
+                        </entity>
+                        <entity>
+                            <code language="xml">
+                                <![CDATA[{
+                                                           "p:response":{
+                                                              "info":{
+                                                                 "version":1,
+                                                                 "status":"OK"
+                                                              },
+                                                              "uploaded":{
+                                                                 "address":"5SZDupar-4UZQ-N1VR-to4ewPtY-n402zbng-LhS2",
+                                                                 "version":1
+                                                              }
+                                                           }
+                                                        }]]>
+                            </code>
+                        </entity>
+                    </entities>
+                </response>
+            </operation>
+            <operation>
+                <name>Delete a file or directory</name>
+                <description>Delete a file or directory from the C3 system. To delete a directory you must delete all files in that directory first.</description>
+                <formats>
+                    <format>varying</format>
+                </formats>
+                <request>
+                    <method>DELETE</method>
+                    <authentication  mandatory="false" />
+                    <entities/>
+                </request>
+                <response>
+                    <responses>
+                        <answer code="200">Resource deleted</answer>
+                        <answer code="403">Specified authentication token is not valid</answer>
+                    </responses>
+                    <entities/>
+                </response>
+            </operation>
+        </resource>
+    </resources>
+</api>

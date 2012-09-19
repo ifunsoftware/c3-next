@@ -37,9 +37,9 @@ import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import java.io.{File, BufferedOutputStream}
+import java.io.{FileOutputStream, File, BufferedOutputStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.io.FileCleaningTracker
+import org.apache.commons.io.{IOUtils, FileCleaningTracker}
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
@@ -51,6 +51,7 @@ import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessTokens, Action, AccessControlManager}
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
 import collection.mutable
+import org.apache.commons.codec.binary.Base64
 
 class DataController extends AbstractController with ServletContextAware {
 
@@ -260,7 +261,42 @@ class DataController extends AbstractController with ServletContextAware {
       }
 
     } else {
-      throw new WrongRequestException("Multipart request expected")
+
+      val metadata = new mutable.HashMap[String, String]
+
+      val metadataHeaders = request.getHeaders("x-c3-metadata")
+
+      while(metadataHeaders.hasMoreElements){
+        val header = metadataHeaders.nextElement().toString
+
+        val keyValue = header.split(":", 2)
+
+        if (keyValue.length == 2){
+          metadata.put(keyValue(0), new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8"))
+        }
+      }
+
+      if(request.getContentLength > 0) {
+        val factory = createDiskFileItemFactory
+        val tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
+        val os = new FileOutputStream(tmpFile)
+
+        try{
+          IOUtils.copy(request.getInputStream, os)
+        }finally {
+          os.close()
+        }
+
+        val version = new ResourceVersion
+        version.data = DataStream.create(tmpFile)
+        resource.addVersion(version)
+      }
+
+      resource.metadata ++= metadata
+      accessTokens.updateMetadata(resource)
+      log debug "Executing callback"
+      processStore()
+      log debug "Upload done"
     }
   }
 

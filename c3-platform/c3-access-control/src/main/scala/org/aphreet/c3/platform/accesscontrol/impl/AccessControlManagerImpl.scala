@@ -70,7 +70,7 @@ class AccessControlManagerImpl extends AccessControlManager {
     try{
       new AccessTokensImpl(factories.map(f => f.createAccessToken(action, accessParams)).toList)
     }catch{
-      case e => throw new AccessControlException(e.getMessage, e)
+      case e: Throwable => throw new AccessControlException(e.getMessage, e)
     }
   }
 
