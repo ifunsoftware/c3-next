@@ -14,6 +14,8 @@
 
     <context:component-scan base-package="org.aphreet.c3.platform.remote.rest" />
 
+    <mvc:resources mapping="/static/**" location="/static/"/>
+
     <mvc:interceptors>
         <bean class="org.aphreet.c3.platform.remote.rest.interceptors.CharacterSetInterceptor"/>
     </mvc:interceptors>
