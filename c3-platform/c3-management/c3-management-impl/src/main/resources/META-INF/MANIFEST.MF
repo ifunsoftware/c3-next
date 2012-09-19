@@ -44,5 +44,6 @@ Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  javax.jws,
  javax.jws.soap,
  javax.activation,
+ javax.management,
  org.eclipse.virgo.web.dm
 

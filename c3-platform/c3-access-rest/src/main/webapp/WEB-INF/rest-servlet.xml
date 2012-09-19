@@ -16,6 +16,8 @@
 
     <mvc:resources mapping="/static/**" location="/static/"/>
 
+    <mvc:annotation-driven />
+
     <mvc:interceptors>
         <bean class="org.aphreet.c3.platform.remote.rest.interceptors.CharacterSetInterceptor"/>
     </mvc:interceptors>

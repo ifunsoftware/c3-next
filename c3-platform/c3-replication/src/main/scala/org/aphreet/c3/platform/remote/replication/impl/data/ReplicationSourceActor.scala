@@ -123,18 +123,18 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
         case SendConfigurationMsg => {
 
-          log info "Retrieving configuration from manager"
+          log debug "Retrieving configuration from manager"
 
           val configuration = configurationManager.getSerializedConfiguration
 
-          log info "Got configuration, distributing over targets"
+          log debug "Got configuration, distributing over targets"
 
           sendToAllLinks(SendConfigurationMsg(configuration))
         }
 
         case DestroyMsg => {
           for((id, link) <- remoteReplicationActors){
-            link.close
+            link.close()
           }
 
           remoteReplicationActors = Map()
@@ -154,32 +154,32 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
     remoteReplicationActors = remoteReplicationActors + ((host.systemId, new ReplicationLink(localSystemId, host, statisticsManager)))
   }
 
-  def removeReplicationTarget(remoteSystemId:String) = {
+  def removeReplicationTarget(remoteSystemId:String) {
     val link = remoteReplicationActors.get(remoteSystemId).get
 
     remoteReplicationActors = remoteReplicationActors - remoteSystemId
 
-    link.close
+    link.close()
   }
 
-  private def sendToAllLinks(msg:Any) = {
+  private def sendToAllLinks(msg:Any) {
     try{
 
       for((id, link) <- remoteReplicationActors){
-        if(!link.isStarted) link.start
+        if(!link.isStarted) link.start()
         link ! msg
       }
 
 
     }catch{
-      case e => log.error("Failed to post message: " + msg, e)
+      case e: Throwable => log.error("Failed to post message: " + msg, e)
     }
   }
 
-  private def sendToLinkWithId(id:String, msg:Any) = {
+  private def sendToLinkWithId(id:String, msg:Any) {
     remoteReplicationActors.get(id) match {
       case Some(link) => {
-        if(link.isStarted) link.start
+        if(link.isStarted) link.start()
         link ! msg
       }
       case None => log.warn("Failed to send message, host does not exist: " + id + " msg: " + msg)
