@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.remote.replication.impl.config
 
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.{FileWriter, StringWriter, File}
+import java.io.{StringWriter, File}
 import org.aphreet.c3.platform.common.JSONFormatter
 import com.springsource.json.writer.JSONWriterImpl
 import com.springsource.json.parser.{ScalarNode, ListNode, MapNode, AntlrJSONParser}
@@ -64,7 +64,7 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
 
     val hostsListNode = node.getNode("hosts").asInstanceOf[ListNode]
 
-    for (hostNode <- asBuffer(hostsListNode.getNodes)) {
+    for (hostNode <- asScalaBuffer(hostsListNode.getNodes)) {
       val host = getValue(hostNode.asInstanceOf[MapNode], "host")
       val key = getValue(hostNode.asInstanceOf[MapNode], "key")
       val id = getValue(hostNode.asInstanceOf[MapNode], "id")
@@ -81,8 +81,6 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
   def storeConfig(map:Map[String, ReplicationHost], configFile: File) {
     this.synchronized {
       val swriter = new StringWriter()
-
-      var fileWriter: FileWriter = null
 
       try {
         val writer = new JSONWriterImpl(swriter)

@@ -50,7 +50,7 @@ object SearchResultElement{
     new SearchResultElement(
       entry.address,
       entry.score,
-      asMap(entry.fragments).filter(e => !e._1.isEmpty).map(e => new SearchResultFragment(e._1, e._2)).toArray)
+      mapAsScalaMap(entry.fragments).filter(e => !e._1.isEmpty).map(e => new SearchResultFragment(e._1, e._2)).toArray)
 
   }
 

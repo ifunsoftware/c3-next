@@ -36,7 +36,7 @@ import org.aphreet.c3.platform.common.JSONFormatter
 import java.io.{File, StringWriter}
 
 import scala.collection.immutable.Map
-import scala.collection.JavaConversions
+import scala.collection.JavaConversions._
 
 import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl
@@ -55,7 +55,7 @@ abstract class AbstractDictionaryConfigAccessor extends DictionaryConfigAccessor
 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
-    for (key <- JavaConversions.asSet(node.getKeys)) {
+    for (key <- asScalaSet(node.getKeys)) {
       val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
       map = map + ((key, value))
     }

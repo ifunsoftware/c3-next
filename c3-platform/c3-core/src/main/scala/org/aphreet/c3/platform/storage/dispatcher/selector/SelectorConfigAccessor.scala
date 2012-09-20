@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.storage.dispatcher.selector
 
 import java.io.{StringWriter, File}
 
-import collection.JavaConversions
+import collection.JavaConversions._
 
 import org.aphreet.c3.platform.common.JSONFormatter
 import org.aphreet.c3.platform.config.ConfigAccessor
@@ -40,7 +40,7 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import com.springsource.json.parser.{MapNode, ListNode, AntlrJSONParser, ScalarNode}
 import com.springsource.json.writer.JSONWriterImpl
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired
 
 abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, Boolean)]] {
   var configManager: PlatformConfigManager = null
@@ -57,7 +57,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
     val entries =
-      for (key <- JavaConversions.asSet(node.getKeys))
+      for (key <- asScalaSet(node.getKeys))
         yield (
             keyFromString(key),
             (
@@ -75,8 +75,8 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
   def keyToString(key: T): String
 
 
-  private def getArrayValue[T](node: MapNode, key: String, num: Int): T = {
-    node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[T]
+  private def getArrayValue[E](node: MapNode, key: String, num: Int): E = {
+    node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[E]
   }
 
   def storeConfig(data: Map[T, (String, Boolean)], configFile: File) {

@@ -66,7 +66,7 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
 
     val domainListNode = node.getNode("domains").asInstanceOf[ListNode]
 
-    for (domainNode <- asBuffer(domainListNode.getNodes)) {
+    for (domainNode <- asScalaBuffer(domainListNode.getNodes)) {
       val id = getValue(domainNode.asInstanceOf[MapNode], "id")
       val name = getValue(domainNode.asInstanceOf[MapNode], "name")
       val key = getValue(domainNode.asInstanceOf[MapNode], "key")

@@ -66,10 +66,10 @@ class TextExtractor{
         }
       }
 
-      Map() ++ asMap(tikaProvider.extractMetadata(file.getCanonicalPath))
+      mapAsScalaMap(tikaProvider.extractMetadata(file.getCanonicalPath)).toMap
 
     }catch{
-      case e=> log.warn("Failed to extract document content: " + e.getMessage)
+      case e: Throwable => log.warn("Failed to extract document content: " + e.getMessage)
                log.trace("Cause: ", e)
                tikaProvider = null
                Map()

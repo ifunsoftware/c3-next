@@ -72,7 +72,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
     val userListNode = node.getNode("users").asInstanceOf[ListNode]
 
-    for (userNode <- asBuffer(userListNode.getNodes)) {
+    for (userNode <- asScalaBuffer(userListNode.getNodes)) {
       val name = getValue(userNode.asInstanceOf[MapNode], "name")
       val password = getValue(userNode.asInstanceOf[MapNode], "password")
       val enabled = getBoolValue(userNode.asInstanceOf[MapNode], "enabled")

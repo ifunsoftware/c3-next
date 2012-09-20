@@ -39,7 +39,7 @@ import com.springsource.json.writer.JSONWriterImpl
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import collection.JavaConversions
+import collection.JavaConversions._
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
 import collection.mutable.{HashMap, Buffer}
 
@@ -67,7 +67,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
     for (st <- storageArray) {
       val storage = st.asInstanceOf[MapNode]
 
-      val ids = JavaConversions.asBuffer(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
+      val ids = asScalaBuffer(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
 
       val idArray = for (node <- ids)
         yield node.getValue.toString
@@ -93,7 +93,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
       if(indexesNode != null){
 
-        val indexMaps = JavaConversions.asBuffer(
+        val indexMaps = asScalaBuffer(
           indexesNode.asInstanceOf[ListNode].getNodes.asInstanceOf[JList[MapNode]])
 
         val result = for (indexMap <- indexMaps){
@@ -102,7 +102,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
           val system = indexMap.getNode("system").asInstanceOf[ScalarNode].getValue[Boolean]
           val created:Long = indexMap.getNode("created").asInstanceOf[ScalarNode].getValue[String].toLong
 
-          val fields = JavaConversions.asBuffer(
+          val fields = asScalaBuffer(
             indexMap.getNode("fields").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
 
           val fieldList = fields.map(_.getValue[String]).toList

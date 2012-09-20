@@ -208,7 +208,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
   def platformProperties:Array[Pair] =
     try{
-      (for(e <- asMap(managementEndpoint.getPlatformProperties))
+      (for(e <- mapAsScalaMap(managementEndpoint.getPlatformProperties))
       yield new Pair(e._1, e._2)).toSeq.toArray
     }catch{
       case e => {
