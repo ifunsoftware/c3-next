@@ -508,35 +508,6 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   }
 
-  def testLock() {
-    val storage = createStorage("1012")
-
-    val resource = createResource
-
-    val address = storage.add(resource)
-
-    storage.lock(address)
-
-    try{
-      storage.lock(address)
-      assertTrue("Expected exception", false)
-    }catch{
-      case e:StorageException => //this is ok
-      case ex => assertTrue("Expected another exception", false)
-    }
-
-    storage.unlock(address)
-
-    try{
-      storage.lock(address)
-    }catch{
-      case e: Throwable => assertTrue("Unexpected exception", false)
-    }
-
-    storage.unlock(address)
-
-  }
-
   private def compareResources(res0:Resource, res1:Resource) {
     assertFalse("Resource can't be null", res0 == null || res1 == null)
 

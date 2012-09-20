@@ -238,45 +238,6 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def lock(ra:String) {
-
-    if(log.isDebugEnabled){
-      log.debug("Locking address: " + ra)
-    }
-
-    try{
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
-
-      if(storage.mode.allowWrite)
-        storage.lock(ra)
-      else
-        throw new StorageIsNotWritableException(storage.id)
-
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
-    }
-  }
-
-  def unlock(ra:String) {
-
-    if(log.isDebugEnabled){
-      log.debug("Unlocking address: " + ra)
-    }
-
-    try{
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
-
-      if(storage.mode.allowWrite)
-        storage.unlock(ra)
-      else
-        throw new StorageIsNotWritableException(storage.id)
-
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
-    }
-
-  }
-
   def registerOwner(owner:ResourceOwner) {
     resourceOwners.synchronized{
       log debug "Registering owner " + owner

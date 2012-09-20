@@ -45,10 +45,6 @@ trait AccessManager extends WatchedActor{
 
   def delete(ra:String)
 
-  def lock(ra:String)
-
-  def unlock(ra:String)
-
   def registerOwner(owner:ResourceOwner)
 
   def unregisterOwner(owner:ResourceOwner)

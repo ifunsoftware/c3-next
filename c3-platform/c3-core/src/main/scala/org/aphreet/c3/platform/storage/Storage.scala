@@ -63,7 +63,7 @@ abstract class Storage {
    * Primary id of this storage
    * All resources added to this storage will have this as suffix in resource address
    */
-  def id:String;
+  def id:String
 
   /**
    * Add resource to storage and return address of this resource
@@ -97,10 +97,6 @@ abstract class Storage {
    * This method ignores persisted flag in ResourceVersion
    */
   def put(resource:Resource)
-
-  def lock(ra:String)
-
-  def unlock(ra:String)
 
   /**
    * Append specified map to system metadata of the specified resource
@@ -239,7 +235,7 @@ abstract class Storage {
   /**
    * Close storage
    */
-  def close();
+  def close()
 
 
   /**
