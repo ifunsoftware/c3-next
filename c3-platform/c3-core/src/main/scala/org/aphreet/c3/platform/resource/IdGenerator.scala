@@ -63,7 +63,7 @@ object IdGenerator{
   private def generateId(seedDiff:Long, groups:Int, withDashes:Boolean):String = {
 
 
-    val bytes = Array.ofDim[Byte](groups * 3);
+    val bytes = Array.ofDim[Byte](groups * 3)
 
     val random = new Random(System.currentTimeMillis() + seedDiff * 100 + 5000)
 
