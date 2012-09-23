@@ -85,6 +85,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
         }
       } catch {
         case e: StorageException => {
+          log.warn("Got exception while iterating over storage", e)
           if (iterator != null) {
             iterator.close()
             iterator = null
