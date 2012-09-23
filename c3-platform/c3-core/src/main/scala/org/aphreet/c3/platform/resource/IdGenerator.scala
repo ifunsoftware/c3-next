@@ -41,7 +41,7 @@ object IdGenerator{
                       "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
                       "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
                       "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-                      "Y", "Z", "Z", "Z")
+                      "Y", "Z", "~", ".")
 
 
   def generateAddress(seedDiff:Long, systemId:String, storageId:String) = {
@@ -92,5 +92,31 @@ object IdGenerator{
     }
 
     builder.toString()
+  }
+
+  def trailShort(generatedString:String):Short = {
+
+    var shortResult = 0
+
+    shortResult = shortResult | digitValue(generatedString.charAt(0))
+    shortResult = (shortResult << 6) | digitValue(generatedString.charAt(1))
+    shortResult = (shortResult << 3) | (digitValue(generatedString.charAt(3)) >> 3)
+
+    shortResult.toShort
+  }
+
+  private def digitValue(code:Char):Byte = {
+
+    val result = (if(code >= 48 && code <=57){
+      code - 48
+    }else if (code >= 65 && code <=90){
+      code - 65 + 36
+    }else if (code >=97 && code <=122){
+      code - 97 + 10
+    } else if (code == 46) 63 else if (code == 126) 62 else {
+      0
+    }).toByte
+
+    result
   }
 }

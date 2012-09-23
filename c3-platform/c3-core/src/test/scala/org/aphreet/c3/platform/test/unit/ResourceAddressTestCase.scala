@@ -2,7 +2,7 @@ package org.aphreet.c3.platform.test.unit
 
 import junit.framework.TestCase
 import junit.framework.Assert._
-import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.resource.{IdGenerator, ResourceAddress}
 
 class ResourceAddressTestCase extends TestCase{
 
