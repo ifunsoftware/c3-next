@@ -54,12 +54,6 @@
             <version>1.0.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-search-ext</artifactId>
-            <version>1.0.754</version>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -136,12 +130,6 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.aphreet.c3</groupId>
-                                    <artifactId>c3-search-ext</artifactId>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.deploy.tmp.dir}</outputDirectory>
                         </configuration>
@@ -152,7 +140,6 @@
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
-
         </plugins>
     </build>
 </project>

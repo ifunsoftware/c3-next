@@ -57,18 +57,12 @@ abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeData
     	var line = reader.readLine
       
 	    while(line != null){
-	      
-	      val array = line.split("\\s+", 6)
 
-        if(array.length >= 6){
-          val size = toBytes(array(1).toLong)
-          val avail = toBytes(array(3).toLong)
-          val mounted:String = array(5)
-
-
-          result = new Volume(mounted, size, avail) :: result
+        parseDfLine(line) match {
+          case Some(volume) => result = volume :: result
+          case None =>
         }
-	      
+
         line = reader.readLine
 	    }
 	    
@@ -76,6 +70,20 @@ abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeData
 
     }finally reader.close()
   }
-  
+
+  def parseDfLine(line:String):Option[Volume] = {
+    val array = line.split("\\s+", 6)
+
+    if(array.length >= 6){
+      val size = toBytes(array(1).toLong)
+      val avail = toBytes(array(3).toLong)
+      val mounted:String = array(5)
+
+      Some(new Volume(mounted, size, avail))
+    }else{
+      None
+    }
+  }
+
   def toBytes(size:Long):Long = size
 }
