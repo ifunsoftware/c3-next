@@ -34,7 +34,7 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.search.ext.DocumentBuilderFactory
+import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
 import collection.JavaConversions._
 import org.apache.lucene.document.{Document, Field}
 

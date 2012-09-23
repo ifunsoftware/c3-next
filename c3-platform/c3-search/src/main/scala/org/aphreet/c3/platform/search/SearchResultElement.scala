@@ -32,7 +32,7 @@
 package org.aphreet.c3.platform.search
 
 import scala.collection.JavaConversions._
-import org.aphreet.c3.search.ext.SearchResultEntry
+import org.aphreet.c3.platform.search.ext.SearchResultEntry
 
 case class SearchResultElement(address:String,
                                score:Float,

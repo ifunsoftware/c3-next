@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2010, Mikhail Malygin
+ * Copyright (c) 2011, Mikhail Malygin
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * <p/>
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  * 3. Neither the name of the IFMO nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -27,22 +27,21 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package org.aphreet.c3.platform.search.ext;
 
-package org.aphreet.c3.platform.search.impl.common
 
-import org.apache.lucene.misc.{TrigramLanguageGuesser, LanguageGuesser}
-import org.apache.commons.logging.LogFactory
+import java.util.Collections;
+import java.util.Map;
 
-object LanguageGuesserUtil{
+public class SearchConfiguration {
 
-  val log = LogFactory.getLog("org.aphreet.c3.search.impl.common.LanguageGuesserUtil")
+    private FieldWeights fieldWeights = new FieldWeights(Collections.<String, Integer>emptyMap());
 
-  val trigrams = Array("en.tri", "ru.tri")
+    public FieldWeights getFieldWeights(){
+        return fieldWeights;
+    }
 
-  def createGuesser:LanguageGuesser = {
-    val guesser = new TrigramLanguageGuesser(trigrams.map(name => getClass.getClassLoader.getResource("/META-INF/trigrams/" + name)).toArray)
-    log info "Supported languages are: " + guesser.supportedLanguages.toList.toString
-    guesser
-  }
-
+    public void loadFieldWeight(Map<String, Integer> weights){
+        fieldWeights = new FieldWeights(weights);
+    }
 }

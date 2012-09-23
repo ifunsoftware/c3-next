@@ -35,7 +35,7 @@ import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.SearchResultElement
-import org.aphreet.c3.search.ext.{SearchConfiguration, SearchStrategyFactory}
+import org.aphreet.c3.platform.search.ext.{SearchConfiguration, SearchStrategyFactory}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
 import org.apache.lucene.search.{Searcher => LuceneSearcher}

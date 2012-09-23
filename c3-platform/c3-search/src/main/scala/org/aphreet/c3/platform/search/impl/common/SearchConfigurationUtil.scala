@@ -31,7 +31,7 @@
 
 package org.aphreet.c3.platform.search.impl.common
 
-import org.aphreet.c3.search.ext.SearchConfiguration
+import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import java.util.Properties
 import org.apache.commons.logging.LogFactory
 

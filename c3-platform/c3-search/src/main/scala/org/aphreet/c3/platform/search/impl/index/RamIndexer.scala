@@ -42,7 +42,7 @@ import java.io.StringReader
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.WatchedActor
-import org.aphreet.c3.search.ext.{DocumentBuilderFactory, SearchConfiguration}
+import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 
 class RamIndexer(val fileIndexer: FileIndexer,
                  val configuration:SearchConfiguration, num: Int,
