@@ -39,25 +39,27 @@ class ZoneSetTestCase  extends TestCase
 
     val startTime = 1350000000000l
 
-    val timeRange0 = TimeRange(startTime, startTime + 1000 - 1,
+    val timeRange0 = TimeRangeConfig(startTime, startTime + 1000 - 1,
       IdRange.generate(List(Zone("0000")))
     )
 
-    val timeRange1 = TimeRange(startTime + 1000, startTime + 2000 - 1,
+    val timeRange1 = TimeRangeConfig(startTime + 1000, startTime + 2000 - 1,
       IdRange.generate(List(Zone("0000"), Zone("0001")))
     )
 
-    val timeRange2 = TimeRange(startTime + 2000, startTime + 3000 - 1,
+    val timeRange2 = TimeRangeConfig(startTime + 2000, startTime + 3000 - 1,
       IdRange.generate(List(Zone("0000"), Zone("0001"), Zone("0002")))
     )
 
-    val timeRange3 = TimeRange(startTime + 3000, startTime + 2000 - 1,
+    val timeRange3 = TimeRangeConfig(startTime + 3000, startTime + 2000 - 1,
       IdRange.generate(List(Zone("0000"), Zone("0001"), Zone("0002"), Zone("0003")))
     )
 
-    val timeRangeSet = new RangeSet(List(timeRange0, timeRange1, timeRange2, timeRange3))
+    val timeRangeList = List(timeRange0, timeRange1, timeRange2, timeRange3)
 
-    val zoneSet = new ZoneSet(timeRangeSet)
+    val config = ZoneConfig(timeRangeList)
+
+    val zoneSet = config.createZoneSet
 
     assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","rZ1L9jbMHZgqCvT8gNk3u5iC", startTime)))
     assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))

@@ -2,14 +2,7 @@ package org.aphreet.c3.platform.zone
 
 import org.aphreet.c3.platform.resource.{IdGenerator, ResourceAddress}
 
-/**
- * Created with IntelliJ IDEA.
- * User: aphreet
- * Date: 9/23/12
- * Time: 3:35 PM
- * To change this template use File | Settings | File Templates.
- */
-case class ZoneSet(val timeRangeSet:RangeSet[RangeSet[Zone]]) {
+case class ZoneSet(timeRangeSet:RangeSet[RangeSet[Zone]]) {
 
   def zoneForAddress(address:ResourceAddress):Option[Zone] = {
 
@@ -36,7 +29,7 @@ case class IdRange(override val start:Long,
 
 object IdRange{
 
-  def generate(zones:List[Zone]):RangeSet[Zone] = {
+  def generate(zones:List[Zone]):List[IdRange] = {
 
     val numberOfSplits = zones.size
 
@@ -45,7 +38,7 @@ object IdRange{
     val rangeList = for (split <- 0 to numberOfSplits - 1)
       yield IdRange(split * splitSize, (split + 1) * splitSize - 1, zones(split))
 
-    new RangeSet[Zone](rangeList.toList)
+    rangeList.toList
   }
 
 }
