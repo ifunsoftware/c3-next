@@ -31,12 +31,36 @@ class ZoneSetTestCase  extends TestCase
     assertEquals(Some("value5"), rangeSet.findMappedValue(25))
     assertEquals(None, rangeSet.findMappedValue(30))
 
-    println(IdGenerator.trailShort("___La"))
-
   }
 
   def testZoneLookup(){
 
+    val startTime = 1350000000000l
+
+    val config = generateConfig()
+
+    val zoneSet = config.createZoneSet
+
+    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","rZ1L9jbMHZgqCvT8gNk3u5iC", startTime)))
+    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
+    assertEquals(Some(Zone("0001")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
+
+    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
+    assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
+    assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","__TL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
+  }
+
+  def testZoneReplace(){
+    val config = generateConfig()
+
+    val expectedConfig = generateConfig("0005")
+
+    val newConfig = config.replaceStorageId("0002", "0005")
+
+    assertEquals(expectedConfig, newConfig)
+  }
+
+  def generateConfig(storageId:String = "0002"):ZoneConfig = {
     val startTime = 1350000000000l
 
     val timeRange0 = TimeRangeConfig(startTime, startTime + 1000 - 1,
@@ -48,28 +72,16 @@ class ZoneSetTestCase  extends TestCase
     )
 
     val timeRange2 = TimeRangeConfig(startTime + 2000, startTime + 3000 - 1,
-      IdRange.generate(List(Zone("0000"), Zone("0001"), Zone("0002")))
+      IdRange.generate(List(Zone("0000"), Zone("0001"), Zone(storageId)))
     )
 
     val timeRange3 = TimeRangeConfig(startTime + 3000, startTime + 2000 - 1,
-      IdRange.generate(List(Zone("0000"), Zone("0001"), Zone("0002"), Zone("0003")))
+      IdRange.generate(List(Zone("0000"), Zone("0001"), Zone(storageId), Zone("0003")))
     )
 
     val timeRangeList = List(timeRange3, timeRange2, timeRange1, timeRange0)
 
-    val config = ZoneConfig(timeRangeList)
-
-    val zoneSet = config.createZoneSet
-
-    println(config)
-
-    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","rZ1L9jbMHZgqCvT8gNk3u5iC", startTime)))
-    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
-    assertEquals(Some(Zone("0001")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
-
-    assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
-    assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
-    assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","__TL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
+    ZoneConfig(timeRangeList)
   }
 
 }

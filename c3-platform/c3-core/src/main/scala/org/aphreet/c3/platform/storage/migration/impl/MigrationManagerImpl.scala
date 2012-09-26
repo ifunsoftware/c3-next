@@ -38,24 +38,24 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.storage._
+import dispatcher.impl.ZoneStorageDispatcher
 import org.aphreet.c3.platform.storage.migration.MigrationManager
 
 @Component
 class MigrationManagerImpl extends MigrationManager{
 
-  private var storageManager:StorageManager = null
-  
-  private var taskManager:TaskManager = null
-  
+  @Autowired
+  var storageManager: StorageManager = null
+
+  @Autowired
+  var taskManager: TaskManager = null
+
+  @Autowired
+  var storageDispatcher: ZoneStorageDispatcher = null
+
   val log = LogFactory getLog getClass
-  
-  @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-  
-  @Autowired
-  def setTaskManager(manager:TaskManager) {taskManager = manager}
-  
-  def migrateStorageToStorage(sourceId:String, targetId:String) {
+
+  def migrateStorageToStorage(sourceId: String, targetId: String) {
     val source = storageManager storageForId sourceId
     val target = storageManager storageForId targetId
     
@@ -64,11 +64,10 @@ class MigrationManagerImpl extends MigrationManager{
     }else{
       throw new MigrationException("Can't find one of storages")
     }
-    
   }
   
   
-  def migrateStorageToStorage(source:Storage, target:Storage) {
+  def migrateStorageToStorage(source: Storage, target: Storage) {
     
     log info "Starting migration from " + source.name + " " + source.id + " to " + target.name + " " + target.id
     
@@ -88,7 +87,7 @@ class MigrationManagerImpl extends MigrationManager{
     }
   }
   
-  private def checkPreconditions(source:Storage, target:Storage) {
+  private def checkPreconditions(source: Storage, target: Storage) {
   
     log info "Checking preconditions"
     
@@ -109,7 +108,5 @@ class MigrationManagerImpl extends MigrationManager{
     }
     
     log info "Preconditions check complete"
-    
   }
-  
 }

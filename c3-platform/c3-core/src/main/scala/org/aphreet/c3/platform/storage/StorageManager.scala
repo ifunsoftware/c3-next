@@ -61,4 +61,6 @@ trait StorageManager{
 
   def removeIndex(id:String, name:String)
 
+  def mergeStorages(fromId:String, toId:String)
+
 }

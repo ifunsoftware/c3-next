@@ -25,7 +25,17 @@ case class TimeRange(override val start:Long,
 
 case class IdRange(override val start:Long,
                    override val end:Long,
-                   override val value:Zone) extends Range[Zone](start, end, value)
+                   override val value:Zone) extends Range[Zone](start, end, value){
+
+  def replaceStorageId(oldStorageId:String, newStorageId:String):IdRange = {
+    if (value.storageIds.contains(oldStorageId)){
+      IdRange(start, end, Zone(newStorageId :: value.storageIds.filter(_ != oldStorageId)))
+    }else {
+      this
+    }
+  }
+
+}
 
 object IdRange{
 

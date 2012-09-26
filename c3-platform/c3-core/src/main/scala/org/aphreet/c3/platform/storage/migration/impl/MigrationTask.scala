@@ -39,9 +39,6 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   var iterator:StorageIterator = _
   
   override def preStart() {
-
-    throw new StorageException("First, we need to implement zone merging!")
-
     iterator = source.iterator()
   }
   
@@ -53,6 +50,8 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   override def postComplete() {
     iterator.close()
     iterator = null
+
+    manager.mergeStorages(source.id, target.id)
     
     target.mode = new RW
     manager updateStorageParams target
@@ -97,7 +96,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
       try{
         iterator.close()
       }catch{
-        case e => e.printStackTrace()
+        case e: Throwable => e.printStackTrace()
       }
   }
 }

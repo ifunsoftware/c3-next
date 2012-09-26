@@ -57,6 +57,16 @@ class ZoneStorageDispatcher extends StorageDispatcher{
     }
   }
 
+  def mergeStorages(fromId:String, toId:String) {
+    synchronized{
+      val newZoneConfig = zoneConfig.replaceStorageId(fromId, toId)
+      configAccessor.store(newZoneConfig)
+      zoneConfig = newZoneConfig
+      zoneSet = newZoneConfig.createZoneSet
+    }
+
+  }
+
   protected def updateZoneSet(storageParams:List[StorageParams]){
     val writableStorageIds = storageParams.filter(s => s.mode.allowWrite).map(s => s.id).toSet
 

@@ -136,7 +136,6 @@ class StorageManagerImpl extends StorageManager{
                                                   RW(Constants.STORAGE_MODE_NONE),
                                                   List(), new mutable.HashMap[String, String]),
                                                systemId)
-
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -220,7 +219,10 @@ class StorageManagerImpl extends StorageManager{
     }else{
       throw new StorageException("Index not found")
     }
+  }
 
+  def mergeStorages(fromId:String, toId:String){
+    storageDispatcher.mergeStorages(fromId, toId)
   }
 
   private def registerStorage(storage:Storage){

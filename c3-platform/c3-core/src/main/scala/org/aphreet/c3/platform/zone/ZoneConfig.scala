@@ -17,6 +17,10 @@ case class ZoneConfig(timeRanges:List[TimeRangeConfig]){
     }
   }
 
+  def replaceStorageId(oldStorageId:String, newStorageId:String):ZoneConfig = {
+    ZoneConfig(timeRanges.map(range => range.replaceStorageId(oldStorageId, newStorageId)))
+  }
+
 }
 
 case class TimeRangeConfig(start:Long, end:Long, idRanges:List[IdRange]){
@@ -27,6 +31,10 @@ case class TimeRangeConfig(start:Long, end:Long, idRanges:List[IdRange]){
 
   def updateEndTime(newEnd:Long):TimeRangeConfig = {
     TimeRangeConfig(start, newEnd, idRanges)
+  }
+
+  def replaceStorageId(oldId:String, newId:String):TimeRangeConfig = {
+    TimeRangeConfig(start, end, idRanges.map(_.replaceStorageId(oldId, newId)))
   }
 
 }
