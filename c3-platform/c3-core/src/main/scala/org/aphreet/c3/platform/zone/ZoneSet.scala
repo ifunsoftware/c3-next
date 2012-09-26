@@ -36,7 +36,8 @@ object IdRange{
     val splitSize = Short.MaxValue / numberOfSplits
 
     val rangeList = for (split <- 0 to numberOfSplits - 1)
-      yield IdRange(split * splitSize, (split + 1) * splitSize - 1, zones(split))
+      yield IdRange(split * splitSize,
+        if (split < numberOfSplits - 1) (split + 1) * splitSize - 1 else Short.MaxValue, zones(split))
 
     rangeList.toList
   }

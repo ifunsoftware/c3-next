@@ -5,7 +5,7 @@ import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.zone.Zone
 import scala.Some
-import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.resource.{IdGenerator, ResourceAddress}
 
 class ZoneSetTestCase  extends TestCase
 {
@@ -30,6 +30,8 @@ class ZoneSetTestCase  extends TestCase
     assertEquals(Some("value4"), rangeSet.findMappedValue(24))
     assertEquals(Some("value5"), rangeSet.findMappedValue(25))
     assertEquals(None, rangeSet.findMappedValue(30))
+
+    println(IdGenerator.trailShort("___La"))
 
   }
 
@@ -59,12 +61,15 @@ class ZoneSetTestCase  extends TestCase
 
     val zoneSet = config.createZoneSet
 
+    println(config)
+
     assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","rZ1L9jbMHZgqCvT8gNk3u5iC", startTime)))
     assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
     assertEquals(Some(Zone("0001")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 1500)))
 
     assertEquals(Some(Zone("0000")), zoneSet.zoneForAddress(ResourceAddress("12341234","111L9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
     assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","ZZZL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
+    assertEquals(Some(Zone("0002")), zoneSet.zoneForAddress(ResourceAddress("12341234","__TL9jbMHZgqCvT8gNk3u5iC", startTime + 2500)))
   }
 
 }

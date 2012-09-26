@@ -36,9 +36,11 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.access.AccessManager
 import javax.jws.{WebService, WebMethod}
-import org.aphreet.c3.platform.resource.ResourceSerializer
+import org.aphreet.c3.platform.resource.{IdGenerator, ResourceAddress, ResourceException, ResourceSerializer}
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.springframework.web.context.ContextLoader
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.aphreet.c3.platform.storage.StorageManager
 
 @Component("platformAccessService")
 @WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
@@ -46,8 +48,13 @@ class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with Platfor
 
   private var _accessManager:AccessManager = _
 
+  private var _storageManager:StorageManager = _
+
   @Autowired
   private def setAccessManager(manager:AccessManager) {_accessManager = manager}
+
+  @Autowired
+  private def setStorageManager(manager:StorageManager) {_storageManager = manager}
 
   private def accessManager:AccessManager = {
     if(_accessManager == null){
@@ -56,16 +63,49 @@ class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with Platfor
     _accessManager
   }
 
-  def getResourceAsString(ra:String):String = {
-    try{
-      val resource = accessManager get ra
+  private def storageManager:StorageManager = {
+    if (_storageManager == null){
+      _storageManager = ContextLoader.getCurrentWebApplicationContext.getBean("storageService", classOf[StorageManager])
+    }
 
-      if(resource != null)
-        ResourceSerializer.toJSON(resource, true)
-      else null
+    _storageManager
+  }
+
+  def getResourceAsString(ra:String):String = {
+
+    try{
+      val resultBuilder = new StringBuilder
+
+      try{
+        val address = ResourceAddress(ra)
+
+        resultBuilder.append("Resource info:\n")
+        resultBuilder.append("\tCreate time: " + address.time + "\n")
+        resultBuilder.append("\tRange prefix: " + IdGenerator.trailShort(address.randomPart) + "\n")
+
+        try{
+          resultBuilder.append("\nStorages: " + storageManager.storageForAddress(address).id).append("\n\n")
+        }catch {
+          case e:Throwable => resultBuilder.append("Can't find storage for resource\n\n")
+        }
+
+      }catch{
+        case e:ResourceException => resultBuilder.append(e.getMessage)
+      }
+
+      try{
+
+        val resource = accessManager get ra
+
+        resultBuilder.append(ResourceSerializer.toJSON(resource, true))
+      }catch{
+        case e:ResourceNotFoundException => resultBuilder.append("Resource not found")
+      }
+
+      resultBuilder.toString()
 
     }catch{
-      case e => throw new RemoteException(e)
+      case e: Throwable => throw new RemoteException(e.getMessage)
     }
   }
 }

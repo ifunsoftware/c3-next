@@ -9,7 +9,7 @@ class Range[E](val start:Long, val end:Long, val value:E) {
 
 }
 
-case class RangeSet[E](val ranges:List[Range[E]]){
+case class RangeSet[E](ranges:List[Range[E]]){
 
   val rangeArray = ranges.toArray
 
