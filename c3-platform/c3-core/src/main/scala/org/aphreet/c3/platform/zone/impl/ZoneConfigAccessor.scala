@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import com.springsource.json.writer.JSONWriterImpl
 import org.aphreet.c3.platform.common.JSONFormatter
 import com.springsource.json.parser.{ScalarNode, ListNode, MapNode, AntlrJSONParser}
+import org.springframework.stereotype.Component
 
+@Component
 class ZoneConfigAccessor extends ConfigAccessor[ZoneConfig]{
 
   @Autowired

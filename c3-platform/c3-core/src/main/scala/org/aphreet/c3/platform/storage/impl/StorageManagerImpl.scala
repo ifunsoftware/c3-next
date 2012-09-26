@@ -72,6 +72,7 @@ class StorageManagerImpl extends StorageManager{
   @PostConstruct
   def init(){
     log info "Starting StorageManager..."
+    updateDispatcher()
   }
 
   @PreDestroy
@@ -109,11 +110,14 @@ class StorageManagerImpl extends StorageManager{
   }
 
   def storageForResource(resource:Resource):Storage = {
-    storageDispatcher.selectStorageForAddress(ResourceAddress(resource.address))
+    storageForAddress(ResourceAddress(resource.address))
   }
 
   def storageForAddress(address:ResourceAddress):Storage = {
-    storageDispatcher.selectStorageForAddress(address)
+    storageDispatcher.selectStorageForAddress(address) match {
+      case Some(params) => storageForId(params.id)
+      case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
+    }
   }
 
   def createStorage(storageType:String, storagePath:Path){
@@ -156,9 +160,8 @@ class StorageManagerImpl extends StorageManager{
 
       factories.values.foreach(_.storages - storage)
 
-      configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
+      removeStorageFromParams(storage)
 
-      updateDispatcher()
       storage.close()
 
       removeStorageData(storage)
@@ -178,7 +181,6 @@ class StorageManagerImpl extends StorageManager{
       case Some(s) => {
         s.mode = mode
         updateStorageParams(s)
-        updateDispatcher()
       }
       case None => throw new StorageNotFoundException(id)
     }
@@ -186,10 +188,13 @@ class StorageManagerImpl extends StorageManager{
 
   def updateStorageParams(storage:Storage) {
 
-    configAccessor.update(config => storage.params :: config.filter(_.id != storage.id))
+    val oldParams = configAccessor.load
+
+    configAccessor.store(storage.params :: oldParams.filter(_.id != storage.id))
 
     storages.put(storage.id, storage)
 
+    updateDispatcher()
   }
 
   def createIndex(id:String, index:StorageIndex) {
@@ -222,8 +227,6 @@ class StorageManagerImpl extends StorageManager{
     storages.put(storage.id, storage)
 
     volumeManager register storage
-
-    updateDispatcher()
   }
 
   private def unregisterStorage(storage:Storage){
@@ -234,10 +237,8 @@ class StorageManagerImpl extends StorageManager{
 
 
   private def updateDispatcher(){
-    storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).toList)
+    storageDispatcher.setStorageParams(configAccessor.load)
   }
-
-
 
   private def isIdCorrect(newId:String):Boolean = {
 
@@ -248,8 +249,15 @@ class StorageManagerImpl extends StorageManager{
     !storageParams.exists(param => param.containsId(newId))
   }
 
+  private def removeStorageFromParams(storage:Storage){
+    configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
+
+    updateDispatcher()
+  }
+
   private def addStorageToParams(storage:Storage){
     configAccessor.update(storageParams => storage.params :: storageParams)
+    updateDispatcher()
   }
 
   private def createExistentStoragesForFactory(factory:StorageFactory){

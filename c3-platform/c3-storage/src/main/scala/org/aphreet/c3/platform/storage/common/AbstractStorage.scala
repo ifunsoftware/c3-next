@@ -44,7 +44,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
   var indexes = parameters.indexes
 
   def params:StorageParams = {
-    new StorageParams(id, parameters.path, parameters.storageType, parameters.mode, indexes, new mutable.HashMap[String, String])
+    new StorageParams(id, parameters.path, parameters.storageType, mode, indexes, new mutable.HashMap[String, String])
   }
 
   def startObjectCounter() {

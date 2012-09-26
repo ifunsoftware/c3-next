@@ -89,7 +89,7 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
       } else {
         perThread
       }
-      writers = new ResourceWriter(host, user, key, toWrite).size(size).metadata(metadata).queue(queue) :: writers
+      writers = new ResourceWriter(i, host, user, key, toWrite).size(size).metadata(metadata).queue(queue) :: writers
     }
 
 

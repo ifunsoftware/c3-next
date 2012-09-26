@@ -42,6 +42,7 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import collection.JavaConversions._
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
 import collection.mutable.HashMap
+import org.apache.commons.logging.LogFactory
 
 
 @Component
@@ -149,6 +150,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
   }
 
   def storeConfig(params: List[StorageParams], configFile: File) {
+
     this.synchronized {
 
       val swriter = new StringWriter()

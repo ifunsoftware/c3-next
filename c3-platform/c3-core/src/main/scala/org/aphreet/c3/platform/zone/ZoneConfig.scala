@@ -10,7 +10,7 @@ case class ZoneConfig(timeRanges:List[TimeRangeConfig]){
 
     timeRanges.headOption match {
       case Some(oldRange) => {
-        ZoneConfig(timeRange :: oldRange.updateEndTime(timeRange.end - 1) :: timeRanges.tail)
+        ZoneConfig(timeRange :: oldRange.updateEndTime(timeRange.start - 1) :: timeRanges.tail)
       }
       case None =>
         ZoneConfig(List(timeRange))
