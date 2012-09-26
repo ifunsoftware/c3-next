@@ -3,9 +3,7 @@ package org.aphreet.c3.platform.test.unit
 import org.aphreet.c3.platform.zone._
 import junit.framework.TestCase
 import junit.framework.Assert._
-import org.aphreet.c3.platform.test.unit.StringRange
 import org.aphreet.c3.platform.zone.Zone
-import org.aphreet.c3.platform.zone.TimeRange
 import scala.Some
 import org.aphreet.c3.platform.resource.ResourceAddress
 
@@ -55,7 +53,7 @@ class ZoneSetTestCase  extends TestCase
       IdRange.generate(List(Zone("0000"), Zone("0001"), Zone("0002"), Zone("0003")))
     )
 
-    val timeRangeList = List(timeRange0, timeRange1, timeRange2, timeRange3)
+    val timeRangeList = List(timeRange3, timeRange2, timeRange1, timeRange0)
 
     val config = ZoneConfig(timeRangeList)
 

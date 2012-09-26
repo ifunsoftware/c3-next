@@ -38,6 +38,7 @@ import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
 import com.twmacinta.util.MD5
 import java.nio.channels.{Channels, WritableByteChannel}
+import java.nio.file.{StandardCopyOption, StandardOpenOption, Files}
 
 object DataStream{
   
@@ -65,7 +66,9 @@ abstract class DataStream {
   /**
    *
    */
-  lazy val hash:String  = calculateHash
+  lazy val hash:String  = MD5.asHex(byteHash)
+
+  lazy val byteHash:Array[Byte] = calculateHash
 
   /**
    * Obviously method returns input stream to read data
@@ -97,7 +100,8 @@ abstract class DataStream {
    * It possibly should be protected, but anyway, please use #{hash} value instead
    */
   //TODO check if this method can be protected
-  def calculateHash:String
+  protected
+  def calculateHash:Array[Byte]
 
   /**
    * Writes content to the specified file.
@@ -160,21 +164,18 @@ abstract class AbstractFileDataStream extends DataStream{
   override def writeTo(targetFile:File) {
 
     if(file.getCanonicalFile != targetFile.getCanonicalFile)
-       super.writeTo(targetFile)
+      Files.copy(file.toPath, targetFile.toPath, StandardCopyOption.REPLACE_EXISTING)
     else{
       logger.warn("Trying to write file to itself, skipping")
     }
   }
 
   def stringValue:String = {
-    val out = new ByteArrayOutputStream
-
-    this writeTo out
-
-    new String(out.toByteArray)
+    new String(Files.readAllBytes(file.toPath), "UTF-8")
   }
 
-  def calculateHash:String = MD5.asHex(MD5.getHash(file))
+  protected
+  def calculateHash = MD5.getHash(file)
 
   def length:Long = file.length
 
@@ -207,21 +208,24 @@ abstract class AbstractBytesDataStream extends DataStream {
     channel.write(ByteBuffer.wrap(loadBytes))
   }
 
+  override def writeTo(targetFile:File) {
+    Files.write(targetFile.toPath, loadBytes, StandardOpenOption.TRUNCATE_EXISTING)
+  }
+
   override def getBytes:Array[Byte] = loadBytes
 
-  def calculateHash:String = MD5.asHex({
+  protected
+  def calculateHash = {
     val md5 = new MD5
     md5.Update(loadBytes)
     md5.Final
-  })
+  }
 
   def stringValue:String = new String(loadBytes)
 
   def length:Long = loadBytes.length
 
   def mimeType:String = top(MimeUtil.getMimeTypes(loadBytes))
-
-
 }
 
 /**
@@ -250,11 +254,12 @@ class StringDataStream(val value:String) extends DataStream {
   
   def length:Long = value.getBytes("UTF-8").length
 
-  def calculateHash:String = MD5.asHex({
+  protected
+  def calculateHash = {
     val md5 = new MD5
     md5.Update(value.getBytes("UTF-8"))
     md5.Final
-  })
+  }
   
   def mimeType:String = top(MimeUtil.getMimeTypes(value))
 
@@ -277,11 +282,12 @@ class EmptyDataStream extends DataStream {
   
   def length:Long = 0
 
-  def calculateHash:String = MD5.asHex({
+  protected
+  def calculateHash = {
     val md5 = new MD5
     md5.Update("".getBytes)
     md5.Final
-  })
+  }
 
   def mimeType:String = ""
 

@@ -53,31 +53,23 @@ class StorageManagerImpl extends StorageManager{
 
   val log = LogFactory.getLog(getClass)
 
-  private var storageDispatcher:StorageDispatcher = null
-
   private val storages = new HashMap[String, Storage]
 
   private val factories = new HashMap[String, StorageFactory]
 
+  @Autowired
+  var storageDispatcher:StorageDispatcher = null
+
+  @Autowired
   var configAccessor : StorageConfigAccessor = null
 
+  @Autowired
   var volumeManager : VolumeManager = null
 
+  @Autowired
   var platformConfigManager:PlatformConfigManager = null
 
   lazy val systemId = getSystemId
-
-  @Autowired
-  def setConfigAccessor(accessor:StorageConfigAccessor) {configAccessor = accessor}
-
-  @Autowired
-  def setVolumeManager(manager:VolumeManager) {volumeManager = manager}
-
-  @Autowired
-  def setStorageDispatcher(dispatcher:StorageDispatcher) {storageDispatcher = dispatcher}
-
-  @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
 
   @PostConstruct
   def init(){
@@ -126,7 +118,6 @@ class StorageManagerImpl extends StorageManager{
     val storage = factories.get(storageType) match {
       case Some(factory) => {
 
-        val rand = new scala.util.Random
         var stId = ""
 
         do{
@@ -189,6 +180,7 @@ class StorageManagerImpl extends StorageManager{
       case Some(s) => {
         s.mode = mode
         updateStorageParams(s)
+        updateDispatcher()
       }
       case None => throw new StorageNotFoundException(id)
     }

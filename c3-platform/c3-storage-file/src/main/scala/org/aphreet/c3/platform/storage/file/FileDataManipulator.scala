@@ -33,7 +33,7 @@ import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry}
 import java.io.{IOException, File}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataStream}
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
-import org.aphreet.c3.platform.storage.bdb.{DatabaseProvider, DataManipulator}
+import org.aphreet.c3.platform.storage.bdb.{BDBConfig, DatabaseProvider, DataManipulator}
 
 trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
@@ -163,5 +163,11 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     val dir2 = name charAt 2
 
     new File(getDataPath, dir0 + File.separator + dir1 + File.separator + dir2 + File.separator + name)
+  }
+
+  override protected
+  def canEmbedData(resource:Resource, config:BDBConfig):Boolean = {
+    if(resource.isVersioned)  false
+    else resource.versions(0).data.length < config.embedThreshold
   }
 }

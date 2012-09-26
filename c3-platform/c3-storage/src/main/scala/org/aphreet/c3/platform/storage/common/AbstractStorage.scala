@@ -55,22 +55,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
     log info "Started object counter for storage " + this.id
   }
 
-  def generateName(seedSource:SeedSource):String = {
-
-    val seed = seedSource.getSeed
-
-    var address = IdGenerator.generateAddress(seed, systemId, id)
-
-    while(isAddressExists(address)){
-      address = IdGenerator.generateAddress(seed, systemId, id)
-    }
-
-    address
-  }
-
-  def isAddressExists(address:String):Boolean
-
-  protected def updateObjectCount();
+  protected def updateObjectCount()
 
   override def close(){
     counter.interrupt()
@@ -85,7 +70,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
         try{
           Thread.sleep(60 * 1000)
         }catch{
-          case e => {
+          case e: Throwable => {
             log info "Object counter for storage " + storage.id + " interrupted on start"
             return
           }

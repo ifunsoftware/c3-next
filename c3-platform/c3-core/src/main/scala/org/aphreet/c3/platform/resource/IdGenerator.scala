@@ -60,17 +60,10 @@ object IdGenerator{
     generateId(0, groups, false)
   }
 
-  private def generateId(seedDiff:Long, groups:Int, withDashes:Boolean):String = {
-
-
-    val bytes = Array.ofDim[Byte](groups * 3)
-
-    val random = new Random(System.currentTimeMillis() + seedDiff * 100 + 5000)
-
-    random.nextBytes(bytes)
+  def encodeBytes(bytes:Array[Byte], withDashes:Boolean = false):String = {
+    val groups = bytes.length / 3
 
     val builder = new StringBuilder
-
 
     for(i <- 0 to groups - 1){
       val byte0 = bytes(i * 3 + 0)
@@ -92,6 +85,17 @@ object IdGenerator{
     }
 
     builder.toString()
+  }
+
+  private def generateId(seedDiff:Long, groups:Int, withDashes:Boolean):String = {
+
+    val bytes = Array.ofDim[Byte](groups * 3)
+
+    val random = new Random(System.currentTimeMillis() + seedDiff * 100 + 5000)
+
+    random.nextBytes(bytes)
+
+    encodeBytes(bytes, withDashes)
   }
 
   def trailShort(generatedString:String):Short = {

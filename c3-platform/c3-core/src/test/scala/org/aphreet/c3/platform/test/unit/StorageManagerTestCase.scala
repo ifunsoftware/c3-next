@@ -80,10 +80,10 @@ class StorageManagerTestCase extends TestCase{
 
     val storageManager = new StorageManagerImpl
     
-    storageManager.setConfigAccessor(configAccessor)
-    storageManager.setVolumeManager(volumeManager)
-    storageManager.setStorageDispatcher(storageDispatcher)
-    storageManager.setPlatformConfigManager(configManager)
+    storageManager.configAccessor = configAccessor
+    storageManager.volumeManager = volumeManager
+    storageManager.storageDispatcher = storageDispatcher
+    storageManager.platformConfigManager = configManager
 
     storageManager.init()
 
