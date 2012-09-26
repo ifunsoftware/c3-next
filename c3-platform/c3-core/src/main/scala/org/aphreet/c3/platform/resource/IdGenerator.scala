@@ -41,7 +41,7 @@ object IdGenerator{
                       "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
                       "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
                       "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-                      "Y", "Z", "~", ".")
+                      "Y", "Z", "~", "_")
 
 
   def generateAddress(seedDiff:Long, systemId:String, storageId:String) = {
@@ -117,7 +117,7 @@ object IdGenerator{
       code - 65 + 36
     }else if (code >=97 && code <=122){
       code - 97 + 10
-    } else if (code == 46) 63 else if (code == 126) 62 else {
+    } else if (code == 95) 63 else if (code == 126) 62 else {
       0
     }).toByte
 
