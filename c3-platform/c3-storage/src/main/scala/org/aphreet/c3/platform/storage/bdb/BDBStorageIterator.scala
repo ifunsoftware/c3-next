@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.storage.bdb
 
 import com.sleepycat.je._
 
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
 import collection.immutable.HashMap
@@ -256,7 +256,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if (cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
           val key = new String(databaseKey.getData)
 
-          if (AddressGenerator.isValidAddress(key)) {
+          if (ResourceAddress.isValidAddress(key)) {
             resource = Resource.fromByteArray(databaseValue.getData)
 
             if(disableFunctionFilter){
@@ -278,7 +278,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if (joinCursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
           val key = new String(databaseKey.getData)
 
-          if (AddressGenerator.isValidAddress(key)) {
+          if (ResourceAddress.isValidAddress(key)) {
             resource = Resource.fromByteArray(databaseValue.getData)
 
             if(disableFunctionFilter){

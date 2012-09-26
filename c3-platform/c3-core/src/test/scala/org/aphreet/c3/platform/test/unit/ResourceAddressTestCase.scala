@@ -28,6 +28,6 @@ class ResourceAddressTestCase extends TestCase{
 
     val address = ResourceAddress.generate(resource, "12341234")
 
-    assertEquals(AddressGenerator.RESOURCE_ADDRESS_LENGTH, address.stringValue.length)
+    assertTrue(ResourceAddress.isValidAddress(address.stringValue))
   }
 }

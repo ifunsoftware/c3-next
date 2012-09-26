@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.remote.impl
 
-import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.storage.{StorageIndex, Storage}
 import org.aphreet.c3.platform.task.TaskDescription
 import org.aphreet.c3.platform.remote.api.management.{DomainDescription, RemoteTaskDescription, StorageIndexDescription, StorageDescription}
@@ -40,7 +39,6 @@ object PlatformManagementServiceUtil{
   
   def storageToDescription(storage:Storage):StorageDescription = {
     new StorageDescription(storage.id,
-            storage.ids.toArray,
             storage.params.storageType,
             storage.path.toString,
             storage.mode.name + "(" + storage.mode.message + ")",

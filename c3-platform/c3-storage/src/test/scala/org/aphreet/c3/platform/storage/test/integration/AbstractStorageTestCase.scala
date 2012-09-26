@@ -9,7 +9,6 @@ import bdb.{AbstractBDBStorage, BDBStorageIterator}
 import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataStream, Resource}
 import junit.framework.Assert._
 import scala.Some
-import org.aphreet.c3.platform.exception.StorageException
 
 abstract class AbstractStorageTestCase extends TestCase{
 

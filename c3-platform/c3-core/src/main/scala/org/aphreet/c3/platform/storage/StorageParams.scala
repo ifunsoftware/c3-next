@@ -30,18 +30,17 @@
 package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.common.Path
-import collection.mutable.HashMap
+import collection.mutable
 
 case class StorageParams(id : String,
-                         secIds : List[String],
                          path : Path,
                          storageType : String,
                          mode : StorageMode,
                          indexes:List[StorageIndex],
-                         params : HashMap[String, String]){
+                         params : mutable.HashMap[String, String]){
   
   def containsId(checkedId:String):Boolean = 
-    id.equals(checkedId) || secIds.exists(id => id.equals(checkedId))
+    id.equals(checkedId)
   
 }
 

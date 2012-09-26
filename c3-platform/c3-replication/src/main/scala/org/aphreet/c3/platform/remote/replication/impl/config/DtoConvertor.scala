@@ -14,7 +14,6 @@ trait DtoConvertor {
 
   def storageToDescription(storage:Storage):StorageDescription = {
     new StorageDescription(storage.id,
-      storage.ids.toArray,
       storage.params.storageType,
       storage.path.toString,
       storage.mode.name + "(" + storage.mode.message + ")",

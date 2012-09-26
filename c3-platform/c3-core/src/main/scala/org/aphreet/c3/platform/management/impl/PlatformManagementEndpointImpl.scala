@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
-import org.aphreet.c3.platform.storage.dispatcher.selector.size._
 import org.aphreet.c3.platform.task._
 
 import org.springframework.stereotype.Component
@@ -24,46 +23,27 @@ import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, S
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   val log = LogFactory.getLog(getClass)
-  
-  var storageManager:StorageManager = null
-  
-  var taskManager:TaskManager = null
-  
-  var migrationManager:MigrationManager = null
-  
-  var mimeSelector:MimeTypeStorageSelector = null
-  
-  var sizeSelector:SizeStorageSelector = null
 
+  @Autowired
+  var storageManager:StorageManager = null
+
+  @Autowired
+  var taskManager:TaskManager = null
+
+  @Autowired
+  var migrationManager:MigrationManager = null
+
+  @Autowired
+  var mimeSelector:MimeTypeStorageSelector = null
+
+  @Autowired
   var configManager:PlatformConfigManager = _
 
+  @Autowired
   var statisticsManager:StatisticsManager = _
 
+  @Autowired
   var volumeManager:VolumeManager = _
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-
-  @Autowired
-  def setMigrationManager(manager:MigrationManager) {migrationManager = manager}
-  
-  @Autowired
-  def setMimeTypeStorageSelector(selector:MimeTypeStorageSelector) {mimeSelector = selector}
-  
-  @Autowired
-  def setSizeStorageSelector(selector:SizeStorageSelector) {sizeSelector = selector}
-
-  @Autowired
-  def setTaskExecutor(manager:TaskManager) {taskManager = manager}
-
-  @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) {configManager = manager}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) {statisticsManager = manager}
-
-  @Autowired
-  def setVolumeManager(manager:VolumeManager) {volumeManager = manager}
 
   def listStorages:List[Storage] = storageManager.listStorages
   
@@ -131,16 +111,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def removeTypeMapping(mimeType:String) {
     mimeSelector.removeEntry(mimeType)
   }
-  
-  def listSizeMappings:List[(Long, String, Boolean)] = sizeSelector.configEntries
-  
-  def addSizeMapping(mapping:(Long, String, Boolean)) {
-    sizeSelector.addEntry(mapping)
-  }
-  
-  def removeSizeMaping(size:Long) {
-    sizeSelector.removeEntry(size)
-  }
 
 
   def statistics:Map[String,String] = statisticsManager.fullStatistics
@@ -153,10 +123,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   def removeIndex(id:String, name:String) {
     storageManager.removeIndex(id, name)
-  }
-
-  def addStorageSecondaryId(id:String, secId:String) {
-    storageManager.addSecondaryId(id, secId)
   }
 
 }

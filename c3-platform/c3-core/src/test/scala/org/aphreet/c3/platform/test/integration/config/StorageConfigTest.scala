@@ -38,15 +38,15 @@ import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import junit.framework.Assert._
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 import java.io.File
-import collection.mutable.HashMap
+import collection.mutable
 
 class StorageConfigTest extends AbstractTestWithFileSystem{
 
 
   def testConfigPersistence() {
 
-    val paramsMap1 = new HashMap[String, String]
-    val paramsMap2 = new HashMap[String, String]
+    val paramsMap1 = new mutable.HashMap[String, String]
+    val paramsMap2 = new mutable.HashMap[String, String]
 
     for (i <- 0 to 2) {
       paramsMap1.put("nodeName-" + i, "testName-" + i)
@@ -62,11 +62,11 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     paramsMap1.put("nodeCounter", "3")
     
     val config  = List(
-      StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
+      StorageParams("11", new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
         List(
           new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
           ), paramsMap1),
-      StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
+      StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
         List(
           new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
           new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
@@ -88,11 +88,11 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     
     assertEquals(config, readConfig)
     
-    val newParams = StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RW(""),
+    val newParams = StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RW(""),
       List(
         new StorageIndex("poolindex", List("c3.pool", "c3.tags"), true, true,10003l)
         ),
-        new HashMap[String, String]
+        new mutable.HashMap[String, String]
       )
     
     
@@ -103,8 +103,8 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
   }
 
   def testIdCheck() {
-    val paramsMap1 = new HashMap[String, String]
-    val paramsMap2 = new HashMap[String, String]
+    val paramsMap1 = new mutable.HashMap[String, String]
+    val paramsMap2 = new mutable.HashMap[String, String]
 
     for (i <- 0 to 2) {
       paramsMap1.put("nodeName-" + i, "testName-" + i)
@@ -120,11 +120,11 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     paramsMap1.put("nodeCounter", "3")
 
     val config  = List(
-      StorageParams("11", List(), new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
+      StorageParams("11", new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
         List(
           new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
           ), paramsMap1),
-      StorageParams("22", List("33","44"), new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
+      StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
         List(
           new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
           new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
@@ -132,15 +132,15 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     )
 
     val idNotExists = config
-            .filter(p => p.id == "55" || p.secIds.contains("55")).isEmpty
+            .filter(p => p.id == "55").isEmpty
 
     assertTrue(idNotExists)
 
     assertFalse(config
-            .filter(p => p.id == "11" || p.secIds.contains("11")).isEmpty)
+            .filter(p => p.id == "11").isEmpty)
 
-    assertFalse(config
-                .filter(p => p.id == "33" || p.secIds.contains("33")).isEmpty)
+    assertTrue(config
+                .filter(p => p.id == "33").isEmpty)
 
   }
 }

@@ -11,6 +11,7 @@ import org.aphreet.c3.platform.zone.ZoneSet
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
+import org.aphreet.c3.platform.exception.StorageNotFoundException
 
 @Component
 class ZoneStorageDispatcher extends StorageDispatcher{
@@ -38,13 +39,19 @@ class ZoneStorageDispatcher extends StorageDispatcher{
     }
   }
 
-  def selectStorageForResource(resource: Resource) = {
-    zoneSet.zoneForAddress(ResourceAddress(resource.address)) match {
+  def selectStorageForAddress(resourceAddress: ResourceAddress) = {
+    val result = zoneSet.zoneForAddress(resourceAddress) match {
       case Some(zone) => storages.filter(storage => zone.storageIds.contains(storage.id)).headOption match {
         case Some(storage) => storage
         case None => null
       }
       case None => null
+    }
+
+    if (result == null){
+      throw new StorageNotFoundException("Can't find storage for address " + resourceAddress.stringValue)
+    }else{
+      result
     }
   }
 

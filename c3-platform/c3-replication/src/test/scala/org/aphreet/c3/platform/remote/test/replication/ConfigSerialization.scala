@@ -44,8 +44,6 @@ class ConfigSerialization extends TestCase{
 
     val platformConfig = PlatformInfo("systemId",
       ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),
-      Array(new StorageDescription("1111", Array("2222", "3333"), "PureBDBStorage", "path", "RO", 0, Array()),
-            new StorageDescription("4444", Array("5555", "6666"), "FileBDBStorage", "path", "RW", 0, Array())),
       Array(new DomainDescription("id", "name", "key", "full"),
             new DomainDescription("id2", "name2", "key2", "full")),
       Array(new Pair("sdsd", "sfdsfdsfsdf"),

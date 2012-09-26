@@ -54,12 +54,6 @@ abstract class Storage {
   var volume:Volume = null
 
   /**
-   * List of secondary IDs
-   * It determines what addresses should be looked up in this storage
-   */
-  var ids:List[String] = List()
-
-  /**
    * Primary id of this storage
    * All resources added to this storage will have this as suffix in resource address
    */

@@ -36,14 +36,9 @@ import org.aphreet.c3.platform.storage.bdb.AbstractBDBStorageFactory
 @Component
 class FileBDBStorageFactory extends AbstractBDBStorageFactory{
 
-  protected def createNewStorage(params:StorageParams, systemId:String):Storage = {
-    
-    val storage = new FileBDBStorage(params, systemId, bdbConfig)
-    storage.ids = params.secIds
-    storage
-    
-  }
-  
+  protected def createNewStorage(params:StorageParams, systemId:String):Storage =
+    new FileBDBStorage(params, systemId, bdbConfig)
+
   def name:String = FileBDBStorage.NAME
   
 }

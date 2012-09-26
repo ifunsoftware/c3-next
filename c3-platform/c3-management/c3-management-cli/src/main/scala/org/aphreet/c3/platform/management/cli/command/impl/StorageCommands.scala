@@ -30,7 +30,7 @@
 package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, StorageIndexDescription, StorageDescription}
+import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, StorageDescription}
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 
 object StorageCommands extends Commands{
@@ -173,12 +173,6 @@ class ShowStorageCommand extends Command {
       if(storages.size > 0){
         val storage = storages(0)
 
-        val storageIds = if(storage.ids != null){
-          storage.ids.foldRight("")(_ + ", " + _)
-        }else{
-          ""
-        }
-
         val indexes = if(storage.indexes != null){
           storage.indexes.map(idx => {
             idx.name + " (" + idx.fields.reduceRight(_ + ", " + _) + ") sys:" + idx.system + " mul:" + idx.multi + " date:" + idx.created
@@ -189,7 +183,6 @@ class ShowStorageCommand extends Command {
 
         "Storage:\n" +
                 "Id     : " + storage.id + "\n" +
-                "Sec ids: " + storageIds + "\n" +
                 "Type   : " + storage.storageType + "\n" +
                 "Path   : " + storage.path + "\n" +
                 "Mode   : " + storage.mode + "\n" +

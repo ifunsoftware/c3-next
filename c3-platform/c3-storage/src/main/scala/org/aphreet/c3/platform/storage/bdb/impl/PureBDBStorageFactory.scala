@@ -37,13 +37,9 @@ import javax.annotation.{PreDestroy, PostConstruct}
 @Component
 class PureBDBStorageFactory extends AbstractBDBStorageFactory{
 
-  protected def createNewStorage(params:StorageParams, systemId:String):Storage = {
-    
-    val storage = new PureBDBStorage(params, systemId, bdbConfig)
-    storage.ids = params.secIds
-    storage
-    
-  }
+  protected def createNewStorage(params:StorageParams, systemId:String):Storage =
+    new PureBDBStorage(params, systemId, bdbConfig)
+
 
   @PostConstruct
   override def init() {

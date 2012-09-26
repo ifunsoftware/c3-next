@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.access.impl
 
 import org.aphreet.c3.platform.exception._
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
 
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,9 +44,10 @@ import org.apache.commons.logging.LogFactory
 import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
-import collection.mutable.HashSet
 import eu.medsea.util.EncodingGuesser
 import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
+import org.aphreet.c3.platform.common.Constants
+import collection.mutable
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
@@ -67,7 +68,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   val log = LogFactory.getLog(getClass)
 
-  val resourceOwners = new HashSet[ResourceOwner]
+  val resourceOwners = new mutable.HashSet[ResourceOwner]
+
+  lazy val systemId = getSystemId
 
   {
     log info "Starting AccessManager"
@@ -105,7 +108,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
 
     try{
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+
+      val storage = storageManager.storageForAddress(ResourceAddress(ra))
 
       if(!storage.mode.allowRead){
         throw new StorageException("Storage is not readable")
@@ -137,6 +141,8 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
+    resource.address = ResourceAddress.generate(resource, systemId).stringValue
+
 
     val storage = storageManager.storageForResource(resource)
 
@@ -163,7 +169,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
 
     try{
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(resource.address))
+      val storage = storageManager.storageForAddress(ResourceAddress(resource.address))
 
       if(storage.mode.allowWrite){
         resource.calculateCheckSums
@@ -204,7 +210,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
 
     try{
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(ra))
+      val storage = storageManager.storageForAddress(ResourceAddress(ra))
 
       if(storage.mode.allowWrite){
 
@@ -257,12 +263,12 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       react{
         case UpdateMetadataMsg(address, metadata) =>{
           try{
-            val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
+            val storage = storageManager.storageForAddress(ResourceAddress(address))
             if(storage != null){
               storage.appendSystemMetadata(address, metadata)
             }
           }catch{
-            case e=> log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
+            case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
         }
         case DestroyMsg => {
@@ -301,4 +307,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     EncodingGuesser.setSupportedEncodings(encodings)
     TextMimeDetector.setPreferredEncodings(Array("UTF-8"))
   }
+
+  private def getSystemId:String = {
+      configManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
+        case Some(value) => value
+        case None => throw new ConfigurationException("Failed to get systemId from params")
+      }
+    }
 }
