@@ -209,7 +209,7 @@ abstract class AbstractBytesDataStream extends DataStream {
   }
 
   override def writeTo(targetFile:File) {
-    Files.write(targetFile.toPath, loadBytes, StandardOpenOption.TRUNCATE_EXISTING)
+    Files.write(targetFile.toPath, loadBytes, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
   }
 
   override def getBytes:Array[Byte] = loadBytes
