@@ -1,6 +1,5 @@
-package org.aphreet.c3.platform.storage.file.test.integration
+package org.aphreet.c3.platform.storage.test.integration
 
-import org.aphreet.c3.platform.storage.test.integration.AbstractStorageTestCase
 import org.aphreet.c3.platform.storage.{RW, StorageParams, Storage}
 import org.aphreet.c3.platform.storage.file.FileBDBStorage
 import collection.mutable
@@ -12,5 +11,5 @@ class EmbedFileBDBStorageTest  extends AbstractStorageTestCase{
     new FileBDBStorage(
       new StorageParams(id, List(), storagePath, "FileBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
       "12341234",
-      new BDBConfig(true, 20, 0))
+      new BDBConfig(true, 20, 5120))
 }

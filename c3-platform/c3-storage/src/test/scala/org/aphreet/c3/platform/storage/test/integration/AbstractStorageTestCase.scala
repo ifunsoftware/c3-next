@@ -112,7 +112,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val resource = createResource()
+      val resource = createResource(versioned = true)
       resource.isVersioned = true
 
       val ra = storage.add(resource)
@@ -143,7 +143,6 @@ abstract class AbstractStorageTestCase extends TestCase{
     try{
 
       val resource = createResource()
-      resource.isVersioned = false
 
       val ra = storage.add(resource)
 
@@ -564,12 +563,12 @@ abstract class AbstractStorageTestCase extends TestCase{
     true
   }
 
-  private def createResource(data:String = ""):Resource = {
+  private def createResource(data:String = "", versioned:Boolean=false):Resource = {
 
     val resource = new Resource
     resource.metadata.put("key", "some_value")
     resource.systemMetadata.put("key1", "some_value")
-    resource.isVersioned = true
+    resource.isVersioned = versioned
 
     val resVersion = new ResourceVersion
     resVersion.systemMetadata.put("key2", "some_other_value")
