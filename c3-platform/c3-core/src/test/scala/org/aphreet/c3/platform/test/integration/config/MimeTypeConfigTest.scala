@@ -42,9 +42,9 @@ class MimeTypeConfigTest extends AbstractTestWithFileSystem{
     val configAccessor = new MimeTypeConfigAccessor
     
     val config = Map(
-    	"*/*" -> ("PureBDBStorage", false),
-    	"image/*" -> ("FileBDBStorage", true),
-    	"image/png" -> ("PureBDBStorage", true)
+    	"*/*" -> false,
+    	"image/*" -> true,
+    	"image/png" -> true
     )
 
     val fileName = "config.json"

@@ -259,7 +259,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listTypeMappings:Array[TypeMapping] =
     try{
       (for(entry <- managementEndpoint.listTypeMappings)
-      yield new TypeMapping(entry._1, entry._2, entry._3)).toArray
+      yield new TypeMapping(entry._1, entry._2)).toArray
     }catch{
       case e: Throwable => {
         e.printStackTrace()
@@ -267,9 +267,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean) {
+  def addTypeMapping(mimeType:String, versioned:java.lang.Boolean) {
     try {
-      managementEndpoint.addTypeMapping((mimeType, storage, versioned.booleanValue))
+      managementEndpoint.addTypeMapping((mimeType, versioned.booleanValue))
     } catch {
       case e: Throwable => {
         e.printStackTrace()

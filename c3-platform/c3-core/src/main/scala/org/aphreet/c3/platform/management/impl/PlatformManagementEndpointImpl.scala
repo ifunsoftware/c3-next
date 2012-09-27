@@ -100,11 +100,11 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     }
   }
   
-  def listTypeMappings:List[(String,String,Boolean)] = {
+  def listTypeMappings:List[(String, Boolean)] = {
     mimeSelector.configEntries
   }
   
-  def addTypeMapping(mapping:(String, String, Boolean)) {
+  def addTypeMapping(mapping:(String, Boolean)) {
     mimeSelector.addEntry(mapping)
   }
   

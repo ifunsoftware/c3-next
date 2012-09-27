@@ -34,8 +34,7 @@ import reflect.BeanProperty
 
 class TypeMapping(
         @BeanProperty var mimeType:String,
-        @BeanProperty var storage:String,
         @BeanProperty var versioned:java.lang.Boolean) extends java.io.Serializable{
 
-  def this() = this(null, null, null)
+  def this() = this(null, null)
 }

@@ -47,14 +47,13 @@ class AddTypeMappingCommand extends Command{
   override
   def execute(params:List[String], management:PlatformManagementService):String = {
     if(params.size < 3)
-      wrongParameters("create type mapping <mimetype> <storagetype> <versioned>")
+      wrongParameters("create type mapping <mimetype> <versioned>")
     else{
 
       val mimeType = params.head
-      val storageType = params.tail.head
-      val versioned = (params(2) == "true")
+      val versioned = (params(1) == "true")
 
-      management.addTypeMapping(mimeType, storageType, versioned)
+      management.addTypeMapping(mimeType, versioned)
 
       "Type mapping added"
     }
@@ -88,7 +87,7 @@ class ListTypeMappingCommand extends Command{
     val builder = new StringBuilder
 
     for(mapping <- management.listTypeMappings)
-      builder.append(String.format("%20s %20s %b\n", mapping.mimeType, mapping.storage, mapping.versioned))
+      builder.append(String.format("%20s %b\n", mapping.mimeType, mapping.versioned))
 
 
     builder.toString()

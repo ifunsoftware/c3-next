@@ -48,6 +48,7 @@ import eu.medsea.util.EncodingGuesser
 import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
 import org.aphreet.c3.platform.common.Constants
 import collection.mutable
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelector
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
@@ -65,6 +66,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   @Autowired
   var accessCache:AccessCache = _
+
+  @Autowired
+  var mimeStorageSelector :MimeTypeStorageSelector = _
 
   val log = LogFactory.getLog(getClass)
 
@@ -139,9 +143,13 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       case Some(x) => if(!x.isEmpty) x else resource.versions(0).data.mimeType
     }
 
+
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.address = ResourceAddress.generate(resource, systemId).stringValue
+
+    val isVersioned = mimeStorageSelector.storageTypeForResource(resource)
+    resource.isVersioned = isVersioned
 
 
     val storage = storageManager.storageForResource(resource)

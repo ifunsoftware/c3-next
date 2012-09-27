@@ -28,9 +28,10 @@ trait PlatformManagementService {
 
   def setTaskMode(taskId:String, mode:String)
 
+
   def listTypeMappings:Array[TypeMapping]
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean)
+  def addTypeMapping(mimeType:String, versioned:java.lang.Boolean)
 
   def removeTypeMapping(mimeType:String)
 

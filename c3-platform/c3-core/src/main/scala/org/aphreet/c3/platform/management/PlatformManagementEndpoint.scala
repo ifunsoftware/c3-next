@@ -38,9 +38,9 @@ trait PlatformManagementEndpoint {
   def listVolumes:List[Volume]
   
   
-  def listTypeMappings:List[(String, String, Boolean)]
+  def listTypeMappings:List[(String, Boolean)]
   
-  def addTypeMapping(mapping:(String, String, Boolean))
+  def addTypeMapping(mapping:(String, Boolean))
   
   def removeTypeMapping(mimeType:String)
 
