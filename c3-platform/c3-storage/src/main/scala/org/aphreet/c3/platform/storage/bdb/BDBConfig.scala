@@ -31,8 +31,10 @@ package org.aphreet.c3.platform.storage.bdb
 
 class BDBConfig(val txNoSync:Boolean,
                 val cachePercent:Int,
-                val embedThreshold:Int){
+                val embedThreshold:Int,
+                val fileThreshold:Int){
 
   override def toString =
-    "[txNoSync:" + txNoSync  + ", cachePercent:" + cachePercent + ", embedTreshold:" + embedThreshold + "]"
+    "[txNoSync:" + txNoSync  + ", cachePercent:" + cachePercent +
+      ", embedTreshold:" + embedThreshold + ", fileThreshold:" + fileThreshold + "]"
 }

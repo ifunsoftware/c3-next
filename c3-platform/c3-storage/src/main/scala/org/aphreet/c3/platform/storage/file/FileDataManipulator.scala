@@ -39,7 +39,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
   def getDataPath:File
 
-  override protected def storeData(resource:Resource){
+  override def storeData(resource:Resource){
 
     if (!resource.embedData){
       if(resource.isVersioned){
@@ -59,7 +59,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     }
   }
 
-  override protected def putData(resource:Resource){
+  override def putData(resource:Resource){
     if (!resource.embedData){
       for(version <- resource.versions){
         val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
@@ -85,12 +85,12 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     }
   }
 
-  override protected def deleteData(ra:String){
+  override def deleteData(ra:String){
 
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = getDatabase(true).get(null, key, value, LockMode.DEFAULT)
+    val status = getRWDatabase.get(null, key, value, LockMode.DEFAULT)
 
     if(status == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
@@ -165,7 +165,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     new File(getDataPath, dir0 + File.separator + dir1 + File.separator + dir2 + File.separator + name)
   }
 
-  override protected
+  override
   def canEmbedData(resource:Resource, config:BDBConfig):Boolean = {
     if(resource.isVersioned)  false
     else resource.versions(0).data.length < config.embedThreshold

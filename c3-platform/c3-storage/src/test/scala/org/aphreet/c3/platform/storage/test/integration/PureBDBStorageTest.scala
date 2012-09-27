@@ -12,6 +12,6 @@ class PureBDBStorageTest extends AbstractStorageTestCase{
     new PureBDBStorage(
       new StorageParams(id, storagePath, "PureBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
       "12341234",
-      new BDBConfig(true, 20, 0))
+      new BDBConfig(true, 20, 0, 102400))
 
 }

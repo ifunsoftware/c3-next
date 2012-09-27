@@ -37,7 +37,7 @@ import scala.Some
 
 trait BDBDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy{
 
-  override protected def storeData(resource: Resource, tx: Transaction) {
+  override def storeData(resource: Resource, tx: Transaction) {
 
     if (!resource.embedData){
       if (resource.isVersioned) {
@@ -58,7 +58,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     }
   }
 
-  override protected def putData(resource: Resource, tx: Transaction) {
+  override def putData(resource: Resource, tx: Transaction) {
 
     if (!resource.embedData){
       for (version <- resource.versions) {
@@ -141,7 +141,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
   }
 
-  override protected
+  override
   def canEmbedData(resource:Resource, config:BDBConfig):Boolean = {
     if(resource.isVersioned)  false
     else resource.versions(0).data.length < config.embedThreshold

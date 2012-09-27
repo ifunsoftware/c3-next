@@ -13,5 +13,5 @@ class FileBDBStorageTest extends AbstractStorageTestCase{
     new FileBDBStorage(
       new StorageParams(id, storagePath, "FileBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
       "12341234",
-      new BDBConfig(true, 20, 0))
+      new BDBConfig(true, 20, 0, 102400))
 }
