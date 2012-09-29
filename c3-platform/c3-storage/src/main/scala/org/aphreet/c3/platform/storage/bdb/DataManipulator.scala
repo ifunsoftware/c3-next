@@ -36,24 +36,24 @@ trait  DataManipulator {
 
   def loadData(resource:Resource)
 
-  protected def storeData(resource:Resource, tx:Transaction) {
+  def storeData(resource:Resource, tx:Transaction) {
     storeData(resource)
   }
 
-  protected def storeData(resource:Resource) {}
+  def storeData(resource:Resource) {}
 
-  protected def deleteData(ra:String, tx:Transaction) {
+  def deleteData(ra:String, tx:Transaction) {
     deleteData(ra)
   }
 
-  protected def deleteData(ra:String) {}
+  def deleteData(ra:String) {}
 
-  protected def putData(resource:Resource) {}
+  def putData(resource:Resource) {}
 
-  protected def putData(resource:Resource, tx:Transaction) {
+  def putData(resource:Resource, tx:Transaction) {
     putData(resource)
   }
 
-  protected def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false
+  def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false
   
 }

@@ -15,4 +15,6 @@ Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  org.apache.commons.logging;version="[1.1.1,1.1.1]"
 Export-Package: org.aphreet.c3.platform.storage.common,
  org.aphreet.c3.platform.storage.bdb
+ org.aphreet.c3.platform.storage.file
+ org.aphreet.c3.platform.storage.composite
 

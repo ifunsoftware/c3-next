@@ -15,7 +15,6 @@
     <modules>
         <module>c3-core</module>
         <module>c3-storage</module>
-        <module>c3-storage-file</module>
         <module>c3-filesystem</module>
         <module>c3-access-control</module>
         <module>c3-search</module>

@@ -35,9 +35,6 @@ import org.aphreet.c3.platform.client.access.http.{C3FileHttpAccessor, C3HttpAcc
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
-import xml.XML
-import java.net.URLEncoder
-import jline.{ConsoleReader, History}
 
 class FSClient(override val args:Array[String]) extends CLI(args){
 
@@ -94,7 +91,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
         case "rm" => rm(list.tail)
         case "setmd" => setmd(list.tail)
         case "exit" => System.exit(0)
-        case "help" => help
+        case "help" => help()
         case "mv" => mv(list.tail)
 
         case _ => println("Unknown command. Type help to show available commands")
@@ -105,7 +102,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     }
   }
 
-  def help = {
+  def help(){
     println("cd <path>                           - Change current directory")
     println("download <remote file> <local file> - download remote file content")
     println("exit                                - Exit from shell")
@@ -147,7 +144,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
     if(!isDirectory(directory)){
       println(directory + " is not a directory")
-      return Unit
+      return
     }
 
     val directoryData = fileAccessor.getNodeDataAsXml(directory)
@@ -216,7 +213,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
   }
 
-  def info(args:List[String]) = {
+  def info(args:List[String]) {
     val metadata = fileAccessor.getNodeMetadata(workDir(args))
     println(metadata)
   }

@@ -33,6 +33,6 @@ import org.aphreet.c3.platform.resource.Resource
 
 trait StorageSelector {
 
-  def storageTypeForResource(resource:Resource):(String, Boolean)
+  def storageTypeForResource(resource:Resource):Boolean
   
 }

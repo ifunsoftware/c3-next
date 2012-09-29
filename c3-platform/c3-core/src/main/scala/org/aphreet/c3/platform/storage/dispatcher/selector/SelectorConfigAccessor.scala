@@ -42,7 +42,7 @@ import com.springsource.json.writer.JSONWriterImpl
 
 import org.springframework.beans.factory.annotation.Autowired
 
-abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, Boolean)]] {
+abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, Boolean]] {
   var configManager: PlatformConfigManager = null
 
   @Autowired
@@ -50,23 +50,19 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
 
   def configDir: File = configManager.configDir
 
-  def defaultConfig:Map[T, (String, Boolean)] = Map()
+  def defaultConfig:Map[T, Boolean] = Map()
 
-  def loadConfig(configFile: File): Map[T, (String, Boolean)] = {
+  def loadConfig(configFile: File): Map[T, Boolean] = {
 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
 
     val entries =
       for (key <- asScalaSet(node.getKeys))
-        yield (
-            keyFromString(key),
-            (
-                    getArrayValue[String](node, key, 0),
-                    getArrayValue[Boolean](node, key, 1)
-                    )
-
-            )
-    Map[T, (String, Boolean)]() ++ entries
+      yield (
+        keyFromString(key),
+        getArrayValue[Boolean](node, key, 0)
+        )
+    Map[T, Boolean]() ++ entries
 
   }
 
@@ -79,7 +75,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
     node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[E]
   }
 
-  def storeConfig(data: Map[T, (String, Boolean)], configFile: File) {
+  def storeConfig(data: Map[T, Boolean], configFile: File) {
     this.synchronized {
 
 
@@ -92,8 +88,7 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, (String, 
         for (entry <- data) {
           writer.key(keyToString(entry._1))
           writer.array
-          writer.value(entry._2._1)
-          writer.value(entry._2._2)
+          writer.value(entry._2)
           writer.endArray
         }
 

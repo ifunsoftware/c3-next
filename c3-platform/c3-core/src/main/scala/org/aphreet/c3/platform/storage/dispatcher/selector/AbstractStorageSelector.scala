@@ -40,11 +40,11 @@ abstract class AbstractStorageSelector[T] extends StorageSelector{
     updateConfig(configAccessor.load)
   }
   
-  def configEntries:List[(T, String, Boolean)]
+  def configEntries:List[(T, Boolean)]
   
-  def addEntry(entry:(T, String, Boolean)) {
+  def addEntry(entry:(T, Boolean)) {
     configAccessor.update(entries => entries.filter(_._1 != entry._1) + 
-    		((entry._1, (entry._2, entry._3)))
+    		((entry._1, entry._2))
     )
     updateConfig(configAccessor.load)
   }
@@ -54,6 +54,6 @@ abstract class AbstractStorageSelector[T] extends StorageSelector{
 	  updateConfig(configAccessor.load)
   }
   
-  protected def updateConfig(config:Map[T, (String, Boolean)])
+  protected def updateConfig(config:Map[T, Boolean])
   
 }

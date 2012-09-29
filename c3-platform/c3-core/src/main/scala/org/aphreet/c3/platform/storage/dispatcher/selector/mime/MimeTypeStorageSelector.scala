@@ -39,23 +39,24 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
 import org.aphreet.c3.platform.storage.dispatcher.selector.AbstractStorageSelector
+import collection.mutable
 
 @Component
 class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
 
-  private var typeMap = new HashMap[String, (String, Boolean)]
+  private var typeMap = new mutable.HashMap[String, Boolean]
   
   @Autowired
   def setConfigAccessor(accessor:MimeTypeConfigAccessor) {configAccessor = accessor}
   
-  override def storageTypeForResource(resource:Resource):(String,Boolean) = {
+  override def storageTypeForResource(resource:Resource):Boolean = {
     
     val mime = new MimeType(resource.mimeType)
 
     storageTypeForMimeType(mime) 
   }
   
-  def storageTypeForMimeType(mime:MimeType):(String,Boolean) = {
+  def storageTypeForMimeType(mime:MimeType):Boolean = {
     val mediaType = mime.getMediaType
     val subType = mime.getSubType
     
@@ -65,18 +66,18 @@ class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
         case Some(entry) => entry
         case None => typeMap.get("*/*") match {
           case Some(entry) => entry
-          case None => null
+          case None => true
         }
       }
     }
   }
   
-  override def configEntries:List[(String, String, Boolean)] = 
-    typeMap.map(entry => (entry._1, entry._2._1, entry._2._2)).toList
+  override def configEntries:List[(String, Boolean)] =
+    typeMap.map(entry => (entry._1, entry._2)).toList
   
   
-  override def updateConfig(config:Map[String, (String,Boolean)]) {
-    val map = new HashMap[String, (String,Boolean)]
+  override def updateConfig(config:Map[String, Boolean]) {
+    val map = new mutable.HashMap[String, Boolean]
     for(entry <- config)
       map += entry
     

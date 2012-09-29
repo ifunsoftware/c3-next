@@ -34,7 +34,7 @@ import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import java.util.Random
 import java.util.concurrent.LinkedBlockingQueue
 
-class ResourceWriter(val host:String, val user:String, val key:String, val count:Int) extends Runnable {
+class ResourceWriter(val number:Int, val host:String, val user:String, val key:String, val count:Int) extends Runnable {
 
   var _size:Int = 1024
   var _md:Map[String, String] = Map()
@@ -42,6 +42,8 @@ class ResourceWriter(val host:String, val user:String, val key:String, val count
   var written:Int = 0
   var errors:Int = 0
   var done:Boolean = false
+
+  val random = new Random(System.currentTimeMillis() + number * 1111)
 
   def size(s:Int):ResourceWriter = {_size = s; this}
 
@@ -71,7 +73,6 @@ class ResourceWriter(val host:String, val user:String, val key:String, val count
   def generateDataOfSize(size:Int):Array[Byte] = {
 
     val result = new Array[Byte](size)
-    val random = new Random(System.currentTimeMillis)
     random.nextBytes(result)
 
     result

@@ -6,10 +6,9 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage._
 import collection.mutable
 import bdb.{AbstractBDBStorage, BDBStorageIterator}
-import org.aphreet.c3.platform.resource.{ResourceVersion, DataStream, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataStream, Resource}
 import junit.framework.Assert._
 import scala.Some
-import org.aphreet.c3.platform.exception.StorageException
 
 abstract class AbstractStorageTestCase extends TestCase{
 
@@ -39,7 +38,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val resource = createResource
+      val resource = createResource()
 
       val lengthString = resource.versions(0).data.length.toString
 
@@ -77,7 +76,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val resource = createResource
+      val resource = createResource()
 
       val ra = storage.add(resource)
 
@@ -112,7 +111,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val resource = createResource
+      val resource = createResource(versioned = true)
       resource.isVersioned = true
 
       val ra = storage.add(resource)
@@ -142,8 +141,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val resource = createResource
-      resource.isVersioned = false
+      val resource = createResource()
 
       val ra = storage.add(resource)
 
@@ -170,7 +168,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     val storage = createStorage("1003")
 
     try{
-      val resource = createResource
+      val resource = createResource()
 
       val ra = storage.add(resource)
 
@@ -200,13 +198,13 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val res0 = createResource
+      val res0 = createResource("1")
       val ra0 = storage.add(res0)
 
-      val res1 = createResource
+      val res1 = createResource("2")
       val ra1 = storage.add(res1)
 
-      val res2 = createResource
+      val res2 = createResource("3")
       val ra2 = storage.add(res2)
 
 
@@ -251,15 +249,15 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val res0 = createResource
+      val res0 = createResource("1")
       res0.metadata.put("pool", "pool0")
       val ra0 = storage.add(res0)
 
-      val res1 = createResource
+      val res1 = createResource("2")
       res1.metadata.put("pool", "pool1")
       storage.add(res1)
 
-      val res2 = createResource
+      val res2 = createResource("3")
       res2.metadata.put("pool", "pool0")
       val ra2 = storage.add(res2)
 
@@ -301,15 +299,15 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val res0 = createResource
+      val res0 = createResource("1")
       res0.systemMetadata.put("pool", "pool0")
       val ra0 = storage.add(res0)
 
-      val res1 = createResource
+      val res1 = createResource("2")
       res1.systemMetadata.put("pool", "pool1")
       storage.add(res1)
 
-      val res2 = createResource
+      val res2 = createResource("3")
       res2.systemMetadata.put("pool", "pool0")
       val ra2 = storage.add(res2)
 
@@ -352,27 +350,27 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val res0 = createResource
+      val res0 = createResource("1")
       res0.metadata.put("pool", "pool0")
       res0.systemMetadata.put("c3.pool", "pool0")
       val ra0 = storage.add(res0)
 
-      val res1 = createResource
+      val res1 = createResource("2")
       res1.metadata.put("pool", "pool0")
       res1.systemMetadata.put("c3.pool", "pool1")
       storage.add(res1)
 
-      val res2 = createResource
+      val res2 = createResource("3")
       res2.metadata.put("pool", "pool0")
       res2.systemMetadata.put("c3.pool", "pool0")
       val ra2 = storage.add(res2)
 
-      val res4 = createResource
+      val res4 = createResource("4")
       res4.metadata.put("pool", "pool1")
       res4.systemMetadata.put("c3.pool", "pool0")
       storage.add(res4)
 
-      val res5 = createResource
+      val res5 = createResource("5")
       res5.systemMetadata.put("c3.pool", "pool0")
       storage.add(res5)
 
@@ -415,27 +413,27 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
 
-      val res0 = createResource
+      val res0 = createResource("1")
       res0.metadata.put("pool", "pool0")
       res0.systemMetadata.put("c3.pool", "pool0")
       val ra0 = storage.add(res0)
 
-      val res1 = createResource
+      val res1 = createResource("2")
       res1.metadata.put("pool", "pool0")
       res1.systemMetadata.put("c3.pool", "pool1")
       storage.add(res1)
 
-      val res2 = createResource
+      val res2 = createResource("3")
       res2.metadata.put("pool", "pool0")
       res2.systemMetadata.put("c3.pool", "pool0")
       val ra2 = storage.add(res2)
 
-      val res4 = createResource
+      val res4 = createResource("4")
       res4.metadata.put("pool", "pool1")
       res4.systemMetadata.put("c3.pool", "pool0")
       storage.add(res4)
 
-      val res5 = createResource
+      val res5 = createResource("5")
       res5.systemMetadata.put("c3.pool", "pool0")
       storage.add(res5)
 
@@ -474,7 +472,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     val storage = createStorage("1005")
 
     try{
-      storage.add(createResource)
+      storage.add(createResource())
       println(storage.size)
     }finally storage.close()
   }
@@ -483,7 +481,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     val storage0 = createStorage("1006")
     val storage1 = createStorage("1007")
 
-    val resource = createResource
+    val resource = createResource()
     try{
       val ra = storage0.add(resource)
 
@@ -564,18 +562,21 @@ abstract class AbstractStorageTestCase extends TestCase{
     true
   }
 
-  private def createResource:Resource = {
+  private def createResource(data:String = "", versioned:Boolean=false):Resource = {
+
     val resource = new Resource
     resource.metadata.put("key", "some_value")
     resource.systemMetadata.put("key1", "some_value")
-    resource.isVersioned = true
+    resource.isVersioned = versioned
 
     val resVersion = new ResourceVersion
     resVersion.systemMetadata.put("key2", "some_other_value")
 
-    resVersion.data = DataStream.create("This is data")
+    resVersion.data = DataStream.create("This is data " + data)
 
     resource.addVersion(resVersion)
+
+    resource.address = ResourceAddress.generate(resource, "12341234").stringValue
 
     resource
   }

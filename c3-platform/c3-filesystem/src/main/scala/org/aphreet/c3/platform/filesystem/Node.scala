@@ -187,6 +187,7 @@ object Directory{
 
   def emptyDirectory(domainId:String, name:String):Directory = {
     val resource = new Resource
+    resource.isVersioned = false
     resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
 
     if(name != null){

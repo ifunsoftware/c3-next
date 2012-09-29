@@ -188,7 +188,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     env
   }
 
-  protected def failuresArePossible(block: => Any) {
+  def failuresArePossible(block: => Any) {
     //Do nothing here
     //Nothing to do if operation falls
     block

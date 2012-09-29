@@ -32,16 +32,15 @@ package org.aphreet.c3.platform.remote.replication.impl.data
 
 import actors.remote.RemoteActor._
 import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
+import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.storage.StorageManager
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
-import actors.{AbstractActor, OutputChannel, Actor}
+import actors.AbstractActor
 import actors.remote.{RemoteActor, Node}
 import impl.config.ConfigurationManager
 import org.aphreet.c3.platform.access.AccessMediator
@@ -56,15 +55,21 @@ class ReplicationTargetActor extends WatchedActor{
 
   val WORKERS_COUNT = 8
 
+  @Autowired
   var accessMediator:AccessMediator = null
 
+  @Autowired
   var storageManager:StorageManager = null
 
+  @Autowired
   var configurationManager:ConfigurationManager = null
 
+  @Autowired
   var domainManager:DomainManager = null
 
+  @Autowired
   var sourceReplicationActor:ReplicationSourceActor = null
+
 
   var replicationPort:Int = -1
 
@@ -80,22 +85,7 @@ class ReplicationTargetActor extends WatchedActor{
 
   var localSystemId:String = _
 
-  @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
-
-  @Autowired
-  def setSourceReplicationActor(actor:ReplicationSourceActor) {sourceReplicationActor = actor}
-
-  @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
-
-  @Autowired
-  def setDomainManager(manager:DomainManager) {domainManager = manager}
-
-  def setUseSecureDataConnection(use:Boolean) = {
+  def setUseSecureDataConnection(use:Boolean) {
     secureDataConnection = use
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
   }
@@ -124,7 +114,7 @@ class ReplicationTargetActor extends WatchedActor{
     log info "ReplicationTargetActor started"
   }
 
-  def updateConfig(config:Map[String, ReplicationHost]) = {
+  def updateConfig(config:Map[String, ReplicationHost]) {
     this.config = config
 
     workers.foreach(_.updateConfig(this.config))

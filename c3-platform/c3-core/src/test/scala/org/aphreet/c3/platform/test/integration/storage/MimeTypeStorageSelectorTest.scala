@@ -45,9 +45,9 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
     val configAccessor = new MimeTypeConfigAccessor
     
     val config = Map(
-    	"*/*" -> ("PureBDBStorage", false),
-    	"image/*" -> ("FileBDBStorage", true),
-    	"image/png" -> ("PureBDBStorage", true)
+    	"*/*" -> false,
+    	"image/*" -> true,
+    	"image/png" -> true
     )
 
     val configFile = "c3-mime-types.json"
@@ -64,9 +64,9 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
     selector.setConfigAccessor(configAccessor)
     selector.init()
     
-    assertEquals(("PureBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/png")))
-    assertEquals(("FileBDBStorage", true),selector.storageTypeForMimeType(new MimeType("image/jpeg")))
-    assertEquals(("PureBDBStorage", false),selector.storageTypeForMimeType(new MimeType("application/pdf")))
+    assertEquals(true,selector.storageTypeForMimeType(new MimeType("image/png")))
+    assertEquals(true,selector.storageTypeForMimeType(new MimeType("image/jpeg")))
+    assertEquals(false,selector.storageTypeForMimeType(new MimeType("application/pdf")))
     
   }
 }

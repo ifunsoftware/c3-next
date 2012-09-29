@@ -87,14 +87,6 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     size
   }
-  
-  def isAddressExists(address:String):Boolean = {
-
-    val key = new DatabaseEntry(address.getBytes)
-    val value = new DatabaseEntry()
-
-    getRODatabase.get(null, key, value, LockMode.DEFAULT) == OperationStatus.SUCCESS
-  }
 
   def get(ra:String):Option[Resource] = {
 
@@ -114,10 +106,6 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
     val tx = getEnvironment.beginTransaction(null, null)
 
-    val ra = generateName(TransactionBasedSeedSource(tx))
-
-    resource.address = ra
-
     preSave(resource)
 
     resource.embedData = canEmbedData(resource, config)
@@ -125,7 +113,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
     try{
       storeData(resource, tx)
 
-      val key = new DatabaseEntry(ra.getBytes)
+      val key = new DatabaseEntry(resource.address.getBytes)
       val value = new DatabaseEntry(resource.toByteArray)
 
       failuresArePossible{
@@ -133,7 +121,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
         val status = getRWDatabase.putNoOverwrite(tx, key, value)
 
         if(status != OperationStatus.SUCCESS){
-          throw new StorageException("Failed to store resource in database, operation status is: " + status.toString + "; address: " + ra)
+          throw new StorageException("Failed to store resource in database, operation status is: " + status.toString + "; address: " + resource.address)
         }
       }
 
@@ -141,7 +129,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       postSave(resource)
 
-      ra
+      resource.address
     }catch{
       case e: Throwable => {
         tx.abort()

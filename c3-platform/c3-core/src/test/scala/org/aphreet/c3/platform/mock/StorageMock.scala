@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.mock
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage._
 import collection.mutable.HashMap
 
@@ -39,7 +39,7 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def id:String = mockId
 
-  def add(resource:Resource):String = AddressGenerator.addressForStorage(mockId, 123)
+  def add(resource:Resource):String = ResourceAddress("12345678", "12345678", System.currentTimeMillis()).stringValue
 
   def get(ra:String):Option[Resource] = null
 
@@ -51,7 +51,7 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def appendSystemMetadata(ra:String, metadata:Map[String, String]) {}
 
-  def params:StorageParams = StorageParams(mockId, List(), path, "StorageMock", mode, List(), new HashMap[String, String])
+  def params:StorageParams = StorageParams(mockId, path, "StorageMock", mode, List(), new HashMap[String, String])
 
   def count:Long = 0
 

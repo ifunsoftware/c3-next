@@ -1,12 +1,11 @@
 package org.aphreet.c3.platform.management
 
-import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 
 import java.util.{Map => JMap}
 import org.aphreet.c3.platform.storage.volume.Volume
-import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, StorageMode}
+import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageMode}
 
 trait PlatformManagementEndpoint {
   
@@ -39,25 +38,17 @@ trait PlatformManagementEndpoint {
   def listVolumes:List[Volume]
   
   
-  def listTypeMappings:List[(String, String, Boolean)]
+  def listTypeMappings:List[(String, Boolean)]
   
-  def addTypeMapping(mapping:(String, String, Boolean))
+  def addTypeMapping(mapping:(String, Boolean))
   
   def removeTypeMapping(mimeType:String)
 
-  
-  def listSizeMappings:List[(Long, String, Boolean)]
-  
-  def addSizeMapping(mapping:(Long, String, Boolean))
-  
-  def removeSizeMaping(size:Long)
 
   def statistics:Map[String,String]
 
   def createIndex(id:String, index:StorageIndex)
 
   def removeIndex(id:String, name:String)
-
-  def addStorageSecondaryId(id:String, secId:String)
 
 }

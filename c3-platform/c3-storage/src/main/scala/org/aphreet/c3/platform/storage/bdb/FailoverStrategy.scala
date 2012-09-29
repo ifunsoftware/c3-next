@@ -31,6 +31,6 @@ package org.aphreet.c3.platform.storage.bdb
 
 trait FailoverStrategy {
 
-  protected def failuresArePossible(block: => Any)
+  def failuresArePossible(block: => Any)
 
 }

@@ -211,7 +211,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     })
     rga = new ReplicationGroupAdmin(groupName, helpers)
 
-    masterNodeNumber = getMasterNodeNumber()
+    masterNodeNumber = getMasterNodeNumber
 
     log info "Opening database..."
 
@@ -433,7 +433,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     env
   }
 
-  def getMasterNodeNumber() : Int = {
+  def getMasterNodeNumber: Int = {
     var mNodeNumber : Int = -1
 
     forAllNodes(i  =>   {
@@ -445,7 +445,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     mNodeNumber
   }
 
-  protected def failuresArePossible(block: => Any) {
+  def failuresArePossible(block: => Any) {
     var attempts : Int = 0
     var successFlag : Boolean = false
 
@@ -672,7 +672,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
           restartNode(deadNodeNumber)
         }
 
-        masterNodeNumber = getMasterNodeNumber()
+        masterNodeNumber = getMasterNodeNumber
       }
 
       case e : LogWriteException => synchronized {
@@ -687,10 +687,10 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
 
             restartNode(masterNodeNumber)
 
-            masterNodeNumber = getMasterNodeNumber()
+            masterNodeNumber = getMasterNodeNumber
 
           } catch {
-            case ex => {
+            case ex: Throwable => {
               throw ex
             }
           }

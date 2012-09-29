@@ -41,7 +41,6 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.domain.DomainManager
 
@@ -50,28 +49,16 @@ class ConfigurationManager extends DtoConvertor{
 
   val log = LogFactory getLog getClass
 
+  @Autowired
   var fsManager:FSManager = _
 
+  @Autowired
   var domainManager:DomainManager = _
 
-  var storageManager:StorageManager = _
-
+  @Autowired
   var platformConfigManager:PlatformConfigManager = _
 
-  @Autowired
-  def setFsManager(manager:FSManager) {fsManager = manager}
-
-  @Autowired
-  def setDomainManager(manager:DomainManager) {domainManager = manager}
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-
-  @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
-
-
-  def processSerializedRemoteConfiguration(configuration:String) = {
+  def processSerializedRemoteConfiguration(configuration:String) {
     processRemoteConfiguration(deserializeConfiguration(configuration))
   }
 
@@ -92,12 +79,8 @@ class ConfigurationManager extends DtoConvertor{
     xStream.toXML(platformInfo)
   }
   
-  def processRemoteConfiguration(info:PlatformInfo) = {
+  def processRemoteConfiguration(info:PlatformInfo){
     synchronized{
-
-      log debug "Importing new storage ids..."
-
-      importStorages(info.storages)
 
       log debug "Importing fs roots..."
 
@@ -111,16 +94,12 @@ class ConfigurationManager extends DtoConvertor{
 
   def getLocalConfiguration:PlatformInfo = {
 
-    val storageDescriptions = storageManager.listStorages
-      .map(s => storageToDescription(s)).toSeq.toArray
-
     val domains = domainManager.domainList.map(d => new DomainDescription(d.id, d.name, d.key, d.mode.name)).toSeq.toArray
 
     val fsRoots = fsManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
 
     PlatformInfo(platformConfigManager.getSystemId,
       createLocalReplicationHost,
-      storageDescriptions,
       domains,
       fsRoots)
     
@@ -156,24 +135,10 @@ class ConfigurationManager extends DtoConvertor{
 
   }
   
-  private def importFsRoots(remoteRoots:Array[Pair]) = {
+  private def importFsRoots(remoteRoots:Array[Pair]) {
 
     for(pair <- remoteRoots){
       fsManager.importFileSystemRoot(pair.key, pair.value)
-    }
-  }
-
-  private def importStorages(remoteStorages:Array[StorageDescription]) {
-    val storageDescriptions = storageManager.listStorages
-         .map(s => storageToDescription(s)).toSeq.toArray
-
-
-    val synchronizer = new StorageSynchronizer
-
-    val additionalStorageIds = synchronizer.compareStorageConfigs(remoteStorages.toList, storageDescriptions.toList)
-
-    for((storageId, additional) <- additionalStorageIds){
-      storageManager.addSecondaryId(storageId, additional)
     }
   }
 }

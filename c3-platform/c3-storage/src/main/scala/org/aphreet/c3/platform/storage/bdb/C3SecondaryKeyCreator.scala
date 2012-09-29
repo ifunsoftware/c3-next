@@ -30,7 +30,7 @@
 package org.aphreet.c3.platform.storage.bdb
 
 import com.sleepycat.je.{DatabaseEntry, SecondaryDatabase, SecondaryKeyCreator}
-import org.aphreet.c3.platform.resource.{Resource, AddressGenerator}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageIndex
 
 
@@ -45,7 +45,7 @@ class C3SecondaryKeyCreator(val index:StorageIndex) extends SecondaryKeyCreator 
 
     val address = new String(key.getData)
 
-    if (!AddressGenerator.isValidAddress(address)) return false
+    if (!ResourceAddress.isValidAddress(address)) return false
 
     val resource = Resource.fromByteArray(data.getData)
 

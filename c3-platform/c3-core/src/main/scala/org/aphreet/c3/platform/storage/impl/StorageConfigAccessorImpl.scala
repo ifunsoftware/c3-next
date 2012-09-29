@@ -41,7 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import collection.JavaConversions._
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
-import collection.mutable.{HashMap, Buffer}
+import collection.mutable.HashMap
+import org.apache.commons.logging.LogFactory
 
 
 @Component
@@ -67,11 +68,6 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
     for (st <- storageArray) {
       val storage = st.asInstanceOf[MapNode]
 
-      val ids = asScalaBuffer(storage.getNode("ids").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
-
-      val idArray = for (node <- ids)
-        yield node.getValue.toString
-
       val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
 
       var storageModeMessage = ""
@@ -96,7 +92,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
         val indexMaps = asScalaBuffer(
           indexesNode.asInstanceOf[ListNode].getNodes.asInstanceOf[JList[MapNode]])
 
-        val result = for (indexMap <- indexMaps){
+        for (indexMap <- indexMaps){
           val indexName = indexMap.getNode("name").asInstanceOf[ScalarNode].getValue[String]
           val mulIndex =  indexMap.getNode("multi").asInstanceOf[ScalarNode].getValue[Boolean]
           val system = indexMap.getNode("system").asInstanceOf[ScalarNode].getValue[Boolean]
@@ -141,7 +137,6 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
       list = list ::: List(
         new StorageParams(
           storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
-          idArray.toList,
           new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
           storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
           storageMode,
@@ -155,6 +150,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
   }
 
   def storeConfig(params: List[StorageParams], configFile: File) {
+
     this.synchronized {
 
       val swriter = new StringWriter()
@@ -171,10 +167,6 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
                   .key("type").value(storage.storageType)
                   .key("mode").value(storage.mode.name)
                   .key("modemsg").value(storage.mode.message)
-                  .key("ids").array
-                    for (id <- storage.secIds)
-                       writer.value(id)
-                  writer.endArray
 
           writer.key("indexes").array //indexes start
             for(index <- storage.indexes){

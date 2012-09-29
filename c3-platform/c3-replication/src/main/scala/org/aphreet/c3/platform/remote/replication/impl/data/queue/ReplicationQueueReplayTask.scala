@@ -33,9 +33,8 @@ package org.aphreet.c3.platform.remote.replication.impl.data.queue
 import org.aphreet.c3.platform.task.Task
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.Actor
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.resource.AddressGenerator
-import org.aphreet.c3.platform.exception.{StorageNotFoundException}
+import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.remote.replication.impl.data._
 import org.aphreet.c3.platform.remote.replication.ReplicationException
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationManagerImpl
@@ -68,7 +67,7 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
     }else{
       try{
-        val storage = storageManager.storageForId(AddressGenerator.storageForAddress(task.address))
+        val storage = storageManager.storageForAddress(ResourceAddress(task.address))
 
         if(!storage.mode.allowRead){
           throw new ReplicationException("Storage is not readable")

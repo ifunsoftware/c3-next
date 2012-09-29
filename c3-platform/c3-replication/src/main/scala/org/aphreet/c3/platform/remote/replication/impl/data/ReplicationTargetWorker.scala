@@ -34,15 +34,15 @@ import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.resource.{AddressGenerator, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
-import actors.{AbstractActor, Actor}
+import actors.AbstractActor
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.domain.{Domain, DomainManager}
-import collection.mutable.HashMap
+import collection.mutable
 
 class ReplicationTargetWorker(val localSystemId:String,
                               val storageManager:StorageManager,
@@ -54,7 +54,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
   var config:Map[String, ReplicationHost] = Map()
 
-  var decryptors:HashMap[String, DataEncryptor] = new HashMap()
+  var decryptors = new mutable.HashMap[String, DataEncryptor]()
 
   var useSecureDataConnection = false
 
@@ -70,7 +70,7 @@ class ReplicationTargetWorker(val localSystemId:String,
   def updateConfig(config:Map[String, ReplicationHost]) {
     this.config = config
 
-    val map = new HashMap[String, DataEncryptor]
+    val map = new mutable.HashMap[String, DataEncryptor]
 
     for((id, host) <- config){
       map.put(id, new DataEncryptor(host.encryptionKey))
@@ -116,15 +116,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
       fillWithData(resource, host)
 
-      val storageId = AddressGenerator.storageForAddress(resource.address)
-
-      val storage = storageManager.storageForId(storageId)
-
-      if(!storage.mode.allowWrite){
-        log debug "Failed to replicate resource, storage is not writtable"
-        return
-      }
-
+      val storage = storageManager.storageForResource(resource)
 
       resource.verifyCheckSums()
       storage.put(resource)
@@ -136,7 +128,7 @@ class ReplicationTargetWorker(val localSystemId:String,
       accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
 
     }catch{
-      case e => log.error("Failed to replicate add", e)
+      case e: Throwable => log.error("Failed to replicate add", e)
     }
   }
 
@@ -156,9 +148,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
       val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
-      val storageId = AddressGenerator.storageForAddress(resource.address)
-      
-      val storage = storageManager.storageForId(storageId)
+      val storage = storageManager.storageForResource(resource)
 
       if(!storage.mode.allowWrite){
         log warn "Failed to store resource, storage is not writable"
@@ -192,7 +182,7 @@ class ReplicationTargetWorker(val localSystemId:String,
       target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
 
     }catch{
-      case e => log.error("Failed to replicate update", e)
+      case e: Throwable => log.error("Failed to replicate update", e)
     }
   }
 
@@ -206,7 +196,7 @@ class ReplicationTargetWorker(val localSystemId:String,
         return
       }
 
-      val storage = storageManager.storageForId(AddressGenerator.storageForAddress(address))
+      val storage = storageManager.storageForAddress(ResourceAddress(address))
 
       if(storage.mode.allowWrite){
 
@@ -226,11 +216,11 @@ class ReplicationTargetWorker(val localSystemId:String,
 
 
     }catch{
-      case e => log.error("Failed to replicate update", e)
+      case e: Throwable => log.error("Failed to replicate update", e)
     }
   }
 
-  private def processConfiguration(configuration:String, signature:ReplicationSignature) = {
+  private def processConfiguration(configuration:String, signature:ReplicationSignature) {
 
     if(checkSignature(configuration, signature) != null){
       log info "Processing configuration"
@@ -240,7 +230,7 @@ class ReplicationTargetWorker(val localSystemId:String,
     }
   }
 
-  private def compareUpdatedResource(incomeResource:Resource, storedResource:Resource) = {
+  private def compareUpdatedResource(incomeResource:Resource, storedResource:Resource) {
 
     for(i <- 0 to incomeResource.versions.length - 1){
 
@@ -260,7 +250,7 @@ class ReplicationTargetWorker(val localSystemId:String,
     }
   }
 
-  private def fillWithData(resource:Resource, replicationHost:ReplicationHost) = {
+  private def fillWithData(resource:Resource, replicationHost:ReplicationHost) {
 
     val domainId = resource.systemMetadata.get(Domain.MD_FIELD).get
 

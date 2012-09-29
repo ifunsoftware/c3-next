@@ -29,7 +29,7 @@
  */
 package org.aphreet.c3.platform.storage
 
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.{Path}
 
 trait StorageManager{
@@ -38,9 +38,12 @@ trait StorageManager{
   
   def unregisterFactory(factory:StorageFactory)
   
+
   def storageForId(id:String):Storage
 
   def storageForResource(resource:Resource):Storage
+
+  def storageForAddress(address:ResourceAddress):Storage
 
   def createStorage(storageType:String, storagePath:Path)
   
@@ -58,5 +61,6 @@ trait StorageManager{
 
   def removeIndex(id:String, name:String)
 
-  def addSecondaryId(id:String, secondaryId:String)
+  def mergeStorages(fromId:String, toId:String)
+
 }

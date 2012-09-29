@@ -28,17 +28,13 @@ trait PlatformManagementService {
 
   def setTaskMode(taskId:String, mode:String)
 
+
   def listTypeMappings:Array[TypeMapping]
 
-  def addTypeMapping(mimeType:String, storage:String, versioned:java.lang.Boolean)
+  def addTypeMapping(mimeType:String, versioned:java.lang.Boolean)
 
   def removeTypeMapping(mimeType:String)
 
-  def listSizeMappings:Array[SizeMapping]
-
-  def addSizeMapping(size:java.lang.Long, storage:String, versioned:java.lang.Boolean)
-
-  def removeSizeMapping(size:java.lang.Long)
 
   def listUsers:Array[UserDescription]
 
@@ -55,10 +51,6 @@ trait PlatformManagementService {
   def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
 
   def removeIndex(id:String, name:String)
-
-  def addStorageSecondaryId(id:String, secId:String)
-  
-  def registerReplicationSource(host:ReplicationHost)
 
   def establishReplication(host:String, username:String, password:String)
 

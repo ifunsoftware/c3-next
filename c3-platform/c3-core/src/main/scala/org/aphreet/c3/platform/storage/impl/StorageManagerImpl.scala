@@ -27,13 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.impl;
+package org.aphreet.c3.platform.storage.impl
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.storage._
-
-
-import scala.collection.mutable.HashMap
 
 import dispatcher.StorageDispatcher
 
@@ -46,42 +43,36 @@ import java.io.File
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.resource.{IdGenerator, Resource}
+import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
+import collection.mutable
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
 
   val log = LogFactory.getLog(getClass)
 
-  private var storageDispatcher:StorageDispatcher = null
+  private val storages = new mutable.HashMap[String, Storage]
 
-  private val storages = new HashMap[String, Storage]
+  private val factories = new mutable.HashMap[String, StorageFactory]
 
-  private val factories = new HashMap[String, StorageFactory]
+  @Autowired
+  var storageDispatcher:StorageDispatcher = null
 
+  @Autowired
   var configAccessor : StorageConfigAccessor = null
 
+  @Autowired
   var volumeManager : VolumeManager = null
 
+  @Autowired
   var platformConfigManager:PlatformConfigManager = null
 
   lazy val systemId = getSystemId
 
-  @Autowired
-  def setConfigAccessor(accessor:StorageConfigAccessor) {configAccessor = accessor}
-
-  @Autowired
-  def setVolumeManager(manager:VolumeManager) {volumeManager = manager}
-
-  @Autowired
-  def setStorageDispatcher(dispatcher:StorageDispatcher) {storageDispatcher = dispatcher}
-
-  @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
-
   @PostConstruct
   def init(){
     log info "Starting StorageManager..."
+    updateDispatcher()
   }
 
   @PreDestroy
@@ -119,14 +110,20 @@ class StorageManagerImpl extends StorageManager{
   }
 
   def storageForResource(resource:Resource):Storage = {
-    storageDispatcher.selectStorageForResource(resource)
+    storageForAddress(ResourceAddress(resource.address))
+  }
+
+  def storageForAddress(address:ResourceAddress):Storage = {
+    storageDispatcher.selectStorageForAddress(address) match {
+      case Some(params) => storageForId(params.id)
+      case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
+    }
   }
 
   def createStorage(storageType:String, storagePath:Path){
     val storage = factories.get(storageType) match {
       case Some(factory) => {
 
-        val rand = new scala.util.Random
         var stId = ""
 
         do{
@@ -135,11 +132,10 @@ class StorageManagerImpl extends StorageManager{
 
         log info "Creating new storage with id: " + stId
 
-        factory.createStorage(new StorageParams(stId, List(), storagePath, factory.name,
+        factory.createStorage(new StorageParams(stId, storagePath, factory.name,
                                                   RW(Constants.STORAGE_MODE_NONE),
-                                                  List(), new HashMap[String, String]),
+                                                  List(), new mutable.HashMap[String, String]),
                                                systemId)
-
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -163,9 +159,8 @@ class StorageManagerImpl extends StorageManager{
 
       factories.values.foreach(_.storages - storage)
 
-      configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
+      removeStorageFromParams(storage)
 
-      updateDispatcher()
       storage.close()
 
       removeStorageData(storage)
@@ -177,12 +172,8 @@ class StorageManagerImpl extends StorageManager{
   }
 
 
-
   def listStorageTypes:List[String] =
     factories.map(e => e._2.name).toList
-
-  def dispatcher:StorageDispatcher = storageDispatcher
-
 
   def setStorageMode(id:String, mode:StorageMode) {
     storages.get(id) match {
@@ -196,11 +187,13 @@ class StorageManagerImpl extends StorageManager{
 
   def updateStorageParams(storage:Storage) {
 
-    configAccessor.update(config => storage.params :: config.filter(_.id != storage.id))
+    val oldParams = configAccessor.load
 
-    for(id <- storage.id :: storage.ids){
-      storages.put(id, storage)
-    }
+    configAccessor.store(storage.params :: oldParams.filter(_.id != storage.id))
+
+    storages.put(storage.id, storage)
+
+    updateDispatcher()
   }
 
   def createIndex(id:String, index:StorageIndex) {
@@ -226,57 +219,28 @@ class StorageManagerImpl extends StorageManager{
     }else{
       throw new StorageException("Index not found")
     }
-
   }
 
-  def addSecondaryId(id:String, secondaryId:String) {
-
-    this.synchronized{
-      val storageParams = configAccessor.load
-
-      val idNotExists = storageParams
-              .filter(p => p.id == secondaryId || p.secIds.contains(secondaryId)).isEmpty
-
-      if(idNotExists){
-
-        storages.get(id) match{
-          case Some(s) => {
-            s.ids = secondaryId :: s.ids
-            updateStorageParams(s)
-            log debug "Appended new secondary id " + secondaryId + " to storage with id " + id
-          }
-          case None => throw new StorageException("Storage with id" + id + " is not exist")
-        }
-
-      }else{
-        throw new StorageException("Specified id already exists")
-      }
-    }
+  def mergeStorages(fromId:String, toId:String){
+    storageDispatcher.mergeStorages(fromId, toId)
   }
 
   private def registerStorage(storage:Storage){
     storages.put(storage.id, storage)
 
-    for(id <- storage.ids)
-      storages.put(id, storage)
-
     volumeManager register storage
-
-    updateDispatcher()
   }
 
   private def unregisterStorage(storage:Storage){
 
-    storages -- (storage.id :: storage.ids)
+    storages.remove(storage.id)
     volumeManager unregister storage
   }
 
 
   private def updateDispatcher(){
-    storageDispatcher.setStorages(storages.map((entry:(String, Storage)) => entry._2).toList)
+    storageDispatcher.setStorageParams(configAccessor.load)
   }
-
-
 
   private def isIdCorrect(newId:String):Boolean = {
 
@@ -287,16 +251,21 @@ class StorageManagerImpl extends StorageManager{
     !storageParams.exists(param => param.containsId(newId))
   }
 
-  private def addStorageToParams(storage:Storage){
-    configAccessor.update(storageParams => storage.params :: storageParams)
+  private def removeStorageFromParams(storage:Storage){
+    configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
+
+    updateDispatcher()
   }
 
-
+  private def addStorageToParams(storage:Storage){
+    configAccessor.update(storageParams => storage.params :: storageParams)
+    updateDispatcher()
+  }
 
   private def createExistentStoragesForFactory(factory:StorageFactory){
     val storageParams = configAccessor.load
 
-    log info "Exitent storages: " + storageParams
+    log info "Existent storages: " + storageParams
 
     log info "Looking for existent storages for factory: " + factory.name
 

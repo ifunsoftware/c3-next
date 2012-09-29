@@ -29,13 +29,14 @@
  */
 package org.aphreet.c3.platform.storage.dispatcher
 
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.storage.Storage
+import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.storage.StorageParams
 
 trait StorageDispatcher{
   
-  def setStorages(sts:List[Storage])
+  def setStorageParams(sts:List[StorageParams])
   
-  def selectStorageForResource(resource:Resource):Storage
-  
+  def selectStorageForAddress(resourceAddress:ResourceAddress):Option[StorageParams]
+
+  def mergeStorages(fromId:String, toId:String)
 }

@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.storage.migration.impl
 import org.aphreet.c3.platform.common.Constants._
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.task.Task
+import org.aphreet.c3.platform.exception.StorageException
 
 class MigrationTask(val source:Storage, val target:Storage, val manager:StorageManager) extends Task{
 
@@ -49,8 +50,9 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   override def postComplete() {
     iterator.close()
     iterator = null
+
+    manager.mergeStorages(source.id, target.id)
     
-    target.ids = source.id :: source.ids ::: target.ids
     target.mode = new RW
     manager updateStorageParams target
     
@@ -63,7 +65,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
       iterator.close()
       iterator = null
     }catch{
-      case e=> log error e
+      case e: Throwable => log error e
     }
     
     target.mode = new RW
@@ -94,7 +96,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
       try{
         iterator.close()
       }catch{
-        case e => e.printStackTrace()
+        case e: Throwable => e.printStackTrace()
       }
   }
 }

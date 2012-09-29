@@ -9,7 +9,7 @@ class EmbedReplicatedBDBStorageTestCase extends AbstractStorageTestCase {
 
   def createStorage(id:String):Storage =
     new ReplicatedBDBStorage(
-      new StorageParams(id, List(), storagePath, "ReplicatedBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
+      new StorageParams(id, storagePath, "ReplicatedBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
       "12341234",
-      new BDBConfig(true, 20, 5120))
+      new BDBConfig(true, 20, 5120, 102400))
 }

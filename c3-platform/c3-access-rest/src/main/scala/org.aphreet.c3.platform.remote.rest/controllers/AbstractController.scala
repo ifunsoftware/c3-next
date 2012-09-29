@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
+import org.aphreet.c3.platform.resource.ResourceException
 
 
 class AbstractController {
@@ -126,6 +127,14 @@ class AbstractController {
                             request: HttpServletRequest,
                             response: HttpServletResponse) {
 
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+  }
+
+  @ExceptionHandler(Array(classOf[ResourceException]))
+  def handleIncorrectResourceFormat(e:ResourceException, request:HttpServletRequest, response:HttpServletResponse) {
     val contentType = request.getHeader("x-c3-type")
 
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)

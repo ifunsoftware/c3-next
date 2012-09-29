@@ -172,6 +172,11 @@ class Resource {
       for(version <- versions){
         dataOs.writeInt(version.revision)
         writeDate(version.date, dataOs)
+
+        if (embedData){
+          version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+        }
+
         writeMap(version.systemMetadata, dataOs)
         if (embedData){
           dataOs.writeLong(version.data.length)
@@ -269,10 +274,6 @@ object Resource {
         new String(strArray, MD_ENCODING)
       }
 
-    }
-
-    def readDate(dataIs:DataInputStream):Date = {
-      new Date(dataIs.readLong)
     }
 
     def readMap(dataIs:DataInputStream, version:Int):HashMap[String, String] = {
