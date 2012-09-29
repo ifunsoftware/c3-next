@@ -42,7 +42,7 @@ import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestEx
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
 import org.aphreet.c3.platform.resource.ResourceException
-
+import org.aphreet.c3.platform.remote.rest.WrongRequestException
 
 class AbstractController {
 
@@ -140,6 +140,15 @@ class AbstractController {
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
+
+  @ExceptionHandler(Array(classOf[WrongRequestException]))
+  def handleWrongRequestException(e:WrongRequestException, request:HttpServletRequest, response:HttpServletResponse) {
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+  }
+
 
   protected def getResultWriter(expectedType: String): ResultWriter = {
     writerSelector.selectWriterForType(expectedType)

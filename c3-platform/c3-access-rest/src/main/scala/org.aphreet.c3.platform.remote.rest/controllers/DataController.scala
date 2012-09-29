@@ -231,6 +231,7 @@ class DataController extends AbstractController with ServletContextAware {
             data = DataStream.create(item.get)
           } else {
             tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
+            factory.getFileCleaningTracker.track(tmpFile, factory)
             item.write(tmpFile)
             data = DataStream.create(tmpFile)
           }
@@ -252,7 +253,7 @@ class DataController extends AbstractController with ServletContextAware {
 
         log debug "Executing callback"
 
-        processStore()
+        runResourceStore(resource, request, processStore)
 
         log debug "Upload done"
 
@@ -278,7 +279,11 @@ class DataController extends AbstractController with ServletContextAware {
 
       if(request.getContentLength > 0) {
         val factory = createDiskFileItemFactory
+
         val tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
+
+        factory.getFileCleaningTracker.track(tmpFile, factory)
+
         val os = new FileOutputStream(tmpFile)
 
         try{
@@ -295,9 +300,19 @@ class DataController extends AbstractController with ServletContextAware {
       resource.metadata ++= metadata
       accessTokens.updateMetadata(resource)
       log debug "Executing callback"
-      processStore()
+      runResourceStore(resource, request, processStore)
       log debug "Upload done"
     }
+  }
+
+  protected def runResourceStore(resource:Resource, request:HttpServletRequest, callback : () => Unit){
+    if(request.getMethod == "POST"){
+      if(resource.versions.isEmpty){
+        throw new WrongRequestException("No data in create resource request")
+      }
+    }
+
+    callback()
   }
 
   protected def createDiskFileItemFactory: DiskFileItemFactory = {

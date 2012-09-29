@@ -52,6 +52,16 @@ var Terminal = new Class({
         if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
         var command = this.currentCommand.get('html');
 
+
+        if(event.control){
+            if(event.code == 118){
+                command += window.clipboardData.getData('Text');
+                this.currentCommand.set('html', command);
+            }else{
+                return;
+            }
+        }
+
         //$('body').focus();
 
         if (event.key == 'enter') {

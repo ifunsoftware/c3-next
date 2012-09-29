@@ -29,24 +29,8 @@
  */
 package org.aphreet.c3.platform.storage.volume.dataprovider
 
-import org.aphreet.c3.platform.storage.volume.Volume
-
 class MacVolumeDataProvider extends AbstractUnixDataProvider("df -lb") {
 
   override def toBytes(size:Long):Long = size * 512
-
-  override def parseDfLine(line:String):Option[Volume] = {
-    val array = line.split("\\s+", 9)
-
-    if(array.length >= 9){
-      val size = toBytes(array(2).toLong)
-      val avail = toBytes(array(3).toLong)
-      val mounted:String = array(8)
-
-      Some(new Volume(mounted, size, avail))
-    }else{
-      None
-    }
-  }
 
 }

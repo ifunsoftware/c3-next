@@ -16,7 +16,12 @@ case class RangeSet[E](ranges:List[Range[E]]){
   val log = LogFactory.getLog(getClass)
 
   def findMappedValue(value:Long):Option[E] = {
-    searchInterval(value, rangeArray, 0, rangeArray.length)
+
+    if(!rangeArray.isEmpty){
+      searchInterval(value, rangeArray, 0, rangeArray.length)
+    }else{
+      None
+    }
   }
 
   @tailrec
