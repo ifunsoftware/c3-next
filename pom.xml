@@ -246,7 +246,7 @@
                                 <tasks>
                                     <echo message="Updating manifest file with current build number" />
                                     <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
-                                    <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9-TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
+                                    <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9.TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
                                 </tasks>
                             </configuration>
                             <goals>

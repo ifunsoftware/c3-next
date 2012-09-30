@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 9.9.9-TO_BE_REPLACED
+Bundle-Version: 9.9.9.TO_BE_REPLACED
 Bundle-Name: C3 Replication
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.replication
