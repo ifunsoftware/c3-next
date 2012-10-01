@@ -38,7 +38,7 @@ import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
 import com.twmacinta.util.MD5
 import java.nio.channels.{Channels, WritableByteChannel}
-import java.nio.file.{StandardCopyOption, StandardOpenOption, Files}
+import java.nio.file.{Path, StandardCopyOption, StandardOpenOption, Files}
 
 object DataStream{
   
@@ -79,6 +79,11 @@ abstract class DataStream {
    * Write content to the channel
    */
   def writeTo(channel:WritableByteChannel)
+
+  /**
+   * Write to some path
+   */
+  def writeTo(path:Path)
 
   /**
    * Get content as a string. As far as we can have binary data, string may not be readable
@@ -161,6 +166,10 @@ abstract class AbstractFileDataStream extends DataStream{
     }
   }
 
+  def writeTo(path:Path){
+    Files.copy(file.toPath, path, StandardCopyOption.REPLACE_EXISTING)
+  }
+
   override def writeTo(targetFile:File) {
 
     if(file.getCanonicalFile != targetFile.getCanonicalFile)
@@ -212,6 +221,10 @@ abstract class AbstractBytesDataStream extends DataStream {
     Files.write(targetFile.toPath, loadBytes, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
   }
 
+  def writeTo(path:Path){
+    Files.write(path, loadBytes, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+  }
+
   override def getBytes:Array[Byte] = loadBytes
 
   protected
@@ -249,6 +262,10 @@ class StringDataStream(val value:String) extends DataStream {
   def writeTo(channel:WritableByteChannel) {
     channel.write(ByteBuffer.wrap(value.getBytes("UTF-8")))
   }
+
+  def writeTo(path:Path){
+    Files.write(path, value.getBytes("UTF-8"), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+  }
   
   def stringValue:String = value
   
@@ -276,6 +293,10 @@ class EmptyDataStream extends DataStream {
   
   def writeTo(channel:WritableByteChannel) {
     channel.write(ByteBuffer.wrap(new Array[Byte](0)))
+  }
+
+  def writeTo(path:Path){
+    Files.write(path, new Array[Byte](0), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
   }
   
   def stringValue:String = ""

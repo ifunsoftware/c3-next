@@ -21,6 +21,7 @@
         <module>c3-management</module>
         <module>c3-access-rest</module>
         <module>c3-replication</module>
+        <module>c3-backup</module>
     </modules>
 
     <dependencyManagement>
@@ -74,6 +75,13 @@
                 <groupId>com.springsource.json</groupId>
                 <artifactId>com.springsource.json</artifactId>
                 <version>1.0.1.RELEASE</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.twmacinta.util</groupId>
+                <artifactId>md5</artifactId>
+                <version>1.0.539</version>
                 <scope>provided</scope>
             </dependency>
 

@@ -40,8 +40,6 @@
         <dependency>
             <groupId>com.twmacinta.util</groupId>
             <artifactId>md5</artifactId>
-            <version>1.0.539</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
