@@ -18,6 +18,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.springsource.json</groupId>
             <artifactId>com.springsource.json</artifactId>
         </dependency>

@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
 import com.twmacinta.util.MD5
-import java.nio.channels.{Channels, WritableByteChannel}
+import java.nio.channels.{FileChannel, Channels, WritableByteChannel}
 import java.nio.file.{Path, StandardCopyOption, StandardOpenOption, Files}
 
 object DataStream{
@@ -313,4 +313,52 @@ class EmptyDataStream extends DataStream {
   def mimeType:String = ""
 
   def copy:DataStream = new EmptyDataStream
+}
+
+class PathDataStream(val path:Path) extends AbstractFileDataStream{
+
+  var tmpFileCreated = false
+
+  private var tmpFile:File = null
+
+  def getFile:File = {
+    if (tmpFile == null){
+      tmpFile = Files.createTempFile("Pathds", "" + System.currentTimeMillis()).toFile
+      tmpFileCreated = true
+    }
+    tmpFile
+  }
+  /**
+   * Write to some path
+   */
+  override
+  def writeTo(targetPath: Path) {
+    Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING)
+  }
+
+  override
+  def getBytes:Array[Byte] = {
+    Files.readAllBytes(path)
+  }
+
+  /**
+   * Data length in bytes
+   */
+  override
+  def length = {
+    Files.size(path)
+  }
+
+  override def finalize(){
+    super.finalize()
+    if (tmpFileCreated){
+      try{
+        Files.delete(tmpFile.toPath)
+      }catch {
+        case e:Throwable =>
+      }
+    }
+  }
+
+  def copy = throw new RuntimeException("Operaion is not defined")
 }

@@ -1,31 +1,59 @@
 package org.aphreet.c3.platform.backup
 
-import impl.Backup
-import junit.framework.TestCase
+import junit.framework.Assert._
+import impl.{ResourceConsumer, Backup}
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 
-class BackupTestCase extends TestCase{
+class BackupTestCase extends AbstractTestWithFileSystem{
 
-//  def testResourceCreate(){
-//
-//    val backup = Backup.create(new Path("/Users/Aphreet/var/"))
-//
-//    val resource = new Resource
-//    resource.isVersioned = true
-//    resource.address = "rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"
-//
-//    val version = new ResourceVersion()
-//    version.data = new StringDataStream("Hello, world!")
-//    resource.addVersion(version)
-//
-//    val version2 = new ResourceVersion()
-//    version2.data = new StringDataStream("Hello, world!")
-//    resource.addVersion(version2)
-//
-//    backup.addResource(resource)
-//    backup.close()
-//
-//  }
+  def testResourceCreate(){
+
+    var resourceList = List(
+      createResource("rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
+      createResource("rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234"),
+      createResource("lZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f49-12341234"),
+      createResource("aZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
+      createResource("uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
+      createResource("pZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
+      createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
+    )
+
+    val backup = Backup.create(new Path(testDir.getAbsolutePath + "/backup.zip"))
+
+    resourceList.foreach(backup.addResource(_))
+
+    backup.close()
+
+    val backup1 = Backup.open(new Path(testDir.getAbsolutePath + "/backup.zip"))
+
+    backup1.read(new ResourceConsumer {
+      def consume(resource: Resource) {
+        assertEquals(1, resourceList.filter(_.address == resource.address).size)
+        resourceList = resourceList.filterNot(_.address == resource.address)
+      }
+    })
+
+    assertEquals(0, resourceList.size)
+
+    backup1.close()
+  }
+
+  def createResource(name:String):Resource = {
+    val resource = new Resource
+    resource.isVersioned = true
+    resource.address = name
+
+    val version = new ResourceVersion()
+    version.data = new StringDataStream("Hello, world!")
+    resource.addVersion(version)
+
+    val version2 = new ResourceVersion()
+    version2.data = new StringDataStream("Hello, world!")
+    resource.addVersion(version2)
+
+    resource
+  }
 }
