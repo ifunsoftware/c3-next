@@ -27,6 +27,12 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-backup</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-filesystem</artifactId>
             <scope>provided</scope>
         </dependency>

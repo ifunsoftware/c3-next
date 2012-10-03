@@ -29,8 +29,6 @@
  */
 package org.aphreet.c3.platform.search.impl.index
 
-import actors.Actor
-import actors.Actor._
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{Directory, FSDirectory}
@@ -73,7 +71,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             log debug "Index merged"
             searcher ! ReopenSearcher
           }catch{
-            case e =>
+            case e: Throwable =>
               log.warn("Failed to merge index", e)
           }
         case DeleteMsg(address) => deleteResource(address)
@@ -92,7 +90,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             searcher ! NewIndexPathMsg(path)
             sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
           }catch{
-            case e => "Failed to create new indexWriter"
+            case e: Throwable => "Failed to create new indexWriter"
           }
         }
 
@@ -100,7 +98,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
           try{
             indexWriter.close()
           }catch{
-            case e => log.warn("Failed to close index", e)
+            case e: Throwable => log.warn("Failed to close index", e)
             throw e
           }finally {
             log info "IndexWriter closed"
@@ -117,7 +115,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
       indexWriter.deleteDocuments(term)
       log debug "Documents with term address:" + address + " have been deleted"
     }catch{
-      case e => log.error("Failed to delete resource, e is: ", e)
+      case e: Throwable => log.error("Failed to delete resource, e is: ", e)
     }
   }
 }

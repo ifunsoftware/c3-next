@@ -13,7 +13,7 @@ case class ZoneConfig(timeRanges:List[TimeRangeConfig]){
         ZoneConfig(timeRange :: oldRange.updateEndTime(timeRange.start - 1) :: timeRanges.tail)
       }
       case None =>
-        ZoneConfig(List(timeRange))
+        ZoneConfig(List(TimeRangeConfig(0, timeRange.end, timeRange.idRanges)))
     }
   }
 

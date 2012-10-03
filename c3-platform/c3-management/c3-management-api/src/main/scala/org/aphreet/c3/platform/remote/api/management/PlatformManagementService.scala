@@ -77,4 +77,8 @@ trait PlatformManagementService {
 
   def startFilesystemCheck()
 
+  def createBackup()
+
+  def restoreBackup(location:String)
+
 }

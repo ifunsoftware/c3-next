@@ -13,6 +13,7 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.accesscontrol" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.access.rest" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.replication" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.backup" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.api" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.gen" version="[1.0.0, 2.0.0)"/>

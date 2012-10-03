@@ -65,6 +65,12 @@
 
             <dependency>
                 <groupId>org.aphreet.c3</groupId>
+                <artifactId>c3-backup</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aphreet.c3</groupId>
                 <artifactId>c3-management-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>

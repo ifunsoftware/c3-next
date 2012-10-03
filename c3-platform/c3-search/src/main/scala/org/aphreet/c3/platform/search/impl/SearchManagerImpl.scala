@@ -252,13 +252,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         val newPath = new Path(event.newValue)
 
         if(indexPath == null){
-          log info "Found path to store index: " + newPath.path
+          log info "Found path to store index: " + newPath.stringValue
           indexPath = newPath
           initialize(numberOfIndexers)
         }else{
 
           if(newPath != indexPath){
-            log info "New path to store index set: " + newPath.path
+            log info "New path to store index set: " + newPath.stringValue
             fileIndexer ! NewIndexPathMsg(newPath)
             indexPath = newPath
           }else{

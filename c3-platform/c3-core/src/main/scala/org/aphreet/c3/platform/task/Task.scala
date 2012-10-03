@@ -44,7 +44,7 @@ abstract class Task extends Runnable{
         log.info(id + " interrupted") 
       }
     }catch{
-      case e => {
+      case e: Throwable => {
         taskState = CRASHED
         log error e
         postFailure()
@@ -54,11 +54,11 @@ abstract class Task extends Runnable{
     }
   }
 
-  protected def step();
+  protected def step()
 
-  protected def preStart() {};
+  protected def preStart() {}
 
-  protected def postComplete() {};
+  protected def postComplete() {}
 
   protected def postFailure() {}
 

@@ -37,11 +37,17 @@ import java.lang.Character
  * Represent path with delimiters "/"
  */
 
-class Path (var path:String){
+class Path (path:String){
 
-  val correctPath:String = getCorrectPath(path)
+  private val correctPath:String = getCorrectPath(path)
   
   def this(file:File) = this(file.getAbsolutePath)
+
+  def file:File = new File(correctPath)
+
+  def stringValue:String = correctPath
+
+  def append(path:String):Path = Path(this.stringValue + "/" + path)
   
   private def getCorrectPath(path:String):String = {
     
@@ -57,9 +63,7 @@ class Path (var path:String){
   }
   
   override def toString:String = correctPath
-  
-  def file:File = new File(correctPath)
-  
+
   override def equals(that:Any):Boolean = {
     if(that == null) return false
     
@@ -72,6 +76,11 @@ class Path (var path:String){
   
   override def hashCode:Int = 
     this.correctPath.hashCode
-  
-  
+
+}
+
+object Path{
+
+  def apply(path:String):Path = new Path(path)
+
 }

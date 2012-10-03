@@ -39,4 +39,6 @@ trait StorageDispatcher{
   def selectStorageForAddress(resourceAddress:ResourceAddress):Option[StorageParams]
 
   def mergeStorages(fromId:String, toId:String)
+
+  def reset(sts:List[StorageParams])
 }

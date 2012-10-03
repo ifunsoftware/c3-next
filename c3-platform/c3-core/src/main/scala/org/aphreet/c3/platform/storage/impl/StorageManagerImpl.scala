@@ -225,6 +225,10 @@ class StorageManagerImpl extends StorageManager{
     storageDispatcher.mergeStorages(fromId, toId)
   }
 
+  def resetDispatcher(){
+    storageDispatcher.reset(configAccessor.load)
+  }
+
   private def registerStorage(storage:Storage){
     storages.put(storage.id, storage)
 

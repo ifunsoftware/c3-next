@@ -64,7 +64,13 @@ class ZoneStorageDispatcher extends StorageDispatcher{
       zoneConfig = newZoneConfig
       zoneSet = newZoneConfig.createZoneSet
     }
+  }
 
+  def reset(sts:List[StorageParams]){
+    synchronized{
+      zoneConfig = ZoneConfig(List())
+      updateZoneSet(sts)
+    }
   }
 
   protected def updateZoneSet(storageParams:List[StorageParams]){

@@ -48,6 +48,7 @@ import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
+import org.aphreet.c3.platform.backup.BackupManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -62,6 +63,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _domainManager:DomainManager = _
 
   private var _filesystemManager:FSManager = _
+
+  private var _backupManager:BackupManager = _
 
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) {
@@ -86,6 +89,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setFSManager(manager:FSManager) {
     _filesystemManager = manager
+  }
+
+  @Autowired
+  private def setBackupManager(manager:BackupManager) {
+    _backupManager = manager
   }
 
   private def managementEndpoint:PlatformManagementEndpoint = {
@@ -121,6 +129,13 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       _filesystemManager = ContextLoader.getCurrentWebApplicationContext.getBean("filesystemService", classOf[FSManager])
     }
     _filesystemManager
+  }
+
+  private def backupManager:BackupManager = {
+    if(_backupManager == null){
+      _backupManager = ContextLoader.getCurrentWebApplicationContext.getBean("backupService", classOf[BackupManager])
+    }
+    _backupManager
   }
 
   def removeStorage(id:String) {
@@ -509,6 +524,28 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def startFilesystemCheck(){
     try{
       filesystemManager.startFilesystemCheck()
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def createBackup(){
+    try{
+      backupManager.createBackup()
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def restoreBackup(location:String){
+    try{
+      backupManager.restoreBackup(location)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

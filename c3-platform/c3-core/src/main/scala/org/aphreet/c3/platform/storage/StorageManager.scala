@@ -63,4 +63,6 @@ trait StorageManager{
 
   def mergeStorages(fromId:String, toId:String)
 
+  def resetDispatcher()
+
 }
