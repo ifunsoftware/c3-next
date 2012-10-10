@@ -5,8 +5,8 @@ import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
-import org.aphreet.c3.platform.task.{TaskManager, Task}
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
 
 @Component
@@ -55,7 +55,7 @@ class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
 
   var backupName:Path = null
 
-  protected def step() {
+  protected override def step() {
     if (iterator == null){
       storagesToProcess.headOption match {
         case Some(storage) => {
@@ -114,6 +114,32 @@ class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
   }
 }
 
-class RestoreTask(val storageManager: StorageManager, val localPath: String) extends Task{
-  protected def step() {}
+class RestoreTask(val storageManager: StorageManager, val localPath: String) extends IterableTask[Resource]{
+
+  var backupName:Path = null
+  var backup:Backup = null
+
+  override def createIterator:Iterator[Resource] = null
+
+  override def processElement(resource:Resource){
+
+    if(log.isDebugEnabled)
+      log.debug("Importing resource " + resource.address)
+
+    storageManager.storageForAddress(ResourceAddress(resource.address)).put(resource)
+  }
+
+  override def preStart(){
+    backupName = Path(localPath)
+
+    log.info("Opening backup file " + backupName.stringValue)
+
+    backup = Backup.open(backupName)
+  }
+
+  override def postComplete(){
+    backup.close()
+
+    log.info("Backup successfully completed")
+  }
 }

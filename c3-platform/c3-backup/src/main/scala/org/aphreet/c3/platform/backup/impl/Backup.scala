@@ -73,6 +73,43 @@ class Backup(val uri:URI, val create:Boolean) {
   }
 }
 
+class BackupIterator(val zipFs: FileSystem) extends Iterator[Resource]{
+
+  val addresses:Seq[String] = Files.readAllLines(zipFs.getPath("list"), Charset.forName("UTF-8"))
+
+  val addressIterator = addresses.iterator
+
+  def hasNext = addressIterator.hasNext
+
+  def next():Resource = {
+
+    val address = addressIterator.next()
+
+    val dir = directoryForAddress(address)
+    val binaryResource = Files.readAllBytes(zipFs.getPath(dir.toString, address + ".bin"))
+
+    val resource = Resource.fromByteArray(binaryResource)
+
+    for ((version, number) <- resource.versions.view.zipWithIndex){
+      version.setData(new PathDataStream(zipFs.getPath(dir.toString, address + "." + number)))
+    }
+
+    resource
+  }
+
+  protected def directoryForAddress(address:String):Path = {
+    val firstLetter = address.charAt(0).toString
+    val secondLetter = address.charAt(1).toString
+    val thirdLetter = address.charAt(2).toString
+
+    zipFs.getPath(firstLetter, secondLetter, thirdLetter)
+  }
+
+  def close(){
+    zipFs.close()
+  }
+}
+
 trait ResourceConsumer{
 
   def consume(resource:Resource)

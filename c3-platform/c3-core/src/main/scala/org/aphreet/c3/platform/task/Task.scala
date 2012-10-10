@@ -11,7 +11,7 @@ abstract class Task extends Runnable{
 
   protected var shouldStopFlag = false
 
-  private val SLEEP_ON_PAUSE_INTERVAL = 5000
+  val SLEEP_ON_PAUSE_INTERVAL = 5000
 
   private var taskState:TaskState = PENDING
 
@@ -31,11 +31,7 @@ abstract class Task extends Runnable{
         taskState = RUNNING
         log.info(id + " started")
         preStart()
-        while(!shouldStop && !Thread.currentThread.isInterrupted){
-          if(!isPaused){
-            step()
-          }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
-        }
+        work()
         postComplete()
         taskState = FINISHED
         log.info(id + " stopped")
@@ -54,7 +50,15 @@ abstract class Task extends Runnable{
     }
   }
 
-  protected def step()
+  protected def work(){
+    while(!shouldStop && !Thread.currentThread.isInterrupted){
+      if(!isPaused){
+        step()
+      }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+    }
+  }
+
+  protected def step() {}
 
   protected def preStart() {}
 
@@ -90,6 +94,27 @@ abstract class Task extends Runnable{
     if(taskState == PAUSED)
       taskState = RUNNING
   }
+}
+
+abstract class IterableTask[T] extends Task{
+
+  def createIterator:Iterator[T]
+
+  override def work(){
+    val iterator = createIterator
+
+    while(iterator.hasNext && !Thread.currentThread.isInterrupted){
+      if(!isPaused){
+        processElement(iterator.next())
+      }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+    }
+
+    closeIterator()
+  }
+
+  def closeIterator(){}
+
+  def processElement(element: T)
 }
 
 

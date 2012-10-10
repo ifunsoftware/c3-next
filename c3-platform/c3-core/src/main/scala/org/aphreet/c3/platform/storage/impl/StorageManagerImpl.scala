@@ -225,7 +225,30 @@ class StorageManagerImpl extends StorageManager{
     storageDispatcher.mergeStorages(fromId, toId)
   }
 
-  def resetDispatcher(){
+  def resetStorages(){
+
+    log.info("Performing storage reset, clearing ALL existing data")
+
+    log.info("Closing all storages")
+    val storageList = storages.values.toList
+
+    for(storage <- storageList){
+      unregisterStorage(storage)
+      storage.close()
+    }
+
+    log.info("Removing all storages from factroies")
+    factories.values.foreach(_.storages.clear())
+
+    log.info("Removing all storage data")
+    for(storage <- storages.values){
+      removeStorageData(storage)
+    }
+
+    log.info("Recreating storages from configuration")
+    factories.values.foreach(createExistentStoragesForFactory(_))
+
+    log.info("Reseting storage dispatcher")
     storageDispatcher.reset(configAccessor.load)
   }
 
