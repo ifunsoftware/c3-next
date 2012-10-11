@@ -49,7 +49,7 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
     //TODO consider reuse got resource in the data manipulators implemenations
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
-      selectDataManipulator(resource).deleteData(ra)
+      selectDataManipulator(resource).deleteData(ra, tx)
     }
   }
 

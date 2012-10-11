@@ -243,7 +243,7 @@ class StorageManagerImpl extends StorageManager{
     factories.values.foreach(_.storages.clear())
 
     log.info("Removing all storage data")
-    for(storage <- storages.values){
+    for(storage <- storageList){
       removeStorageData(storage)
     }
 
@@ -309,13 +309,18 @@ class StorageManagerImpl extends StorageManager{
 
   private def removeStorageData(storage:Storage) {
 
+    log.info("Going to remove storage data dir " + storage.fullPath)
+
     Files.walkFileTree(storage.fullPath.file.toPath, new SimpleFileVisitor[NioPath]{
       override def visitFile(file:NioPath, attrs:BasicFileAttributes):FileVisitResult = {
+        log.info("Deleting path " + file)
         Files.delete(file)
         FileVisitResult.CONTINUE
       }
 
       override def postVisitDirectory(dir:NioPath, e:IOException):FileVisitResult = {
+        log.info("Deleting directory " + dir)
+
         Files.delete(dir)
         FileVisitResult.CONTINUE
       }

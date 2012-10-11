@@ -46,7 +46,9 @@ trait  DataManipulator {
     deleteData(ra)
   }
 
-  def deleteData(ra:String) {}
+  def deleteData(ra:String) {
+
+  }
 
   def putData(resource:Resource) {}
 
