@@ -39,12 +39,14 @@ import org.aphreet.c3.platform.storage.volume.VolumeManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.File
+import java.io.{IOException, File}
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import collection.mutable
+import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
+import java.nio.file.attribute.BasicFileAttributes
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -306,12 +308,18 @@ class StorageManagerImpl extends StorageManager{
   }
 
   private def removeStorageData(storage:Storage) {
-    def removeDir(file:File){
-      if(file.isDirectory)
-        file.listFiles.foreach(removeDir(_))
-      file.delete
-    }
-    removeDir(storage.fullPath.file)
+
+    Files.walkFileTree(storage.fullPath.file.toPath, new SimpleFileVisitor[NioPath]{
+      override def visitFile(file:NioPath, attrs:BasicFileAttributes):FileVisitResult = {
+        Files.delete(file)
+        FileVisitResult.CONTINUE
+      }
+
+      override def postVisitDirectory(dir:NioPath, e:IOException):FileVisitResult = {
+        Files.delete(dir)
+        FileVisitResult.CONTINUE
+      }
+    })
   }
 
   private def getSystemId:String = {

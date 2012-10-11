@@ -42,6 +42,8 @@ class CommandFactory(additionalCommands:List[Commands] = List()) {
     register(MigrationCommands)
     register(PlatformPropertiesCommands)
 
+    register(BackupCommands)
+
     register(StorageCommands)
     register(TaskCommands)
     register(TypeMappingCommands)

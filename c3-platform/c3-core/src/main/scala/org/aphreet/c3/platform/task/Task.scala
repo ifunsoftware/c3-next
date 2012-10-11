@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.task
 
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.ThreadWatcher
+import org.aphreet.c3.platform.common.{CloseableIterable, ThreadWatcher}
 
 abstract class Task extends Runnable{
 
@@ -96,23 +96,30 @@ abstract class Task extends Runnable{
   }
 }
 
-abstract class IterableTask[T] extends Task{
+abstract class IterableTask[T](val iterable:CloseableIterable[T]) extends Task{
 
-  def createIterator:Iterator[T]
+  var processed = 0
 
   override def work(){
-    val iterator = createIterator
+    val iterator = iterable.iterator
 
-    while(iterator.hasNext && !Thread.currentThread.isInterrupted){
-      if(!isPaused){
-        processElement(iterator.next())
-      }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+    try{
+      while(iterator.hasNext && !Thread.currentThread.isInterrupted){
+        if(!isPaused){
+          processElement(iterator.next())
+          processed = processed + 1
+        }else {
+          Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+        }
+      }
+    }finally {
+      iterator.close()
     }
-
-    closeIterator()
   }
 
-  def closeIterator(){}
+  override def progress:Int = {
+    ((processed.toFloat / iterable.size) * 100).toInt
+  }
 
   def processElement(element: T)
 }

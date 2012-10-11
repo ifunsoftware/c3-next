@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{CloseableIterable, Path}
+import java.nio.file.FileSystem
 
-@Component
+@Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
   val BACKUP_LOCATION = "c3.platform.backup.location"
@@ -37,7 +38,13 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   }
 
   def restoreBackup(location:String){
+    val backup = Backup.open(Path(location))
 
+    storageManager.resetStorages()
+
+    val task = new RestoreTask(storageManager, backup)
+
+    taskManager.submitTask(task)
   }
 
   def propertyChanged(event: PropertyChangeEvent) {}
@@ -114,12 +121,8 @@ class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
   }
 }
 
-class RestoreTask(val storageManager: StorageManager, val localPath: String) extends IterableTask[Resource]{
-
-  var backupName:Path = null
-  var backup:Backup = null
-
-  override def createIterator:Iterator[Resource] = null
+class RestoreTask(val storageManager:StorageManager, val backup:Backup)
+  extends IterableTask[Resource](backup){
 
   override def processElement(resource:Resource){
 
@@ -127,19 +130,5 @@ class RestoreTask(val storageManager: StorageManager, val localPath: String) ext
       log.debug("Importing resource " + resource.address)
 
     storageManager.storageForAddress(ResourceAddress(resource.address)).put(resource)
-  }
-
-  override def preStart(){
-    backupName = Path(localPath)
-
-    log.info("Opening backup file " + backupName.stringValue)
-
-    backup = Backup.open(backupName)
-  }
-
-  override def postComplete(){
-    backup.close()
-
-    log.info("Backup successfully completed")
   }
 }

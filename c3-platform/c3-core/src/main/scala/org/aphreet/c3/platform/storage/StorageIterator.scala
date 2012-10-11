@@ -30,14 +30,10 @@
 package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.common.CloseableIterator
 
-trait StorageIterator extends java.util.Iterator[Resource]{
+trait StorageIterator extends CloseableIterator[Resource]{
 
-  def close()
-  
-  def remove() {
-    throw new UnsupportedOperationException
-  }
-  
   def objectsProcessed:Int
+
 }

@@ -29,12 +29,10 @@ class BackupTestCase extends AbstractTestWithFileSystem{
 
     val backup1 = Backup.open(new Path(testDir.getAbsolutePath + "/backup.zip"))
 
-    backup1.read(new ResourceConsumer {
-      def consume(resource: Resource) {
-        assertEquals(1, resourceList.filter(_.address == resource.address).size)
-        resourceList = resourceList.filterNot(_.address == resource.address)
-      }
-    })
+    for(resource <- backup1){
+      assertEquals(1, resourceList.filter(_.address == resource.address).size)
+      resourceList = resourceList.filterNot(_.address == resource.address)
+    }
 
     assertEquals(0, resourceList.size)
 
