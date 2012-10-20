@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.common.{CloseableIterable, Path}
-import java.nio.file.FileSystem
+import org.aphreet.c3.platform.common.Path
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
