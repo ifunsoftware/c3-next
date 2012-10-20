@@ -34,13 +34,12 @@ import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import actors.remote.{RemoteActor, Node}
-import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import actors.{AbstractActor, Actor}
+import actors.AbstractActor
 import org.aphreet.c3.platform.common.WatchedActor
 
 class ReplicationLink(val localSystemId:String,
@@ -199,7 +198,7 @@ class ReplicationLink(val localSystemId:String,
     try{
       actor ! message
     }catch{
-      case e => log error ("Failed to send message ", e)
+      case e: Throwable => log error ("Failed to send message ", e)
     }
   }
 

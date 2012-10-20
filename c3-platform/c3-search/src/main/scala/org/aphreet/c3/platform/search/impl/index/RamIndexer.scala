@@ -44,9 +44,10 @@ import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 
-class RamIndexer(val fileIndexer: FileIndexer,
+class RamIndexer(val fileIndexer: Actor,
                  val configuration:SearchConfiguration, num: Int,
-                 var extractDocumentContent:Boolean) extends WatchedActor {
+                 var extractDocumentContent:Boolean,
+                 val textExtractor:TextExtractor) extends WatchedActor {
 
   val log = LogFactory.getLog(getClass)
 
@@ -57,8 +58,6 @@ class RamIndexer(val fileIndexer: FileIndexer,
   var writer: IndexWriter = null
 
   var lastDocumentTime: Long = System.currentTimeMillis
-
-  val textExtractor = new TextExtractor
 
   val languageGuesser = LanguageGuesserUtil.createGuesser
 
@@ -103,7 +102,7 @@ class RamIndexer(val fileIndexer: FileIndexer,
               }
             }
           } catch {
-            case e => log.warn(num + ": Failed to index resource", e)
+            case e: Throwable => log.warn(num + ": Failed to index resource", e)
           }
         }
 
@@ -131,7 +130,7 @@ class RamIndexer(val fileIndexer: FileIndexer,
             fileIndexer ! MergeIndexMsg(directory)
 
           } catch {
-            case e => log.warn(num + ": Failed to store indexer", e)
+            case e: Throwable => log.warn(num + ": Failed to store indexer", e)
             throw e
           } finally {
             reply {
@@ -164,6 +163,8 @@ class RamIndexer(val fileIndexer: FileIndexer,
     val analyzer = resourceHandler.analyzer
 
     writer.addDocument(document, analyzer)
+    writer.commit()
+
     log debug "Resource writen to tmp index (" + resource.address + ")"
   }
 

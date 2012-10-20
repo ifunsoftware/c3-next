@@ -34,6 +34,7 @@ import actors.Actor._
 import background._
 import common.SearchConfigurationUtil
 import index._
+import extractor.TikaTextExtractor
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
@@ -126,7 +127,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       fileIndexer = new FileIndexer(indexPath)
 
       for(i <- 1 to numberOfIndexers){
-        ramIndexers = new RamIndexer(fileIndexer, configuration, i, extractDocumentContent) :: ramIndexers
+        ramIndexers = new RamIndexer(fileIndexer, configuration, i, extractDocumentContent, new TikaTextExtractor) :: ramIndexers
       }
 
       searcher = new Searcher(indexPath, ramIndexers, configuration)
@@ -278,7 +279,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
             val indexersToAdd = newCount - ramIndexers.size
 
             for (i <- 1 to indexersToAdd) {
-              val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent)
+              val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent, new TikaTextExtractor)
               indexer.start()
               ramIndexers = indexer :: ramIndexers
             }

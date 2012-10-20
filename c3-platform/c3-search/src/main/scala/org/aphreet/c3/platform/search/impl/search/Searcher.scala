@@ -98,7 +98,7 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
 
   def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {
 
-    val searchStrategy = searchStrategyFactory.createSearchStrategy;
+    val searchStrategy = searchStrategyFactory.createSearchStrategy
 
     val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0, domain)
 

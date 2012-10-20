@@ -72,7 +72,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     } else {
       try {
         if (iterator.hasNext) {
-          val resource = iterator.next
+          val resource = iterator.next()
           log trace "Checking resource " + resource.address
           if (shouldIndex(resource)) {
             log trace "Resource " + resource.address + " should be indexed"
@@ -112,7 +112,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       try{
         indexedValue.toLong < indexCreateTimestamp
       }catch{
-        case e => false
+        case e: Throwable => false
       }
     }
 
