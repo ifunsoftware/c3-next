@@ -41,13 +41,13 @@ import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 import java.io.StringReader
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
 import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 
 class RamIndexer(val fileIndexer: Actor,
                  val configuration:SearchConfiguration, num: Int,
                  var extractDocumentContent:Boolean,
-                 val textExtractor:TextExtractor) extends WatchedActor {
+                 val textExtractor:TextExtractor) extends WatchedActor with Tracer {
 
   val log = LogFactory.getLog(getClass)
 
@@ -92,7 +92,11 @@ class RamIndexer(val fileIndexer: Actor,
         case IndexMsg(resource) => {
           try {
 
+            trace{"Got request to index" + resource.address}
+
             if(shouldIndexResource(resource)){
+
+              debug{"Indexing resource " + resource.address}
 
               indexResource(resource)
               sender ! ResourceIndexedMsg(resource.address)
@@ -100,6 +104,8 @@ class RamIndexer(val fileIndexer: Actor,
               if (writer.numDocs > maxDocsCount) {
                 createNewWriter()
               }
+            }else{
+              debug{"No need to index resource " + resource.address}
             }
           } catch {
             case e: Throwable => log.warn(num + ": Failed to index resource", e)
@@ -144,7 +150,7 @@ class RamIndexer(val fileIndexer: Actor,
   }
 
   def indexResource(resource: Resource) {
-    log debug num + ": Indexing resource " + resource.address
+    debug{ num + ": Indexing resource " + resource.address}
 
     val extractedMeta =
       if(extractDocumentContent){
@@ -165,7 +171,7 @@ class RamIndexer(val fileIndexer: Actor,
     writer.addDocument(document, analyzer)
     writer.commit()
 
-    log debug "Resource writen to tmp index (" + resource.address + ")"
+    debug{ "Resource writen to tmp index (" + resource.address + ")"}
   }
 
   def getLanguage(metadata:Map[String, String], extracted:Map[String, String]):String = {

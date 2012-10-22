@@ -231,7 +231,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   }
 
   def selectIndexer: RamIndexer = {
-    log debug "Selecting indexer..."
+    log trace "Selecting indexer..."
     val num = math.abs(random.nextInt) % (ramIndexers.size)
     ramIndexers.drop(num).head
   }
