@@ -68,6 +68,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             indexWriter.addIndexesNoOptimize(Array(directory))
             indexWriter.commit()
             indexWriter.optimize()
+            directory.close()
             log debug "Index merged"
             searcher ! ReopenSearcher
           }catch{
