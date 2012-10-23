@@ -57,6 +57,8 @@ class CommandFactory(additionalCommands:List[Commands] = List()) {
 
     register(FilesystemCommands)
 
+    register(SearchCommands)
+
     additionalCommands.foreach(register(_))
 
     register(new HelpCommand)
