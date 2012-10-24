@@ -110,6 +110,7 @@ class XStreamFactory{
 
     xStream.useAttributeFor(classOf[SearchResultElement], "address")
     xStream.useAttributeFor(classOf[SearchResultElement], "score")
+    xStream.useAttributeFor(classOf[SearchResultElement], "path")
     xStream.useAttributeFor(classOf[SearchResultFragment], "field")
 
 

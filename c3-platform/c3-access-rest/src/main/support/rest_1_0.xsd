@@ -108,6 +108,7 @@
         </xs:sequence>
         <xs:attribute name="address" type="xs:string" use="required"/>
         <xs:attribute name="score" type="xs:decimal" use="required"/>
+        <xs:attribute name="path" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="directoryType">

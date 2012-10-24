@@ -47,17 +47,11 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
 
   val httpClient = new HttpClient
 
-
-
   def write(data:Array[Byte], metadata:Map[String, String]):String =
     writeData(new FilePart("data", new ByteArrayPartSource(data)), metadata)
 
-
-
   def upload(file:File, metadata:Map[String, String]):String =
     writeData(new FilePart("data", new FilePartSource(file)), metadata)
-
-
 
   private def writeData(filePart:FilePart, metadata:Map[String, String]):String = {
     val postMethod = new PostMethod(url)
@@ -93,8 +87,6 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
       postMethod.releaseConnection()
     }
   }
-
-
 
   def downloadData(address:String, file:File) = {
     val getMethod = new GetMethod(url + address)
@@ -144,14 +136,12 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)          
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
-
-
 
   def delete(address:String) = {
     val deleteMethod = new DeleteMethod(url + address)
@@ -166,8 +156,6 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
       }
     }
   }
-
-
 
   def fakeRead(address:String):Int = {
     val getMethod = new GetMethod(url + address)

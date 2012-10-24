@@ -228,19 +228,19 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
     addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
   }
 
-  def lookupResourcePath(address:String):String = {
-
+  def lookupResourcePath(address:String):Option[String] = {
     try{
-      val result = lookupResourcePath(address, List[String]()).foldLeft("")(_ + "/" + _)
 
-      log info result
+      val pathComponents = lookupResourcePath(address, List[String]())
 
-      result
+      if(pathComponents.isEmpty){
+        None
+      }else{
+        Some(pathComponents.foldLeft("")(_ + "/" + _))
+      }
     }catch{
-      case e: Throwable => log.debug("Failed to get resource path", e)
-      ""
+      case e: Throwable => None
     }
-
   }
 
   @tailrec

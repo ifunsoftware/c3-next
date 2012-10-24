@@ -37,6 +37,7 @@ import org.springframework.stereotype.Controller
 import org.aphreet.c3.platform.remote.rest.response.SearchResult
 import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, PathVariable, RequestMapping}
 import org.aphreet.c3.platform.accesscontrol.READ
+import org.aphreet.c3.platform.filesystem.FSManager
 
 @Controller
 @RequestMapping(Array("/search"))
@@ -44,6 +45,9 @@ class SearchController extends DataController {
 
   @Autowired
   var searchManager: SearchManager = _
+
+  @Autowired
+  var fsManager: FSManager = _
 
   @RequestMapping(value = Array("/{query}"),
     method = Array(RequestMethod.GET))
@@ -55,11 +59,15 @@ class SearchController extends DataController {
     val accessTokens = getAccessTokens(READ, req)
     val domain = getCurrentDomainId(accessTokens)
 
-    val results = searchManager.search(domain, query)
+    val results = searchManager.search(domain, query).map(e => {
+      fsManager.lookupResourcePath(e.address) match {
+        case Some(value) => e.setPath(value)
+        case None => e
+      }
+    })
 
     resp.setStatus(HttpServletResponse.SC_OK)
 
     writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
-
   }
 }

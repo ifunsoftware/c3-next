@@ -44,7 +44,7 @@ trait FSManager{
 
   def moveNode(domainId:String, oldPath:String, newPath:String)
 
-  def lookupResourcePath(address:String):String
+  def lookupResourcePath(address:String):Option[String]
 
   def fileSystemRoots:Map[String, String]
 

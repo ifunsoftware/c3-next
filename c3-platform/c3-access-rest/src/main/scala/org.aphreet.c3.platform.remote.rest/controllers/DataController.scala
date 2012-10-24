@@ -182,10 +182,11 @@ class DataController extends AbstractController with ServletContextAware {
 
       //Replace this with something like strategy if future if we need more fields
       for (key <- keys) {
-        log info "Processing extended meta: " + key
         if (key == "c3.ext.fs.path") {
-          val value = filesystemManager.lookupResourcePath(resource.address)
-          resource.systemMetadata.put(key, value)
+          filesystemManager.lookupResourcePath(resource.address) match {
+            case Some(value) => resource.systemMetadata.put(key, value)
+            case None =>
+          }
         }
       }
     }

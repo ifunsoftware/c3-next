@@ -35,8 +35,12 @@ import scala.collection.JavaConversions._
 import org.aphreet.c3.platform.search.ext.SearchResultEntry
 
 case class SearchResultElement(address:String,
+                               path:String,
                                score:Float,
-                             fragments:Array[SearchResultFragment]){
+                               fragments:Array[SearchResultFragment]){
+
+  def setPath(newPath:String):SearchResultElement =
+    SearchResultElement(address, newPath, score, fragments)
 
 }
 
@@ -49,6 +53,7 @@ object SearchResultElement{
     
     new SearchResultElement(
       entry.address,
+      null,
       entry.score,
       mapAsScalaMap(entry.fragments).filter(e => !e._1.isEmpty).map(e => new SearchResultFragment(e._1, e._2)).toArray)
 

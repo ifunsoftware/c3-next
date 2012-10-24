@@ -31,7 +31,7 @@
 
 package org.aphreet.c3.platform.client.access.filesystem
 
-import org.aphreet.c3.platform.client.access.http.{C3FileHttpAccessor, C3HttpAccessor}
+import org.aphreet.c3.platform.client.access.http.{C3SearchAccessor, C3FileHttpAccessor, C3HttpAccessor}
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
@@ -44,6 +44,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
   var resourceAccessor:C3HttpAccessor = _
   var fileAccessor:C3FileHttpAccessor = _
+  var searchAccessor:C3SearchAccessor = _
 
   def cliDescription = parameters(
     "h" has mandatory argument "hostname" described "Host to connect to",
@@ -65,6 +66,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
     resourceAccessor = new C3HttpAccessor(host, user, secret)
     fileAccessor = new C3FileHttpAccessor(host, user, secret)
+    searchAccessor = new C3SearchAccessor(host, user, secret)
 
     val reader = new BufferedReader(new InputStreamReader(System.in))
 
@@ -93,6 +95,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
         case "exit" => System.exit(0)
         case "help" => help()
         case "mv" => mv(list.tail)
+        case "search" => search(list.tail)
 
         case _ => println("Unknown command. Type help to show available commands")
       }
@@ -113,6 +116,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     println("rm <path>                           - Remove file or directory")
     println("setmd <path> <key> <value>          - Set metadata key/value")
     println("upload <remote file> <local file>   - Upload file to c3")
+    println("search <query>                      - Search for files in the current domain")
   }
 
   def mv(args:List[String]) {
@@ -210,7 +214,28 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
       println(directoryData)
     }
+  }
 
+  def search(args:List[String]) {
+    args.headOption match {
+      case Some(value) => {
+        val xml = searchAccessor.search(value)
+
+        (xml \\ "entry").foreach(e => {
+          println(e \ "@address" + " : " + e \ "@score")
+          (e \ "@path").headOption match {
+            case Some(pathAttribute) => println(pathAttribute.text)
+            case None =>
+          }
+          (e \\ "fragment").foreach(f => {
+            println(" -> " + f \ "@field")
+
+            (f \\ "string").foreach(s => println("\t\t" + s.text))
+          })
+        })
+      }
+      case None => println("query string required")
+    }
   }
 
   def info(args:List[String]) {

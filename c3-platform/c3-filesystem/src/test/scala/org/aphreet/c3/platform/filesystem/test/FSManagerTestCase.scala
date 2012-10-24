@@ -47,7 +47,7 @@ class FSManagerTestCase extends TestCase{
 
     fsManager.fsRoots = Map("domain id " -> "address", "domain id 2" -> "address2")
 
-    var resource = new Resource
+    val resource = new Resource
 
     assertTrue(fsManager.resourceCanBeDeleted(resource))
 
@@ -162,10 +162,10 @@ class FSManagerTestCase extends TestCase{
 
     fsManager.accessManager = accessManager
 
-    assertEquals("/second_level_dir/third_level_dir/file0", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/second_level_dir/third_level_dir", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("/second_level_dir", fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(Some("/second_level_dir/third_level_dir/file0"), fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(Some("/second_level_dir/third_level_dir"), fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(Some("/second_level_dir"), fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(None, fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
 
     verify(accessManager)
@@ -184,10 +184,10 @@ class FSManagerTestCase extends TestCase{
 
     fsManager.accessManager = accessManager
 
-    assertEquals("", fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("", fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("", fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
-    assertEquals("", fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(None, fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(None, fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(None, fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
+    assertEquals(None, fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
 
 
