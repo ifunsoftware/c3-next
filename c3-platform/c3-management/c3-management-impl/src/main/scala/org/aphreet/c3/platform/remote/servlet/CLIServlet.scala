@@ -32,7 +32,7 @@ class CLIServlet extends HttpServlet{
 
       if (command != null) {
 
-        response.getWriter.println(evaluator.evaluate(command, accessService, managementService))
+        response.getWriter.println(escapeHtml(evaluator.evaluate(command, accessService, managementService)))
 
       }else{
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
@@ -40,5 +40,10 @@ class CLIServlet extends HttpServlet{
     }else{
       response.setStatus(HttpServletResponse.SC_NOT_FOUND)
     }
+  }
+
+  def escapeHtml(text: String): String = {
+    //We can do this more optimal however for management this is enough
+    text.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("&", "&amp;")
   }
 }
