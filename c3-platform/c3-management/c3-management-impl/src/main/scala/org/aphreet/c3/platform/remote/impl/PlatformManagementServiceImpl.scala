@@ -553,4 +553,16 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
   }
+
+  def resetSearchIndex() {
+
+    try{
+      managementEndpoint.setPlatformProperty("c3.search.index.create_timestamp", System.currentTimeMillis().toString)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 }

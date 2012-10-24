@@ -58,7 +58,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val MAX_TMP_INDEX_SIZE = "c3.search.index.max_size"
 
-  val INDEX_CREATE_TIMESTAMP = "c3.search.index.createTimestamp"
+  val INDEX_CREATE_TIMESTAMP = "c3.search.index.create_timestamp"
 
   val EXTRACT_DOCUMENT_CONTENT = "c3.search.index.extract_content"
 

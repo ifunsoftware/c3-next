@@ -92,7 +92,7 @@ class RamIndexer(val fileIndexer: Actor,
         case IndexMsg(resource) => {
           try {
 
-            trace{"Got request to index" + resource.address}
+            trace{"Got request to index " + resource.address}
 
             if(shouldIndexResource(resource)){
 
