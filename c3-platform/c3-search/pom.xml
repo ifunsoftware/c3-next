@@ -25,26 +25,22 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>org.apache.lucene.analysis</artifactId>
             <version>${lucene.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>org.apache.lucene</artifactId>
-            <version>${lucene.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>org.apache.lucene.highlighter</artifactId>
             <version>${lucene.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>org.apache.lucene.core</artifactId>
             <version>${lucene.version}</version>
+            <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
@@ -87,7 +83,7 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
-            
+
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -101,12 +97,6 @@
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
                                     <artifactId>org.apache.lucene.analysis</artifactId>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.lucene</groupId>
-                                    <artifactId>org.apache.lucene</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

@@ -31,14 +31,15 @@ package org.aphreet.c3.platform.search.impl.index
 
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.store.{Directory, FSDirectory}
+import org.apache.lucene.store.{SimpleFSDirectory, Directory, FSDirectory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
-import org.apache.lucene.index.{Term, IndexWriter}
+import org.apache.lucene.index.{IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
 import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
+import org.apache.lucene.util.Version
 
 class FileIndexer(var indexPath:Path) extends WatchedActor{
 
@@ -51,13 +52,13 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
   private def createWriter(path:Path):IndexWriter = {
     log info "Creating IndexWriter"
 
-    val directory = FSDirectory.getDirectory(path.file)
+    val directory = new SimpleFSDirectory(path.file)
     if(IndexWriter.isLocked(directory)){
       log warn "Index path is locked, unlocking..."
       IndexWriter.unlock(directory)
     }
 
-    new IndexWriter(directory, new StandardAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED)
+    new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_35, new StandardAnalyzer(Version.LUCENE_35)))
   }
 
   def act(){
@@ -65,9 +66,9 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
       react{
         case MergeIndexMsg(directory) =>
           try{
-            indexWriter.addIndexesNoOptimize(Array(directory))
+
+            indexWriter.addIndexes(directory)
             indexWriter.commit()
-            indexWriter.optimize()
             directory.close()
             log debug "Index merged"
             searcher ! ReopenSearcher

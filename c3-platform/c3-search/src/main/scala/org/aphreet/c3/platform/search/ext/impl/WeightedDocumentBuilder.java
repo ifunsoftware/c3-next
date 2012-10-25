@@ -44,7 +44,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
                 if (metadata.containsKey(key)) {
                     modifiedKey += EXTRACTED_SUFFIX;
                 }
-                field = new Field(modifiedKey, extractedMetadata.get(key), Field.Store.COMPRESS, Field.Index.ANALYZED);
+                field = new Field(modifiedKey, extractedMetadata.get(key), Field.Store.YES, Field.Index.ANALYZED);
                 if (weights.containsField(key.toLowerCase())) {
                     field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
                 }
@@ -58,7 +58,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
                 if (key.equals("c3.address")) {
                     field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.NOT_ANALYZED);
                 } else {
-                    field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.COMPRESS, Field.Index.ANALYZED);
+                    field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.ANALYZED);
                     if (weights.containsField(key.toLowerCase())) {
                         field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
                     }

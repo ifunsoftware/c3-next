@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.search.impl.common.Fields
 import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
 import collection.JavaConversions._
 import org.apache.lucene.document.{Document, Field}
+import org.apache.lucene.util.Version
 
 
 class ResourceHandler(val factory:DocumentBuilderFactory,
@@ -61,8 +62,8 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
 
   def analyzer:Analyzer = {
     
-    if(lang == "ru") new RussianAnalyzer
-    else new StandardAnalyzer
+    if(lang == "ru") new RussianAnalyzer(Version.LUCENE_35)
+    else new StandardAnalyzer(Version.LUCENE_35)
 
   }
 }

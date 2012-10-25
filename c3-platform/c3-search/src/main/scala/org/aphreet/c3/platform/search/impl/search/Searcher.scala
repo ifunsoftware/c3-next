@@ -30,15 +30,12 @@
 package org.aphreet.c3.platform.search.impl.search
 
 import org.apache.commons.logging.LogFactory
-import actors.Actor
-import actors.Actor._
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.SearchResultElement
 import org.aphreet.c3.platform.search.ext.{SearchConfiguration, SearchStrategyFactory}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
-import org.apache.lucene.search.{Searcher => LuceneSearcher}
 import org.apache.lucene.index.IndexReader
 import org.apache.lucene.store.SimpleFSDirectory
 
@@ -90,20 +87,17 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
     }
   }
 
-  private def createSearcher:LuceneSearcher = {
+  private def createSearcher:IndexSearcher = {
 
     val reader = IndexReader.open(new SimpleFSDirectory(indexPath.file.getCanonicalFile))
 
-    val searcher = new IndexSearcher(reader, )
+    new IndexSearcher(reader)
 
-    (reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
-
-    new ParallelMultiSearcher(
-    (new IndexSearcher(indexPath.file.getCanonicalPath)
-      :: ramIndexers.map(indexer => new IndexSearcher(indexer.directory)).toList).toArray)
+    //TODO Add temp directories to the result in the future
+    //(reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
   }
 
-  def getSearcher:LuceneSearcher = indexSearcher
+  def getSearcher:IndexSearcher = indexSearcher
 
   def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {
 

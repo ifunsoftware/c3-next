@@ -3,7 +3,6 @@ package org.aphreet.c3.platform.search.ext.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CachingTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.ru.RussianAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -11,8 +10,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.*;
+import org.apache.lucene.util.Version;
 import org.aphreet.c3.platform.search.ext.FieldWeights;
 import org.aphreet.c3.platform.search.ext.SearchConfiguration;
 import org.aphreet.c3.platform.search.ext.SearchResultEntry;
@@ -38,13 +41,14 @@ public class MultiFieldSearchStrategy  implements SearchStrategy {
     }
 
     @Override
-    public SearchResultEntry[] search(Searcher searcher, String query, int max, int offset, String domain) {
-        Analyzer analyzer = new StandardAnalyzer();
-        Analyzer russianAnalyzer = new RussianAnalyzer();
+    public SearchResultEntry[] search(IndexSearcher searcher, String query, int max, int offset, String domain) {
+
+        Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);
+        Analyzer russianAnalyzer = new RussianAnalyzer(Version.LUCENE_35);
         FieldWeights fieldWeights = configuration.getFieldWeights();
 
         try {
-            MultiFieldQueryParser parser = new MultiFieldQueryParser(fieldWeights.getFields(), analyzer);
+            MultiFieldQueryParser parser = new MultiFieldQueryParser(Version.LUCENE_35, fieldWeights.getFields(), analyzer);
             query += " AND domain:" + domain; // only docs from current domain
             Query searchQuery = parser.parse(query);
 
@@ -99,13 +103,15 @@ public class MultiFieldSearchStrategy  implements SearchStrategy {
 
     public String[] fragmentsWithHighlightedTerms(Analyzer analyzer, Query query,
                                                   String fieldName, String fieldContent,
-                                                  int fragmentNumber, int fragmentSize) throws IOException {
+                                                  int fragmentNumber, int fragmentSize) throws IOException, InvalidTokenOffsetsException {
 
         TokenStream stream = TokenSources.getTokenStream(fieldName, fieldContent, analyzer);
-        SpanScorer scorer = new SpanScorer(query, fieldName, new CachingTokenFilter(stream));
-        Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, fragmentSize);
 
-        Highlighter highlighter = new Highlighter(scorer);
+        QueryScorer queryScorer = new QueryScorer(query, fieldName);
+
+        Fragmenter fragmenter = new SimpleSpanFragmenter(queryScorer, fragmentSize);
+
+        Highlighter highlighter = new Highlighter(queryScorer);
 
         highlighter.setTextFragmenter(fragmenter);
         highlighter.setMaxDocCharsToAnalyze(Integer.MAX_VALUE);
