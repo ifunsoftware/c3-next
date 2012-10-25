@@ -74,7 +74,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     
     println("Welcome to C3 filesystem browser")
 
-    print("C3:" + currentDir + "$")
+    print("C3:" + currentDir + "$ ")
 
 
     while(true){
@@ -85,6 +85,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
       list.head match{
         case "ls" => ls(list.tail)
+        case "cat" => cat(list.tail)
         case "mkdir" => mkdir(list.tail)
         case "info"  => info(list.tail)
         case "upload" => upload(list.tail)
@@ -101,13 +102,14 @@ class FSClient(override val args:Array[String]) extends CLI(args){
       }
 
 
-      print("C3:" + currentDir + "$")
+      print("C3:" + currentDir + "$ ")
     }
   }
 
   def help(){
     println("cd <path>                           - Change current directory")
-    println("download <remote file> <local file> - download remote file content")
+    println("cat <path>                          - Print file content")
+    println("download <remote file> <local file> - Download remote file content")
     println("exit                                - Exit from shell")
     println("help                                - Print this message")
     println("info [<path>]                       - Download file metadata")
@@ -214,6 +216,10 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
       println(directoryData)
     }
+  }
+  
+  def cat(args: List[String]) {
+    download(args)
   }
 
   def search(args:List[String]) {
