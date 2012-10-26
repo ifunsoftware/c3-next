@@ -112,4 +112,10 @@ object ResourceVersion{
    * The name of the field in the system metadata that store data's MD5 hash
    */
   val RESOURCE_VERSION_HASH = "c3.data.md5"
+
+  def apply(stream:DataStream):ResourceVersion = {
+    val version = new ResourceVersion
+    version.data = stream
+    version
+  }
 }

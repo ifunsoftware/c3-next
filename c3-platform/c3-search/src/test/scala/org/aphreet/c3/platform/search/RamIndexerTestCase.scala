@@ -15,7 +15,7 @@ import org.apache.lucene.index.IndexReader
 
 class RamIndexerTestCase extends TestCase{
 
-  def testResourceIndex = {
+  def testResourceIndex(){
 
     val fileIndexerMock = new Actor{
 
@@ -37,9 +37,7 @@ class RamIndexerTestCase extends TestCase{
     val resource = new Resource
     resource.address = "aaaaaaaaaaaaaaaaaaaa-13a34a715e9-bbbbbbbb"
     resource.systemMetadata.put("c3.domain.id", "qweqweqwe")
-    val version = new ResourceVersion
-    version.data = DataStream.create("Hello for all c3 users!")
-    resource.addVersion(version)
+    resource.addVersion(ResourceVersion(DataStream.create("Hello, for all c3 users!")))
 
     ramIndexer ! IndexMsg(resource)
 
@@ -51,6 +49,6 @@ class RamIndexerTestCase extends TestCase{
 
     assertEquals(1, topDocs.scoreDocs.length)
     assertEquals("aaaaaaaaaaaaaaaaaaaa-13a34a715e9-bbbbbbbb", searcher.doc(topDocs.scoreDocs(0).doc).get("c3.address"))
-    assertEquals("Hello for all c3 users!", searcher.doc(topDocs.scoreDocs(0).doc).get("content"))
+    assertEquals("Hello, for all c3 users!", searcher.doc(topDocs.scoreDocs(0).doc).get("content"))
   }
 }

@@ -53,11 +53,7 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
 
     val domain = resource.systemMetadata.get("c3.domain.id").get
 
-    val doc = documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(extracted), lang, domain)
-
-    doc.add(new Field(Fields.ADDRESS, resource.address, Field.Store.YES, Field.Index.NOT_ANALYZED))
-
-    doc
+    documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(extracted), lang, resource.address, domain)
   }
 
   def analyzer:Analyzer = {

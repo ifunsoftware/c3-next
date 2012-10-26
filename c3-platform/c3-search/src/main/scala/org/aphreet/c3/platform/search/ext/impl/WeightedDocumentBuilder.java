@@ -8,7 +8,9 @@ import org.aphreet.c3.platform.search.ext.DocumentBuilder;
 import org.aphreet.c3.platform.search.ext.FieldWeights;
 import org.aphreet.c3.platform.search.ext.SearchConfiguration;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,12 +26,21 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
 
     private static final Log log = LogFactory.getLog(WeightedDocumentBuilder.class);
 
+    private Set<String> blacklistedMeta = new HashSet<String>();
+
+    {
+        blacklistedMeta.add("domain");
+        blacklistedMeta.add("c3.address");
+        blacklistedMeta.add("lang");
+    }
+
     public WeightedDocumentBuilder(SearchConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public Document build(Map<String, String> metadata, Map<String, String> extractedMetadata, String language, String domain) {
+    public Document build(Map<String, String> metadata, Map<String, String> extractedMetadata,
+                          String language, String address, String domain) {
 
         FieldWeights weights = configuration.getFieldWeights();
 
@@ -54,15 +65,13 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
 
         // store user metadata
         for (String key : metadata.keySet()) {
-            if (!key.equalsIgnoreCase("domain")) {
-                if (key.equals("c3.address")) {
-                    field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.NOT_ANALYZED);
-                } else {
-                    field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.ANALYZED);
-                    if (weights.containsField(key.toLowerCase())) {
-                        field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
-                    }
+            if (!blacklistedMeta.contains(key)) {
+
+                field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.NOT_ANALYZED);
+                if (weights.containsField(key.toLowerCase())) {
+                    field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
                 }
+
                 document.add(field);
             }
         }
@@ -71,6 +80,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
             document.add(new Field("lang", language, Field.Store.YES, Field.Index.NOT_ANALYZED));
         }
 
+        document.add(new Field("c3.address", address, Field.Store.YES, Field.Index.NOT_ANALYZED));
         document.add(new Field("domain", domain, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
         return document;

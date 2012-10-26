@@ -6,6 +6,10 @@ import java.util.Map;
 
 public interface DocumentBuilder {
 
-    Document build(Map<String, String> metadata, Map<String, String> extractedMetadata, String language, String domain);
+    Document build(Map<String, String> metadata,
+                   Map<String, String> extractedMetadata,
+                   String language,
+                   String address,
+                   String domain);
     
 }
