@@ -44,6 +44,8 @@ import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
 import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfiguration}
 import org.apache.lucene.util.Version
+import collection.JavaConversions._
+import org.apache.lucene.document.Document
 
 class RamIndexer(val fileIndexer: Actor,
                  val configuration:SearchConfiguration, num: Int,
@@ -169,12 +171,18 @@ class RamIndexer(val fileIndexer: Actor,
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
 
+    captureDocumentFields(document)
+
     debug{"Lucene document: " + document.toString}
 
     writer.addDocument(document, analyzer)
     writer.commit()
 
     debug{ "Resource writen to tmp index (" + resource.address + ")"}
+  }
+
+  def captureDocumentFields(document:Document){
+
   }
 
   def getLanguage(metadata:Map[String, String], extracted:Map[String, String]):String = {
