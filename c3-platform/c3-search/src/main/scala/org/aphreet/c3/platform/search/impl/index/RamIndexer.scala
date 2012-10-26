@@ -169,6 +169,8 @@ class RamIndexer(val fileIndexer: Actor,
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
 
+    debug{"Lucene document: " + document.toString}
+
     writer.addDocument(document, analyzer)
     writer.commit()
 

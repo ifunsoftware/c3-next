@@ -45,6 +45,7 @@ class RamIndexerTestCase extends TestCase{
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
     val searchQuery = new QueryParser(Version.LUCENE_35, "content", new StandardAnalyzer(Version.LUCENE_35)).parse("users")
+    println(searchQuery)
     val topDocs = searcher.search(searchQuery, 10)
 
     assertEquals(1, topDocs.scoreDocs.length)

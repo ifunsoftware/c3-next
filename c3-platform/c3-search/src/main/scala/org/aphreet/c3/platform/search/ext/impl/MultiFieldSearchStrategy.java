@@ -10,10 +10,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.util.Version;
 import org.aphreet.c3.platform.search.ext.FieldWeights;
@@ -49,20 +46,27 @@ public class MultiFieldSearchStrategy  implements SearchStrategy {
 
         try {
             MultiFieldQueryParser parser = new MultiFieldQueryParser(Version.LUCENE_35, fieldWeights.getFields(), analyzer);
-            query += " AND domain:" + domain; // only docs from current domain
             Query searchQuery = parser.parse(query);
 
-            Set termsSet = new HashSet();
+            BooleanQuery topQuery = new BooleanQuery();
+            topQuery.add(new BooleanClause(searchQuery, BooleanClause.Occur.MUST));
+            topQuery.add(new BooleanClause(new TermQuery(new Term("domain", domain)), BooleanClause.Occur.MUST));
+
+            if(log.isDebugEnabled()){
+                log.debug("Parsed query: " + topQuery);
+            }
+
+            Set<Term> termsSet = new HashSet<Term>();
             searchQuery.extractTerms(termsSet);
             Set<String> fieldsToSearchIn = new HashSet<String>();
-            for (Object o : termsSet) {
-                String field = ((Term) o).field();
+            for (Term o : termsSet) {
+                String field = o.field();
                 if (!field.equalsIgnoreCase("domain")) {
                     fieldsToSearchIn.add(field);
                 }
             }
 
-            TopDocs topDocs = searcher.search(searchQuery, max);
+            TopDocs topDocs = searcher.search(topQuery, max);
 
             ArrayList<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
 

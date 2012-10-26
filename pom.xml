@@ -120,10 +120,17 @@
             <scope>test</scope>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>org.slf4j</groupId>-->
+            <!--<artifactId>com.springsource.slf4j.simple</artifactId>-->
+            <!--<version>1.5.10</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>com.springsource.slf4j.simple</artifactId>
-            <version>1.5.10</version>
+        	<groupId>ch.qos.logback</groupId>
+        	<artifactId>logback-classic</artifactId>
+        	<version>0.9.18</version>
             <scope>test</scope>
         </dependency>
 
