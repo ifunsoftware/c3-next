@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public class FieldWeights {
 
-    private Map<String, Integer> weights;
+    private Map<String, Float> weights;
 
-    public FieldWeights(Map<String, Integer> weights) {
+    public FieldWeights(Map<String, Float> weights) {
         this.weights = Collections.unmodifiableMap(weights);
     }
 
@@ -21,9 +21,9 @@ public class FieldWeights {
         return weights.containsKey(key);
     }
 
-    public int getBoostFactor(String key, int defaultValue) {
+    public float getBoostFactor(String key, float defaultValue) {
 
-        Integer value = weights.get(key);
+        Float value = weights.get(key);
 
         if(value != null){
             return value;

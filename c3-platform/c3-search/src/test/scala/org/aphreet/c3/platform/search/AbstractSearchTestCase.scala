@@ -15,10 +15,16 @@ abstract class AbstractSearchTestCase extends TestCase{
 
   var ramIndexer:RamIndexer = _
 
-  val searchConfiguration = new SearchConfiguration
-  searchConfiguration.loadFieldWeight(JavaConversions.mapAsJavaMap(fieldWeights))
+  val configuration = new SearchConfiguration
+  configuration.loadFieldWeight(JavaConversions.mapAsJavaMap(fieldWeights))
 
-  val searchStrategy = new MultiFieldSearchStrategy(searchConfiguration)
+  val searchStrategy = new MultiFieldSearchStrategy()
+
+  val configurationManagerStub = new SearchConfigurationManager(){
+    def searchConfiguration = configuration
+
+    def act() {}
+  }
 
   override
   def setUp(){
@@ -36,7 +42,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
     fileIndexerMock.start()
 
-    ramIndexer = new RamIndexer(fileIndexerMock, searchConfiguration, 0, true, new SimpleTextExtractor)
+    ramIndexer = new RamIndexer(fileIndexerMock, configurationManagerStub, 0, true, new SimpleTextExtractor)
   }
 
   def indexResource(resource:Resource) {
@@ -51,7 +57,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
 
-    verifyResults(searchStrategy.search(searcher, searchQuery, 100, 0, domain).map(e => SearchResultElement.fromEntry(e)).toList)
+    verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).map(e => SearchResultElement.fromEntry(e)).toList)
 
   }
 
@@ -67,7 +73,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
   def domain:String = "defaultDomain"
 
-  def fieldWeights:Map[String, java.lang.Integer] = Map()
+  def fieldWeights:Map[String, java.lang.Float] = Map()
 
   def searchQuery:String
 

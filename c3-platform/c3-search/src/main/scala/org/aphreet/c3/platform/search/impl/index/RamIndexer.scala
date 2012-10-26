@@ -46,9 +46,10 @@ import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfigu
 import org.apache.lucene.util.Version
 import collection.JavaConversions._
 import org.apache.lucene.document.Document
+import org.aphreet.c3.platform.search.{HandleFieldListMsg, SearchConfigurationManager}
 
 class RamIndexer(val fileIndexer: Actor,
-                 val configuration:SearchConfiguration, num: Int,
+                 val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
                  val textExtractor:TextExtractor) extends WatchedActor with Tracer {
 
@@ -69,7 +70,7 @@ class RamIndexer(val fileIndexer: Actor,
   {
     createNewWriter()
 
-    documentBuilderFactory = new DocumentBuilderFactory(configuration)
+    documentBuilderFactory = new DocumentBuilderFactory()
   }
 
 
@@ -166,7 +167,8 @@ class RamIndexer(val fileIndexer: Actor,
     val language = getLanguage(metadata, extractedMeta)
 
 
-    val resourceHandler = new ResourceHandler(documentBuilderFactory, resource, metadata, extractedMeta, language)
+    val resourceHandler = new ResourceHandler(documentBuilderFactory,
+      configurationManager.searchConfiguration, resource, metadata, extractedMeta, language)
 
     val document = resourceHandler.document
     val analyzer = resourceHandler.analyzer
@@ -182,7 +184,9 @@ class RamIndexer(val fileIndexer: Actor,
   }
 
   def captureDocumentFields(document:Document){
+    val indexedFieldList = asScalaBuffer(document.getFields).filter(_.isTokenized).map(_.name()).toList
 
+    configurationManager ! HandleFieldListMsg(indexedFieldList)
   }
 
   def getLanguage(metadata:Map[String, String], extracted:Map[String, String]):String = {

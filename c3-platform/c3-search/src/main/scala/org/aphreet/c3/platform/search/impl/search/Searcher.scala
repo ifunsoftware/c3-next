@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.search.impl.search
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
-import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
 import org.aphreet.c3.platform.search.ext.{SearchConfiguration, SearchStrategyFactory}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
@@ -40,12 +40,14 @@ import org.apache.lucene.index.IndexReader
 import org.apache.lucene.store.SimpleFSDirectory
 
 
-class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val configuration:SearchConfiguration) extends WatchedActor{
+class Searcher(var indexPath: Path,
+               var ramIndexers:List[RamIndexer],
+               val configurationManager:SearchConfigurationManager) extends WatchedActor{
 
   var searchStrategyFactory:SearchStrategyFactory = _
 
   {
-    searchStrategyFactory = new SearchStrategyFactory(configuration)
+    searchStrategyFactory = new SearchStrategyFactory()
   }
 
 
@@ -103,7 +105,9 @@ class Searcher(var indexPath: Path, var ramIndexers:List[RamIndexer], val config
 
     val searchStrategy = searchStrategyFactory.createSearchStrategy
 
-    val found = searchStrategy.search(getSearcher, sourceQuery, 30, 0, domain)
+    val found = searchStrategy.search(getSearcher,
+      configurationManager.searchConfiguration,
+      sourceQuery, 30, 0, domain)
 
     val results = new Array[SearchResultElement](found.size)
 

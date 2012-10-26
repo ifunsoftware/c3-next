@@ -27,18 +27,12 @@ import java.util.*;
  * Date: 02.02.2011
  * Time: 0:24:01
  */
-public class MultiFieldSearchStrategy  implements SearchStrategy {
+public class MultiFieldSearchStrategy implements SearchStrategy {
 
     private static final Log log = LogFactory.getLog(MultiFieldSearchStrategy.class);
 
-    private SearchConfiguration configuration;
-
-    public MultiFieldSearchStrategy(SearchConfiguration configuration){
-        this.configuration = configuration;
-    }
-
     @Override
-    public SearchResultEntry[] search(IndexSearcher searcher, String query, int max, int offset, String domain) {
+    public SearchResultEntry[] search(IndexSearcher searcher, SearchConfiguration configuration,  String query, int max, int offset, String domain) {
 
         Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);
         Analyzer russianAnalyzer = new RussianAnalyzer(Version.LUCENE_35);

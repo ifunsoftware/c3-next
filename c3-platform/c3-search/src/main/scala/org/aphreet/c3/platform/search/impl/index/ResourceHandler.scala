@@ -34,13 +34,14 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
+import org.aphreet.c3.platform.search.ext.{SearchConfiguration, DocumentBuilderFactory}
 import collection.JavaConversions._
 import org.apache.lucene.document.{Document, Field}
 import org.apache.lucene.util.Version
 
 
 class ResourceHandler(val factory:DocumentBuilderFactory,
+                      val searchConfiguration:SearchConfiguration,
                       val resource:Resource,
                       val meta:Map[String, String],
                       val extracted:Map[String, String],
@@ -49,7 +50,7 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
 
   def document:Document = {
 
-    val documentBuilder = factory.createDocumentBuilder
+    val documentBuilder = factory.createDocumentBuilder(searchConfiguration)
 
     val domain = resource.systemMetadata.get("c3.domain.id").get
 

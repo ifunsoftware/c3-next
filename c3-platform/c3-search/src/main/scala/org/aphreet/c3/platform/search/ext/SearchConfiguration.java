@@ -35,13 +35,13 @@ import java.util.Map;
 
 public class SearchConfiguration {
 
-    private FieldWeights fieldWeights = new FieldWeights(Collections.<String, Integer>emptyMap());
+    private FieldWeights fieldWeights = new FieldWeights(Collections.<String, Float>emptyMap());
 
     public FieldWeights getFieldWeights(){
         return fieldWeights;
     }
 
-    public void loadFieldWeight(Map<String, Integer> weights){
+    public void loadFieldWeight(Map<String, Float> weights){
         fieldWeights = new FieldWeights(weights);
     }
 }

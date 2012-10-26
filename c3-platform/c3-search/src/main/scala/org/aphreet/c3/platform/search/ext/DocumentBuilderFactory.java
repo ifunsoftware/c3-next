@@ -35,13 +35,7 @@ import java.util.Map;
  */
 public class DocumentBuilderFactory {
 
-    private SearchConfiguration configuration;
-
-    public DocumentBuilderFactory(SearchConfiguration configuration){
-        this.configuration = configuration;
-    }
-
-    public DocumentBuilder createDocumentBuilder(){
+    public DocumentBuilder createDocumentBuilder(SearchConfiguration configuration){
         return new WeightedDocumentBuilder(configuration);
     }
 }

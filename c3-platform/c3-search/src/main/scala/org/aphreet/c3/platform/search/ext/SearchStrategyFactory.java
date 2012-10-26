@@ -33,13 +33,7 @@ import org.aphreet.c3.platform.search.ext.impl.MultiFieldSearchStrategy;
 
 public class SearchStrategyFactory {
 
-    private SearchConfiguration configuration;
-
-    public SearchStrategyFactory(SearchConfiguration configuration){
-        this.configuration = configuration;
-    }
-
     public SearchStrategy createSearchStrategy(){
-        return new MultiFieldSearchStrategy(configuration);
+        return new MultiFieldSearchStrategy();
     }
 }

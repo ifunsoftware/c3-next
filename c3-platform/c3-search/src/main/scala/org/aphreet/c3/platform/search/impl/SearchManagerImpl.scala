@@ -29,10 +29,7 @@
  */
 package org.aphreet.c3.platform.search.impl
 
-import actors.Actor._
-
 import background._
-import common.SearchConfigurationUtil
 import index._
 import extractor.TikaTextExtractor
 import org.aphreet.c3.platform.access._
@@ -47,7 +44,7 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.common.{ComponentGuard, Path}
-import org.aphreet.c3.platform.search.{SearchResultElement, SearchManager}
+import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
@@ -85,8 +82,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   @Autowired
   var statisticsManager: StatisticsManager = _
 
-  val configuration = SearchConfigurationUtil.createSearchConfiguration
-
+  @Autowired
+  var searchConfigurationManager: SearchConfigurationManager = _
 
   var fileIndexer: FileIndexer = null
 
@@ -127,10 +124,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       fileIndexer = new FileIndexer(indexPath)
 
       for(i <- 1 to numberOfIndexers){
-        ramIndexers = new RamIndexer(fileIndexer, configuration, i, extractDocumentContent, new TikaTextExtractor) :: ramIndexers
+        ramIndexers = new RamIndexer(fileIndexer, searchConfigurationManager, i, extractDocumentContent, new TikaTextExtractor) :: ramIndexers
       }
 
-      searcher = new Searcher(indexPath, ramIndexers, configuration)
+      searcher = new Searcher(indexPath, ramIndexers, searchConfigurationManager)
       fileIndexer.searcher = searcher
 
       searcher.start()
@@ -227,7 +224,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   }
 
   def flushIndexes() {
-    ramIndexers.foreach(_ ! FlushIndex(true))
+    ramIndexers.foreach(_ ! FlushIndex(force = true))
   }
 
   def selectIndexer: RamIndexer = {
@@ -279,7 +276,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
             val indexersToAdd = newCount - ramIndexers.size
 
             for (i <- 1 to indexersToAdd) {
-              val indexer = new RamIndexer(fileIndexer, configuration, i + ramIndexers.size, extractDocumentContent, new TikaTextExtractor)
+              val indexer = new RamIndexer(fileIndexer, searchConfigurationManager, i + ramIndexers.size, extractDocumentContent, new TikaTextExtractor)
               indexer.start()
               ramIndexers = indexer :: ramIndexers
             }
@@ -339,7 +336,7 @@ class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
           log info "Thread interrupted"
           Thread.currentThread.interrupt()
       }
-      searchManager.ramIndexers.foreach(_ ! FlushIndex(false))
+      searchManager.ramIndexers.foreach(_ ! FlushIndex(force = false))
     }
 
     log info "Search scheduler stopped"

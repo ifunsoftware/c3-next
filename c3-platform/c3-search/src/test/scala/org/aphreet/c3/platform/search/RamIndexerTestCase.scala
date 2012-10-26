@@ -31,7 +31,11 @@ class RamIndexerTestCase extends TestCase{
 
     fileIndexerMock.start()
 
-    val ramIndexer = new RamIndexer(fileIndexerMock, new SearchConfiguration, 0, true, new SimpleTextExtractor)
+    val ramIndexer = new RamIndexer(fileIndexerMock, new SearchConfigurationManager {
+      def searchConfiguration = new SearchConfiguration
+
+      def act() {}
+    }, 0, true, new SimpleTextExtractor)
     ramIndexer.start()
 
     val resource = new Resource
@@ -45,7 +49,6 @@ class RamIndexerTestCase extends TestCase{
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
     val searchQuery = new QueryParser(Version.LUCENE_35, "content", new StandardAnalyzer(Version.LUCENE_35)).parse("users")
-    println(searchQuery)
     val topDocs = searcher.search(searchQuery, 10)
 
     assertEquals(1, topDocs.scoreDocs.length)
