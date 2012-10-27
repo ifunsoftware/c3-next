@@ -80,6 +80,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   var targetsConfigAccessor:ReplicationTargetsConfigAccessor = null
 
+  var replicationPortRetriever:ReplicationPortRetriever = _
 
   private var currentTargetConfig = Map[String, ReplicationHost]()
 
@@ -287,7 +288,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   override def defaultValues:Map[String, String] =
     Map(HTTP_PORT_KEY -> "7373",
       HTTPS_PORT_KEY -> "7374",
-      REPLICATION_PORT_KEY -> DEFAULT_REPLICATION_PORT.toString,
+      REPLICATION_PORT_KEY -> replicationPortRetriever.getReplicationPort.toString,
       REPLICATION_QUEUE_KEY -> "",
       REPLICATION_SECURE_KEY -> "false",
       Constants.C3_PUBLIC_HOSTNAME -> "localhost")
@@ -354,6 +355,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   @Autowired
   def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
+
+  @Autowired
+  def setReplicationPortRetriever(retriever:ReplicationPortRetriever) {replicationPortRetriever = retriever}
 }
 
 class ProcessScheduler(manager:ReplicationManager) extends Runnable{
