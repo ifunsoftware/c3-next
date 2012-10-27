@@ -67,7 +67,12 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
         for (String key : metadata.keySet()) {
             if (!blacklistedMeta.contains(key)) {
 
-                field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, Field.Index.NOT_ANALYZED);
+                Field.Index isAnalyzed = Field.Index.ANALYZED;
+                if(key.startsWith("__")){
+                    isAnalyzed = Field.Index.NOT_ANALYZED;
+                }
+
+                field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, isAnalyzed);
                 if (weights.containsField(key.toLowerCase())) {
                     field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
                 }
