@@ -289,7 +289,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       HTTPS_PORT_KEY -> "7374",
       REPLICATION_PORT_KEY -> DEFAULT_REPLICATION_PORT.toString,
       REPLICATION_QUEUE_KEY -> "",
-      REPLICATION_SECURE_KEY -> "false")
+      REPLICATION_SECURE_KEY -> "false",
+      Constants.C3_PUBLIC_HOSTNAME -> "localhost")
 
   override def propertyChanged(event:PropertyChangeEvent) {
 

@@ -65,7 +65,7 @@ case class FieldConfiguration(fields:List[Field]){
       }
     }
 
-    FieldConfiguration(newConfiguration.values.toList.sortWith(Field.lt))
+    FieldConfiguration(newConfiguration.values.toList.sortWith(Field.gt))
   }
 
   def fieldMap:Map[String, java.lang.Float] = {
@@ -82,6 +82,6 @@ case class Field(name:String, weight:Float, count:Int){
 }
 
 object Field{
-  def lt (f1:Field, f2:Field):Boolean = f1.count < f2.count
+  def gt (f1:Field, f2:Field):Boolean = f1.count > f2.count
 }
 

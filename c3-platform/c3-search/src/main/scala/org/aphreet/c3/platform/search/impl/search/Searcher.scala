@@ -33,11 +33,11 @@ import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
-import org.aphreet.c3.platform.search.ext.{SearchConfiguration, SearchStrategyFactory}
+import org.aphreet.c3.platform.search.ext.SearchStrategyFactory
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
 import org.apache.lucene.index.IndexReader
-import org.apache.lucene.store.SimpleFSDirectory
+import org.apache.lucene.store.NIOFSDirectory
 
 
 class Searcher(var indexPath: Path,
@@ -65,9 +65,12 @@ class Searcher(var indexPath: Path,
 
           indexSearcher = createSearcher
 
-          Thread.sleep(1000 * 5) //May be some threads is still using old searcher
+          Thread.sleep(1000 * 5) //May be some threads are still using old searcher
 
-          oldSearcher.close()
+          oldSearcher match {
+            case Some(value) => value.close()
+            case None =>
+          }
         }
 
         case NewIndexPathMsg(path) => {
@@ -79,7 +82,10 @@ class Searcher(var indexPath: Path,
         case DestroyMsg => {
           log info "Destroying searcher"
           try{
-            indexSearcher.close()
+            indexSearcher match {
+              case Some(value) => value.close()
+              case None =>
+            }
           }finally{
             this.exit()
           }
@@ -89,41 +95,53 @@ class Searcher(var indexPath: Path,
     }
   }
 
-  private def createSearcher:IndexSearcher = {
+  private def createSearcher:Option[IndexSearcher] = {
 
-    val reader = IndexReader.open(new SimpleFSDirectory(indexPath.file.getCanonicalFile))
+    try{
+      val reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
 
-    new IndexSearcher(reader)
+      Some(new IndexSearcher(reader))
+    }catch{
+      case e: Throwable => {
+        log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
+        None
+      }
+    }
 
     //TODO Add temp directories to the result in the future
     //(reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
   }
 
-  def getSearcher:IndexSearcher = indexSearcher
+  def getSearcher:Option[IndexSearcher] = indexSearcher
 
   def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {
 
-    val searchStrategy = searchStrategyFactory.createSearchStrategy
+    if(getSearcher.isEmpty){
+      Array()
+    }else{
 
-    val found = searchStrategy.search(getSearcher,
-      configurationManager.searchConfiguration,
-      sourceQuery, 30, 0, domain)
+      val searchStrategy = searchStrategyFactory.createSearchStrategy
 
-    val results = new Array[SearchResultElement](found.size)
+      val found = searchStrategy.search(getSearcher.get,
+        configurationManager.searchConfiguration,
+        sourceQuery, 30, 0, domain)
 
-    var i = 0
+      val results = new Array[SearchResultElement](found.size)
 
-    for(e <- found){
+      var i = 0
 
-      results(i) = SearchResultElement.fromEntry(e)
+      for(e <- found){
 
-      i = i +1
+        results(i) = SearchResultElement.fromEntry(e)
+
+        i = i +1
+      }
+
+      if(log.isDebugEnabled)
+        log debug "results: " + results.toString
+
+      results
     }
-
-    if(log.isDebugEnabled)
-      log debug "results: " + results.toString
-
-    results
   }
 
 

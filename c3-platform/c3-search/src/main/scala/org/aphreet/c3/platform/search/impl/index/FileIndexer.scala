@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.search.impl.index
 
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.store.{SimpleFSDirectory, Directory, FSDirectory}
+import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
@@ -52,13 +52,16 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
   private def createWriter(path:Path):IndexWriter = {
     log info "Creating IndexWriter"
 
-    val directory = new SimpleFSDirectory(path.file)
+    val directory = new NIOFSDirectory(path.file)
     if(IndexWriter.isLocked(directory)){
       log warn "Index path is locked, unlocking..."
       IndexWriter.unlock(directory)
     }
 
-    new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_35, new StandardAnalyzer(Version.LUCENE_35)))
+    new IndexWriter(directory,
+      new IndexWriterConfig(Version.LUCENE_35,
+        new StandardAnalyzer(Version.LUCENE_35))
+          .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
   }
 
   def act(){
