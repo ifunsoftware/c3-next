@@ -50,13 +50,28 @@
         <dependency>
             <groupId>org.aphreet.c3</groupId>
             <artifactId>c3-tika-api</artifactId>
-            <version>1.0.519</version>
+            <version>1.1.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.ifunsoftware.s4</groupId>
             <artifactId>language-guesser</artifactId>
             <version>1.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>com.springsource.org.antlr</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

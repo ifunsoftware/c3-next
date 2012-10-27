@@ -22,7 +22,7 @@ class SearchConfigurationAccessor extends ConfigAccessor[FieldConfiguration]{
 
   protected def defaultConfig = FieldConfiguration(List())
 
-  protected def loadConfig(configFile: File):FieldConfiguration = {
+  def loadConfig(configFile: File):FieldConfiguration = {
     val buffer = new ArrayBuffer[Field]
 
     val node = new AntlrJSONParser().parse(configFile).asInstanceOf[ListNode]
@@ -31,8 +31,8 @@ class SearchConfigurationAccessor extends ConfigAccessor[FieldConfiguration]{
       val array = fieldValues.asInstanceOf[ListNode]
 
       val name = array.getNodes.get(0).asInstanceOf[ScalarNode].getValue[String]
-      val weight = array.getNodes.get(0).asInstanceOf[ScalarNode].getValue[Float]
-      val count = array.getNodes.get(0).asInstanceOf[ScalarNode].getValue[Int]
+      val weight = array.getNodes.get(1).asInstanceOf[ScalarNode].getValue[String].toFloat
+      val count = array.getNodes.get(2).asInstanceOf[ScalarNode].getValue[String].toInt
 
       buffer.add(Field(name, weight, count))
     }
@@ -40,7 +40,7 @@ class SearchConfigurationAccessor extends ConfigAccessor[FieldConfiguration]{
     FieldConfiguration(buffer.toList)
   }
 
-  protected def storeConfig(data: FieldConfiguration, configFile: File) {
+  def storeConfig(data: FieldConfiguration, configFile: File) {
     this.synchronized {
       val swriter = new StringWriter()
 
