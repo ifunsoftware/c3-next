@@ -51,11 +51,11 @@ import org.aphreet.c3.platform.resource.IdGenerator
 class PlatformConfigManagerImpl extends PlatformConfigManager{
   val log = LogFactory getLog getClass
 
-  var configDir: File = _;
+  var configDir: File = _
 
-  private val foundListeners = new HashSet[PlatformPropertyListener];
+  private val foundListeners = new HashSet[PlatformPropertyListener]
 
-  private val propertyListeners:HashMap[String, Set[PlatformPropertyListener]] = new HashMap;
+  private val propertyListeners = new HashMap[String, Set[PlatformPropertyListener]]
 
   private var currentConfig: Map[String, String] = null
 

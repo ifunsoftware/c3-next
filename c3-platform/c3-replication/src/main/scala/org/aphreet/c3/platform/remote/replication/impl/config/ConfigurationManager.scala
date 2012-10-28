@@ -64,7 +64,8 @@ class ConfigurationManager extends DtoConvertor{
 
   def deserializeConfiguration(configuration:String):PlatformInfo = {
     val xStream = new XStream(new DomDriver("UTF-8"))
-    xStream.setClassLoader(getClass.getClassLoader)
+
+    xStream.setClassLoader(classOf[PlatformInfo].getClassLoader)
 
     xStream.fromXML(configuration).asInstanceOf[PlatformInfo]
   }
