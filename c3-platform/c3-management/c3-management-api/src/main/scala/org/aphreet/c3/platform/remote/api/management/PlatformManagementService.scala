@@ -52,7 +52,7 @@ trait PlatformManagementService {
 
   def removeIndex(id:String, name:String)
 
-  def establishReplication(host:String, username:String, password:String)
+  def establishReplication(host:String, port:java.lang.Integer, username:String, password:String)
 
   def removeReplicationTarget(id:String)
 

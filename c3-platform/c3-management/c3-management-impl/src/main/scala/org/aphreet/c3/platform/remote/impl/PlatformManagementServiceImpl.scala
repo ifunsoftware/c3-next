@@ -399,9 +399,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def establishReplication(host:String, username:String, password:String) {
+  def establishReplication(host:String, port:java.lang.Integer, username:String, password:String) {
     try{
-      replicationManager.establishReplication(host, username, password)
+      replicationManager.establishReplication(host, port, username, password)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

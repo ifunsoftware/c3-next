@@ -32,8 +32,13 @@
 package org.aphreet.c3.platform.remote.replication.impl.config
 
 import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, DomainDescription, Pair}
+import reflect.BeanProperty
 
-case class PlatformInfo(systemId:String,
-                        host:ReplicationHost,
-                        domains:Array[DomainDescription],
-                        fsRoots:Array[Pair])
+case class PlatformInfo(@BeanProperty var systemId:String,
+                   @BeanProperty var host:ReplicationHost,
+                   @BeanProperty var domains:Array[DomainDescription],
+                   @BeanProperty var fsRoots:Array[Pair]) extends java.io.Serializable{
+
+  def this() = this(null, null, null, null)
+
+}

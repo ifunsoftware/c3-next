@@ -208,11 +208,11 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
-  def establishReplication(host:String, user:String, password:String) {
+  def establishReplication(host:String, port:Int, user:String, password:String) {
 
     val keyPair = AsymmetricKeyGenerator.generateKeys
 
-    val node = Node(host, 7375)
+    val node = Node(host, port)
 
     val negotiator = RemoteActor.select(node, 'ReplicationNegotiator)
 

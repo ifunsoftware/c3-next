@@ -48,13 +48,13 @@ class AddReplicationTarget extends Command {
 
   override
   def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 3){
-      wrongParameters("create replication target <hostname> <username> <password>")
+    if(params.size < 4){
+      wrongParameters("create replication target <hostname> <port> <username> <password>")
     }else{
 
       val paramsArray = params.toArray
 
-      management.establishReplication(paramsArray(0), paramsArray(1), paramsArray(2))
+      management.establishReplication(paramsArray(0), paramsArray(1).toInt, paramsArray(2), paramsArray(3))
       "Done"
     }
   }

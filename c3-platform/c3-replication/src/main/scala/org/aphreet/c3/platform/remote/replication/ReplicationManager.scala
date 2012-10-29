@@ -41,7 +41,7 @@ trait ReplicationManager extends WatchedActor {
 
   def retryFailedReplicationQueue(index:Int)
 
-  def establishReplication(host:String, user:String, password:String)
+  def establishReplication(host:String, port:Int, user:String, password:String)
 
   def cancelReplication(id:String)
 
