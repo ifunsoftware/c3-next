@@ -70,6 +70,8 @@ class ReplicationLink(val localSystemId:String,
 
     val remoteActor = RemoteActor.select(peer, 'ReplicationActor)
 
+    link(remoteActor)
+
     started = true
 
     loop{
@@ -113,7 +115,7 @@ class ReplicationLink(val localSystemId:String,
           val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
 
           if(log.isTraceEnabled)
-            log trace "Adding RUE from queue " + resource.address
+            log trace "Adding RUE to queue " + resource.address
 
           queue += ((ReplicationTask(host.systemId, resource.address, UpdateAction(timestamp.longValue)), System.currentTimeMillis))
 
@@ -188,6 +190,7 @@ class ReplicationLink(val localSystemId:String,
 
         case DestroyMsg => {
           log info "Destroying replication link to " + host.toString
+          unlink(remoteActor)
           this.exit()
         }
       }

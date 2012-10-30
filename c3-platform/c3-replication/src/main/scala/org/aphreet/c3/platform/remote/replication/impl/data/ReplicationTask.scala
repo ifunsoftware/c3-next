@@ -40,9 +40,9 @@ case class ReplicationTask(systemId:String, address:String, action:ReplicationAc
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    val numSystemId = systemId.toInt
+    dataOs.writeUTF(systemId)
+    dataOs.writeUTF(address)
 
-    dataOs.writeInt(numSystemId)
 
     val addressBytes = address.getBytes("UTF-8")
     dataOs.writeInt(addressBytes.size)
@@ -58,16 +58,12 @@ object ReplicationTask {
     val byteIn = new ByteArrayInputStream(key)
     val dataIn = new DataInputStream(byteIn)
 
-    val systemId = dataIn.readInt
-    val addressLength = dataIn.readInt
-
-    val addressBytes = new Array[Byte](addressLength)
-
-    dataIn.read(addressBytes)
+    val systemId = dataIn.readUTF()
+    val address = dataIn.readUTF()
 
     val action = ReplicationAction.fromBytes(value)
 
-    ReplicationTask(systemId.toString, new String(addressBytes, "UTF-8"), action)
+    ReplicationTask(systemId, address, action)
   }
 }
 

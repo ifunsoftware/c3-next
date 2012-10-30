@@ -62,7 +62,10 @@ class RemoteSystemDataStream(val host:ReplicationHost,
 
     val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 
-    addAuthHeader(getMethod, requestUri, domainId, domainKey)
+    //Check if we work with anonymous domain
+    if(!domainKey.isEmpty){
+      addAuthHeader(getMethod, requestUri, domainId, domainKey)
+    }
 
     try{
       val status = (new HttpClient()).executeMethod(getMethod)
@@ -77,10 +80,10 @@ class RemoteSystemDataStream(val host:ReplicationHost,
             inChannel.close()
           }
         }
-        case _ => throw new StorageException(("Failed to get resource data, code " + status).asInstanceOf[String])
+        case _ => throw new StorageException("Failed to get resource data, code " + status)
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
 
     file
@@ -114,7 +117,7 @@ class RemoteSystemDataStream(val host:ReplicationHost,
         file.delete
         RemoteSystemDataWrapper.log.debug("Deleted tmp file for ra " + address)
       }catch{
-        case e=> e.printStackTrace()
+        case e: Throwable => e.printStackTrace()
       }
     }
   }

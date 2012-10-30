@@ -128,7 +128,7 @@ class ConfigurationManager extends DtoConvertor{
     })
   }
 
-  private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) = {
+  private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) {
 
     for(domain <- remoteDomains){
       domainManager.importDomain(domainFromDescription(domain), remoteSystemId)

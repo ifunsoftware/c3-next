@@ -92,7 +92,7 @@ class ReplicationTargetActor extends WatchedActor{
 
   def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) {
 
-    log info "Starting ReplicationTargetActor..."
+    log info "Starting ReplicationTargetActor on port " + replicationPort
 
     this.localSystemId = localSystemId
 

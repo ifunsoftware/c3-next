@@ -56,31 +56,11 @@ import actors.remote.{Node, RemoteActor}
 @Scope("singleton")
 class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
 
-  private val DEFAULT_REPLICATION_PORT = 7375
-
   private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
 
   val log = LogFactory getLog getClass
 
   var localSystemId:String = ""
-
-  var localReplicationActor:ReplicationTargetActor = null
-
-  var sourceReplicationActor:ReplicationSourceActor = null
-
-  var platformConfigManager:PlatformConfigManager = null
-
-  var configurationManager:ConfigurationManager = null
-
-  var storageManager:StorageManager = null
-
-  var taskManager:TaskManager = null
-
-  var sourcesConfigAccessor:ReplicationSourcesConfigAccessor = null
-
-  var targetsConfigAccessor:ReplicationTargetsConfigAccessor = null
-
-  var replicationPortRetriever:ReplicationPortRetriever = _
 
   private var currentTargetConfig = Map[String, ReplicationHost]()
 
@@ -91,6 +71,35 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   var replicationQueueStorage:ReplicationQueueStorage = null
 
   var isTaskRunning = false
+
+
+  @Autowired
+  var localReplicationActor:ReplicationTargetActor = _
+
+  @Autowired
+  var sourceReplicationActor:ReplicationSourceActor = _
+
+  @Autowired
+  var platformConfigManager:PlatformConfigManager = _
+
+  @Autowired
+  var configurationManager:ConfigurationManager = _
+
+  @Autowired
+  var storageManager:StorageManager = _
+
+  @Autowired
+  var taskManager:TaskManager = _
+
+  @Autowired
+  var sourcesConfigAccessor:ReplicationSourcesConfigAccessor = _
+
+  @Autowired
+  var targetsConfigAccessor:ReplicationTargetsConfigAccessor = _
+
+  @Autowired
+  var replicationPortRetriever:ReplicationPortRetriever = _
+
 
   @PostConstruct
   def init(){
@@ -103,7 +112,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val replicationPort = platformConfigManager.getPlatformProperties.get(REPLICATION_PORT_KEY) match{
       case Some(x) => x.toInt
-      case None => DEFAULT_REPLICATION_PORT
+      case None => replicationPortRetriever.getReplicationPort
     }
 
     localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
@@ -329,35 +338,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       }
     }
   }
-
-  //--------------------------------------------------------------------------------------------------------------------//
-
-  @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-
-  @Autowired
-  def setSourcesConfigAccessor(accessor:ReplicationSourcesConfigAccessor) {sourcesConfigAccessor = accessor}
-
-  @Autowired
-  def setTargetsConfigAccessor(accessor:ReplicationTargetsConfigAccessor) {targetsConfigAccessor = accessor}
-
-  @Autowired
-  def setConfigManager(manager:PlatformConfigManager) {platformConfigManager = manager}
-
-  @Autowired
-  def setTaskManager(manager:TaskManager) {taskManager = manager}
-
-  @Autowired
-  def setLocalReplicationActor(actor:ReplicationTargetActor) {localReplicationActor = actor}
-
-  @Autowired
-  def setSourceReplicationActor(actor:ReplicationSourceActor) {sourceReplicationActor = actor}
-
-  @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
-
-  @Autowired
-  def setReplicationPortRetriever(retriever:ReplicationPortRetriever) {replicationPortRetriever = retriever}
 }
 
 class ProcessScheduler(manager:ReplicationManager) extends Runnable{
