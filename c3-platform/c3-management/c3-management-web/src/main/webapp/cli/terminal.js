@@ -25,8 +25,19 @@ var Terminal = new Class({
     // Process keystrokes
     keydown: function(event) {
         dbg('keydown> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
-        if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
+
         var command = this.currentCommand.get('html');
+
+//        if(event.control){
+//            if(event.code == 86){
+//                command += window.clipboardData.getData('Text');
+//                this.currentCommand.set('html', command);
+//                return;
+//            }
+//        }
+
+        if (event.control || event.alt || event.meta) return;
+
 
         if (event.key == 'enter') {
             event.preventDefault();
@@ -65,22 +76,19 @@ var Terminal = new Class({
             }
         }
 
+        if(event.control){
+            if(event.code == 86){
+                command += window.clipboardData.getData('Text');
+                this.currentCommand.set('html', command);
+            }
+        }
+
     },
 
     keypress: function(event) {
         dbg('keypress> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
         if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
         var command = this.currentCommand.get('html');
-
-
-        if(event.control){
-            if(event.code == 118){
-                command += window.clipboardData.getData('Text');
-                this.currentCommand.set('html', command);
-            }else{
-                return;
-            }
-        }
 
         if (event.key == 'space') {
             event.preventDefault();
