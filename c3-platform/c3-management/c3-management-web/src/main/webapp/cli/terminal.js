@@ -45,50 +45,6 @@ var Terminal = new Class({
             return;
         }
 
-    },
-
-    keypress: function(event) {
-        dbg('keypress> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
-        if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
-        var command = this.currentCommand.get('html');
-
-
-        if(event.control){
-            if(event.code == 118){
-                command += window.clipboardData.getData('Text');
-                this.currentCommand.set('html', command);
-            }else{
-                return;
-            }
-        }
-
-        //$('body').focus();
-
-        if (event.key == 'enter') {
-            event.preventDefault();
-            //	this.run();
-            return;
-        }
-
-//		if (event.key == 'backspace') {
-//			event.preventDefault();
-//			if (command.substr(command.length-6) == '&nbsp;') {
-//				command = command.substr(0, command.length-6);
-//			} else {
-//				command = command.substr(0, command.length-1);
-//			}
-//			this.currentCommand.set('html', command);
-//			return;
-//		}
-
-
-        if (event.key == 'space') {
-            event.preventDefault();
-            command += ' ';
-            this.currentCommand.set('html', command);
-            return;
-        }
-
         if (event.code == 38) { // Up arrow
             event.preventDefault();
             dbg(this.commandHistoryIndex + ', ' + this.commandHistory.length);
@@ -107,6 +63,30 @@ var Terminal = new Class({
                 this.currentCommand.set('html', this.commandHistory[this.commandHistoryIndex]);
                 // This can overflow the array by 1, which will clear the command line
             }
+        }
+
+    },
+
+    keypress: function(event) {
+        dbg('keypress> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
+        if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
+        var command = this.currentCommand.get('html');
+
+
+        if(event.control){
+            if(event.code == 118){
+                command += window.clipboardData.getData('Text');
+                this.currentCommand.set('html', command);
+            }else{
+                return;
+            }
+        }
+
+        if (event.key == 'space') {
+            event.preventDefault();
+            command += ' ';
+            this.currentCommand.set('html', command);
+            return;
         }
 
         // For all typing keys
