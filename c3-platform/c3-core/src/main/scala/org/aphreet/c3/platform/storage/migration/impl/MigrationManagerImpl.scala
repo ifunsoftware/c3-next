@@ -99,7 +99,7 @@ class MigrationManagerImpl extends MigrationManager{
       throw new MigrationException("Target is not writable")
     }
     
-    val requiredFreeCapacity = source.size
+    val requiredFreeCapacity = source.usedCapacity
     
     val freeCapacityOnTarget = target.volume.safeAvailable
     

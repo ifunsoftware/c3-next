@@ -28,12 +28,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.backup
+package org.aphreet.c3.platform.remote.replication.impl.data
 
-trait BackupManager {
+import org.aphreet.c3.platform.task.IterableTask
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.storage.Storage
+import org.aphreet.c3.platform.access.ResourceAddedMsg
 
-  def createBackup()
+class CopyTask(val storage:Storage, val link:ReplicationLink)
+  extends IterableTask[Resource](storage){
 
-  def restoreBackup(location:String)
+  def processElement(element: Resource) {
+    link ! ResourceAddedMsg(element, 'RestoreTask)
+  }
 
 }

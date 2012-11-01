@@ -55,12 +55,14 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def count:Long = 0
 
-  def size:Long = 0
+  def usedCapacity:Long = 0
 
   def iterator(fields:Map[String,String],
                systemFields:Map[String,String],
                filter:(Resource) => Boolean
           ):StorageIterator = null
+
+  def iterator = iterator(Map(), Map(), (resource:Resource) => true)
 
   def close() {}
 

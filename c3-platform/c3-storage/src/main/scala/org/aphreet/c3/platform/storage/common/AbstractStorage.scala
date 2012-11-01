@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.storage.common
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.aphreet.c3.platform.common.{ThreadWatcher, Path}
 import collection.mutable
+import org.aphreet.c3.platform.resource.Resource
 
 abstract class AbstractStorage(val parameters:StorageParams, val systemId:String) extends Storage{
 
@@ -59,6 +60,8 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
   override def close(){
     counter.interrupt()
   }
+
+  def iterator = iterator(Map(), Map(), (resource:Resource) => true)
 
   class ObjectCounter(val storage:AbstractStorage) extends Runnable {
 

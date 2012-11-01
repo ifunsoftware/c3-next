@@ -69,7 +69,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   }
 
-  def size:Long = calculateSize(new File(storagePath))
+  def usedCapacity:Long = calculateSize(new File(storagePath))
 
   def fullPath:Path = new Path(storagePath)
 

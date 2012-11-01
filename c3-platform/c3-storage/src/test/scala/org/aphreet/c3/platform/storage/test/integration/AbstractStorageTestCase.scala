@@ -221,7 +221,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals(1, storage.asInstanceOf[AbstractBDBStorage].iterators.size)
 
       while(iterator.hasNext){
-        val readResource = iterator.next
+        val readResource = iterator.next()
 
         raMap.get(readResource.address) match{
           case None => assertFalse("Found resource that we did not save", false)
@@ -324,7 +324,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
       while(iterator.hasNext){
-        val readResource = iterator.next
+        val readResource = iterator.next()
 
         raMap.get(readResource.address) match{
           case None => assertFalse("Found resource that we did not save", false)
@@ -387,7 +387,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals(2, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
       while(iterator.hasNext){
-        val readResource = iterator.next
+        val readResource = iterator.next()
 
         raMap.get(readResource.address) match{
           case None => assertFalse("Found resource that we did not save", false)
@@ -473,7 +473,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
       storage.add(createResource())
-      println(storage.size)
+      println(storage.usedCapacity)
     }finally storage.close()
   }
 

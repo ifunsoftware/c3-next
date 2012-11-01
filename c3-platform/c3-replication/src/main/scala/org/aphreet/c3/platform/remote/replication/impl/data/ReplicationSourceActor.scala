@@ -53,13 +53,13 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
-  var accessMediator:AccessMediator = null
+  var accessMediator:AccessMediator = _
 
-  var manager:ReplicationManager = null
+  var manager:ReplicationManager = _
 
-  var statisticsManager:StatisticsManager = null
+  var statisticsManager:StatisticsManager = _
 
-  var configurationManager:ConfigurationManager = null
+  var configurationManager:ConfigurationManager = _
 
   var localSystemId:String = _
 
@@ -166,13 +166,10 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   private def sendToAllLinks(msg:Any) {
     try{
-
       for((id, link) <- remoteReplicationActors){
         if(!link.isStarted) link.start()
         link ! msg
       }
-
-
     }catch{
       case e: Throwable => log.error("Failed to post message: " + msg, e)
     }

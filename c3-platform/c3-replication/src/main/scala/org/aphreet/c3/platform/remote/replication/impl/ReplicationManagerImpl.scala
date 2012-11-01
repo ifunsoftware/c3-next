@@ -267,6 +267,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     }
   }
 
+  def copyToTarget(targetId:String){
+  }
+
   def cancelReplication(id:String) {
     targetsConfigAccessor.update(config => config - id)
     currentTargetConfig = targetsConfigAccessor.load

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2012, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -30,15 +30,14 @@
 
 package org.aphreet.c3.platform.remote.rest.controllers
 
-import collection.mutable.HashMap
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMethod, RequestMapping}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
-import org.aphreet.c3.platform.domain.Domain
 import org.aphreet.c3.platform.accesscontrol.READ
+import collection.mutable
 
 @Controller
 class QueryController extends DataController {
@@ -52,7 +51,7 @@ class QueryController extends DataController {
 
     val accessTokens = getAccessTokens(READ, req)
 
-    val map = new HashMap[String, String]
+    val map = new mutable.HashMap[String, String]
 
     val enum = req.getParameterNames
 

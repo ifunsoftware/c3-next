@@ -30,8 +30,7 @@
 
 package org.aphreet.c3.platform.storage
 
-import org.aphreet.c3.platform.common.Constants
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{CloseableIterable, Constants, Path}
 import org.aphreet.c3.platform.resource.Resource
 
 import volume.Volume
@@ -42,7 +41,7 @@ import org.apache.commons.logging.LogFactory
 /**
  * Base class for all storages
  */
-abstract class Storage {
+abstract class Storage extends CloseableIterable[Resource]{
 
   val log = LogFactory.getLog(getClass)
 
@@ -216,7 +215,7 @@ abstract class Storage {
   /**
    * Size that is used by storage on disk
    */
-  def size:Long
+  def usedCapacity:Long
 
   /**
    * Create new storage iterator
@@ -225,6 +224,12 @@ abstract class Storage {
                systemFields:Map[String,String] = Map(),
                filter:(Resource) => Boolean = ((resource:Resource) => true)
           ):StorageIterator
+
+  /**
+   * Creates new storage iterator
+   */
+
+  def iterator:StorageIterator
 
   /**
    * Close storage
