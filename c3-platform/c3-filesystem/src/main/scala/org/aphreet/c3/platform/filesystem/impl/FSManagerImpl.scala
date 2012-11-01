@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.filesystem.impl
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.filesystem._
 import org.apache.commons.logging.LogFactory
@@ -46,7 +45,11 @@ import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
 
 @Component("fsManager")
-class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner with ComponentGuard with WatchedActor{
+class FSManagerImpl extends FSManager
+                       with FSManagerInternal
+                       with ResourceOwner
+                       with ComponentGuard
+                       with WatchedActor{
 
   val log = LogFactory getLog getClass
 
@@ -211,7 +214,7 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
       case Some(name) =>
         resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
           case Some(parentAddress) => {
-              directoryUpdater ! ScheduleMsg(parentAddress, FSDirectoryTask(DELETE, NodeRef(name, resource.address, false)))
+              directoryUpdater ! ScheduleMsg(parentAddress, FSDirectoryTask(DELETE, NodeRef(name, resource.address, leaf = false)))
           }
           case None =>
         }

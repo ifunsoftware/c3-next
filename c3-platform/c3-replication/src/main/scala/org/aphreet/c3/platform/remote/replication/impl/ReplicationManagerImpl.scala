@@ -384,9 +384,7 @@ class ProcessScheduler(manager:ReplicationManager) extends Runnable{
       manager ! SendConfigurationMsg
 
       nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
-
     }
-
   }
 
   def triggerQueueProcess(){
