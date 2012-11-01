@@ -59,7 +59,7 @@ class Searcher(var indexPath: Path,
   def act(){
     loop{
       react{
-        case ReopenSearcher => {
+        case ReopenSearcherMsg => {
           log info "Reopening searcher"
           val oldSearcher = indexSearcher
 
@@ -76,7 +76,7 @@ class Searcher(var indexPath: Path,
         case NewIndexPathMsg(path) => {
           log info "Changing index path to " + path
           indexPath = path
-          this ! ReopenSearcher
+          this ! ReopenSearcherMsg
         }
 
         case DestroyMsg => {
@@ -151,6 +151,5 @@ class Searcher(var indexPath: Path,
 
 }
 
-object ReopenSearcher
-
+object ReopenSearcherMsg
 case class NewIndexPathMsg(path:Path)

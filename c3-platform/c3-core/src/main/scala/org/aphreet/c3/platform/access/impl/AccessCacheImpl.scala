@@ -35,7 +35,7 @@ import actors.Actor
 import actors.Actor._
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.access.{AccessCache, ResourceAddedMsg, ResourceUpdatedMsg, ResourceDeletedMsg}
+import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
@@ -44,6 +44,13 @@ import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
 import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
+import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
+import org.aphreet.c3.platform.access.ResourceDeletedMsg
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import scala.Some
 
 @Component
 class AccessCacheImpl extends AccessCache with ComponentGuard{
@@ -89,6 +96,10 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
           this.remove(address)
         case ResourceUpdatedMsg(resource, source) =>
           this.remove(resource.address)
+
+        case StoragePurgedMsg(source) =>
+          log.info("Reseting resources cache")
+          this.cache.removeAll()
 
         case DestroyMsg =>
           letItFall{

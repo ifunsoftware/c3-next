@@ -42,3 +42,5 @@ case class ResourceAddedMsg(resource:Resource, source:Symbol)
 case class ResourceUpdatedMsg(resource:Resource, source:Symbol)
 
 case class ResourceDeletedMsg(address:String, source:Symbol)
+
+case class StoragePurgedMsg(source:Symbol)

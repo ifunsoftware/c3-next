@@ -34,12 +34,12 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.search.impl.search.{ReopenSearcher, Searcher}
+import org.aphreet.c3.platform.search.impl.search._
 import org.apache.lucene.index.{IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 import org.aphreet.c3.platform.common.{WatchedActor, Path}
 import org.apache.lucene.util.Version
+import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 
 class FileIndexer(var indexPath:Path) extends WatchedActor{
 
@@ -53,6 +53,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
     log info "Creating IndexWriter"
 
     val directory = new NIOFSDirectory(path.file)
+
     if(IndexWriter.isLocked(directory)){
       log warn "Index path is locked, unlocking..."
       IndexWriter.unlock(directory)
@@ -74,12 +75,23 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             indexWriter.commit()
             directory.close()
             log debug "Index merged"
-            searcher ! ReopenSearcher
+            searcher ! ReopenSearcherMsg
           }catch{
             case e: Throwable =>
               log.warn("Failed to merge index", e)
           }
         case DeleteMsg(address) => deleteResource(address)
+
+        case DeleteIndexMsg => {
+          try{
+            log.info("Deleting search index")
+            indexWriter.deleteAll()
+            indexWriter.commit()
+            searcher ! ReopenSearcherMsg
+          }catch{
+            case e : Throwable => "Failed to delete search index"
+          }
+        }
 
         case DeleteForUpdateMsg(resource) =>
           deleteResource(resource.address)
@@ -126,6 +138,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
 }
 
 case class MergeIndexMsg(directory:Directory)
+object DeleteIndexMsg
 case class DeleteMsg(address:String)
 case class DeleteForUpdateMsg(resource:Resource)
 case class UpdateIndexCreationTimestamp(time:Long)

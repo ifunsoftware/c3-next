@@ -47,6 +47,7 @@ import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import collection.mutable
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import java.nio.file.attribute.BasicFileAttributes
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -58,16 +59,19 @@ class StorageManagerImpl extends StorageManager{
   private val factories = new mutable.HashMap[String, StorageFactory]
 
   @Autowired
-  var storageDispatcher:StorageDispatcher = null
+  var storageDispatcher:StorageDispatcher = _
 
   @Autowired
-  var configAccessor : StorageConfigAccessor = null
+  var configAccessor : StorageConfigAccessor = _
 
   @Autowired
-  var volumeManager : VolumeManager = null
+  var volumeManager : VolumeManager = _
 
   @Autowired
-  var platformConfigManager:PlatformConfigManager = null
+  var platformConfigManager:PlatformConfigManager = _
+
+  @Autowired
+  var accessMediator:AccessMediator = _
 
   lazy val systemId = getSystemId
 
@@ -252,6 +256,8 @@ class StorageManagerImpl extends StorageManager{
 
     log.info("Reseting storage dispatcher")
     storageDispatcher.reset(configAccessor.load)
+
+    accessMediator ! StoragePurgedMsg('StorageManager)
   }
 
   private def registerStorage(storage:Storage){

@@ -30,17 +30,12 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-import actors.Actor
 import collection.Set
-
-import java.io._
 
 import com.sleepycat.je._
 import org.apache.commons.logging.LogFactory
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.exception.PlatformException
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.remote.replication.impl.data._
 import org.aphreet.c3.platform.remote.replication.ReplicationException
 
@@ -112,12 +107,27 @@ class ReplicationQueueStorage(val path:Path) {
 
 
       }catch{
-        case e => log error ("Can't add entry to database", e)
+        case e: Throwable => log error ("Can't add entry to database", e)
       }
     }
   }
 
   def iterator:ReplicationQueueIterator = new ReplicationQueueIterator(database)
+
+  def deleteAll(){
+
+    log.info("Deleting all elements from the replication queue")
+
+    val iterator = this.iterator
+    try{
+      while(iterator.hasNext){
+        iterator.remove()
+      }
+      log.info("Replication queue has been cleared")
+    }finally {
+      iterator.close()
+    }
+  }
 
   def close() {
 
@@ -129,7 +139,7 @@ class ReplicationQueueStorage(val path:Path) {
     }
 
     if(env != null){
-      env.cleanLog;
+      env.cleanLog
       env.close()
       env = null
     }

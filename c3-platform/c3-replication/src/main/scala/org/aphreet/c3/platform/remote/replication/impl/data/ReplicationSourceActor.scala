@@ -100,6 +100,8 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
         case ResourceDeletedMsg(address, source) => sendToAllLinks(ResourceDeletedMsg(address, source))
 
+        case StoragePurgedMsg(source) => manager ! StoragePurgedMsg(source)
+
         case ReplicateAddAckMsg(address, sign) => sendToLinkWithId(sign.systemId, ReplicateAddAckMsg(address, sign))
 
         case ReplicateUpdateAckMsg(address, timestamp, sign) => sendToLinkWithId(sign.systemId, ReplicateUpdateAckMsg(address, timestamp, sign))

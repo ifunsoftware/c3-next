@@ -20,4 +20,6 @@
 
     <reference id="statisticsService" interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
 
+    <reference id="accessMediatorService" interface="org.aphreet.c3.platform.access.AccessMediator"/>
+
 </beans:beans>

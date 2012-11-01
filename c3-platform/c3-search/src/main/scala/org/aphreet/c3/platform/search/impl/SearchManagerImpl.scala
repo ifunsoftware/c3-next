@@ -187,6 +187,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
           configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, time.toString)
 
+        case StoragePurgedMsg(source) => deleteIndexes()
+
         case DestroyMsg =>
           log info "Destroying SearchManager actor"
           try{
@@ -221,6 +223,12 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
           }
       }
     }
+  }
+
+  def deleteIndexes(){
+    log.info("Reseting search index")
+    fileIndexer ! DeleteIndexMsg
+    configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, System.currentTimeMillis().toString)
   }
 
   def flushIndexes() {

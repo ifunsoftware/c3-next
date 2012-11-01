@@ -37,5 +37,7 @@ trait SearchManager extends WatchedActor{
   def search(domain:String, query:String):Array[SearchResultElement]
 
   def flushIndexes()
+
+  def deleteIndexes()
   
 }

@@ -7,6 +7,8 @@ import java.util
 import java.net.URI
 import java.nio.charset.Charset
 import scala.collection.JavaConversions._
+import com.sun.xml.internal.messaging.saaj.util.{ByteInputStream, ByteOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class Backup(val uri:URI, val create:Boolean) extends CloseableIterable[Resource] {
 
@@ -40,6 +42,29 @@ class Backup(val uri:URI, val create:Boolean) extends CloseableIterable[Resource
     }
 
     Files.write(zipFs.getPath("list"), (resource.address + "\n").getBytes("UTF-8"), StandardOpenOption.APPEND, StandardOpenOption.CREATE)
+  }
+
+  def writeFileSystemRoots(roots:Map[String, String]){
+    val properties = new java.util.Properties()
+    properties.putAll(mapAsJavaMap(roots))
+
+    val bos = new ByteArrayOutputStream()
+    properties.storeToXML(bos, "")
+
+    Files.write(zipFs.getPath("fs.xml"), bos.toByteArray, StandardOpenOption.CREATE)
+
+    bos.close()
+  }
+
+  def readFileSystemRoots:Map[String, String] = {
+
+    val properties = new java.util.Properties()
+
+    val is = new ByteArrayInputStream(Files.readAllBytes(zipFs.getPath("fs.xml")))
+    properties.loadFromXML(is)
+    is.close()
+
+    mapAsScalaMap(properties).toMap.asInstanceOf[Map[String, String]]
   }
 
   def close(){

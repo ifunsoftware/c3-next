@@ -34,11 +34,16 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
 import actors.Actor
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.access.{ResourceDeletedMsg, ResourceUpdatedMsg, ResourceAddedMsg, AccessMediator}
+import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import collection.mutable.HashMap
 import org.springframework.beans.factory.annotation.Qualifier
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
+import org.aphreet.c3.platform.access.ResourceDeletedMsg
+import org.aphreet.c3.platform.access.ResourceAddedMsg
 
 @Component("accessMediator")
 @Scope("singleton")
@@ -80,6 +85,10 @@ class AccessMediatorImpl extends AccessMediator {
               e._1 ! ResourceAddedMsg(resource, source)
             }
           }
+        }
+
+        case StoragePurgedMsg(source) => {
+          accessListeners.filter(e => e._2 != source).foreach(e => e._1 ! StoragePurgedMsg(source))
         }
 
         case ResourceUpdatedMsg(resource, source) => {

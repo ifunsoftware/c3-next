@@ -25,6 +25,11 @@ class BackupTestCase extends AbstractTestWithFileSystem{
 
     resourceList.foreach(backup.addResource(_))
 
+    val fsRoots = Map("domain1" -> "rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234",
+                      "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
+
+    backup.writeFileSystemRoots(fsRoots)
+
     backup.close()
 
     val backup1 = Backup.open(new Path(testDir.getAbsolutePath + "/backup.zip"))
@@ -35,6 +40,8 @@ class BackupTestCase extends AbstractTestWithFileSystem{
     }
 
     assertEquals(0, resourceList.size)
+
+    assertEquals(fsRoots, backup1.readFileSystemRoots)
 
     backup1.close()
   }

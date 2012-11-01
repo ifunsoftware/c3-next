@@ -51,6 +51,7 @@ import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Cons
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import actors.remote.{Node, RemoteActor}
+import org.aphreet.c3.platform.access.StoragePurgedMsg
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -161,6 +162,10 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           }else{
             log warn "Replication queue path is not set. Queue will be lost!"
           }
+        }
+
+        case StoragePurgedMsg(source) => {
+          replicationQueueStorage.deleteAll()
         }
 
         case SendConfigurationMsg => {

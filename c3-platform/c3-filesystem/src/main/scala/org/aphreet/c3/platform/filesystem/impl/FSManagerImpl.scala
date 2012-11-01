@@ -40,12 +40,13 @@ import annotation.tailrec
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.task.TaskManager
 import java.lang.IllegalStateException
-import org.aphreet.c3.platform.access.{ResourceOwner, AccessManager}
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.ComponentGuard
+import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
 
 @Component("fsManager")
-class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner with ComponentGuard{
+class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner with ComponentGuard with WatchedActor{
 
   val log = LogFactory getLog getClass
 
@@ -64,6 +65,9 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
   @Autowired
   var directoryUpdater:FSDirectoryUpdater = _
 
+  @Autowired
+  var accessMediator:AccessMediator = _
+
   var fsRoots:Map[String, String] = Map()
 
   @PostConstruct
@@ -73,6 +77,8 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
 
     accessManager.registerOwner(this)
 
+    accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
+
     fsRoots = configAccessor.load
   }
 
@@ -81,6 +87,19 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
 
     letItFall{
       accessManager.unregisterOwner(this)
+      accessMediator ! UnregisterNamedListenerMsg(this, 'FSManager)
+    }
+
+    this ! DestroyMsg
+  }
+
+  def act(){
+    loop {
+      react{
+        case StoragePurgedMsg => this.resetFileSystemRoots()
+        case DestroyMsg => this.exit()
+        case _ =>
+      }
     }
   }
 
@@ -278,6 +297,12 @@ class FSManagerImpl extends FSManager with FSManagerInternal with ResourceOwner 
         }
       }
     }
+  }
+
+  def resetFileSystemRoots(){
+    log.info("Reseting file system roots")
+    configAccessor.store(Map())
+    fsRoots = configAccessor.load
   }
 
   private def addNodeToDirectory(domainId:String, path:String, name:String, newNode:Node){

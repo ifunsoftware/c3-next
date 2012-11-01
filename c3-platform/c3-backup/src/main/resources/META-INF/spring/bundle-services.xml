@@ -19,4 +19,8 @@
 
     <reference id="taskService" interface="org.aphreet.c3.platform.task.TaskManager"/>
 
+    <reference id="accessMediatorService" interface="org.aphreet.c3.platform.access.AccessMediator"/>
+
+    <reference id="filesystemService" interface="org.aphreet.c3.platform.filesystem.FSManager"/>
+
 </beans:beans>

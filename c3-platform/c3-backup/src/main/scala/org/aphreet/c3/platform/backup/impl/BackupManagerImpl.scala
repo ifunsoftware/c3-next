@@ -8,6 +8,9 @@ import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyLis
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.access.{ResourceAddedMsg, StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.filesystem.FSManager
+import com.sun.corba.se.spi.activation._ServerStub
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -15,13 +18,19 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   val BACKUP_LOCATION = "c3.platform.backup.location"
 
   @Autowired
-  var storageManager:StorageManager = null
+  var storageManager:StorageManager = _
 
   @Autowired
-  var configManager:PlatformConfigManager = null
+  var accessMediator:AccessMediator = _
 
   @Autowired
-  var taskManager:TaskManager = null
+  var filesystemManager:FSManager = _
+
+  @Autowired
+  var configManager:PlatformConfigManager = _
+
+  @Autowired
+  var taskManager:TaskManager = _
 
   def createBackup(){
     val backupDirectory = configManager.getPlatformProperties.get(BACKUP_LOCATION) match {
@@ -31,7 +40,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
     val storages = storageManager.listStorages
 
-    val task = new BackupTask(storages, new Path(backupDirectory))
+    val task = new BackupTask(storages, filesystemManager, new Path(backupDirectory))
 
     taskManager.submitTask(task)
   }
@@ -41,8 +50,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
     storageManager.resetStorages()
 
-    val task = new RestoreTask(storageManager, backup)
-
+    val task = new RestoreTask(storageManager, accessMediator, filesystemManager, backup)
     taskManager.submitTask(task)
   }
 
@@ -51,7 +59,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
 }
 
-class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
+class BackupTask(val storages:List[Storage], val fsManager:FSManager, val directory:Path) extends Task{
 
   var iterator:StorageIterator = null
 
@@ -107,6 +115,9 @@ class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
   }
 
   override def postComplete(){
+
+    backup.writeFileSystemRoots(fsManager.fileSystemRoots)
+
     backup.close()
 
     log.info("Backup successfully completed")
@@ -120,7 +131,7 @@ class BackupTask(val storages:List[Storage], val directory:Path) extends Task{
   }
 }
 
-class RestoreTask(val storageManager:StorageManager, val backup:Backup)
+class RestoreTask(val storageManager:StorageManager, val accessMediator:AccessMediator, val fsManager:FSManager, val backup:Backup)
   extends IterableTask[Resource](backup){
 
   override def processElement(resource:Resource){
@@ -129,5 +140,20 @@ class RestoreTask(val storageManager:StorageManager, val backup:Backup)
       log.debug("Importing resource " + resource.address)
 
     storageManager.storageForAddress(ResourceAddress(resource.address)).put(resource)
+    accessMediator ! ResourceAddedMsg(resource, 'BackupManager)
+  }
+
+  override
+  protected def preStart(){
+    val fsRoots = backup.readFileSystemRoots
+
+    for ((domain, address) <- fsRoots){
+      try{
+        fsManager.importFileSystemRoot(domain, address)
+      }catch{
+        case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
+      }
+    }
+
   }
 }

@@ -11,4 +11,5 @@
 	<context:annotation-config />
 
     <context:component-scan base-package="org.aphreet.c3.platform.backup" />
+
 </beans>
