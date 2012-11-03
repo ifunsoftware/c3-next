@@ -231,7 +231,7 @@ class DataController extends AbstractController with ServletContextAware {
             data = DataStream.create(item.get)
           } else {
             tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
-            factory.getFileCleaningTracker.track(tmpFile, factory)
+            factory.getFileCleaningTracker.track(tmpFile, request)
             item.write(tmpFile)
             data = DataStream.create(tmpFile)
           }
@@ -282,7 +282,7 @@ class DataController extends AbstractController with ServletContextAware {
 
         val tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
 
-        factory.getFileCleaningTracker.track(tmpFile, factory)
+        factory.getFileCleaningTracker.track(tmpFile, request)
 
         val os = new FileOutputStream(tmpFile)
 

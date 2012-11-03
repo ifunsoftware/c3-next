@@ -37,6 +37,7 @@ import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import collection.mutable
 
 @Component("statisticsManager")
 @Qualifier("StatisticsService")
@@ -44,7 +45,7 @@ class StatisticsManagerImpl extends StatisticsManager{
 
   val log = LogFactory.getLog(getClass)
 
-  val statistics = new HashMap[String, Any]
+  val statistics = new mutable.HashMap[String, Any]
 
   {
     log info "Starting Statistics manager"
@@ -69,7 +70,7 @@ class StatisticsManagerImpl extends StatisticsManager{
               try{
                 statistics.put(key, string.asInstanceOf[Long] + delta)
               }catch{
-                case e => {
+                case e: Throwable => {
                   log warn "Failed to store statistics " + key
                 }
               }
