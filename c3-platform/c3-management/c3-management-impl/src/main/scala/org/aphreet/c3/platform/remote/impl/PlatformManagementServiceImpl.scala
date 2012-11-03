@@ -169,6 +169,16 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
 
+  def purgeStorageData(){
+    try{
+      managementEndpoint.purgeStorageData()
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 
   def createStorage(stType:String, path:String) {
     try {
@@ -436,6 +446,17 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     try{
       replicationManager.replayReplicationQueue()
     }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def copyDataToReplicationTarget(id:String) {
+    try{
+      replicationManager.copyToTarget(id)
+    }catch {
       case e: Throwable => {
         e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)

@@ -44,6 +44,7 @@ import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.storage.Storage
 
 @Component
 @Scope("singleton")
@@ -162,6 +163,15 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
     remoteReplicationActors = remoteReplicationActors - remoteSystemId
 
     link.close()
+  }
+
+  def createCopyTasks(id:String, storageList:List[Storage]):Option[List[CopyTask]] = {
+
+    remoteReplicationActors.get(id) match {
+      case Some(replicationLink) => Some(storageList.map(s => new CopyTask(s, replicationLink)))
+      case None => None
+    }
+
   }
 
   private def sendToAllLinks(msg:Any) {

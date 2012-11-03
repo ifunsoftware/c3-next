@@ -268,6 +268,14 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   def copyToTarget(targetId:String){
+
+    log.info("Creating tasks for copying data to target " + targetId)
+
+    sourceReplicationActor
+      .createCopyTasks(targetId, storageManager.listStorages) match {
+        case Some(tasks) => tasks.foreach(taskManager.submitTask(_))
+        case None => throw new ReplicationException("Can't find target with id " + targetId)
+    }
   }
 
   def cancelReplication(id:String) {

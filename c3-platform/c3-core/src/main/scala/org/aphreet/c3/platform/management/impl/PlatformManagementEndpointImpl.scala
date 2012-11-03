@@ -61,6 +61,10 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
       throw new StorageException("Can't find storage for id")
     }
   }
+
+  def purgeStorageData() {
+    storageManager.resetStorages()
+  }
   
   def setStorageMode(id:String, mode:StorageMode) {
     storageManager.setStorageMode(id, mode)

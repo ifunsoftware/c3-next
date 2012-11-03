@@ -39,7 +39,8 @@ object ReplicationCommands extends Commands {
       new AddReplicationTarget,
       new RemoveReplicationTarget,
       new ListReplicationTargets,
-      new ReplayReplicationQueueCommand
+      new ReplayReplicationQueueCommand,
+      new CopyDataToTargetCommand
   )
   
 }
@@ -105,4 +106,17 @@ class ReplayReplicationQueueCommand extends Command {
 
   def name:List[String] = List("start", "replication", "retry")
 
+}
+
+class CopyDataToTargetCommand extends Command{
+
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
+    params.headOption match {
+      case Some(id) => management.copyDataToReplicationTarget(id); "Copy task submitted"
+      case None => "Not enough params.\nUsage: copy data to target <systemid>"
+    }
+  }
+
+  def name:List[String] = List("copy", "data", "to", "target")
 }

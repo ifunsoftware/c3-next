@@ -38,8 +38,18 @@ import org.aphreet.c3.platform.access.ResourceAddedMsg
 class CopyTask(val storage:Storage, val link:ReplicationLink)
   extends IterableTask[Resource](storage){
 
-  def processElement(element: Resource) {
-    link ! ResourceAddedMsg(element, 'RestoreTask)
+  override val id = name + "-" + storage.id + "-" + link.localSystemId
+
+  override
+  def preStart() {
+    super.preStart()
+    log.info("Starting copy task from storage " + storage.id + " to target " + link.localSystemId)
   }
 
+  def processElement(element: Resource) {
+    link ! ResourceAddedMsg(element, 'RestoreTask)
+    Thread.sleep(100)
+  }
+
+  override def progress:Int = processed
 }

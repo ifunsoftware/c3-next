@@ -21,6 +21,8 @@ trait PlatformManagementEndpoint {
   def migrateFromStorageToStorage(sourceId:String, targetId:String)
   
   def setStorageMode(id:String, mode:StorageMode)
+
+  def purgeStorageData()
   
 
   def getPlatformProperties:JMap[String, String]

@@ -129,15 +129,12 @@ class ConfigurationManager extends DtoConvertor{
   }
 
   private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) {
-
     for(domain <- remoteDomains){
       domainManager.importDomain(domainFromDescription(domain), remoteSystemId)
     }
-
   }
   
   private def importFsRoots(remoteRoots:Array[Pair]) {
-
     for(pair <- remoteRoots){
       fsManager.importFileSystemRoot(pair.key, pair.value)
     }

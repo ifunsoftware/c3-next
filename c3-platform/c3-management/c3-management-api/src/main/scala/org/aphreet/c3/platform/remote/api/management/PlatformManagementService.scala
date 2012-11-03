@@ -14,6 +14,8 @@ trait PlatformManagementService {
 
   def createStorage(stType:String, path:String)
 
+  def purgeStorageData()
+
   def migrate(source:String, target:String)
 
   def setStorageMode(id:String, mode:String)
@@ -59,6 +61,8 @@ trait PlatformManagementService {
   def listReplicationTargets:Array[ReplicationHost]
 
   def replayReplicationQueue()
+
+  def copyDataToReplicationTarget(id:String)
 
 
   def createDomain(name:String)
