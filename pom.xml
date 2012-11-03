@@ -114,16 +114,16 @@
         </dependency>
 
         <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>com.springsource.slf4j.simple</artifactId>-->
-            <!--<version>1.5.10</version>-->
-            <!--<scope>test</scope>-->
+        <!--<groupId>org.slf4j</groupId>-->
+        <!--<artifactId>com.springsource.slf4j.simple</artifactId>-->
+        <!--<version>1.5.10</version>-->
+        <!--<scope>test</scope>-->
         <!--</dependency>-->
 
         <dependency>
-        	<groupId>ch.qos.logback</groupId>
-        	<artifactId>logback-classic</artifactId>
-        	<version>0.9.18</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>0.9.18</version>
             <scope>test</scope>
         </dependency>
 
@@ -183,6 +183,12 @@
             <id>libs-snapshot</id>
             <name>iFunSoftware snapshot repository</name>
             <url>http://repository-ifunsoftware.rhcloud.com/content/repositories/snapshots/</url>
+        </repository>
+
+        <repository>
+            <id>zodiac-repository</id>
+            <name>Zodiac Milestone Repository</name>
+            <url>http://zodiac.springsource.com/maven/bundles/milestone</url>
         </repository>
 
     </repositories>

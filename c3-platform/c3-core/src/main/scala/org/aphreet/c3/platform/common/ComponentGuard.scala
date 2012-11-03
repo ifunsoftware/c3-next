@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.common
 
 import org.apache.commons.logging.LogFactory
-import org.springframework.osgi.service.importer.ServiceProxyDestroyedException
 
 trait ComponentGuard{
 
@@ -39,12 +38,7 @@ trait ComponentGuard{
     try{
       block
     }catch{
-      case e:ServiceProxyDestroyedException =>
-        ComponentGuard.log.info("LetItFall block in " + getClass.getSimpleName + ", service proxy destroyed")
-        if(ComponentGuard.log.isTraceEnabled){
-          ComponentGuard.log.trace("LetItFall block", e)
-        }
-      case e => ComponentGuard.log.debug("LetItFall block in: " + getClass.getSimpleName, e)
+      case e: Throwable => ComponentGuard.log.debug("LetItFall block in: " + getClass.getSimpleName, e)
     }
   }
 }

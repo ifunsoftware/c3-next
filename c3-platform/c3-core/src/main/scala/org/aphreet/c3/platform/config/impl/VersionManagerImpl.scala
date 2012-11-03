@@ -29,14 +29,13 @@
  */
 package org.aphreet.c3.platform.config.impl
 
-import org.springframework.osgi.context.BundleContextAware
-import collection.mutable.Map
-import collection.mutable.HashMap
 import org.osgi.framework.BundleContext
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.VersionManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.apache.commons.logging.LogFactory
+import org.eclipse.gemini.blueprint.context.BundleContextAware
+import collection.mutable
 
 @Component("versionManager")
 class VersionManagerImpl extends VersionManager with BundleContextAware{
@@ -50,9 +49,9 @@ class VersionManagerImpl extends VersionManager with BundleContextAware{
     bundleContext = bundleContext_
   }
 
-  override def listC3Modules:Map[String, String] = {
+  override def listC3Modules:mutable.Map[String, String] = {
 
-    val map = new HashMap[String, String]
+    val map = new mutable.HashMap[String, String]
 
     bundleContext.getBundles
             .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
