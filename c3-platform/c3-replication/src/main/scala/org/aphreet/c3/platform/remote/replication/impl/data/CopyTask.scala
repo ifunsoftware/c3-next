@@ -47,7 +47,7 @@ class CopyTask(val storage:Storage, val link:ReplicationLink)
   }
 
   def processElement(element: Resource) {
-    link ! ResourceAddedMsg(element, 'RestoreTask)
+    link ! ResourceAddedMsg(element, 'CopyTask)
     Thread.sleep(100)
   }
 
