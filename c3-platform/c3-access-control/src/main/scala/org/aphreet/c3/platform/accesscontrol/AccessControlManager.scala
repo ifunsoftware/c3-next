@@ -37,6 +37,6 @@ trait AccessControlManager {
 
   def unregisterFactory(factory:AccessTokenFactory)
 
-  def retrieveAccessTokens(action:Action, accessParams:Map[String, String]):AccessTokens
+  def retrieveAccessTokens(accessType:AccessType, action:Action, accessParams:Map[String, String]):AccessTokens
 
 }

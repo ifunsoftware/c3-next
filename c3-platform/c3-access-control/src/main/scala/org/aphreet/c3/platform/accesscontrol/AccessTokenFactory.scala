@@ -31,6 +31,12 @@ package org.aphreet.c3.platform.accesscontrol
 
 trait AccessTokenFactory {
 
+  /**
+   * Checks if this token factory is applicable for specified access type
+   * @param accessType LocalAccess or RemoteAccess
+   */
+  def supportsAccess(accessType: AccessType):Boolean
+
   def createAccessToken(action:Action, accessParams:Map[String, String]):AccessToken
 
 }

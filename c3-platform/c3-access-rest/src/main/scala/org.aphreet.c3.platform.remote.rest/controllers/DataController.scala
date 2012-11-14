@@ -45,12 +45,14 @@ import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpl
 import org.apache.commons.fileupload.FileItem
 import org.aphreet.c3.platform.remote.rest.response.fs.{FSNode, FSDirectory}
 import org.aphreet.c3.platform.remote.rest.response.{DirectoryResult, ResourceResult}
-import org.aphreet.c3.platform.filesystem.{NodeRef, FSManager, Directory, Node}
+import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
 import org.aphreet.c3.platform.domain.Domain
-import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessTokens, Action, AccessControlManager}
+import org.aphreet.c3.platform.accesscontrol._
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
 import collection.mutable
 import org.apache.commons.codec.binary.Base64
+import org.aphreet.c3.platform.filesystem.NodeRef
+import scala.Some
 
 class DataController extends AbstractController with ServletContextAware {
 
@@ -153,7 +155,7 @@ class DataController extends AbstractController with ServletContextAware {
 
     map.put("x-c3-request-uri", request.getRequestURI)
 
-    accessControlManager.retrieveAccessTokens(action, map.toMap)
+    accessControlManager.retrieveAccessTokens(RemoteAccess, action, map.toMap)
   }
 
   protected def sendResourceMetadata(address: String, contentType: String, accessTokens: AccessTokens, system: Boolean, resp: HttpServletResponse) {

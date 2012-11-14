@@ -30,18 +30,18 @@
  */
 package org.aphreet.c3.platform.accesscontrol.impl
 
-import collection.mutable.HashSet
 import org.springframework.stereotype.Component
 import org.apache.commons.logging.LogFactory
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.accesscontrol._
+import collection.mutable
 
 @Component("accessControlManager")
 class AccessControlManagerImpl extends AccessControlManager {
 
   val log = LogFactory.getLog(getClass)
 
-  val factories = new HashSet[AccessTokenFactory]
+  val factories = new mutable.HashSet[AccessTokenFactory]
 
   @PostConstruct
   def init(){
@@ -66,9 +66,9 @@ class AccessControlManagerImpl extends AccessControlManager {
     }
   }
 
-  def retrieveAccessTokens(action:Action, accessParams:Map[String, String]):AccessTokens = {
+  def retrieveAccessTokens(accessType: AccessType, action: Action, accessParams: Map[String, String]): AccessTokens = {
     try{
-      new AccessTokensImpl(factories.map(f => f.createAccessToken(action, accessParams)).toList)
+      new AccessTokensImpl(factories.filter(_.supportsAccess(accessType)).map(f => f.createAccessToken(action, accessParams)).toList)
     }catch{
       case e: Throwable => throw new AccessControlException(e.getMessage, e)
     }

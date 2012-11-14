@@ -34,7 +34,7 @@ import org.easymock.EasyMock._
 import junit.framework.Assert._
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, UPDATE, READ}
 import org.aphreet.c3.platform.domain._
-import impl.{DomainAccessToken, DomainAccessTokenFactory}
+import impl.{RestDomainAccessTokenFactory, DomainAccessToken, DomainAccessTokenFactory}
 
 
 class DomainAccessTokenFactoryTestCase extends TestCase{
@@ -47,7 +47,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     expect(domainManager.getAnonymousDomain).andReturn(expectedDomain)
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     val token = tokenFactory.createAccessToken(READ, Map("some key" -> "some value"))
@@ -65,7 +65,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     val token = tokenFactory.createAccessToken(READ, Map("" -> ""))
@@ -93,7 +93,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     try{
@@ -127,7 +127,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
 
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     val token = tokenFactory.createAccessToken(READ,
@@ -148,7 +148,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
 
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     try{
@@ -171,7 +171,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
 
     replay(domainManager)
 
-    val tokenFactory = new DomainAccessTokenFactory
+    val tokenFactory = new RestDomainAccessTokenFactory
     tokenFactory.domainManager = domainManager
 
     try{

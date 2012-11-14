@@ -45,9 +45,9 @@ object DomainMode{
   }
 }
 
-object DisabledMode extends DomainMode("disabled");
-object ReadOnlyMode extends DomainMode("readonly");
-object FullMode extends DomainMode("available");
+object DisabledMode extends DomainMode("disabled")
+object ReadOnlyMode extends DomainMode("readonly")
+object FullMode extends DomainMode("available")
 
 case class Domain(id:String, var name:String, var key:String, var mode:DomainMode)
 

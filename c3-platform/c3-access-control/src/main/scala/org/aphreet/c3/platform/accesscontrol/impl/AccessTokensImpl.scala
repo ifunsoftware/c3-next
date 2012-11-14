@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.accesscontrol.impl
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, AccessToken, AccessTokens}
 import collection.mutable.HashMap
+import collection.mutable
 
 
 class AccessTokensImpl(val tokens:List[AccessToken]) extends AccessTokens{
@@ -40,7 +41,7 @@ class AccessTokensImpl(val tokens:List[AccessToken]) extends AccessTokens{
     try{
       tokens.foreach(_.checkAccess(resource))
     }catch{
-      case e => throw new AccessControlException(e.getMessage, e)
+      case e:Throwable => throw new AccessControlException(e.getMessage, e)
     }
   }
 
@@ -57,7 +58,7 @@ class AccessTokensImpl(val tokens:List[AccessToken]) extends AccessTokens{
   }
 
   def metadataRestrictions:Map[String, String] = {
-    val restrictions = new HashMap[String, String]
+    val restrictions = new mutable.HashMap[String, String]
 
     tokens.foreach(restrictions ++= _.metadataRestrictions)
 

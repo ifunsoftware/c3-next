@@ -42,7 +42,6 @@ class DomainAccessToken(override val action:Action,
       case Some(id) => if(id != domain.id) throw new DomainException("Requested resource does not belong to specified domain")
       case None =>
     }
-
   }
 
   override def updateResource(resource:Resource){

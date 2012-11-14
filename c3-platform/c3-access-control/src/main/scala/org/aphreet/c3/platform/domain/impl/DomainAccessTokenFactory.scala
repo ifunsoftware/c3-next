@@ -35,8 +35,7 @@ import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.accesscontrol._
 import org.springframework.stereotype.Component
 
-@Component
-class DomainAccessTokenFactory extends AccessTokenFactory{
+abstract class DomainAccessTokenFactory extends AccessTokenFactory{
 
   @Autowired
   var domainManager:DomainManager = null
@@ -54,32 +53,10 @@ class DomainAccessTokenFactory extends AccessTokenFactory{
     accessControlManager.unregisterFactory(this)
   }
 
+  def retrieveDomain(accessParams:Map[String, String]):Domain
+
   def createAccessToken(action:Action, accessParams:Map[String, String]):AccessToken = {
-    import DomainAccessTokenFactory._
-
-    val domain = accessParams.get(DOMAIN_HEADER) match {
-      case None => domainManager.getAnonymousDomain
-      case Some(requestedDomain) => {
-
-        val requestUri = accessParams.getOrElse(REQUEST_KEY, "")
-
-        val date = accessParams.getOrElse(DATE_HEADER, "")
-
-        if(date == ""){
-          throw new DomainException("x-c3-date is empty")
-        }
-
-        val hashBase = requestUri + date + requestedDomain
-
-        val hash = accessParams.getOrElse(SIGN_HEADER, "")
-
-        if(hash == ""){
-          throw new DomainException("x-c3-sign is empty")
-        }
-
-        domainManager.checkDomainAccess(requestedDomain, hash, hashBase)
-      }
-    }
+    val domain = retrieveDomain(accessParams)
 
     domain.mode match{
       case DisabledMode => throw new DomainException("Domain is disabled")
@@ -92,14 +69,5 @@ class DomainAccessTokenFactory extends AccessTokenFactory{
         }
     }
   }
-
-}
-
-object DomainAccessTokenFactory{
-
-  val DOMAIN_HEADER = "x-c3-domain"
-  val SIGN_HEADER = "x-c3-sign"
-  val DATE_HEADER = "x-c3-date"
-  val REQUEST_KEY = "x-c3-request-uri"
 
 }
