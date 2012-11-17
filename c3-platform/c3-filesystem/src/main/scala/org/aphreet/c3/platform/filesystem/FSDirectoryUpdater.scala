@@ -42,7 +42,9 @@ object ADD extends FSDirectoryAction
 object DELETE extends FSDirectoryAction
 object UPDATE extends FSDirectoryAction
 
-case class FSDirectoryTask(action:FSDirectoryAction, nodeRef:NodeRef)
+case class FSDirectoryTask(action:FSDirectoryAction, nodeRef:NodeRef){
+  val monitor = new Object
+}
 
 case class ScheduleMsg(address:String, task:FSDirectoryTask)
 case class TaskDoneMsg(address:String, actor:Actor)

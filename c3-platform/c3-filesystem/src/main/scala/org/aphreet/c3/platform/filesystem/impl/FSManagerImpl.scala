@@ -146,9 +146,7 @@ class FSManagerImpl extends FSManager
         node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
         accessManager.update(node.resource)
 
-        directoryUpdater ! ScheduleMsg(currentParent.resource.address,
-          FSDirectoryTask(UPDATE, NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf)))
-
+        runDirectoryTask(currentParent.resource.address, FSDirectoryTask(UPDATE, NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf)))
     }else{
 
       val oldDir = Directory(accessManager.get(currentParent.resource.address))
@@ -159,10 +157,9 @@ class FSManagerImpl extends FSManager
 
       accessManager.update(node.resource)
 
-      directoryUpdater ! ScheduleMsg(oldDir.resource.address,
-        FSDirectoryTask(DELETE, NodeRef(oldPathAndName._2, nodeAddress, nodeRef.leaf)))
-      directoryUpdater ! ScheduleMsg(newParent.resource.address,
-        FSDirectoryTask(ADD, NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf)))
+      runDirectoryTask(oldDir.resource.address, FSDirectoryTask(DELETE, NodeRef(oldPathAndName._2, nodeAddress, nodeRef.leaf)))
+
+      runDirectoryTask(newParent.resource.address, FSDirectoryTask(ADD, NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf)))
     }
   }
 
@@ -328,7 +325,15 @@ class FSManagerImpl extends FSManager
     newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
     val newAddress = accessManager.add(newNode.resource)
 
-    directoryUpdater ! ScheduleMsg(directory.resource.address, FSDirectoryTask(ADD, NodeRef(name, newAddress, !newNode.isDirectory)))
+    runDirectoryTask(directory.resource.address, FSDirectoryTask(ADD, NodeRef(name, newAddress, !newNode.isDirectory)))
+  }
+
+  private def runDirectoryTask(address: String, task: FSDirectoryTask){
+
+    task.monitor.synchronized{
+      directoryUpdater ! ScheduleMsg(address, task)
+      task.monitor.wait()
+    }
   }
 
   private def getFSNode(domainId:String, path:String):Node = {
@@ -353,7 +358,7 @@ class FSManagerImpl extends FSManager
 
       val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
         case Some(a) => a
-        case None => throw new FSNotFoundException("Specified path does not exists")
+        case None => throw new FSNotFoundException("Specified path " + path + " does not exists in the domain " + domainId)
       }
 
       val resource = accessManager.get(nodeRef.address)
@@ -456,5 +461,11 @@ class FSManagerImpl extends FSManager
     }
 
     accessManager.update(directory.resource)
+
+    tasks.foreach(task => {
+      task.monitor.synchronized{
+        task.monitor.notify()
+      }
+    })
   }
 }

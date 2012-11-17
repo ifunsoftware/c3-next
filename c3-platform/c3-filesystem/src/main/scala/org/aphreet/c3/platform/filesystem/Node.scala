@@ -30,7 +30,6 @@
 
 package org.aphreet.c3.platform.filesystem
 
-import collection.mutable.HashMap
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
@@ -40,6 +39,7 @@ abstract class Node(val resource:Resource){
 
   def isDirectory:Boolean
 
+  def name:String = resource.systemMetadata.getOrElse(Node.NODE_FIELD_NAME, null)
 }
 
 
