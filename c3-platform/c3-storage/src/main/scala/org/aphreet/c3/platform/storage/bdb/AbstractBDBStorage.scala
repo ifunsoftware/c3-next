@@ -127,6 +127,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       tx.commit()
 
+      dataLog.debug("Added resource " + resource.address)
+
       postSave(resource)
 
       resource.address
@@ -157,6 +159,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       }
 
       tx.commit()
+
+      dataLog.debug("Put resource " + resource.address)
     }catch{
       case e: Throwable => {
         tx.abort()
@@ -181,6 +185,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
       }
       tx.commit()
+
+      dataLog.debug("Deleted resource " + ra)
     }catch{
       case e: Throwable => {
         tx.abort()
@@ -219,6 +225,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
           throw new StorageException("Failed to store resource in database")
         }
       }
+
+      dataLog.debug("Updated system meta on " + ra)
 
       tx.commit()
     }catch{
@@ -278,6 +286,8 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       }
 
       tx.commit()
+
+      dataLog.debug("Updated resource " + ra)
 
       postSave(savedResource)
 

@@ -33,8 +33,11 @@ import org.aphreet.c3.platform.storage.{Storage, StorageParams}
 import org.aphreet.c3.platform.common.{ThreadWatcher, Path}
 import collection.mutable
 import org.aphreet.c3.platform.resource.Resource
+import org.apache.commons.logging.LogFactory
 
 abstract class AbstractStorage(val parameters:StorageParams, val systemId:String) extends Storage{
+
+  val dataLog = LogFactory.getLog("c3.data")
 
   protected var counter:Thread = null
 

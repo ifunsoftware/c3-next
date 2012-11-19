@@ -222,7 +222,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     !isEmptyIterator && resource != null
   }
 
-  def next: Resource = {
+  def next(): Resource = {
 
     val previousResource = resource
 
