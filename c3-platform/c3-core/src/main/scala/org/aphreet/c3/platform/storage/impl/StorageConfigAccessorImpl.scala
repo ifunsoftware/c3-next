@@ -29,12 +29,12 @@
  */
 package org.aphreet.c3.platform.storage.impl
 
-import java.io.{File, StringWriter}
+import java.io.File
 import java.util.{List => JList}
 
-import org.aphreet.c3.platform.common.{Path, JSONFormatter}
+import org.aphreet.c3.platform.common.Path
 import com.springsource.json.parser._
-import com.springsource.json.writer.JSONWriterImpl
+import com.springsource.json.writer.JSONWriter
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,15 +42,13 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import collection.JavaConversions._
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
 import collection.mutable.HashMap
-import org.apache.commons.logging.LogFactory
 
 
 @Component
 class StorageConfigAccessorImpl extends StorageConfigAccessor {
-  var configManager: PlatformConfigManager = null
 
   @Autowired
-  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
+  var configManager: PlatformConfigManager = _
 
   def configFileName: String = "c3-storage-config.json"
 
@@ -58,17 +56,14 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
   def defaultConfig:List[StorageParams] = List()
 
-  def loadConfig(configFile: File): List[StorageParams] = {
+  def readConfig(node:Node): List[StorageParams] = {
 
-    val node = new AntlrJSONParser().parse(configFile)
-    val storageArray = node.asInstanceOf[MapNode].getNode("storages").asInstanceOf[ListNode].getNodes.toArray
+    val storageArray = node.getNode("storages").getNodes
 
     var list: List[StorageParams] = List()
 
-    for (st <- storageArray) {
-      val storage = st.asInstanceOf[MapNode]
-
-      val storageModeName = storage.getNode("mode").asInstanceOf[ScalarNode].getValue.toString
+    for (storage <- storageArray) {
+      val storageModeName = storage.getNode("mode").getValue[String]
 
       var storageModeMessage = ""
 
@@ -76,11 +71,10 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
 
       if (storageModeMessageNode != null) {
-        storageModeMessage = storageModeMessageNode.asInstanceOf[ScalarNode].getValue.toString
+        storageModeMessage = storageModeMessageNode.getValue[String]
       }
 
       val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
-
 
 
       var indexes:List[StorageIndex] = List()
@@ -90,23 +84,19 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
       if(indexesNode != null){
 
         val indexMaps = asScalaBuffer(
-          indexesNode.asInstanceOf[ListNode].getNodes.asInstanceOf[JList[MapNode]])
+          indexesNode.getNodes.asInstanceOf[JList[MapNode]])
 
         for (indexMap <- indexMaps){
-          val indexName = indexMap.getNode("name").asInstanceOf[ScalarNode].getValue[String]
-          val mulIndex =  indexMap.getNode("multi").asInstanceOf[ScalarNode].getValue[Boolean]
-          val system = indexMap.getNode("system").asInstanceOf[ScalarNode].getValue[Boolean]
-          val created:Long = indexMap.getNode("created").asInstanceOf[ScalarNode].getValue[String].toLong
+          val indexName = indexMap.getNode("name").getValue[String]
+          val mulIndex =  indexMap.getNode("multi").getValue[Boolean]
+          val system = indexMap.getNode("system").getValue[Boolean]
+          val created:Long = indexMap.getNode("created").getValue[String].toLong
 
-          val fields = asScalaBuffer(
-            indexMap.getNode("fields").asInstanceOf[ListNode].getNodes.asInstanceOf[JList[ScalarNode]])
-
-          val fieldList = fields.map(_.getValue[String]).toList
+          val fieldList =
+            indexMap.getNode("fields").getNodes.map(_.getValue[String]).toList
 
           indexes = indexes ::: List(new StorageIndex(indexName, fieldList, mulIndex, system, created))
         }
-        
-
       }
 
       val repParameters = new HashMap[String, String]
@@ -114,98 +104,77 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
       val repParamsNode = storage.getNode("params")
 
       if (repParamsNode != null) {
-        val repParamsMap = repParamsNode.asInstanceOf[MapNode]
-
         for (i <- 0 to 2) {
-          if (repParamsMap.getNode("nodeName-"  + i) != null)
+          if (repParamsNode.getNode("nodeName-"  + i) != null)
             repParameters.put("nodeName-" + i,
-                            repParamsMap.getNode("nodeName-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+              repParamsNode.getNode("nodeName-"  + i).getValue[String])
 
-          if (repParamsMap.getNode("nodePort-"  + i) != null)
+          if (repParamsNode.getNode("nodePort-"  + i) != null)
             repParameters.put("nodePort-" + i,
-                            repParamsMap.getNode("nodePort-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+              repParamsNode.getNode("nodePort-"  + i).getValue[String])
 
-          if (repParamsMap.getNode("nodeDir-"  + i) != null)
+          if (repParamsNode.getNode("nodeDir-"  + i) != null)
             repParameters.put("nodeDir-" + i,
-                            repParamsMap.getNode("nodeDir-"  + i).asInstanceOf[ScalarNode].getValue.toString)
+              repParamsNode.getNode("nodeDir-"  + i).getValue[String])
         }
-        if (repParamsMap.getNode("nodeCounter") != null)
+        if (repParamsNode.getNode("nodeCounter") != null)
           repParameters.put("nodeCounter",
-                            repParamsMap.getNode("nodeCounter").asInstanceOf[ScalarNode].getValue.toString)
+            repParamsNode.getNode("nodeCounter").getValue[String])
       }
 
       list = list ::: List(
         new StorageParams(
-          storage.getNode("id").asInstanceOf[ScalarNode].getValue.toString,
-          new Path(storage.getNode("path").asInstanceOf[ScalarNode].getValue.toString),
-          storage.getNode("type").asInstanceOf[ScalarNode].getValue.toString,
+          storage.getNode("id").getValue[String],
+          new Path(storage.getNode("path").getValue[String]),
+          storage.getNode("type").getValue[String],
           storageMode,
           indexes,
           repParameters
-          ))
+        ))
     }
 
 
     list
   }
 
-  def storeConfig(params: List[StorageParams], configFile: File) {
+  def writeConfig(params: List[StorageParams], jsonWriter:JSONWriter) {
+    jsonWriter.`object`.key("storages").array
 
-    this.synchronized {
+    for (storage <- params) {
+      jsonWriter.`object`
+        .key("id").value(storage.id)
+        .key("path").value(storage.path)
+        .key("type").value(storage.storageType)
+        .key("mode").value(storage.mode.name)
+        .key("modemsg").value(storage.mode.message)
 
-      val swriter = new StringWriter()
-      try {
-        val writer = new JSONWriterImpl(swriter)
-
-        writer.`object`.key("storages").array
-
-
-        for (storage <- params) {
-          writer.`object`
-                  .key("id").value(storage.id)
-                  .key("path").value(storage.path)
-                  .key("type").value(storage.storageType)
-                  .key("mode").value(storage.mode.name)
-                  .key("modemsg").value(storage.mode.message)
-
-          writer.key("indexes").array //indexes start
-            for(index <- storage.indexes){
-              writer.`object`
-                .key("name").value(index.name)
-                .key("multi").value(index.multi)
-                .key("system").value(index.system)
-                .key("created").value(index.created)
-                .key("fields").array
-                   for(field <- index.fields)
-                     writer.value(field)
-                writer.endArray
-              writer.endObject
-            }
-
-          writer.endArray //indexes end
-
-          /* new */
-          writer.key("params").`object`
-            for((paramKey, paramValue) <- storage.params) {
-              writer.key(paramKey).value(paramValue)
-            }
-          writer.endObject
-          /* end of new */
-
-          writer.endObject
-        }
-        writer.endArray
-        writer.endObject
-
-        swriter.flush()
-
-        val result = JSONFormatter.format(swriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        swriter.close()
+      jsonWriter.key("indexes").array //indexes start
+      for(index <- storage.indexes){
+        jsonWriter.`object`
+          .key("name").value(index.name)
+          .key("multi").value(index.multi)
+          .key("system").value(index.system)
+          .key("created").value(index.created)
+          .key("fields").array
+        for(field <- index.fields)
+          jsonWriter.value(field)
+        jsonWriter.endArray
+        jsonWriter.endObject
       }
+
+      jsonWriter.endArray //indexes end
+
+      /* new */
+      jsonWriter.key("params").`object`
+      for((paramKey, paramValue) <- storage.params) {
+        jsonWriter.key(paramKey).value(paramValue)
+      }
+      jsonWriter.endObject
+      /* end of new */
+
+      jsonWriter.endObject
     }
+    jsonWriter.endArray
+    jsonWriter.endObject
   }
 }

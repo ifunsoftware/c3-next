@@ -77,7 +77,7 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     configManager.configDir = testDir
     
     val accessor = new StorageConfigAccessorImpl
-    accessor.setConfigManager(configManager)
+    accessor.configManager = configManager
 
     val fileName = "c3-storage-config.json"
     

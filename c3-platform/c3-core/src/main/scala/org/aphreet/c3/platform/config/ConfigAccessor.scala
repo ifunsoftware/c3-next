@@ -29,7 +29,11 @@
  */
 package org.aphreet.c3.platform.config
 
-import java.io.{File, FileWriter}
+import java.io.{StringWriter, File}
+import org.aphreet.c3.platform.common.Disposable._
+import java.nio.file.{StandardOpenOption, Files}
+import com.springsource.json.parser._
+import com.springsource.json.writer._
 
 
 trait ConfigAccessor[T] {
@@ -52,22 +56,31 @@ trait ConfigAccessor[T] {
     store(f.apply(load))
   }
 
-
-  protected def writeToFile(text: String, configFile: File) {
-
-    if (!configFile.exists)
-      configFile.createNewFile
-
-
-    val fileWriter = new FileWriter(configFile, false)
-    try {
-      fileWriter write text
-      fileWriter.flush()
-    } finally {
-      fileWriter.close()
+  def storeConfig(data: T, configFile: File) {
+    this.synchronized {
+      using(new StringWriter())(
+        writer => {
+          writeConfig(data, new JSONWriterImpl(writer))
+          Files.write(configFile.toPath, writer.toString.getBytes("UTF-8"),
+            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
+        }
+      )
     }
-
   }
+
+  def loadConfig(configFile: File): T = {
+    readConfig(new AntlrJSONParser().parse(configFile))
+  }
+
+  implicit def asMap(node:Node):MapNode = node.asInstanceOf[MapNode]
+
+  implicit def asList(node:Node):ListNode = node.asInstanceOf[ListNode]
+
+  implicit def asScalar(node:Node):ScalarNode = node.asInstanceOf[ScalarNode]
+
+  implicit def asStringScalarNodeValue(node:Node):String = node.asInstanceOf[ScalarNode].getValue[String]
+
+  implicit def asBooleanScalarNodeValue(node:Node):Boolean = node.asInstanceOf[ScalarNode].getValue[Boolean]
 
 
   protected def configDir: File
@@ -76,8 +89,8 @@ trait ConfigAccessor[T] {
 
   protected def defaultConfig: T
 
-  protected def loadConfig(configFile: File): T
+  def writeConfig(data: T, writer: JSONWriter)
 
-  protected def storeConfig(data: T, configFile: File)
+  def readConfig(node:Node):T
 
 }
