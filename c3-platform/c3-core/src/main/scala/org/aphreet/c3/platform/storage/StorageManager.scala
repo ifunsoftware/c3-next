@@ -57,9 +57,9 @@ trait StorageManager{
   
   def updateStorageParams(storage:Storage)
 
-  def createIndex(id:String, index:StorageIndex)
+  def createIndex(index:StorageIndex)
 
-  def removeIndex(id:String, name:String)
+  def removeIndex(name:String)
 
   def mergeStorages(fromId:String, toId:String)
 

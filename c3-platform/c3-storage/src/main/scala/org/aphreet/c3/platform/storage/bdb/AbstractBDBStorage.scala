@@ -57,6 +57,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
 
   val iterators = new HashSet[BDBStorageIterator]
 
+  val disableIteratorFunctionFilter = parameters.params.contains("DISABLE_BDB_FUNCTION_FILTER")
 
   def count:Long = objectCount
 
@@ -300,7 +301,7 @@ abstract class AbstractBDBStorage(override val parameters:StorageParams,
       log debug "Creating iterator; fields: " + fields + " sysFields: " + systemFields
     }
 
-    val iterator = new BDBStorageIterator(this, fields, systemFields, filter)
+    val iterator = new BDBStorageIterator(this, fields, systemFields, filter, disableIteratorFunctionFilter)
 
     iterators.synchronized(
       iterators += iterator
@@ -339,6 +340,13 @@ trait DatabaseProvider{
   def getRODatabase:Database = getDatabase(writeFlag = false)
 
   def getRWDatabase:Database = getDatabase(writeFlag = true)
+
+}
+
+object AbstractBDBStorage {
+
+  val DISABLE_BDB_FUNCTION_FILTER = "DISABLE_BDB_FUNCTION_FILTER"
+  val USE_SHORT_LOCK_TIMEOUT = "USE_SHORT_LOCK_TIMEOUT"
 
 }
 

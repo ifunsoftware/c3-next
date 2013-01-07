@@ -43,6 +43,7 @@ abstract class Task extends Runnable{
       case e: Throwable => {
         taskState = CRASHED
         log error e
+        e.printStackTrace()
         postFailure()
       }
     }finally {

@@ -105,6 +105,13 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>com.springsource.org.joda.time</artifactId>
+                <version>1.6.0</version>
+                <scope>provided</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

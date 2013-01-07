@@ -203,19 +203,17 @@ class CreateStorageIndexCommand extends Command {
 
   override
   def execute(params:List[String], management:PlatformManagementService) = {
-    if(params.length < 5){
-      "Not enough arguments.\nUsage: create storage index <storage id> <index name> <system?> <multi?> <field0> <field1> ..."
+    if(params.length < 4){
+      "Not enough arguments.\nUsage: create storage index <index name> <system?> <multi?> <field0> <field1> ..."
     }else{
       val indexParams = params.toArray
 
-      val id = indexParams(0)
-      val name = indexParams(1)
-      val system = indexParams(2) == "true"
-      val multi = indexParams(3) == "true"
-      val fields = params.drop(4).toArray
+      val name = indexParams(0)
+      val system = indexParams(1) == "true"
+      val multi = indexParams(2) == "true"
+      val fields = params.drop(3).toArray
 
-
-      management.createIndex(id, name, fields, system, multi)
+      management.createIndex(name, fields, system, multi)
 
       "Index created"
     }
@@ -229,10 +227,10 @@ class RemoveStorageIndexCommand extends Command {
 
   override
   def execute(params:List[String], management:PlatformManagementService) = {
-    if(params.length < 2){
-      "Not enough arguments.\nUsage: remove storage index <storage id> <index name>"
+    if(params.length < 1){
+      "Not enough arguments.\nUsage: remove storage index <index name>"
     }else{
-      management.removeIndex(params.head, params.tail.head)
+      management.removeIndex(params.head)
       "Index removed"
     }
   }

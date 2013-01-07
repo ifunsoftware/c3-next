@@ -16,7 +16,19 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   var storagePath:Path = null
 
-  def createStorage(id:String):Storage
+  def createStorage(id:String, disableIteratorFunctionFilter:Boolean = false):Storage = {
+    val params = new mutable.HashMap[String, String]()
+
+    params.put(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT, "true")
+
+    if (disableIteratorFunctionFilter){
+      params.put(AbstractBDBStorage.DISABLE_BDB_FUNCTION_FILTER, "true")
+    }
+
+    createStorage(id, params)
+  }
+
+  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage
 
   override def setUp(){
     testDir = new File(System.getProperty("user.home"), "c3_int_test")
@@ -242,8 +254,8 @@ abstract class AbstractStorageTestCase extends TestCase{
   }
 
 
-  def testIterator1() {
-    val storage  = createStorage("1008")
+  def testIteratorWithOneIndex() {
+    val storage  = createStorage("1008", disableIteratorFunctionFilter = true)
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
 
@@ -269,12 +281,11 @@ abstract class AbstractStorageTestCase extends TestCase{
 
 
       val iterator = storage.iterator(fields=Map("pool" -> "pool0"))
-      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
 
       assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
       while(iterator.hasNext){
-        val readResource = iterator.next
+        val readResource = iterator.next()
 
         raMap.get(readResource.address) match{
           case None => assertFalse("Found resource that we did not save", false)
@@ -292,8 +303,8 @@ abstract class AbstractStorageTestCase extends TestCase{
     }finally storage.close()
   }
 
-  def testIterator2() {
-    val storage  = createStorage("1009")
+  def testIteratorWithOneSystemIndex() {
+    val storage  = createStorage("1009", disableIteratorFunctionFilter = true)
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=true, multi=false, created=0l))
 
@@ -319,7 +330,6 @@ abstract class AbstractStorageTestCase extends TestCase{
 
 
       val iterator = storage.iterator(systemFields=Map("pool" -> "pool0"))
-      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
 
       assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
@@ -342,8 +352,8 @@ abstract class AbstractStorageTestCase extends TestCase{
     }finally storage.close()
   }
 
-  def testIterator3() {
-    val storage  = createStorage("1010")
+  def testIteratorWithTwoIndexes() {
+    val storage  = createStorage("1010", disableIteratorFunctionFilter = true)
 
     storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
     storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system=true, multi=false, created=0l))
@@ -382,7 +392,6 @@ abstract class AbstractStorageTestCase extends TestCase{
 
 
       val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
-      iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
 
       assertEquals(2, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
@@ -405,7 +414,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     }finally storage.close()
   }
 
-  def testIterator4() {
+  def testIteratorWithoutIndexes() {
     val storage  = createStorage("1011")
 
     //storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
@@ -445,12 +454,11 @@ abstract class AbstractStorageTestCase extends TestCase{
 
 
       val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
-      //iterator.asInstanceOf[BDBStorageIterator].disableFunctionFilter = true
 
       assertEquals(0, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
       while(iterator.hasNext){
-        val readResource = iterator.next
+        val readResource = iterator.next()
 
         raMap.get(readResource.address) match{
           case None => assertFalse("Found resource that we did not save", false)
@@ -503,7 +511,57 @@ abstract class AbstractStorageTestCase extends TestCase{
       storage0.close()
       storage1.close()
     }
+  }
 
+  def testLateIndexCreate(){
+
+    val storage = createStorage("1012", disableIteratorFunctionFilter = true)
+
+    val resource = createResource("czcxcc")
+    resource.metadata.put("pool", "pool0")
+    val ra = storage.add(resource)
+
+    val resource2 = createResource("bla-bla-bla")
+    resource2.metadata.put("pool", "pool1")
+    val ra2 = storage.add(resource2)
+
+    val expectedResources = new mutable.HashMap[String, Resource]()
+    expectedResources.put(ra, resource)
+    expectedResources.put(ra2, resource2)
+
+    val iterator = storage.iterator(fields = Map("pool" -> "pool0"))
+
+    verifyIteratorContents(expectedResources, iterator)
+
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+
+    //verifying that index has been recreated
+    expectedResources.put(ra, resource)
+
+    val iterator3 = storage.iterator(fields = Map("pool" -> "pool0"))
+
+    verifyIteratorContents(expectedResources, iterator3)
+
+    storage.close()
+
+  }
+
+  private def verifyIteratorContents(expectedResources:mutable.HashMap[String, Resource], iterator:StorageIterator){
+    while(iterator.hasNext){
+      val fetchedResource = iterator.next()
+
+      expectedResources.get(fetchedResource.address) match {
+        case Some(savedResource) => {
+          compareResources(savedResource, fetchedResource)
+          expectedResources.remove(fetchedResource.address)
+        }
+        case None => assertFalse("Found resource, that was not saved", true)
+      }
+    }
+
+    iterator.close()
+
+    assertTrue("Not all resources found via iterator", expectedResources.isEmpty)
   }
 
   private def compareResources(res0:Resource, res1:Resource) {

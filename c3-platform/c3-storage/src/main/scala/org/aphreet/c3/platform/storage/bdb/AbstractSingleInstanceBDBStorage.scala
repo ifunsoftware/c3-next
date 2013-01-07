@@ -60,7 +60,12 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
-    envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+
+    if(params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)){
+      envConfig.setLockTimeout(5, TimeUnit.SECONDS)
+    }else{
+      envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+    }
 
     if(bdbConfig.txNoSync){
       envConfig.setDurability(Durability.COMMIT_NO_SYNC)
@@ -111,6 +116,8 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     secConfig setTransactional true
     secConfig setSortedDuplicates true
     secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+    //This is mandatory as we create an index when db may already contain data
+    secConfig setAllowPopulate(true)
 
     val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
 

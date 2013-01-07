@@ -41,7 +41,8 @@ import org.apache.commons.logging.LogFactory
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val map:Map[String, String],
                          val systemMap:Map[String, String],
-                         val filter:(Resource) => Boolean) extends StorageIterator with ComponentGuard{
+                         val filter:(Resource) => Boolean,
+                         val disableFunctionFilter: Boolean) extends StorageIterator with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
@@ -67,8 +68,6 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   private var closed = false
 
-  var disableFunctionFilter = false
-
   {
 
     log.debug("Creating storage iterator for " + storage.id)
@@ -76,7 +75,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     useIndexes = !usedIndexes.isEmpty
 
     if(useIndexes){
-      
+
       if(log.isDebugEnabled){
         log.debug("Using indexes " + usedIndexes.toString())
         log.debug("Opening secondary cursors")
@@ -89,34 +88,37 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
 
-        val indexKey = new DatabaseEntry(value.getBytes("UTF-8"))
 
         val secCursor = indexDb.openCursor(null, null)
 
+        val indexKey = new DatabaseEntry(value.getBytes("UTF-8"))
         val indexVal = new DatabaseEntry
-
         val status = secCursor.getSearchKey(indexKey, indexVal, LockMode.DEFAULT)
+
 
         if(status == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
         }else{
-          log.warn("failed to open cursor for index: " + index)
+          log.warn("failed to open cursor for index: " + index + " and value " + value + ", operation status is " + status.toString)
           isEmptyIterator = true
+
+          secCursor.close()
         }
 
       }
 
-      //joinCursor = storage.database.join(secCursors.toArray, null)
-      joinCursor = storage.getRWDatabase.join(secCursors.toArray, null)
-
+      if(!isEmptyIterator){
+        joinCursor = storage.getRWDatabase.join(secCursors.toArray, null)
+      }
 
     }else{
       log.debug("No indexes can be used for specified query")
       cursor = storage.getRWDatabase.openCursor(null, null)
     }
 
-
-    resource = findNextResource
+    if(!isEmptyIterator){
+      resource = findNextResource
+    }
 
   }
 
@@ -224,19 +226,22 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   def next: Resource = {
 
-    val previousResource = resource
+    if(hasNext){
 
-    resource = findNextResource
+      val previousResource = resource
 
-    previousResource
+      resource = findNextResource
+
+      previousResource
+    }else{
+      null
+    }
   }
 
   protected def findNextResource: Resource = {
 
     var resource: Resource = null
-
     var resultFound = false
-
 
     while (!resultFound) {
 
@@ -252,11 +257,13 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
       val databaseKey = new DatabaseEntry
       val databaseValue = new DatabaseEntry
 
-      if(!useIndexes){
-        if (cursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-          val key = new String(databaseKey.getData)
+      if(fetchNextKey(databaseKey, databaseValue) == OperationStatus.SUCCESS){
+        val key = new String(databaseKey.getData)
 
-          if (ResourceAddress.isValidAddress(key)) {
+        if (ResourceAddress.isValidAddress(key)) {
+
+          if(fetchCurrentValue(databaseKey, databaseValue) == OperationStatus.SUCCESS){
+
             resource = Resource.fromByteArray(databaseValue.getData)
 
             if(disableFunctionFilter){
@@ -269,93 +276,88 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
               }
             }
           }
-          bdbEntriesProcessed = bdbEntriesProcessed + 1
-        } else {
-          resource = null
-          resultFound = true
         }
+
+        bdbEntriesProcessed = bdbEntriesProcessed + 1
       }else{
-        if (joinCursor.getNext(databaseKey, databaseValue, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-          val key = new String(databaseKey.getData)
-
-          if (ResourceAddress.isValidAddress(key)) {
-            resource = Resource.fromByteArray(databaseValue.getData)
-
-            if(disableFunctionFilter){
-              loadData(resource)
-              resultFound = true
-            }else{
-              if(isMatch(resource)){
-                loadData(resource)
-                resultFound = true
-              }
-            }
-          }
-          bdbEntriesProcessed = bdbEntriesProcessed + 1
-        } else {
-          resource = null
-          resultFound = true
-        }
+        resource = null
+        resultFound = true
+        this.close()
       }
     }
 
     resource
   }
 
+  private def fetchNextKey(dbKey:DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
+    if(useIndexes){
+      joinCursor.getNext(dbKey, LockMode.DEFAULT)
+    }else{
+      dbValue.setPartial(0, 0, true)
+      cursor.getNext(dbKey, dbValue, LockMode.DEFAULT)
+    }
+  }
 
+  private def fetchCurrentValue(dbKey:DatabaseEntry, dbValue:DatabaseEntry):OperationStatus = {
+    if(useIndexes){
+      joinCursor.getDatabase.get(null, dbKey, dbValue, LockMode.DEFAULT)
+    }else{
+      dbValue.setPartial(false)
+      cursor.getCurrent(dbKey, dbValue, LockMode.DEFAULT)
+    }
+  }
 
   protected def loadData(resource: Resource) {
     storage.loadData(resource)
   }
 
-
-
   override def objectsProcessed: Int = bdbEntriesProcessed
 
   def close() {
-    try {
+    if(!closed){
+      try {
 
-      log debug "Closing itertor"
+        log debug "Closing itertor"
 
-      closed = true
+        closed = true
+
+        if(secCursors != null){
+
+          log debug "Closing secondary cursors"
+
+          for(secCursor <- secCursors){
+            letItFall{
+              secCursor.close()
+            }
+          }
+          secCursors = null
+        }
 
 
-      if(secCursors != null){
+        letItFall{
+          if(joinCursor != null){
+            log debug "Closing joint cursor"
 
-        log debug "Closing secondary cursors"
-
-        for(secCursor <- secCursors){
-          letItFall{
-            secCursor.close()
+            joinCursor.close()
+            joinCursor = null
           }
         }
-        secCursors = null
-      }
 
 
-      letItFall{
-        if(joinCursor != null){
-          log debug "Closing joint cursor"
-          
-          joinCursor.close()
-          joinCursor = null
+        letItFall{
+          if (cursor != null) {
+            log debug "Closing cursor"
+
+            cursor.close()
+            cursor = null
+          }
         }
+      } catch {
+        case e: DatabaseException => e.printStackTrace()
+      } finally {
+        storage.removeIterator(this)
+        log debug "Iterator closed"
       }
-
-
-      letItFall{
-        if (cursor != null) {
-          log debug "Closing cursor"
-
-          cursor.close()
-          cursor = null
-        }
-      }
-    } catch {
-      case e: DatabaseException => e.printStackTrace()
-    } finally {
-      storage.removeIterator(this)
-      log debug "Iterator closed"
     }
   }
 

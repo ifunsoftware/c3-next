@@ -30,12 +30,13 @@
 package org.aphreet.c3.platform.test.integration.config
 
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.storage.impl.StorageConfigAccessorImpl
 import org.aphreet.c3.platform.storage._
 
+import impl.{StorageConfigAccessorImpl, StorageIndexConfigAccessorImpl}
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
+import org.easymock.EasyMock._
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 import java.io.File
 import collection.mutable
@@ -60,46 +61,43 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
 
     paramsMap1.put("nodeCounter", "5")
     paramsMap1.put("nodeCounter", "3")
-    
+
     val config  = List(
       StorageParams("11", new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
-        List(
-          new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
-          ), paramsMap1),
-      StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
-        List(
-          new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
-          new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
-        ), paramsMap2)
+        List(), paramsMap1),
+      StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""), List(),
+        paramsMap2)
     )
-    
+
     val configManager = new PlatformConfigManagerImpl
     configManager.configDir = testDir
-    
+
+    val indexConfigAccessor = createMock(classOf[StorageIndexConfigAccessor])
+    expect(indexConfigAccessor.load).andReturn(List()).atLeastOnce()
+    replay(indexConfigAccessor)
+
     val accessor = new StorageConfigAccessorImpl
     accessor.configManager = configManager
+    accessor.indexesConfig = indexConfigAccessor
 
     val fileName = "c3-storage-config.json"
-    
-    
+
     accessor.storeConfig(config, new File(testDir, fileName))
-    
+
     val readConfig = accessor.loadConfig(new File(testDir, fileName))
-    
+
     assertEquals(config, readConfig)
-    
+
     val newParams = StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RW(""),
-      List(
-        new StorageIndex("poolindex", List("c3.pool", "c3.tags"), true, true,10003l)
-        ),
-        new mutable.HashMap[String, String]
-      )
-    
-    
+      List(),
+      new mutable.HashMap[String, String]
+    )
+
     accessor.update(config => newParams :: config.filter(_.id != newParams.id))
-    
-    assertEquals(newParams, accessor.load.head) 
-    
+
+    assertEquals(newParams, accessor.load.head)
+
+    verify(indexConfigAccessor)
   }
 
   def testIdCheck() {
@@ -121,26 +119,38 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
 
     val config  = List(
       StorageParams("11", new Path("C:\\data\\file\\"), "PureBDBStorage", RW("migration"),
-        List(
-          new StorageIndex("poolindex", List("c3.pool"), false, false, 10000l)
-          ), paramsMap1),
+        List(), paramsMap1),
       StorageParams("22", new Path("C:\\data\\file1\\"), "FileBDBStorage", RO(""),
-        List(
-          new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
-          new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
-        ), paramsMap2)
+        List(), paramsMap2)
     )
 
     val idNotExists = config
-            .filter(p => p.id == "55").isEmpty
+      .filter(p => p.id == "55").isEmpty
 
     assertTrue(idNotExists)
 
     assertFalse(config
-            .filter(p => p.id == "11").isEmpty)
+      .filter(p => p.id == "11").isEmpty)
 
     assertTrue(config
-                .filter(p => p.id == "33").isEmpty)
+      .filter(p => p.id == "33").isEmpty)
 
+  }
+
+  def testIndexConfigPersistence(){
+    val configManager = new PlatformConfigManagerImpl
+    configManager.configDir = testDir
+
+    val configAccessor = new StorageIndexConfigAccessorImpl
+    configAccessor.configManager = configManager
+
+    val indexesConfig =  List(
+      new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),
+      new StorageIndex("tagindex", List("c3.tags"), true, false, 10001l)
+    )
+
+    configAccessor.store(indexesConfig)
+
+    assertEquals(indexesConfig, configAccessor.load)
   }
 }

@@ -7,9 +7,9 @@ import org.aphreet.c3.platform.storage.bdb.BDBConfig
 
 class EmbedCompositeStorageTestCase extends AbstractStorageTestCase{
 
-  def createStorage(id:String):Storage =
+  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
         new CompositeStorage(
-          new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), new mutable.HashMap[String, String]),
+          new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
           "12341234",
           new BDBConfig(true, 20, 5120, 102400))
 }

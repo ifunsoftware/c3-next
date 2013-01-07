@@ -40,9 +40,9 @@ import collection.mutable
 
 class ReplicatedBDBStorageTest extends AbstractStorageTestCase{
 
-  def createStorage(id:String):Storage =
+  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
     new ReplicatedBDBStorage(
-      new StorageParams(id, storagePath, "ReplicatedBDBStorage", RW(""), List(), new mutable.HashMap[String, String]),
+      new StorageParams(id, storagePath, "ReplicatedBDBStorage", RW(""), List(), params),
       "12341234",
       new BDBConfig(true, 20, 0, 102400))
 

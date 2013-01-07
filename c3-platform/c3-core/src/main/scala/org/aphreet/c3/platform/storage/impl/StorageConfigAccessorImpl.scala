@@ -30,7 +30,6 @@
 package org.aphreet.c3.platform.storage.impl
 
 import java.io.File
-import java.util.{List => JList}
 
 import org.aphreet.c3.platform.common.Path
 import com.springsource.json.parser._
@@ -40,8 +39,9 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import collection.JavaConversions._
-import org.aphreet.c3.platform.storage.{StorageIndex, StorageConfigAccessor, StorageParams, StorageModeParser}
-import collection.mutable.HashMap
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.StorageParams
+import collection.mutable
 
 
 @Component
@@ -49,6 +49,9 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
   @Autowired
   var configManager: PlatformConfigManager = _
+
+  @Autowired
+  var indexesConfig: StorageIndexConfigAccessor = _
 
   def configFileName: String = "c3-storage-config.json"
 
@@ -76,31 +79,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
 
       val storageMode = StorageModeParser.valueOf(storageModeName, storageModeMessage)
 
-
-      var indexes:List[StorageIndex] = List()
-
-      val indexesNode = storage.getNode("indexes")
-
-      if(indexesNode != null){
-
-        val indexMaps = asScalaBuffer(
-          indexesNode.getNodes.asInstanceOf[JList[MapNode]])
-
-        for (indexMap <- indexMaps){
-          val indexName = indexMap.getNode("name").getValue[String]
-          val mulIndex =  indexMap.getNode("multi").getValue[Boolean]
-          val system = indexMap.getNode("system").getValue[Boolean]
-          val created:Long = indexMap.getNode("created").getValue[String].toLong
-
-          val fieldList =
-            indexMap.getNode("fields").getNodes.map(_.getValue[String]).toList
-
-          indexes = indexes ::: List(new StorageIndex(indexName, fieldList, mulIndex, system, created))
-        }
-      }
-
-      val repParameters = new HashMap[String, String]
-
+      val repParameters = new mutable.HashMap[String, String]
       val repParamsNode = storage.getNode("params")
 
       if (repParamsNode != null) {
@@ -128,7 +107,7 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
           new Path(storage.getNode("path").getValue[String]),
           storage.getNode("type").getValue[String],
           storageMode,
-          indexes,
+          indexesConfig.load,
           repParameters
         ))
     }
@@ -147,22 +126,6 @@ class StorageConfigAccessorImpl extends StorageConfigAccessor {
         .key("type").value(storage.storageType)
         .key("mode").value(storage.mode.name)
         .key("modemsg").value(storage.mode.message)
-
-      jsonWriter.key("indexes").array //indexes start
-      for(index <- storage.indexes){
-        jsonWriter.`object`
-          .key("name").value(index.name)
-          .key("multi").value(index.multi)
-          .key("system").value(index.system)
-          .key("created").value(index.created)
-          .key("fields").array
-        for(field <- index.fields)
-          jsonWriter.value(field)
-        jsonWriter.endArray
-        jsonWriter.endObject
-      }
-
-      jsonWriter.endArray //indexes end
 
       /* new */
       jsonWriter.key("params").`object`

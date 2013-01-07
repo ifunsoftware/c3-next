@@ -94,7 +94,13 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
-    envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+
+    if(params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)){
+      envConfig.setLockTimeout(5, TimeUnit.SECONDS)
+    }else{
+      envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+    }
+
 
     val durability =
       if(bdbConfig.txNoSync){
@@ -257,6 +263,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     secConfig setTransactional  true
     secConfig setSortedDuplicates true
     secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+    secConfig.setAllowPopulate(true)
 
     log debug "Creating index: " + index
 

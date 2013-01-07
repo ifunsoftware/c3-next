@@ -34,12 +34,12 @@ import org.aphreet.c3.platform.storage._
 
 import dispatcher.StorageDispatcher
 
-import org.aphreet.c3.platform.common.{Path, Constants}
+import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.{IOException, File}
+import java.io.IOException
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import javax.annotation.{PreDestroy, PostConstruct}
@@ -48,6 +48,7 @@ import collection.mutable
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import java.nio.file.attribute.BasicFileAttributes
 import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.task.{IterableTask, Task, TaskManager}
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager{
@@ -59,19 +60,25 @@ class StorageManagerImpl extends StorageManager{
   private val factories = new mutable.HashMap[String, StorageFactory]
 
   @Autowired
-  var storageDispatcher:StorageDispatcher = _
+  var storageDispatcher: StorageDispatcher = _
 
   @Autowired
-  var configAccessor : StorageConfigAccessor = _
+  var configAccessor: StorageConfigAccessor = _
 
   @Autowired
-  var volumeManager : VolumeManager = _
+  var indexConfigAccessor: StorageIndexConfigAccessor = _
 
   @Autowired
-  var platformConfigManager:PlatformConfigManager = _
+  var volumeManager: VolumeManager = _
 
   @Autowired
-  var accessMediator:AccessMediator = _
+  var platformConfigManager: PlatformConfigManager = _
+
+  @Autowired
+  var accessMediator: AccessMediator = _
+
+  @Autowired
+  var taskManager: TaskManager = _
 
   lazy val systemId = getSystemId
 
@@ -140,7 +147,8 @@ class StorageManagerImpl extends StorageManager{
 
         factory.createStorage(new StorageParams(stId, storagePath, factory.name,
                                                   RW(Constants.STORAGE_MODE_NONE),
-                                                  List(), new mutable.HashMap[String, String]),
+                                                  indexConfigAccessor.load,
+                                                  new mutable.HashMap[String, String]),
                                                systemId)
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
@@ -202,28 +210,22 @@ class StorageManagerImpl extends StorageManager{
     updateDispatcher()
   }
 
-  def createIndex(id:String, index:StorageIndex) {
-    val storage = storageForId(id)
+  def createIndex(index:StorageIndex) {
+    indexConfigAccessor.update(list => index :: list)
 
-    if(storage.count != 0){
-      throw new StorageException("Unable to create index on storage with content")
-    }
-
-    storage.createIndex(index)
-
-    updateStorageParams(storage)
+    taskManager.submitTask(new CreateIndexTask(listStorages, index))
   }
 
-  def removeIndex(id:String, name:String) {
-    val storage = storageForId(id)
+  def removeIndex(name:String) {
 
-    val indexes = storage.params.indexes.filter(_.name != name)
+    indexConfigAccessor.load.filter(_.name == name).headOption match {
+      case Some(index) => {
 
-    if(indexes.size > 0){
-      storage.removeIndex(indexes.head)
-      updateStorageParams(storage)
-    }else{
-      throw new StorageException("Index not found")
+        indexConfigAccessor.update(list => list.filter(i => i.name != name))
+        storages.values.foreach(_.removeIndex(index))
+
+      }
+      case None => throw new StorageException("Index with name " + name + " not found")
     }
   }
 
@@ -337,6 +339,14 @@ class StorageManagerImpl extends StorageManager{
     platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get systemId from params")
+    }
+  }
+
+  class CreateIndexTask(storages:List[Storage], index:StorageIndex) extends IterableTask(new SimpleCloseableIterable(storages)){
+    def processElement(element: Storage) {
+      log.info("Creating index for storage: " + element.id)
+      element.createIndex(index)
+      log.info("Index for storage " + element.id + " has been created")
     }
   }
 
