@@ -99,7 +99,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         if(status == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
         }else{
-          log.warn("failed to open cursor for index: " + index + " and value " + value + ", operation status is " + status.toString)
+          log.debug("failed to open cursor in storage " + storage.id + " for index: " + index + " and value " + value + ", operation status is " + status.toString)
           isEmptyIterator = true
 
           secCursor.close()
