@@ -45,25 +45,30 @@ class QueryController extends DataController {
   @Autowired
   var queryManager: QueryManager = _
 
+  private val SYSTEM_META = "system."
+
   @RequestMapping(value = Array("/query"),
     method = Array(RequestMethod.GET))
   def executeQuery(req: HttpServletRequest, resp: HttpServletResponse) {
-
     val accessTokens = getAccessTokens(READ, req)
 
-    val map = new mutable.HashMap[String, String]
+    val userMetaMap = new mutable.HashMap[String, String]
+    val systemMetaMap = new mutable.HashMap[String, String]
 
     val enum = req.getParameterNames
 
     while (enum.hasMoreElements) {
       val key: String = enum.nextElement.asInstanceOf[String]
       val value: String = req.getParameter(key)
-      map.put(key, value)
+      if (key.startsWith(SYSTEM_META))
+        systemMetaMap.put(key.replace(SYSTEM_META, ""), value)
+      else
+        userMetaMap.put(key, value)
     }
 
     val consumer = new RestQueryConsumer(resp.getWriter)
 
-    queryManager.executeQuery(map.toMap, accessTokens.metadataRestrictions, consumer)
+    queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
 
     resp.flushBuffer()
 
