@@ -259,7 +259,7 @@ object Resource {
 
   /**
    * OBSOLETE. Now comparing md5 hash of the serialized resource
-   * Last 8 bytes in the serialized resource version 1. If after deserializing them do not match
+   * Last 8 bytes in the serialized resource version 1. If after deserialization they do not match
    * resource is considered to be broken
    */
   val STOP_SEQ : Long = 107533894376158093L
