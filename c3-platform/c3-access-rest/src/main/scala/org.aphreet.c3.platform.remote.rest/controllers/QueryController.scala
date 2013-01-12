@@ -38,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
 import org.aphreet.c3.platform.accesscontrol.READ
 import collection.mutable
+import org.aphreet.c3.platform.remote.rest.response.JsonResultWriter
+import org.aphreet.c3.platform.remote.rest.response.XmlResultWriter
+
 
 @Controller
 class QueryController extends DataController {
@@ -68,9 +71,22 @@ class QueryController extends DataController {
         userMetaMap.put(key, value)
     }
 
-    val consumer = new RestQueryConsumer(resp.getWriter, getResultWriter(contentType))
+    val writer = resp.getWriter()
+    val resultWriter = getResultWriter(contentType)
+
+    val consumer = new RestQueryConsumer(writer, resultWriter)
+
+    val (start, end) = resultWriter match {
+      case jsonWrtr: JsonResultWriter => ("[", "]")
+      case xmlWrtr: XmlResultWriter => ("<resources>", "</resources>")
+      case _ => ("", "") // unknown result writer
+    }
+
+    writer.write(start)
 
     queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
+
+    writer.write(end)
 
     resp.flushBuffer()
 
