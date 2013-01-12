@@ -37,6 +37,8 @@ import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
 import collection.immutable.HashMap
 import org.aphreet.c3.platform.common.ComponentGuard
 import org.apache.commons.logging.LogFactory
+import BDBStorageIndex._
+import java.nio.ByteBuffer
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val map:Map[String, String],
@@ -49,8 +51,11 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   var cursor: Cursor = null
 
   var joinCursor : JoinCursor = null
+  var joinConfig: JoinConfig = null
 
   var secCursors : List[SecondaryCursor] = List()
+
+  var rangedCursor : SecondaryCursor = null
 
   private val usedIndexes:Map[StorageIndex, String] = indexesForQuery(map, systemMap)
 
@@ -69,7 +74,6 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   private var closed = false
 
   {
-
     log.debug("Creating storage iterator for " + storage.id)
 
     useIndexes = !usedIndexes.isEmpty
@@ -91,10 +95,17 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
         val secCursor = indexDb.openCursor(null, null)
 
-        val indexKey = new DatabaseEntry(value.getBytes("UTF-8"))
-        val indexVal = new DatabaseEntry
-        val status = secCursor.getSearchKey(indexKey, indexVal, LockMode.DEFAULT)
+        val indexKey = new DatabaseEntry()
+        val rangedQuery = index.putSearchKey(value, indexKey)
 
+        val indexVal = new DatabaseEntry
+
+        val status = if(rangedQuery){
+          rangedCursor = secCursor
+          secCursor.getSearchKeyRange(indexKey, indexVal, LockMode.DEFAULT)
+        }else{
+          secCursor.getSearchKey(indexKey, indexVal, LockMode.DEFAULT)
+        }
 
         if(status == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
@@ -107,8 +118,17 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       }
 
+      if(rangedCursor != null){
+        secCursors = rangedCursor :: secCursors.filter(_ ne rangedCursor)
+      }
+
       if(!isEmptyIterator){
-        joinCursor = storage.getRWDatabase.join(secCursors.toArray, null)
+
+        joinConfig = new JoinConfig
+
+        joinConfig.setNoSort(rangedCursor != null)
+
+        joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
       }
 
     }else{
@@ -291,7 +311,20 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
   private def fetchNextKey(dbKey:DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
     if(useIndexes){
-      joinCursor.getNext(dbKey, LockMode.DEFAULT)
+      if (joinCursor.getNext(dbKey, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+        OperationStatus.SUCCESS
+      }else{
+
+        val rangedKey = new DatabaseEntry()
+        if (rangedCursor != null && rangedCursor.getNext(rangedKey, new DatabaseEntry(), LockMode.DEFAULT) == OperationStatus.SUCCESS){
+          joinCursor.close()
+          joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+
+          joinCursor.getNext(dbKey, LockMode.DEFAULT)
+        }else{
+          OperationStatus.NOTFOUND
+        }
+      }
     }else{
       dbValue.setPartial(0, 0, true)
       cursor.getNext(dbKey, dbValue, LockMode.DEFAULT)

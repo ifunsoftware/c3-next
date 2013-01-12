@@ -21,7 +21,11 @@ class StorageIndexConfigAccessorImpl extends StorageIndexConfigAccessor{
 
   protected def configFileName = "c3-storage-index-config.json"
 
-  protected def defaultConfig = List()
+  protected def defaultConfig = List(
+    new StorageIndex("domain_idx", List("c3.domain.id"), system=true, multi=false, created=0l),
+    new StorageIndex("created_idx", List("created"), system=true, multi=false, created=0l),
+    new StorageIndex("updated_idx", List("updated"), system=true, multi=false, created=0l)
+  )
 
   def writeConfig(data: List[StorageIndex], writer: JSONWriter) {
     writer.`object`
