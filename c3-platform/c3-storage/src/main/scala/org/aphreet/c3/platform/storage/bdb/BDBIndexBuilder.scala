@@ -32,9 +32,11 @@ package org.aphreet.c3.platform.storage.bdb
 import org.aphreet.c3.platform.storage.StorageIndex
 import org.aphreet.c3.platform.resource.Resource
 import collection.Map
+import java.util.Comparator
+import java.nio.ByteBuffer
 
 class BDBIndexBuilder(val index: StorageIndex) {
-  
+
   def createKey(params: Map[String, String]): Array[Byte] = {
 
     if (index.fields.size == 1) {
@@ -62,14 +64,43 @@ class BDBIndexBuilder(val index: StorageIndex) {
 
   def createKey(resource: Resource): Array[Byte] = {
 
-    val map = if (index.system) {
-      resource.systemMetadata
+    if(index.system){
+      if(!index.multi){
+        index.fields.head match {
+          case "created" => createKey(resource.createDate.getTime)
+          case "updated" => createKey(resource.lastUpdateDate.getTime)
+          case _ => createKey(resource.systemMetadata)
+        }
+      }else{
+        createKey(resource.systemMetadata)
+      }
     } else {
-      resource.metadata
+      createKey(resource.metadata)
     }
+  }
 
-    createKey(map)
+  def comparator: Option[Comparator[Array[Byte]]] = {
 
+    if(index.system && !index.multi
+      && (index.fields.head == "created" || index.fields.head == "updated")){
+
+      Some(new Comparator[Array[Byte]] with Serializable{
+        def compare(o1: Array[Byte], o2: Array[Byte]) = {
+
+          val long1 = ByteBuffer.allocate(8).put(o1).getLong(0)
+          val long2 = ByteBuffer.allocate(8).put(o2).getLong(0)
+
+          long1.compareTo(long2)
+        }
+      })
+
+    }else{
+      None
+    }
+  }
+
+  private def createKey(long: Long):Array[Byte] = {
+    ByteBuffer.allocate(8).putLong(long).array()
   }
 
   private def appendToBuilder(value:String, builder:StringBuilder) = {

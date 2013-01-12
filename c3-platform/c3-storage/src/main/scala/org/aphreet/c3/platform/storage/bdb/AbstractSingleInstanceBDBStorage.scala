@@ -97,12 +97,18 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
       secConfig setAllowCreate true
       secConfig setTransactional true
       secConfig setSortedDuplicates true
-      secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+      val keyCreator = new C3SecondaryKeyCreator(index)
+      secConfig.setKeyCreator(keyCreator)
+
+      keyCreator.comparator match {
+        case Some(comparator) => secConfig.setBtreeComparator(comparator)
+        case None =>
+      }
 
       val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
 
       secondaryDatabases.put(index.name, secDatabase)
-
     }
 
     log info "Storage " + id + " opened"
@@ -115,7 +121,15 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     secConfig setAllowCreate true
     secConfig setTransactional true
     secConfig setSortedDuplicates true
-    secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+    val keyCreator = new C3SecondaryKeyCreator(index)
+    secConfig.setKeyCreator(keyCreator)
+
+    keyCreator.comparator match {
+      case Some(comparator) => secConfig.setBtreeComparator(comparator)
+      case None =>
+    }
+
     //This is mandatory as we create an index when db may already contain data
     secConfig setAllowPopulate(true)
 

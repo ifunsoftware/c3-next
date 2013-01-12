@@ -242,7 +242,14 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       secConfig setAllowCreate  true
       secConfig setTransactional  true
       secConfig setSortedDuplicates true
-      secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+      val keyCreator = new C3SecondaryKeyCreator(index)
+      secConfig.setKeyCreator(keyCreator)
+
+      keyCreator.comparator match {
+        case Some(comparator) => secConfig.setBtreeComparator(comparator)
+        case None =>
+      }
 
       forAllNodes(i  =>   {
         val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name, databases(i).database, secConfig)
@@ -262,7 +269,15 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     secConfig setAllowCreate  true
     secConfig setTransactional  true
     secConfig setSortedDuplicates true
-    secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+    val keyCreator = new C3SecondaryKeyCreator(index)
+    secConfig.setKeyCreator(keyCreator)
+
+    keyCreator.comparator match {
+      case Some(comparator) => secConfig.setBtreeComparator(comparator)
+      case None =>
+    }
+
     secConfig.setAllowPopulate(true)
 
     log debug "Creating index: " + index

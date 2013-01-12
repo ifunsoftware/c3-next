@@ -9,6 +9,7 @@ import bdb.{AbstractBDBStorage, BDBStorageIterator}
 import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataStream, Resource}
 import junit.framework.Assert._
 import scala.Some
+import java.util.Date
 
 abstract class AbstractStorageTestCase extends TestCase{
 
@@ -543,6 +544,44 @@ abstract class AbstractStorageTestCase extends TestCase{
     verifyIteratorContents(expectedResources, iterator3)
 
     storage.close()
+  }
+
+  def testIterateOverCreatedField(){
+
+    val storage = createStorage("1013", disableIteratorFunctionFilter = true)
+
+    storage.createIndex(new StorageIndex("created_idx", List("created"), system=true, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+
+    val resource1 = createResource("qweqweqwe")
+    resource1.createDate = new Date(1)
+    resource1.metadata.put("pool", "pool0")
+    val ra1 = storage.add(resource1)
+
+    val resource2 = createResource("qweqweqwe1")
+    resource2.createDate = new Date(5)
+    resource2.metadata.put("pool", "pool0")
+    val ra2 = storage.add(resource2)
+
+    val resource3 = createResource("qweqweqwe2")
+    resource3.createDate = new Date(10)
+    resource3.metadata.put("pool", "pool0")
+    val ra3 = storage.add(resource3)
+
+
+    val resource4 = createResource("qweqweqwe3")
+    resource4.createDate = new Date(20)
+    resource4.metadata.put("pool", "pool1")
+    val ra4 = storage.add(resource4)
+
+    val expected = new mutable.HashMap[String, Resource]()
+    expected.put(ra2, resource2)
+    expected.put(ra3, resource3)
+
+    val iterator = storage.iterator(systemFields = Map("created" -> ">=5"), fields = Map("pool" -> "pool0"))
+
+    verifyIteratorContents(expected, iterator)
+
 
   }
 
@@ -555,13 +594,13 @@ abstract class AbstractStorageTestCase extends TestCase{
           compareResources(savedResource, fetchedResource)
           expectedResources.remove(fetchedResource.address)
         }
-        case None => assertFalse("Found resource, that was not saved", true)
+        case None => assertFalse("Found resource, that was not expected " + fetchedResource.address, true)
       }
     }
 
     iterator.close()
 
-    assertTrue("Not all resources found via iterator", expectedResources.isEmpty)
+    assertTrue("Not all resources found via iterator: " + expectedResources.keySet.toList, expectedResources.isEmpty)
   }
 
   private def compareResources(res0:Resource, res1:Resource) {
