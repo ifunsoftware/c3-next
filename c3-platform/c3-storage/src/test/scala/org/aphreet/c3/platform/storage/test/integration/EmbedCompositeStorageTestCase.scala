@@ -10,6 +10,6 @@ class EmbedCompositeStorageTestCase extends AbstractStorageTestCase{
   def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
         new CompositeStorage(
           new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
-          "12341234",
+          "ECOS" + id,
           new BDBConfig(true, 20, 5120, 102400))
 }

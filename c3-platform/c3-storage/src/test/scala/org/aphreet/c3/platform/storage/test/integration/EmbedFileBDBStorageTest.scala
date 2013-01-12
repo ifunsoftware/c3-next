@@ -10,6 +10,6 @@ class EmbedFileBDBStorageTest  extends AbstractStorageTestCase{
  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
     new FileBDBStorage(
       new StorageParams(id, storagePath, "FileBDBStorage", RW(""), List(), params),
-      "12341234",
+      "EFBS" + id,
       new BDBConfig(true, 20, 5120, 102400))
 }

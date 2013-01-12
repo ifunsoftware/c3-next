@@ -11,7 +11,7 @@ class PureBDBStorageTest extends AbstractStorageTestCase{
   def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
     new PureBDBStorage(
       new StorageParams(id, storagePath, "PureBDBStorage", RW(""), List(), params),
-      "12341234",
+      "PBDS" + id,
       new BDBConfig(true, 20, 0, 102400))
 
 }

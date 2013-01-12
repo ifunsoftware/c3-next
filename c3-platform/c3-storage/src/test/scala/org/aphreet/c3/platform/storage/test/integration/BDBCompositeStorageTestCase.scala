@@ -11,6 +11,6 @@ class BDBCompositeStorageTestCase extends AbstractStorageTestCase{
   def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
       new CompositeStorage(
         new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
-        "12341234",
+        "BDCS" + id,
         new BDBConfig(true, 20, 0, 102400))
 }

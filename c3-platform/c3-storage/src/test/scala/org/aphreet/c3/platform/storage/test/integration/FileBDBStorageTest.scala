@@ -12,6 +12,6 @@ class FileBDBStorageTest extends AbstractStorageTestCase{
  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
     new FileBDBStorage(
       new StorageParams(id, storagePath, "FileBDBStorage", RW(""), List(), params),
-      "12341234",
+      "FIBS" + id,
       new BDBConfig(true, 20, 0, 102400))
 }

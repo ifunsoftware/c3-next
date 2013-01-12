@@ -582,6 +582,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     verifyIteratorContents(expected, iterator)
 
+    storage.close()
 
   }
 
