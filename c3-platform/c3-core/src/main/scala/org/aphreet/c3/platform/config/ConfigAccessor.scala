@@ -34,6 +34,7 @@ import org.aphreet.c3.platform.common.Disposable._
 import java.nio.file.{StandardOpenOption, Files}
 import com.springsource.json.parser._
 import com.springsource.json.writer._
+import org.aphreet.c3.platform.common.JSONFormatter
 
 
 trait ConfigAccessor[T] {
@@ -61,7 +62,7 @@ trait ConfigAccessor[T] {
       using(new StringWriter())(
         writer => {
           writeConfig(data, new JSONWriterImpl(writer))
-          Files.write(configFile.toPath, writer.toString.getBytes("UTF-8"),
+          Files.write(configFile.toPath, JSONFormatter.format(writer.toString).getBytes("UTF-8"),
             StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
         }
       )

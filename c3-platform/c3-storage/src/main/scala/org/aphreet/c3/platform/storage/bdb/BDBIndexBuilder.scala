@@ -83,17 +83,7 @@ class BDBIndexBuilder(val index: StorageIndex) {
 
     if(index.system && !index.multi
       && (index.fields.head == "created" || index.fields.head == "updated")){
-
-      Some(new Comparator[Array[Byte]] with Serializable{
-        def compare(o1: Array[Byte], o2: Array[Byte]) = {
-
-          val long1 = ByteBuffer.allocate(8).put(o1).getLong(0)
-          val long2 = ByteBuffer.allocate(8).put(o2).getLong(0)
-
-          long1.compareTo(long2)
-        }
-      })
-
+      Some(new LongComparator)
     }else{
       None
     }

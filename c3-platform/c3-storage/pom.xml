@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.sleepycat.je</groupId>
             <artifactId>com.springsource.com.sleepycat.je</artifactId>
-            <version>4.1.7</version>
+            <version>5.0.58</version>
             <scope>provided</scope>
         </dependency>
 

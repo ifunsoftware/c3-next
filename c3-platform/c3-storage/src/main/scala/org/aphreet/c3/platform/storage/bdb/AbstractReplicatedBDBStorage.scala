@@ -94,6 +94,7 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
+    envConfig setClassLoader(getClass.getClassLoader)
 
     if(params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)){
       envConfig.setLockTimeout(5, TimeUnit.SECONDS)
