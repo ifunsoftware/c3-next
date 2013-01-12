@@ -31,13 +31,28 @@ package org.aphreet.c3.platform.remote.rest.query
 
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.query.QueryConsumer
+import org.aphreet.c3.platform.remote.rest.response.ResultWriter
+import org.aphreet.c3.platform.remote.rest.response.JsonResultWriter
+import org.aphreet.c3.platform.remote.rest.response.XmlResultWriter
+import com.thoughtworks.xstream.XStream
 import java.io.PrintWriter
 
-class RestQueryConsumer(val writer: PrintWriter) extends QueryConsumer {
+class RestQueryConsumer(writer: PrintWriter,
+                        resultWriter: ResultWriter) extends QueryConsumer {
   var addressesWritten = 0
 
   override def addResource(resource: Resource) {
-    writer.println(resource.address)
+
+    val xstream: Option[XStream] = resultWriter match {
+      case jsonWriter: JsonResultWriter => Some(jsonWriter.stream)
+      case xmlWriter: XmlResultWriter => Some(xmlWriter.stream)
+      case _ => None // unknown writer
+    }
+
+    xstream match {
+      case Some(stream) => writer.println(stream.toXML(resource) + ",")
+      case _ => writer.println(resource.address)
+    }
 
     addressesWritten = addressesWritten + 1
 

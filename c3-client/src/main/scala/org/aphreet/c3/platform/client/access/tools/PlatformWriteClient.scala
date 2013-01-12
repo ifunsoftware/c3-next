@@ -37,8 +37,6 @@ import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
 
 class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
 
- 
-
   def clientName = "Writer"
 
   def cliDescription = parameters(

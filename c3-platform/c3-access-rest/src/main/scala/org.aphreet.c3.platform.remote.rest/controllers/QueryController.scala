@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.remote.rest.controllers
 
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.{RequestMethod, RequestMapping}
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, RequestMapping}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,7 +49,9 @@ class QueryController extends DataController {
 
   @RequestMapping(value = Array("/query"),
     method = Array(RequestMethod.GET))
-  def executeQuery(req: HttpServletRequest, resp: HttpServletResponse) {
+  def executeQuery(req: HttpServletRequest,
+                   resp: HttpServletResponse,
+                   @RequestHeader(value = "x-c3-type", required = false) contentType: String) {
     val accessTokens = getAccessTokens(READ, req)
 
     val userMetaMap = new mutable.HashMap[String, String]
@@ -66,7 +68,7 @@ class QueryController extends DataController {
         userMetaMap.put(key, value)
     }
 
-    val consumer = new RestQueryConsumer(resp.getWriter)
+    val consumer = new RestQueryConsumer(resp.getWriter, getResultWriter(contentType))
 
     queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
 
