@@ -43,14 +43,14 @@ class RestQueryConsumer(writer: PrintWriter,
 
   override def addResource(resource: Resource) {
 
-    val xstream: Option[XStream] = resultWriter match {
-      case jsonWriter: JsonResultWriter => Some(jsonWriter.stream)
-      case xmlWriter: XmlResultWriter => Some(xmlWriter.stream)
-      case _ => None // unknown writer
+    val (separator, xstream): (String, Option[XStream]) = resultWriter match {
+      case jsonWriter: JsonResultWriter => (",", Some(jsonWriter.stream))
+      case xmlWriter: XmlResultWriter => ("", Some(xmlWriter.stream))
+      case _ => ("", None) // unknown writer
     }
 
     xstream match {
-      case Some(stream) => writer.println(stream.toXML(resource) + ",")
+      case Some(stream) => writer.println(stream.toXML(resource) + separator)
       case _ => writer.println(resource.address)
     }
 
