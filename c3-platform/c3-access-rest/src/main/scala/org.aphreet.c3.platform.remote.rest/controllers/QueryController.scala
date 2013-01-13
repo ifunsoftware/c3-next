@@ -71,22 +71,13 @@ class QueryController extends DataController {
         userMetaMap.put(key, value)
     }
 
-    val writer = resp.getWriter()
+    val writer = resp.getWriter
+
     val resultWriter = getResultWriter(contentType)
 
     val consumer = new RestQueryConsumer(writer, resultWriter)
 
-    val (start, end) = resultWriter match {
-      case jsonWrtr: JsonResultWriter => ("[", "]")
-      case xmlWrtr: XmlResultWriter => ("<resources>", "</resources>")
-      case _ => ("", "") // unknown result writer
-    }
-
-    writer.write(start)
-
     queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
-
-    writer.write(end)
 
     resp.flushBuffer()
 

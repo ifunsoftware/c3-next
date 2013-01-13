@@ -41,14 +41,17 @@ class RestQueryConsumer(writer: PrintWriter,
                         resultWriter: ResultWriter) extends QueryConsumer {
   var addressesWritten = 0
 
+  val (start, end, separator, xstream): (String, String, String, Option[XStream]) = resultWriter match {
+    case jsonWriter: JsonResultWriter => ("[", "]", ",", Some(jsonWriter.stream))
+    case xmlWriter: XmlResultWriter => ("<resources>", "</resources>", "", Some(xmlWriter.stream))
+    case _ => ("", "", "", None) // unknown writer
+  }
+
+  {
+    writer.println(start)
+  }
+
   override def addResource(resource: Resource) {
-
-    val (separator, xstream): (String, Option[XStream]) = resultWriter match {
-      case jsonWriter: JsonResultWriter => (",", Some(jsonWriter.stream))
-      case xmlWriter: XmlResultWriter => ("", Some(xmlWriter.stream))
-      case _ => ("", None) // unknown writer
-    }
-
     xstream match {
       case Some(stream) => writer.println(stream.toXML(resource) + separator)
       case _ => writer.println(resource.address)
@@ -63,7 +66,8 @@ class RestQueryConsumer(writer: PrintWriter,
 
   }
 
-  override def close {
+  override def close(){
+    writer.println(end)
     writer.close()
   }
 }
