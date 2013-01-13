@@ -33,9 +33,3 @@ package org.aphreet.c3.platform.filesystem
 import org.aphreet.c3.platform.config.DictionaryConfigAccessor
 
 trait FSConfigAccessor extends DictionaryConfigAccessor
-
-object FSConfigAccessor{
-
-  val ROOT_ADDRESS = "root.address"
-
-}

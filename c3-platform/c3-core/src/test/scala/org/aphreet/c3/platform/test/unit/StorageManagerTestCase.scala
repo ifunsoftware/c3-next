@@ -36,7 +36,6 @@ import org.easymock.EasyMock._
 import org.aphreet.c3.platform.storage.impl.StorageManagerImpl
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
-import org.aphreet.c3.platform.mock.StorageMock
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.common.{Constants, Path}

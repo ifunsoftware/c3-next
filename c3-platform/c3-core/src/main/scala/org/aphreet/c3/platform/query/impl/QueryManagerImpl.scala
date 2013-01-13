@@ -30,58 +30,38 @@
 
 package org.aphreet.c3.platform.query.impl
 
-import org.apache.commons.logging.LogFactory
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.query._
-import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common.Disposable._
+import org.aphreet.c3.platform.common.Tracer
+import scala.util.control.Exception._
+
 
 @Component("queryManager")
-class QueryManagerImpl extends QueryManager{
+class QueryManagerImpl extends QueryManager with Tracer{
 
-  val log = LogFactory.getLog(getClass)
-
-  var storageManager:StorageManager = _
+  val log = logOfClass(classOf[QueryManagerImpl])
 
   @Autowired
-  def setStorageManager(manager:StorageManager) {storageManager = manager}
-
-  @PostConstruct
-  def init() {
-    log info "Starting QueryManager"
-  }
+  var storageManager:StorageManager = _
 
   override
   def executeQuery(fields:Map[String, String],
                    systemFields:Map[String, String],
                    consumer:QueryConsumer){
 
-    if(log.isDebugEnabled){
-      log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
-    }
+    debug("Starting query fields: " + fields + " systemFields: " + systemFields)
 
-    val storages = storageManager.listStorages
-
-    for(storage <- storages){
-      val iterator = storage.iterator(fields, systemFields)
-
-      try{
-
-        while(iterator.hasNext)
-          consumer.addResource(iterator.next)
-
-      }finally{
-        iterator.close()
-      }
-    } 
+    handling(classOf[Throwable]).by(e => warn("Exception while processing query", e))
+      .andFinally(consumer.close())
+      .apply(
+      storageManager.listStorages.filter(_.mode.allowRead).foreach(storage =>
+        using(storage.iterator(fields, systemFields))(
+          _.foreach(consumer.addResource(_))
+        )
+      )
+    )
   }
-
-  @PreDestroy
-  def destroy(){
-    log info "Stopping QueryManager"
-  }
-
 }

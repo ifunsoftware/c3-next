@@ -137,6 +137,11 @@ class BackupTask(val storages:List[Storage], val fsManager:FSManager, val direct
   }
 
   override def preStart(){
+
+    if(!directory.file.exists()){
+      directory.file.mkdirs()
+    }
+
     backupName = directory.append("backup-" + System.currentTimeMillis() + ".zip")
 
     log.info("Creating backup file " + backupName.stringValue)

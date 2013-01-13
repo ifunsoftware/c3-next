@@ -31,13 +31,16 @@
 package org.aphreet.c3.platform.remote.rest.controllers
 
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.{RequestMethod, RequestMapping}
+import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, RequestMapping}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.aphreet.c3.platform.query.QueryManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
 import org.aphreet.c3.platform.accesscontrol.READ
 import collection.mutable
+import org.aphreet.c3.platform.remote.rest.response.JsonResultWriter
+import org.aphreet.c3.platform.remote.rest.response.XmlResultWriter
+
 
 @Controller
 class QueryController extends DataController {
@@ -45,25 +48,36 @@ class QueryController extends DataController {
   @Autowired
   var queryManager: QueryManager = _
 
+  private val SYSTEM_META = "system."
+
   @RequestMapping(value = Array("/query"),
     method = Array(RequestMethod.GET))
-  def executeQuery(req: HttpServletRequest, resp: HttpServletResponse) {
-
+  def executeQuery(req: HttpServletRequest,
+                   resp: HttpServletResponse,
+                   @RequestHeader(value = "x-c3-type", required = false) contentType: String) {
     val accessTokens = getAccessTokens(READ, req)
 
-    val map = new mutable.HashMap[String, String]
+    val userMetaMap = new mutable.HashMap[String, String]
+    val systemMetaMap = new mutable.HashMap[String, String]
 
     val enum = req.getParameterNames
 
     while (enum.hasMoreElements) {
       val key: String = enum.nextElement.asInstanceOf[String]
       val value: String = req.getParameter(key)
-      map.put(key, value)
+      if (key.startsWith(SYSTEM_META))
+        systemMetaMap.put(key.replace(SYSTEM_META, ""), value)
+      else
+        userMetaMap.put(key, value)
     }
 
-    val consumer = new RestQueryConsumer(resp.getWriter)
+    val writer = resp.getWriter
 
-    queryManager.executeQuery(map.toMap, accessTokens.metadataRestrictions, consumer)
+    val resultWriter = getResultWriter(contentType)
+
+    val consumer = new RestQueryConsumer(writer, resultWriter)
+
+    queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
 
     resp.flushBuffer()
 

@@ -37,8 +37,8 @@ import org.aphreet.c3.platform.common.JSONFormatter
 import org.aphreet.c3.platform.config.ConfigAccessor
 import org.aphreet.c3.platform.config.PlatformConfigManager
 
-import com.springsource.json.parser.{MapNode, ListNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl
+import com.springsource.json.parser._
+import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
 
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -52,12 +52,10 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, Boolean]]
 
   def defaultConfig:Map[T, Boolean] = Map()
 
-  def loadConfig(configFile: File): Map[T, Boolean] = {
-
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
+  def readConfig(node:Node): Map[T, Boolean] = {
 
     val entries =
-      for (key <- asScalaSet(node.getKeys))
+      for (key <- node.getKeys)
       yield (
         keyFromString(key),
         getArrayValue[Boolean](node, key, 0)
@@ -70,39 +68,20 @@ abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, Boolean]]
 
   def keyToString(key: T): String
 
-
   private def getArrayValue[E](node: MapNode, key: String, num: Int): E = {
-    node.getNode(key).asInstanceOf[ListNode].getNodes.get(num).asInstanceOf[ScalarNode].getValue[E]
+    node.getNode(key).getNodes.get(num).getValue[E]
   }
 
-  def storeConfig(data: Map[T, Boolean], configFile: File) {
-    this.synchronized {
+  def writeConfig(data: Map[T, Boolean], writer: JSONWriter) {
+    writer.`object`
 
-
-      val swriter = new StringWriter()
-      try {
-        val writer = new JSONWriterImpl(swriter)
-
-        writer.`object`
-
-        for (entry <- data) {
-          writer.key(keyToString(entry._1))
-          writer.array
-          writer.value(entry._2)
-          writer.endArray
-        }
-
-        writer.endObject
-
-        swriter.flush()
-
-        val result = JSONFormatter.format(swriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        swriter.close()
-      }
+    for (entry <- data) {
+      writer.key(keyToString(entry._1))
+      writer.array
+      writer.value(entry._2)
+      writer.endArray
     }
+
+    writer.endObject
   }
 }

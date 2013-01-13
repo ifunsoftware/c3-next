@@ -1,0 +1,70 @@
+package org.aphreet.c3.platform.test.unit
+
+import junit.framework.TestCase
+import junit.framework.Assert._
+import org.easymock.EasyMock._
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.query.QueryConsumer
+import org.aphreet.c3.platform.query.impl.QueryManagerImpl
+import org.aphreet.c3.platform.storage.RW
+import org.aphreet.c3.platform.mock.StorageMock
+
+class QueryManagerTestCase extends TestCase
+{
+
+  def testQuery(){
+
+    val resources = Array(new Resource, new Resource, new Resource)
+
+    val mockedIterator = new StorageIterator{
+
+      var closed = false
+
+      val iterator = resources.iterator
+
+      def hasNext = iterator.hasNext
+
+      def next() = iterator.next()
+
+      def close() {
+        closed = true
+      }
+
+      def objectsProcessed:Int = 0
+    }
+
+    val storage = new StorageMock("1", ""){
+
+      override def mode:StorageMode = RW("")
+
+      override def iterator(md:Map[String, String], smd:Map[String, String], filter:(Resource) => Boolean):StorageIterator
+        = mockedIterator
+    }
+
+    val unavailableStorage = new StorageMock("1", ""){
+
+      override def mode:StorageMode = U("")
+
+    }
+
+    val storageManager = createMock(classOf[StorageManager])
+    expect(storageManager.listStorages).andReturn(List(storage, unavailableStorage))
+
+    val queryConsumer = createMock(classOf[QueryConsumer])
+    expect(queryConsumer.addResource(resources(0)))
+    expect(queryConsumer.addResource(resources(1)))
+    expect(queryConsumer.addResource(resources(2)))
+    expect(queryConsumer.close())
+
+    replay(storageManager, queryConsumer)
+
+    val queryManager = new QueryManagerImpl
+    queryManager.storageManager = storageManager
+
+    queryManager.executeQuery(Map("md_field0" -> "md_value0"), Map("smd_field0" -> "smd_value0"), queryConsumer)
+
+    verify(storageManager, queryConsumer)
+    assertTrue(mockedIterator.closed)
+  }
+}

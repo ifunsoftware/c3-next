@@ -32,10 +32,12 @@ package org.aphreet.c3.platform.config.impl
 import org.aphreet.c3.platform.config._
 
 import org.springframework.stereotype.Component
+import java.io.File
 
 @Component
-class PlatformConfigAccessor extends AbstractDictionaryConfigAccessor {
+class PlatformConfigAccessor
+  extends AbstractDictionaryConfigAccessor("c3-platform-config.json") {
 
-  def configFileName: String = "c3-platform-config.json"
+  var configDir: File = _
 
 }

@@ -5,7 +5,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -32,109 +32,82 @@ package org.aphreet.c3.platform.remote.replication.impl.config
 
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.{StringWriter, File}
-import org.aphreet.c3.platform.common.JSONFormatter
-import com.springsource.json.writer.JSONWriterImpl
-import com.springsource.json.parser.{ScalarNode, ListNode, MapNode, AntlrJSONParser}
+import java.io.File
+import com.springsource.json.writer.JSONWriter
+import com.springsource.json.parser._
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import collection.JavaConversions._
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 
-
 abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, ReplicationHost]]{
 
+  @Autowired
   var configManager: PlatformConfigManager = _
 
   def configDir: File = configManager.configDir
 
-  @Autowired
-  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
+  override def defaultConfig:Map[String, ReplicationHost] = Map()
 
-  override def defaultConfig:Map[String, ReplicationHost] = {
-    Map()
-  }
-
-  def loadConfig(configFile:File):Map[String, ReplicationHost] = {
+  def readConfig(node: Node):Map[String, ReplicationHost] = {
 
     var map = Map[String, ReplicationHost]()
 
+    val hostsListNode = node.getNode("hosts")
 
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
-
-    val hostsListNode = node.getNode("hosts").asInstanceOf[ListNode]
-
-    for (hostNode <- asScalaBuffer(hostsListNode.getNodes)) {
-      val host = getValue(hostNode.asInstanceOf[MapNode], "host")
-      val key = getValue(hostNode.asInstanceOf[MapNode], "key")
-      val id = getValue(hostNode.asInstanceOf[MapNode], "id")
-      val http = getValue(hostNode.asInstanceOf[MapNode], "http_port").toInt
-      val https = getValue(hostNode.asInstanceOf[MapNode], "https_port").toInt
-      val replicationPort = getValue(hostNode.asInstanceOf[MapNode], "replication_port").toInt
-      val sharedKey = getValue(hostNode.asInstanceOf[MapNode], "shared_key")
+    for (hostNode <- hostsListNode.getNodes) {
+      val host = getValue(hostNode, "host")
+      val key = getValue(hostNode, "key")
+      val id = getValue(hostNode, "id")
+      val http = getValue(hostNode, "http_port").toInt
+      val https = getValue(hostNode, "https_port").toInt
+      val replicationPort = getValue(hostNode, "replication_port").toInt
+      val sharedKey = getValue(hostNode, "shared_key")
 
       map = map + ((id, new ReplicationHost(id, host, key, http, https, replicationPort, sharedKey)))
     }
     map
   }
 
-  def storeConfig(map:Map[String, ReplicationHost], configFile: File) {
-    this.synchronized {
-      val swriter = new StringWriter()
+  def writeConfig(map:Map[String, ReplicationHost], writer: JSONWriter) {
+    writer.`object`
 
-      try {
-        val writer = new JSONWriterImpl(swriter)
+    writer.key("hosts")
 
-        writer.`object`
+    writer.array
 
-        writer.key("hosts")
+    for ((id, host) <- map) {
+      writer.`object`
 
-        writer.array
+      writer.key("id")
+      writer.value(host.systemId)
 
-        for ((id, host) <- map) {
-          writer.`object`
+      writer.key("host")
+      writer.value(host.hostname)
 
-          writer.key("id")
-          writer.value(host.systemId)
+      writer.key("key")
+      writer.value(host.key)
 
-          writer.key("host")
-          writer.value(host.hostname)
+      writer.key("http_port")
+      writer.value(host.httpPort)
 
-          writer.key("key")
-          writer.value(host.key)
+      writer.key("https_port")
+      writer.value(host.httpsPort)
 
-          writer.key("http_port")
-          writer.value(host.httpPort)
+      writer.key("replication_port")
+      writer.value(host.replicationPort)
 
-          writer.key("https_port")
-          writer.value(host.httpsPort)
+      writer.key("shared_key")
+      writer.value(host.encryptionKey)
 
-          writer.key("replication_port")
-          writer.value(host.replicationPort)
-
-          writer.key("shared_key")
-          writer.value(host.encryptionKey)
-
-          writer.endObject
-        }
-        writer.endArray
-        writer.endObject
-
-
-        swriter.flush()
-
-        val result = JSONFormatter.format(swriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        swriter.close()
-      }
+      writer.endObject
     }
+    writer.endArray
+    writer.endObject
   }
 
   private def getValue(node: MapNode, key: String): String = {
-    node.getNode(key).asInstanceOf[ScalarNode].getValue[String]
+    node.getNode(key).getValue[String]
   }
 
 }

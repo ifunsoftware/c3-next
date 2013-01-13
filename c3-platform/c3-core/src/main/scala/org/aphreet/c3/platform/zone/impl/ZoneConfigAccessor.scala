@@ -4,10 +4,12 @@ import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
 import org.aphreet.c3.platform.zone.{Zone, IdRange, TimeRangeConfig, ZoneConfig}
 import java.io.{StringWriter, File}
 import org.springframework.beans.factory.annotation.Autowired
-import com.springsource.json.writer.JSONWriterImpl
+import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
 import org.aphreet.c3.platform.common.JSONFormatter
-import com.springsource.json.parser.{ScalarNode, ListNode, MapNode, AntlrJSONParser}
+import com.springsource.json.parser._
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.zone.ZoneConfig
+import org.aphreet.c3.platform.zone.TimeRangeConfig
 
 @Component
 class ZoneConfigAccessor extends ConfigAccessor[ZoneConfig]{
@@ -21,24 +23,23 @@ class ZoneConfigAccessor extends ConfigAccessor[ZoneConfig]{
 
   protected def defaultConfig = ZoneConfig(Nil)
 
-  def loadConfig(configFile: File):ZoneConfig = {
+  def readConfig(node:Node):ZoneConfig = {
 
-    val node = new AntlrJSONParser().parse(configFile)
-    val timeRangesArray = node.asInstanceOf[MapNode].getNode("timeranges").asInstanceOf[ListNode].getNodes.toArray
+    val timeRangesArray = node.getNode("timeranges").getNodes.toArray
 
     val timeRanges = timeRangesArray.map(timeRange => {
       val timeRangeNode = timeRange.asInstanceOf[MapNode]
 
-      val start = timeRangeNode.getNode("start").asInstanceOf[ScalarNode].getValue[String].toLong
-      val end = timeRangeNode.getNode("end").asInstanceOf[ScalarNode].getValue[String].toLong
+      val start = timeRangeNode.getNode("start").getValue[String].toLong
+      val end = timeRangeNode.getNode("end").getValue[String].toLong
 
-      val idRanges = timeRangeNode.getNode("idRanges").asInstanceOf[ListNode].getNodes.toArray.map(idRange => {
+      val idRanges = timeRangeNode.getNode("idRanges").getNodes.toArray.map(idRange => {
         val idRangeNode = idRange.asInstanceOf[MapNode]
 
-        val start = idRangeNode.getNode("start").asInstanceOf[ScalarNode].getValue[String].toLong
-        val end = idRangeNode.getNode("end").asInstanceOf[ScalarNode].getValue[String].toLong
+        val start = idRangeNode.getNode("start").getValue[String].toLong
+        val end = idRangeNode.getNode("end").getValue[String].toLong
 
-        val storages = idRangeNode.getNode("zone").asInstanceOf[MapNode].getNode("storages").asInstanceOf[ListNode].getNodes.toArray
+        val storages = idRangeNode.getNode("zone").getNode("storages").getNodes.toArray
           .map(storageNode => storageNode.asInstanceOf[ScalarNode].getValue[String]).toList
 
         IdRange(start, end, Zone(storages))
@@ -52,49 +53,33 @@ class ZoneConfigAccessor extends ConfigAccessor[ZoneConfig]{
     ZoneConfig(timeRanges)
   }
 
-  def storeConfig(data: ZoneConfig, configFile: File) {
-    this.synchronized {
+  def writeConfig(data: ZoneConfig, writer:JSONWriter) {
 
-          val sWriter = new StringWriter()
+    writer.`object`.key("timeranges").array
 
-      try {
-            val writer = new JSONWriterImpl(sWriter)
-
-            writer.`object`.key("timeranges").array
-
-            for (timeRange <- data.timeRanges){
-              writer.`object`()
-                .key("start").value(timeRange.start)
-                .key("end").value(timeRange.end)
-                .key("idRanges").array()
-                for (idRange <- timeRange.idRanges){
-                  writer.`object`()
-                    .key("start").value(idRange.start)
-                    .key("end").value(idRange.end)
-                    .key("zone").`object`()
-                      .key("storages").array()
-                      for (storage <-idRange.value.storageIds){
-                        writer.value(storage)
-                      }
-                      writer.endArray()
-                    writer.endObject()
-                  writer.endObject()
-                }
-                writer.endArray()
-              writer.endObject()
-            }
-            writer.endArray()
-            writer.endObject()
-
-            sWriter.flush()
-
-            val result = JSONFormatter.format(sWriter.toString)
-
-            writeToFile(result, configFile)
-
-          } finally {
-            sWriter.close()
-          }
+    for (timeRange <- data.timeRanges){
+      writer.`object`()
+        .key("start").value(timeRange.start)
+        .key("end").value(timeRange.end)
+        .key("idRanges").array()
+      for (idRange <- timeRange.idRanges){
+        writer.`object`()
+          .key("start").value(idRange.start)
+          .key("end").value(idRange.end)
+          .key("zone").`object`()
+          .key("storages").array()
+        for (storage <-idRange.value.storageIds){
+          writer.value(storage)
         }
+        writer.endArray()
+        writer.endObject()
+        writer.endObject()
+      }
+      writer.endArray()
+      writer.endObject()
+    }
+    writer.endArray()
+    writer.endObject()
+
   }
 }

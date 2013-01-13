@@ -24,6 +24,10 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.springsource.json</groupId>
+            <artifactId>com.springsource.json</artifactId>
+        </dependency>
 
     </dependencies>
 

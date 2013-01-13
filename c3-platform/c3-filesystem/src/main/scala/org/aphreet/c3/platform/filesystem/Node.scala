@@ -139,12 +139,12 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   protected def updateResource() {
     val version = new ResourceVersion
-    version.data = getData(children)
+    version.data = writeData(children)
     version.persisted = false
     resource.addVersion(version)
   }
 
-  private def getData(children:Map[String, NodeRef]):DataStream = {
+  private def writeData(children:Map[String, NodeRef]):DataStream = {
 
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
@@ -157,6 +157,11 @@ case class Directory(override val resource:Resource) extends Node(resource){
       dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
     }
+
+    //We just need some entropy to make sure that initial directory content
+    //is not the same -> content md5 is not the same
+    //and as a result storage is not the same
+    dataOs.writeLong(resource.createDate.getTime)
 
     DataStream.create(byteOs.toByteArray)
   }

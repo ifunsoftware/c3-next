@@ -49,8 +49,8 @@ trait PlatformManagementEndpoint {
 
   def statistics:Map[String,String]
 
-  def createIndex(id:String, index:StorageIndex)
+  def createIndex(index:StorageIndex)
 
-  def removeIndex(id:String, name:String)
+  def removeIndex(name:String)
 
 }

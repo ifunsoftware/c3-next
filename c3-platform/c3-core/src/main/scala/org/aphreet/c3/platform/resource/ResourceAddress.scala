@@ -1,7 +1,5 @@
 package org.aphreet.c3.platform.resource
 
-import java.lang
-
 case class ResourceAddress(systemId:String, randomPart:String, time:Long) {
 
   lazy val stringValue = randomPart + "-" +  time.toHexString + "-" + systemId
@@ -25,7 +23,7 @@ object ResourceAddress{
 
   def generate(resource:Resource, systemId:String):ResourceAddress = {
 
-    val idPart = IdGenerator.encodeBytes(resource.versions.head.data.byteHash)
+    val idPart = IdGenerator.encodeBytes(resource.resourceHash)
 
     val time = System.currentTimeMillis()
 

@@ -121,12 +121,12 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   def listVolumes:List[Volume] = volumeManager.volumeList
 
-  def createIndex(id:String, index:StorageIndex) {
-    storageManager.createIndex(id, index)
+  def createIndex(index:StorageIndex) {
+    storageManager.createIndex(index)
   }
 
-  def removeIndex(id:String, name:String) {
-    storageManager.removeIndex(id, name)
+  def removeIndex(name:String) {
+    storageManager.removeIndex(name)
   }
 
 }

@@ -31,62 +31,36 @@
 
 package org.aphreet.c3.platform.config
 
-import org.aphreet.c3.platform.common.JSONFormatter
-
-import java.io.{File, StringWriter}
 
 import scala.collection.immutable.Map
 import scala.collection.JavaConversions._
 
-import com.springsource.json.parser.{MapNode, AntlrJSONParser, ScalarNode}
-import com.springsource.json.writer.JSONWriterImpl
+import com.springsource.json.parser.Node
+import com.springsource.json.writer.JSONWriter
+import org.springframework.beans.factory.annotation.Autowired
 
-abstract class AbstractDictionaryConfigAccessor extends DictionaryConfigAccessor{
-
-  var configDirectory: File = _
-
-  def configDir: File = configDirectory
+abstract class AbstractDictionaryConfigAccessor(val configFileName: String) extends DictionaryConfigAccessor{
 
 
-  def defaultConfig: Map[String, String] = Map()
 
-  def loadConfig(configFile: File): Map[String, String] = {
+  def defaultConfig = Map()
+
+  def readConfig(node:Node):Map[String, String] = {
     var map = Map[String, String]()
 
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
-
-    for (key <- asScalaSet(node.getKeys)) {
-      val value = node.getNode(key).asInstanceOf[ScalarNode].getValue.toString
+    for (key <- node.getKeys) {
+      val value = node.getNode(key).getValue[String]
       map = map + ((key, value))
     }
 
     map
   }
 
-  def storeConfig(map: Map[String, String], configFile: File) {
+  def writeConfig(data: Map[String, String], writer: JSONWriter) {
+    writer.`object`
 
-    this.synchronized {
-      val swriter = new StringWriter()
+    data.foreach((e: (String, String)) => writer.key(e._1).value(e._2))
 
-      try {
-        val writer = new JSONWriterImpl(swriter)
-
-        writer.`object`
-
-        map.foreach((e: (String, String)) => writer.key(e._1).value(e._2))
-
-        writer.endObject
-
-        swriter.flush()
-
-        val result = JSONFormatter.format(swriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        swriter.close()
-      }
-    }
+    writer.endObject
   }
-
 }
