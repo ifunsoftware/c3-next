@@ -135,7 +135,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
       version.data writeTo targetTempFile.toPath
 
-      Files.move(targetTempFile.toPath, targetFile.toPath, StandardCopyOption.REPLACE_EXISTING)
+      targetTempFile.renameTo(targetFile)
 
       version.data = DataStream.create(targetFile)
       version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)

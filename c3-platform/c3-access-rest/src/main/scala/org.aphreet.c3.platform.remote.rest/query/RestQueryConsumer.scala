@@ -43,7 +43,7 @@ class RestQueryConsumer(writer: PrintWriter,
 
   val (start, end, separator, xstream): (String, String, String, Option[XStream]) = resultWriter match {
     case jsonWriter: JsonResultWriter => ("[", "]", ",", Some(jsonWriter.stream))
-    case xmlWriter: XmlResultWriter => ("<resources>", "</resources>", "", Some(xmlWriter.stream))
+    case xmlWriter: XmlResultWriter => ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<resources>", "</resources>", "", Some(xmlWriter.stream))
     case _ => ("", "", "", None) // unknown writer
   }
 
