@@ -44,7 +44,7 @@ class RestQueryConsumer(writer: PrintWriter,
   var addressesWritten = 0
 
   var skipped = 0
-  var taken = 0
+  var consumed = 0
   val limitNumber = limit match {
     case Some(value) => value
     case None => -1
@@ -66,22 +66,24 @@ class RestQueryConsumer(writer: PrintWriter,
       skipped = skipped + 1
       true
     }else{
-      if (limitNumber >= 0 && taken >= limitNumber){
+
+      xstream match {
+        case Some(stream) => writer.println(stream.toXML(resource) + separator)
+        case _ => writer.println(resource.address)
+      }
+
+      addressesWritten = addressesWritten + 1
+
+      if (addressesWritten >= 100) {
+        writer.flush()
+        addressesWritten = 0
+      }
+
+      consumed = consumed + 1
+
+      if (limitNumber >= 0 && consumed >= limitNumber){
         false
       }else{
-        xstream match {
-          case Some(stream) => writer.println(stream.toXML(resource) + separator)
-          case _ => writer.println(resource.address)
-        }
-
-        addressesWritten = addressesWritten + 1
-
-        if (addressesWritten >= 100) {
-          writer.flush()
-          addressesWritten = 0
-        }
-
-        taken = taken + 1
         true
       }
     }
