@@ -38,9 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
 import org.aphreet.c3.platform.accesscontrol.READ
 import collection.mutable
-import org.aphreet.c3.platform.remote.rest.response.JsonResultWriter
-import org.aphreet.c3.platform.remote.rest.response.XmlResultWriter
-
 
 @Controller
 class QueryController extends DataController {
