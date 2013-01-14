@@ -285,7 +285,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   }
 
   private def moveRangedCursor(): Boolean = {
-    if(rangedCursor != null && rangedCursor.getNext(new DatabaseEntry(), new DatabaseEntry(), LockMode.DEFAULT) == OperationStatus.SUCCESS){
+    if(hasRangedCursor && rangedCursor.getNext(new DatabaseEntry(), new DatabaseEntry(), LockMode.DEFAULT) == OperationStatus.SUCCESS){
       true
     }else{
       false

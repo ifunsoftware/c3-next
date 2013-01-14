@@ -72,7 +72,7 @@ class QueryController extends DataController {
 
     val resultWriter = getResultWriter(contentType)
 
-    val consumer = new RestQueryConsumer(writer, resultWriter)
+    val consumer = new RestQueryConsumer(writer, resultWriter, limit = None, skip = 0)
 
     queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
 

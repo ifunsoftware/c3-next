@@ -52,9 +52,9 @@ class QueryManagerTestCase extends TestCase
     expect(storageManager.listStorages).andReturn(List(storage, unavailableStorage))
 
     val queryConsumer = createMock(classOf[QueryConsumer])
-    expect(queryConsumer.addResource(resources(0)))
-    expect(queryConsumer.addResource(resources(1)))
-    expect(queryConsumer.addResource(resources(2)))
+    expect(queryConsumer.consume(resources(0))).andReturn(true)
+    expect(queryConsumer.consume(resources(1))).andReturn(true)
+    expect(queryConsumer.consume(resources(2))).andReturn(true)
     expect(queryConsumer.close())
 
     replay(storageManager, queryConsumer)
