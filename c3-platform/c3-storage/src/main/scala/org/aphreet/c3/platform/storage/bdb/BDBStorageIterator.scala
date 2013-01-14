@@ -47,34 +47,26 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   val log = LogFactory getLog getClass
 
   var cursor: Cursor = null
-
   var joinCursor : JoinCursor = null
   var joinConfig: JoinConfig = null
-
   var secCursors : List[SecondaryCursor] = List()
-
   var rangedCursor : SecondaryCursor = null
+  var hasRangedCursor: Boolean = false
 
   private val usedIndexes:Map[StorageIndex, String] = indexesForQuery(userMeta, systemMeta)
+  private val useIndexes = !usedIndexes.isEmpty
 
   private val userMetaFilter:(Resource) => Boolean = createUserMetaFilter(userMeta)
   private val systemMetaFilter:(Resource) => Boolean = createSystemMetaFilter(systemMeta)
 
-
   private var bdbEntriesProcessed = 0
 
   private var resource: Resource = null
-
-  private var useIndexes = false
-
   private var isEmptyIterator = false
-
   private var closed = false
 
   {
     log.debug("Creating storage iterator for " + storage.id)
-
-    useIndexes = !usedIndexes.isEmpty
 
     if(useIndexes){
 
@@ -100,13 +92,14 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         }
       }
 
-      if(rangedCursor != null){
-        secCursors = rangedCursor :: secCursors.filter(_ ne rangedCursor)
-      }
-
       if(!isEmptyIterator){
+
+        if(hasRangedCursor){
+          secCursors = rangedCursor :: secCursors.filter(_ ne rangedCursor)
+        }
+
         joinConfig = new JoinConfig
-        joinConfig.setNoSort(rangedCursor != null)
+        joinConfig.setNoSort(hasRangedCursor)
         joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
       }
 
@@ -116,7 +109,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     }
 
     if(!isEmptyIterator){
-      resource = findNextResource
+      resource = findNextResource()
     }
   }
 
@@ -126,6 +119,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
     if(rangedQuery){
       rangedCursor = cursor
+      hasRangedCursor = true
       cursor.getSearchKeyRange(indexKey, new DatabaseEntry, LockMode.DEFAULT)
     }else{
       cursor.getSearchKey(indexKey, new DatabaseEntry, LockMode.DEFAULT)
@@ -193,20 +187,16 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
   }
 
   def next(): Resource = {
-
     if(hasNext){
-
       val previousResource = resource
-
-      resource = findNextResource
-
+      resource = findNextResource()
       previousResource
     }else{
       null
     }
   }
 
-  protected def findNextResource: Resource = {
+  protected def findNextResource(): Resource = {
 
     var resource: Resource = null
     var resultFound = false
@@ -288,6 +278,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         result
       }
     }else{
+      //Just fetch a key without value
       dbValue.setPartial(0, 0, true)
       cursor.getNext(dbKey, dbValue, LockMode.DEFAULT)
     }
