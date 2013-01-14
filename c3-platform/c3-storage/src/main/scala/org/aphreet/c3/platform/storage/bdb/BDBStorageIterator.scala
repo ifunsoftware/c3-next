@@ -34,11 +34,9 @@ import com.sleepycat.je._
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
-import collection.immutable.HashMap
 import org.aphreet.c3.platform.common.ComponentGuard
 import org.apache.commons.logging.LogFactory
 import BDBStorageIndex._
-import java.nio.ByteBuffer
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val userMeta:Map[String, String],
@@ -87,12 +85,10 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val indexDb = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
-          case Some(db) => db
+        val secCursor = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
+          case Some(db) => db.openCursor(null, null)
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
-
-        val secCursor = indexDb.openCursor(null, null)
 
         if(positionSecondaryCursor(secCursor, index, value) == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
@@ -187,7 +183,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     }
   }
 
-  private def isMatch(resource:Resource):Boolean = {
+  private def matchesFilter(resource:Resource):Boolean = {
     filter(resource) && userMetaFilter(resource) && systemMetaFilter(resource)
   }
 
@@ -242,7 +238,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
               loadData(resource)
               resultFound = true
             }else{
-              if(isMatch(resource)){
+              if(matchesFilter(resource)){
                 loadData(resource)
                 resultFound = true
               }
@@ -261,20 +257,35 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     resource
   }
 
-  private def fetchNextKey(dbKey:DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
+  private def fetchNextKey(dbKey: DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
+
+    def next(cursor:JoinCursor, key: DatabaseEntry): Boolean = {
+      joinCursor.getNext(dbKey, LockMode.DEFAULT) == OperationStatus.SUCCESS
+    }
+
     if(useIndexes){
-      if (joinCursor.getNext(dbKey, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+
+      if (next(joinCursor, dbKey)){
         OperationStatus.SUCCESS
       }else{
 
-        if (moveRangedCursor()){
-          joinCursor.close()
-          joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+        var result = OperationStatus.KEYEMPTY
 
-          joinCursor.getNext(dbKey, LockMode.DEFAULT)
-        }else{
-          OperationStatus.NOTFOUND
+        while (result == OperationStatus.KEYEMPTY){
+          if (moveRangedCursor()){
+
+            joinCursor.close()
+            joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+
+            if (next(joinCursor, dbKey)){
+              result = OperationStatus.SUCCESS
+            }
+          }else{
+            result = OperationStatus.NOTFOUND
+          }
         }
+
+        result
       }
     }else{
       dbValue.setPartial(0, 0, true)

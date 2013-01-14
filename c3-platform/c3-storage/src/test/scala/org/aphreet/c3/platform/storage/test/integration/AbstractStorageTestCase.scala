@@ -564,7 +564,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     val ra2 = storage.add(resource2)
 
     val resource3 = createResource("qweqweqwe2")
-    resource3.createDate = new Date(10)
+    resource3.createDate = new Date(30)
     resource3.metadata.put("pool", "pool0")
     val ra3 = storage.add(resource3)
 
