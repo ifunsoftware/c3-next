@@ -30,12 +30,13 @@
 
 package org.aphreet.c3.platform.resource
 
-import scala.collection.mutable.{HashMap, Map, Buffer, ArrayBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 import java.util.Date
 
 import com.twmacinta.util.{MD5, MD5InputStream}
 import java.io._
+import collection.mutable
 
 /**
  * Resource is an object that can be stored in the system.
@@ -56,12 +57,12 @@ class Resource {
   /**
    * Map with user metadata
    */
-  var metadata = new HashMap[String, String]
+  var metadata = new mutable.HashMap[String, String]
 
   /**
    * Map with system metadata
    */
-  var systemMetadata = new HashMap[String, String]
+  var systemMetadata = new mutable.HashMap[String, String]
 
   /**
    * Array of versions
@@ -106,6 +107,25 @@ class Resource {
     }
   }
 
+  def resourceHash: Array[Byte] = {
+
+    val bos = new ByteArrayOutputStream()
+
+    val os = new DataOutputStream(bos)
+
+    writeMap(metadata, os)
+    writeMap(systemMetadata, os)
+
+    val md5 = new MD5()
+
+    md5.Update(bos.toByteArray)
+    md5.Update(versions(0).data.hash)
+
+    os.close()
+
+    md5.Final()
+  }
+
   def verifyCheckSums() {
     if(!this.isVersioned){
       versions(0).verifyCheckSum()
@@ -132,6 +152,26 @@ class Resource {
     }
   }
 
+  private def writeString(value:String, dataOs:DataOutputStream) {
+
+    var string:String = ""
+
+    if(value != null) string = value
+
+    val bytes = string.getBytes(Resource.MD_ENCODING)
+    dataOs.writeInt(bytes.length)
+    dataOs.write(bytes)
+  }
+
+  private def writeMap(map:mutable.Map[String, String], dataOs:DataOutputStream) {
+    dataOs.writeInt(map.size)
+
+    for(key <- map.keySet){
+      writeString(key, dataOs)
+      writeString(map(key), dataOs)
+    }
+  }
+
   /**
    * Serialize resource to byte array
    * Method simply writes all fields, metadata, system metadata to byte array.
@@ -145,27 +185,9 @@ class Resource {
       dataOs.writeLong(date.getTime)
     }
 
-    def writeString(value:String, dataOs:DataOutputStream) {
 
-      var string:String = ""
 
-      if(value != null) string = value
-
-      val bytes = string.getBytes(Resource.MD_ENCODING)
-      dataOs.writeInt(bytes.length)
-      dataOs.write(bytes)
-    }
-
-    def writeMap(map:Map[String, String], dataOs:DataOutputStream) {
-      dataOs.writeInt(map.size)
-
-      for(key <- map.keySet){
-        writeString(key, dataOs)
-        writeString(map(key), dataOs)
-      }
-    }
-
-    def writeVersions(versions:Buffer[ResourceVersion], dataOs:DataOutputStream) {
+    def writeVersions(versions:mutable.Buffer[ResourceVersion], dataOs:DataOutputStream) {
       dataOs.writeInt(0) //version class version, for future
       dataOs.writeInt(versions.size)
 
@@ -237,7 +259,7 @@ object Resource {
 
   /**
    * OBSOLETE. Now comparing md5 hash of the serialized resource
-   * Last 8 bytes in the serialized resource version 1. If after deserializing them do not match
+   * Last 8 bytes in the serialized resource version 1. If after deserialization they do not match
    * resource is considered to be broken
    */
   val STOP_SEQ : Long = 107533894376158093L
@@ -260,7 +282,6 @@ object Resource {
   /**
    * Deserialize resource from byte array.
    * Performs hashsum check or sequence end check.
-   * @throws ResourceException
    */
   def fromByteArray(bytes:Array[Byte]):Resource = {
 
@@ -276,8 +297,8 @@ object Resource {
 
     }
 
-    def readMap(dataIs:DataInputStream, version:Int):HashMap[String, String] = {
-      val map = new HashMap[String, String]
+    def readMap(dataIs:DataInputStream, version:Int):mutable.HashMap[String, String] = {
+      val map = new mutable.HashMap[String, String]
 
       val mapSize = dataIs.readInt
 
@@ -289,7 +310,7 @@ object Resource {
       map
     }
 
-    def readVersions(dataIs:DataInputStream, serializeVersion:Int, embedData:Boolean):Buffer[ResourceVersion] = {
+    def readVersions(dataIs:DataInputStream, serializeVersion:Int, embedData:Boolean):mutable.Buffer[ResourceVersion] = {
 
       val result = new ArrayBuffer[ResourceVersion]
 

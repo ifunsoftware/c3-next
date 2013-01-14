@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -34,9 +34,9 @@ package org.aphreet.c3.platform.domain.impl
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.{FileWriter, StringWriter, File}
-import com.springsource.json.writer.JSONWriterImpl
+import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
 import org.aphreet.c3.platform.common.JSONFormatter
-import com.springsource.json.parser.{ScalarNode, ListNode, MapNode, AntlrJSONParser}
+import com.springsource.json.parser._
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -59,70 +59,39 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
     List(Domain(UUID.randomUUID.toString, "anonymous", "", FullMode))
   }
 
-  def loadConfig(configFile: File): List[Domain] = {
-    var list = List[Domain]()
-
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
-
-    val domainListNode = node.getNode("domains").asInstanceOf[ListNode]
-
-    for (domainNode <- asScalaBuffer(domainListNode.getNodes)) {
-      val id = getValue(domainNode.asInstanceOf[MapNode], "id")
-      val name = getValue(domainNode.asInstanceOf[MapNode], "name")
-      val key = getValue(domainNode.asInstanceOf[MapNode], "key")
-      val mode = getValue(domainNode.asInstanceOf[MapNode], "mode")
-
-      val domain = new Domain(id, name, key, DomainMode.byName(mode))
-
-      list = domain :: list
-
-    }
-    list
+  def readConfig(node: Node): List[Domain] = {
+    (
+      for (domainNode <- node.getNode("domains").getNodes)
+      yield new Domain(
+        domainNode.getNode("id"),
+        domainNode.getNode("name"),
+        domainNode.getNode("key"),
+        DomainMode.byName(domainNode.getNode("mode")))
+      ).toList
   }
 
-  def storeConfig(list: List[Domain], configFile: File) {
-    this.synchronized {
-      val sWriter = new StringWriter()
+  def writeConfig(list: List[Domain], writer: JSONWriter) {
 
-      try {
-        val writer = new JSONWriterImpl(sWriter)
+    writer.`object`
 
-        writer.`object`
+    writer.key("domains")
 
-        writer.key("domains")
+    writer.array
 
-        writer.array
+    for (domain <- list) {
+      writer.`object`
 
-        for (domain <- list) {
-          writer.`object`
-
-          writer.key("id")
-          writer.value(domain.id)
-          writer.key("name")
-          writer.value(domain.name)
-          writer.key("key")
-          writer.value(domain.key)
-          writer.key("mode")
-          writer.value(domain.mode.name)
-          writer.endObject
-        }
-        writer.endArray
-        writer.endObject
-
-
-        sWriter.flush()
-
-        val result = JSONFormatter.format(sWriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        sWriter.close()
-      }
+      writer.key("id")
+      writer.value(domain.id)
+      writer.key("name")
+      writer.value(domain.name)
+      writer.key("key")
+      writer.value(domain.key)
+      writer.key("mode")
+      writer.value(domain.mode.name)
+      writer.endObject
     }
-  }
-
-  private def getValue(node: MapNode, key: String): String = {
-    node.getNode(key).asInstanceOf[ScalarNode].getValue[String]
+    writer.endArray
+    writer.endObject
   }
 }

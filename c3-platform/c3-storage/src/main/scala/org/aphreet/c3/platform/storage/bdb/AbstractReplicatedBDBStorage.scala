@@ -94,7 +94,14 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
-    envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+    envConfig setClassLoader(getClass.getClassLoader)
+
+    if(params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)){
+      envConfig.setLockTimeout(5, TimeUnit.SECONDS)
+    }else{
+      envConfig.setLockTimeout(5, TimeUnit.MINUTES)
+    }
+
 
     val durability =
       if(bdbConfig.txNoSync){
@@ -236,7 +243,14 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
       secConfig setAllowCreate  true
       secConfig setTransactional  true
       secConfig setSortedDuplicates true
-      secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+      val keyCreator = new C3SecondaryKeyCreator(index)
+      secConfig.setKeyCreator(keyCreator)
+
+      keyCreator.comparator match {
+        case Some(comparator) => secConfig.setBtreeComparator(comparator)
+        case None =>
+      }
 
       forAllNodes(i  =>   {
         val secDatabase = nodesEnvironments(i).openSecondaryDatabase(null, index.name, databases(i).database, secConfig)
@@ -256,7 +270,16 @@ abstract class AbstractReplicatedBDBStorage  (override val parameters: StoragePa
     secConfig setAllowCreate  true
     secConfig setTransactional  true
     secConfig setSortedDuplicates true
-    secConfig.setKeyCreator(new C3SecondaryKeyCreator(index))
+
+    val keyCreator = new C3SecondaryKeyCreator(index)
+    secConfig.setKeyCreator(keyCreator)
+
+    keyCreator.comparator match {
+      case Some(comparator) => secConfig.setBtreeComparator(comparator)
+      case None =>
+    }
+
+    secConfig.setAllowPopulate(true)
 
     log debug "Creating index: " + index
 

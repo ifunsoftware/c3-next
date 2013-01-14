@@ -72,11 +72,13 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
 
   def selectStorage:Option[Storage] = {
 
-    val s = storagesToProcess.headOption
-
-    storagesToProcess = storagesToProcess.tail
-    
-    s
+    storagesToProcess.headOption match {
+      case Some(storage) => {
+        storagesToProcess = storagesToProcess.tail
+        Some(storage)
+      }
+      case None => None
+    }
   }
 
   def processNextResource(){

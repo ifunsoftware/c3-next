@@ -62,7 +62,7 @@ class ReplicationConfigAccessorTestCase extends TestCase {
     configManager.configDir = testDir
 
     val accessor = new ReplicationSourcesConfigAccessor
-    accessor.setConfigManager(configManager)
+    accessor.configManager = configManager
 
     val fileName = "c3-replication-sources.json"
 

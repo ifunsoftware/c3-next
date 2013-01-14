@@ -31,22 +31,18 @@
 package org.aphreet.c3.platform.auth.impl
 
 import org.aphreet.c3.platform.config.ConfigAccessor
-import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.PlatformConfigManager
-import java.io.{FileWriter, StringWriter, File}
-import org.aphreet.c3.platform.common.{JSONFormatter, Constants}
-import com.springsource.json.writer.JSONWriterImpl
+import java.io.File
+import com.springsource.json.writer.JSONWriter
 import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
-import com.springsource.json.parser.{ListNode, ScalarNode, MapNode, AntlrJSONParser}
+import com.springsource.json.parser._
 import collection.mutable.HashMap
 import collection.Map
 import collection.JavaConversions._
 import org.aphreet.c3.platform.auth.User
 
 @Component
-@Scope("singleton")
 class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
   @Autowired
@@ -56,83 +52,42 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
 
   def configFileName: String = "c3-auth-config.json"
 
-  def defaultConfig:Map[String, User] = {
+  def defaultConfig:Map[String, User] =
+    Map("admin" -> User("admin", "password", true))
+
+  def readConfig(node: Node): Map[String, User] = {
     val map = new HashMap[String, User]
 
-    map.put("admin", User("admin", "password", true))
+    for (userNode <- node.getNode("users").getNodes) {
 
-    map
-  }
-
-  def loadConfig(configFile: File): Map[String, User] = {
-    val map = new HashMap[String, User]
-
-
-    val node = new AntlrJSONParser().parse(configFile).asInstanceOf[MapNode]
-
-    val userListNode = node.getNode("users").asInstanceOf[ListNode]
-
-    for (userNode <- asScalaBuffer(userListNode.getNodes)) {
-      val name = getValue(userNode.asInstanceOf[MapNode], "name")
-      val password = getValue(userNode.asInstanceOf[MapNode], "password")
-      val enabled = getBoolValue(userNode.asInstanceOf[MapNode], "enabled")
-
-      val user = new User(name, password, enabled)
-
-      map.put(name, user)
+      val name = userNode.getNode("name")
+      map.put(name, new User(
+        name,
+        userNode.getNode("password"),
+        userNode.getNode("enabled")))
     }
     map
   }
 
-  def storeConfig(map: Map[String, User], configFile: File) {
-    this.synchronized {
-      val sWriter = new StringWriter()
+  def writeConfig(map: Map[String, User], writer: JSONWriter) {
+    writer.`object`
 
-      try {
-        val writer = new JSONWriterImpl(sWriter)
+    writer.key("users")
 
-        writer.`object`
+    writer.array
 
-        writer.key("users")
+    for ((name, user) <- map) {
+      writer.`object`
 
-        writer.array
-
-        for ((name, user) <- map) {
-          writer.`object`
-
-          writer.key("name")
-          writer.value(user.name)
-          writer.key("password")
-          writer.value(user.password)
-          writer.key("enabled")
-          writer.value(user.enabled)
-          writer.endObject
-        }
-        writer.endArray
-        writer.endObject
-
-
-        sWriter.flush()
-
-        val result = JSONFormatter.format(sWriter.toString)
-
-        writeToFile(result, configFile)
-
-      } finally {
-        sWriter.close()
-      }
+      writer.key("name")
+      writer.value(user.name)
+      writer.key("password")
+      writer.value(user.password)
+      writer.key("enabled")
+      writer.value(user.enabled)
+      writer.endObject
     }
-  }
-
-  private def getValue(node: MapNode, key: String): String = {
-    node.getNode(key).asInstanceOf[ScalarNode].getValue[String]
-  }
-
-  private def getBoolValue(node: MapNode, key: String): Boolean = {
-    try{
-      node.getNode(key).asInstanceOf[ScalarNode].getValue[Boolean]
-    }catch{
-      case e => true
-    }
+    writer.endArray
+    writer.endObject
   }
 }

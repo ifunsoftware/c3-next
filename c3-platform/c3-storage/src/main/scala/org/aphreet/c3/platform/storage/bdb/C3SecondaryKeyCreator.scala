@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.storage.bdb
 import com.sleepycat.je.{DatabaseEntry, SecondaryDatabase, SecondaryKeyCreator}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageIndex
+import java.util.Comparator
 
 
 class C3SecondaryKeyCreator(val index:StorageIndex) extends SecondaryKeyCreator {
@@ -57,7 +58,7 @@ class C3SecondaryKeyCreator(val index:StorageIndex) extends SecondaryKeyCreator 
     }else{
       false
     }
-
-
   }
+
+  def comparator:Option[Comparator[Array[Byte]]] = indexBuilder.comparator
 }

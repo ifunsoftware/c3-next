@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -27,47 +27,59 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.remote.rest.query
 
+package org.aphreet.c3.platform.test.unit
+
+import junit.framework.TestCase
+import org.easymock.EasyMock._
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.query.QueryConsumer
-import org.aphreet.c3.platform.remote.rest.response.ResultWriter
-import org.aphreet.c3.platform.remote.rest.response.JsonResultWriter
-import org.aphreet.c3.platform.remote.rest.response.XmlResultWriter
-import com.thoughtworks.xstream.XStream
-import java.io.PrintWriter
+import org.aphreet.c3.platform.storage.{RW, StorageMode, StorageIterator}
+import org.aphreet.c3.platform.mock.StorageMock
+import org.aphreet.c3.platform.storage.updater.Transformation
+import org.aphreet.c3.platform.storage.updater.impl.StorageUpdateTask
 
-class RestQueryConsumer(writer: PrintWriter,
-                        resultWriter: ResultWriter) extends QueryConsumer {
-  var addressesWritten = 0
+class StorageUpdateTaskTestCase extends TestCase{
 
-  val (start, end, separator, xstream): (String, String, String, Option[XStream]) = resultWriter match {
-    case jsonWriter: JsonResultWriter => ("[", "]", ",", Some(jsonWriter.stream))
-    case xmlWriter: XmlResultWriter => ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<resources>", "</resources>", "", Some(xmlWriter.stream))
-    case _ => ("", "", "", None) // unknown writer
-  }
+  def testStorageUpdateTask(){
 
-  {
-    writer.println(start)
-  }
+    val resources = Array(new Resource, new Resource, new Resource)
 
-  override def addResource(resource: Resource) {
-    xstream match {
-      case Some(stream) => writer.println(stream.toXML(resource) + separator)
-      case _ => writer.println(resource.address)
+    val mockedIterator = new StorageIterator{
+
+      var closed = false
+
+      val iterator = resources.iterator
+
+      def hasNext = iterator.hasNext
+
+      def next() = iterator.next()
+
+      def close() {
+        closed = true
+      }
+
+      def objectsProcessed:Int = 0
     }
 
-    addressesWritten = addressesWritten + 1
+    val storage = new StorageMock("1", ""){
 
-    if (addressesWritten >= 100) {
-      writer.flush()
-      addressesWritten = 0
+      override def mode:StorageMode = RW("")
+
+      override def iterator(md:Map[String, String], smd:Map[String, String], filter:(Resource) => Boolean):StorageIterator
+      = mockedIterator
     }
 
-  }
+    val transofrmation = createMock(classOf[Transformation])
+    expect(transofrmation.apply(resources(0)))
+    expect(transofrmation.apply(resources(1)))
+    expect(transofrmation.apply(resources(2)))
 
-  override def close(){
-    writer.println(end)
-    writer.close()
+    replay(transofrmation)
+
+    val task = new StorageUpdateTask(List(storage), List(transofrmation))
+    task.run()
+
+    verify(transofrmation)
+
   }
 }

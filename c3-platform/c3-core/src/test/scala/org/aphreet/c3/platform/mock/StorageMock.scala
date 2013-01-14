@@ -66,11 +66,6 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def close() {}
 
-  def lock(ra:String) {}
-
-  def unlock(ra:String) {}
-
-
   def path:Path = new Path(mockPath)
 
   def fullPath:Path = path

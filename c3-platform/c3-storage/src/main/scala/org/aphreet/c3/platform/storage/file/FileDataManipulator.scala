@@ -34,6 +34,7 @@ import java.io.{IOException, File}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataStream}
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.storage.bdb.{BDBConfig, DatabaseProvider, DataManipulator}
+import java.nio.file.{StandardCopyOption, Files}
 
 trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
@@ -132,11 +133,10 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
     try{
 
-      version.data writeTo targetTempFile
+      version.data writeTo targetTempFile.toPath
 
       targetTempFile.renameTo(targetFile)
 
-      //version.data writeTo targetFile
       version.data = DataStream.create(targetFile)
       version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
 

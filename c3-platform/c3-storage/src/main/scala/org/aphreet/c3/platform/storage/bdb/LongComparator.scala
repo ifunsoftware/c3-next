@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2011, Mikhail Malygin
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -27,24 +27,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.updater.impl
 
-import org.aphreet.c3.platform.storage.updater.StorageUpdater
-import org.aphreet.c3.platform.storage.updater.transformation.UpdateTimestampTransformation
-import org.aphreet.c3.platform.storage.StorageManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+package org.aphreet.c3.platform.storage.bdb
 
-@Component
-class StorageUpdaterImpl extends StorageUpdater{
+import java.nio.ByteBuffer
+import java.util.Comparator
 
-  @Autowired
-  var storageManager:StorageManager = null
+class LongComparator extends Comparator[Array[Byte]] with Serializable{
 
-  val transformations = List(new UpdateTimestampTransformation)
+  def compare(o1: Array[Byte], o2: Array[Byte]) = {
 
-  override def updateAllResources(){
+    val long1 = ByteBuffer.allocate(8).put(o1).getLong(0)
+    val long2 = ByteBuffer.allocate(8).put(o2).getLong(0)
 
-
+    long1.compareTo(long2)
   }
+
 }

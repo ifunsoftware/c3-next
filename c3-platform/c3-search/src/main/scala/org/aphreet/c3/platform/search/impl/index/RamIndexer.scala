@@ -31,29 +31,29 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
-import actors.Actor._
 import org.apache.lucene.index.{IndexWriterConfig, IndexWriter}
 import org.apache.lucene.store.{RAMDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
-import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 import java.io.StringReader
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
-import org.aphreet.c3.platform.search.ext.{DocumentBuilderFactory, SearchConfiguration}
+import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
 import org.apache.lucene.util.Version
 import collection.JavaConversions._
 import org.apache.lucene.document.Document
 import org.aphreet.c3.platform.search.{HandleFieldListMsg, SearchConfigurationManager}
+import scala.util.control.Exception._
+
 
 class RamIndexer(val fileIndexer: Actor,
                  val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
                  val textExtractor:TextExtractor) extends WatchedActor with Tracer {
 
-  val log = LogFactory.getLog(getClass)
+  val log = logOfClass(getClass)
 
   var maxDocsCount: Int = 100
 
@@ -94,8 +94,7 @@ class RamIndexer(val fileIndexer: Actor,
     loop {
       react {
         case IndexMsg(resource) => {
-          try {
-
+          handling(classOf[Throwable]).by(e => log.warn(num + ": Failed to index resource", e)).apply{
             trace{"Got request to index " + resource.address}
 
             if(shouldIndexResource(resource)){
@@ -111,8 +110,6 @@ class RamIndexer(val fileIndexer: Actor,
             }else{
               debug{"No need to index resource " + resource.address}
             }
-          } catch {
-            case e: Throwable => log.warn(num + ": Failed to index resource", e)
           }
         }
 
@@ -134,19 +131,16 @@ class RamIndexer(val fileIndexer: Actor,
         }
 
         case DestroyMsg => {
-          try {
-            log info num + ": Stopping memory indexer"
+
+          handling(classOf[Throwable]).by(
+            e => log.warn(num + ": Failed to store indexer", e)
+          ).andFinally{
+            reply { DestroyMsgReply}
+            this.exit()
+          }.apply{
+            log.info(num + ": Stopping memory indexer")
             writer.close()
             fileIndexer ! MergeIndexMsg(directory)
-
-          } catch {
-            case e: Throwable => log.warn(num + ": Failed to store indexer", e)
-            throw e
-          } finally {
-            reply {
-              DestroyMsgReply
-            }
-            this.exit()
           }
         }
       }

@@ -381,7 +381,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
+  def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
     try{
       val idx = new StorageIndex(name,
         fields.toList,
@@ -389,7 +389,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
         system.booleanValue,
         System.currentTimeMillis)
 
-      managementEndpoint.createIndex(id, idx)
+      managementEndpoint.createIndex(idx)
     }catch{
       case e: Throwable => {
         e.printStackTrace()
@@ -398,9 +398,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def removeIndex(id:String, name:String) {
+  def removeIndex(name:String) {
     try{
-      managementEndpoint.removeIndex(id, name)
+      managementEndpoint.removeIndex(name)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

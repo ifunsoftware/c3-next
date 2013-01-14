@@ -35,17 +35,15 @@ import java.io.File
 import org.springframework.stereotype.Component
 import org.apache.commons.logging.LogFactory
 import collection.immutable.Map
-import org.aphreet.c3.platform.config.{PropertyChangeEvent, PlatformPropertyListener}
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.{Set => JSet}
 import org.aphreet.c3.platform.config._
-import actors.Actor._
 import javax.annotation.{PreDestroy, PostConstruct}
-import collection.mutable.{HashMap, HashSet}
 import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
 import org.aphreet.c3.platform.common.{Constants, Path}
 import org.aphreet.c3.platform.resource.IdGenerator
+import collection.mutable
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
@@ -53,9 +51,9 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   var configDir: File = _
 
-  private val foundListeners = new HashSet[PlatformPropertyListener]
+  private val foundListeners = new mutable.HashSet[PlatformPropertyListener]
 
-  private val propertyListeners = new HashMap[String, Set[PlatformPropertyListener]]
+  private val propertyListeners = new mutable.HashMap[String, Set[PlatformPropertyListener]]
 
   private var currentConfig: Map[String, String] = null
 
@@ -96,7 +94,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   @PostConstruct
   def init() {
    
-    configAccessor.configDirectory = configDir
+    configAccessor.configDir = configDir
 
     //before actor start verify that systemId property exists in config
     //if no, create new one
@@ -195,7 +193,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
               configAccessor store currentConfig
             } catch {
-              case e =>
+              case e: Throwable =>
                 log.warn("Failed to set property " + key, e)
             }
           }else log info "The value of the property " + key + " did not change"

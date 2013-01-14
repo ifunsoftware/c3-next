@@ -50,9 +50,9 @@ trait PlatformManagementService {
 
   def volumes:Array[VolumeDescription]
 
-  def createIndex(id:String, name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
+  def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
 
-  def removeIndex(id:String, name:String)
+  def removeIndex(name:String)
 
   def establishReplication(host:String, port:java.lang.Integer, username:String, password:String)
 

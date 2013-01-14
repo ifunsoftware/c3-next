@@ -110,6 +110,16 @@
         <appender-ref ref="C3_DATA_LOG_FILE"/>
     </logger>
 
+    <logger level="INFO" additivity="false" name="System.err">
+        <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
+    </logger>
+
+    <logger level="INFO" additivity="false" name="com.ifunsoftware">
+        <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
+    </logger>
+
     <root level="WARN">
         <appender-ref ref="SIFTED_LOG_FILE" />
         <appender-ref ref="LOG_FILE" />
