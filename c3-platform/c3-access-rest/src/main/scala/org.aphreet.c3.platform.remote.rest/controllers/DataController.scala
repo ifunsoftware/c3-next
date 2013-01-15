@@ -53,10 +53,14 @@ import collection.mutable
 import org.apache.commons.codec.binary.Base64
 import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
+import org.aphreet.c3.platform.query.QueryManager
 
-class DataController extends AbstractController with ServletContextAware {
+class DataController extends AbstractController with ServletContextAware with RestController{
 
   var servletContext: ServletContext = _
+
+  @Autowired
+  var queryManager: QueryManager = _
 
   @Autowired
   var accessControlManager: AccessControlManager = _
@@ -139,7 +143,7 @@ class DataController extends AbstractController with ServletContextAware {
       new DirectoryResult(fsDirectory), response)
   }
 
-  protected def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
+  def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
 
     val map = new mutable.HashMap[String, String]
 

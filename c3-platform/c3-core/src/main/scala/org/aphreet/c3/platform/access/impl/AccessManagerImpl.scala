@@ -143,8 +143,6 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       case Some(x) => if(!x.isEmpty) x else resource.versions(0).data.mimeType
     }
 
-
-    resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
     resource.address = ResourceAddress.generate(resource, systemId).stringValue
 

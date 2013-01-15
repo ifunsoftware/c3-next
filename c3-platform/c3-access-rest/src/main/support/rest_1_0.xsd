@@ -71,10 +71,9 @@
     </xs:complexType>
 
     <xs:complexType name="versionType">
-        <xs:sequence>
-            <xs:element name="systemMetadata" type="p:metadataType" minOccurs="0"/>
-        </xs:sequence>
         <xs:attribute name="date" type="xs:dateTime" use="required"/>
+        <xs:attribute name="length" type="xs:long" use="required"/>
+        <xs:attribute name="hash" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="searchResultsType">

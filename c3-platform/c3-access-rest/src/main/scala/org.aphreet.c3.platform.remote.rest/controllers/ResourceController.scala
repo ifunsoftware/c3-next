@@ -29,23 +29,31 @@
  */
 package org.aphreet.c3.platform.remote.rest.controllers
 
+import javax.servlet.http._
+import org.aphreet.c3.platform.accesscontrol.{DELETE, UPDATE, CREATE, READ}
+import org.aphreet.c3.platform.filesystem.Node
+import org.aphreet.c3.platform.remote.rest.query.QueryRunner
+import org.aphreet.c3.platform.remote.rest.response.{Result, ResourceAddress, UploadResult}
+import org.aphreet.c3.platform.resource.Resource
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
-
-import javax.servlet.http._
-import org.aphreet.c3.platform.filesystem.Node
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.remote.rest.response.{Result, ResourceAddress, UploadResult}
-import org.aphreet.c3.platform.accesscontrol.{DELETE, UPDATE, CREATE, READ}
 
 
 @Controller
 @RequestMapping(Array("/resource"))
-class ResourceController extends DataController {
+class ResourceController extends DataController with QueryRunner {
+
+  @RequestMapping(method = Array(RequestMethod.GET))
+  def listResources(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
+                          req: HttpServletRequest,
+                          resp: HttpServletResponse) {
+
+    executeQuery(req, resp, contentType, Some(100), 0)
+  }
 
   @RequestMapping(value = Array("/{address}"),
     method = Array(RequestMethod.GET))
-  def getResource(@PathVariable address: String,
+  def resource(@PathVariable address: String,
                   @RequestParam(value = "metadata", required = false) metadata: String,
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
                   @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
@@ -80,7 +88,7 @@ class ResourceController extends DataController {
 
   @RequestMapping(value = Array("/{address}/{version}"),
     method = Array(RequestMethod.GET))
-  def getResourceVersion(@PathVariable("address") address: String,
+  def resourceVersion(@PathVariable("address") address: String,
                          @PathVariable("version") version: Int,
                          @RequestParam(value = "metadata", required = false) metadata: String,
                          @RequestHeader(value = "x-c3-type", required = false) contentType: String,
@@ -159,4 +167,6 @@ class ResourceController extends DataController {
 
     getResultWriter(contentType).writeResponse(new Result, response)
   }
+
+
 }

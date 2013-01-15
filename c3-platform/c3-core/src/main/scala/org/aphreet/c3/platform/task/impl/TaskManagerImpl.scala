@@ -1,24 +1,29 @@
 package org.aphreet.c3.platform.task.impl
 
+import java.util.concurrent.{ThreadFactory, Executors}
 import javax.annotation.{PostConstruct, PreDestroy}
-
-import scala.collection.mutable.HashMap
-
-import java.util.concurrent.Executors
-
-import org.springframework.stereotype.Component
-
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
+import org.springframework.stereotype.Component
+import scala.collection.mutable
+
 
 @Component("taskManager")
 class TaskManagerImpl extends TaskManager{
 
   val log = LogFactory getLog getClass
   
-  var tasks = new HashMap[String, Task]
-  
-  val executor = Executors.newCachedThreadPool
+  var tasks = new mutable.HashMap[String, Task]
+
+  val threadGroup = new ThreadGroup("C3Tasks")
+
+  val executor = Executors.newCachedThreadPool(new ThreadFactory {
+    def newThread(r: Runnable) = {
+      val thread = new Thread(threadGroup, r)
+      thread.setDaemon(true)
+      thread
+    }
+  })
   
   @PostConstruct
   def init(){

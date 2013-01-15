@@ -43,6 +43,7 @@ import fs.{FSNode, FSDirectory}
 import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
 import collection.mutable
+import java.util.Date
 
 class TestXmlSerialization extends TestCase{
 
@@ -68,7 +69,10 @@ class TestXmlSerialization extends TestCase{
 
     val version = new ResourceVersion
     version.data = DataStream.create("string")
+    version.date = new Date()
     version.systemMetadata.put("sys_key", "sys_value")
+    version.systemMetadata.put("c3.data.length", "10240")
+    version.systemMetadata.put("c3.data.md5", "42688c7115664cc2a14c73ef9af6d266")
 
     resource.addVersion(version)
 
@@ -79,7 +83,6 @@ class TestXmlSerialization extends TestCase{
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 
     verifyXml(xml)
-
   }
 
   def testSearch(){
