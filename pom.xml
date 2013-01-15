@@ -13,8 +13,8 @@
     </modules>
 
     <scm>
-        <url>https://github.com/aphreet/c3-next</url>
-        <connection>scm:git:https://github.com/aphreet/c3-next.git</connection>
+        <url>https://github.com/ifunsoftware/c3-next</url>
+        <connection>scm:git:https://github.com/ifunsoftware/c3-next.git</connection>
     </scm>
 
     <properties>
