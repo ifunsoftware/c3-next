@@ -49,7 +49,7 @@ class ArrayBufferConverter(val mMapper:Mapper) extends AbstractCollectionConvert
     val buffer = value.asInstanceOf[ArrayBuffer[_]]
 
     for(e <- buffer){
-      writeItem(e, context, writer);
+      writeItem(e, context, writer)
     }
   }
 

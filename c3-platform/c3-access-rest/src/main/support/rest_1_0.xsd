@@ -127,7 +127,11 @@
     <xs:complexType name="nodeType">
         <xs:sequence>
             <xs:element name="metadata" type="p:metadataType" minOccurs="0"/>
-            <xs:element name="data" type="xs:string" minOccurs="0"/>
+            <xs:element name="data" minOccurs="0">
+                <xs:complexType mixed="true">
+                    <xs:attribute name="date" type="xs:dateTime" use="required"/>
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
         <xs:attribute name="address" type="xs:string" use="required"/>
         <xs:attribute name="name" type="xs:string" use="required"/>

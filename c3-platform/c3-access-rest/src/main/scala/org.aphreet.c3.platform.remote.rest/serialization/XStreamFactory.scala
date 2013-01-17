@@ -55,6 +55,7 @@ class XStreamFactory{
     xStream.registerConverter(new ArrayBufferConverter(xStream.getMapper))
     xStream.registerConverter(new ISO8601DateConverter)
     xStream.registerConverter(new VersionConverter)
+    xStream.registerConverter(new FSNodeDataConverter)
 
     xStream.setMode(XStream.NO_REFERENCES)
 

@@ -31,14 +31,17 @@ package org.aphreet.c3.platform.remote.rest.response.fs
 
 import org.aphreet.c3.platform.filesystem.{NodeRef, Directory}
 import scala.collection.Map
+import org.aphreet.c3.platform.resource.ResourceVersion
+import java.util.Date
 
 case class FSDirectory(name:String, address:String, nodes:Array[FSNode])
 
-case class FSNode(name:String, address:String, leaf:Boolean, metadata:Map[String, String], data:Array[Byte]){
+case class FSNodeData(data: Array[Byte], date: Date)
 
-  def this(nodeRef:NodeRef, metadata:Map[String, String], data:Array[Byte])
-      = this(nodeRef.name, nodeRef.address, nodeRef.leaf, metadata, data)
+case class FSNode(name:String, address:String, leaf:Boolean, metadata:Map[String, String], data:FSNodeData){
 
+  def this(nodeRef:NodeRef, metadata: Map[String, String], version:ResourceVersion)
+      = this(nodeRef.name, nodeRef.address, nodeRef.leaf, metadata, if(version != null) FSNodeData(version.data.getBytes, version.date) else null)
 }
 
 object FSDirectory{
