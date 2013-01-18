@@ -45,6 +45,7 @@ import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.common.{ComponentGuard, Path}
 import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
+import java.io.File
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
@@ -245,7 +246,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     INDEXER_COUNT -> numberOfIndexers.toString,
     MAX_TMP_INDEX_SIZE -> "100",
     INDEX_CREATE_TIMESTAMP -> "0",
-    EXTRACT_DOCUMENT_CONTENT -> "false"
+    EXTRACT_DOCUMENT_CONTENT -> "false",
+    INDEX_PATH -> new File(configManager.dataDir, "index").getAbsolutePath
   )
 
   override def listeningForProperties: Array[String] = Array(

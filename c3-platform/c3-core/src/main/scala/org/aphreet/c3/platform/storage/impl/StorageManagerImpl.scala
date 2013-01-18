@@ -48,10 +48,10 @@ import collection.mutable
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import java.nio.file.attribute.BasicFileAttributes
 import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
-import org.aphreet.c3.platform.task.{IterableTask, Task, TaskManager}
+import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
 
 @Component("storageManager")
-class StorageManagerImpl extends StorageManager{
+class StorageManagerImpl extends StorageManager {
 
   val log = LogFactory.getLog(getClass)
 
@@ -82,32 +82,34 @@ class StorageManagerImpl extends StorageManager{
 
   lazy val systemId = getSystemId
 
+  lazy val storageLocation = defaultStoragePath
+
   @PostConstruct
-  def init(){
+  def init() {
     log info "Starting StorageManager..."
     updateDispatcher()
   }
 
   @PreDestroy
-  def destroy(){
+  def destroy() {
     log info "Stopping StorageManager..."
   }
 
-  def registerFactory(factory:StorageFactory) {
-    factories.synchronized{
+  def registerFactory(factory: StorageFactory) {
+    factories.synchronized {
       factories.put(factory.name, factory)
     }
 
     createExistentStoragesForFactory(factory)
   }
 
-  def unregisterFactory(factory:StorageFactory) {
+  def unregisterFactory(factory: StorageFactory) {
 
-    storages.synchronized{
+    storages.synchronized {
       factory.storages.foreach(s => unregisterStorage(s))
     }
 
-    factories.synchronized{
+    factories.synchronized {
       factories - factory.name
     }
 
@@ -115,41 +117,41 @@ class StorageManagerImpl extends StorageManager{
 
   }
 
-  def storageForId(id:String):Storage = {
+  def storageForId(id: String): Storage = {
     storages.get(id) match {
       case Some(storage) => storage
       case None => throw new StorageNotFoundException(id)
     }
   }
 
-  def storageForResource(resource:Resource):Storage = {
+  def storageForResource(resource: Resource): Storage = {
     storageForAddress(ResourceAddress(resource.address))
   }
 
-  def storageForAddress(address:ResourceAddress):Storage = {
+  def storageForAddress(address: ResourceAddress): Storage = {
     storageDispatcher.selectStorageForAddress(address) match {
       case Some(params) => storageForId(params.id)
       case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
     }
   }
 
-  def createStorage(storageType:String, storagePath:Path){
+  def createStorage(storageType: String, storagePath: Option[Path]) {
     val storage = factories.get(storageType) match {
       case Some(factory) => {
 
         var stId = ""
 
-        do{
+        do {
           stId = IdGenerator.generateStorageId
-        }while(!isIdCorrect(stId))
+        } while (!isIdCorrect(stId))
 
         log info "Creating new storage with id: " + stId
 
-        factory.createStorage(new StorageParams(stId, storagePath, factory.name,
-                                                  RW(Constants.STORAGE_MODE_NONE),
-                                                  indexConfigAccessor.load,
-                                                  new mutable.HashMap[String, String]),
-                                               systemId)
+        factory.createStorage(new StorageParams(stId, storagePath.getOrElse(defaultStoragePath), factory.name,
+          RW(Constants.STORAGE_MODE_NONE),
+          indexConfigAccessor.load,
+          new mutable.HashMap[String, String]),
+          systemId)
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -159,15 +161,15 @@ class StorageManagerImpl extends StorageManager{
   }
 
 
-  def listStorages:List[Storage] =
+  def listStorages: List[Storage] =
     storages.map(_._2).toList.distinct
 
-  def removeStorage(storage:Storage) {
+  def removeStorage(storage: Storage) {
 
-    if(storage.count == 0
-            || storage.mode == U(Constants.STORAGE_MODE_MIGRATION)){
+    if (storage.count == 0
+      || storage.mode == U(Constants.STORAGE_MODE_MIGRATION)) {
 
-      for((id, st) <- storages if st eq storage) {
+      for ((id, st) <- storages if st eq storage) {
         storages - id
       }
 
@@ -180,16 +182,16 @@ class StorageManagerImpl extends StorageManager{
       removeStorageData(storage)
 
       log info "Storage with id " + storage.id + " removed"
-    }else{
+    } else {
       throw new StorageException("Failed to remove non-empty storage")
     }
   }
 
 
-  def listStorageTypes:List[String] =
+  def listStorageTypes: List[String] =
     factories.map(e => e._2.name).toList
 
-  def setStorageMode(id:String, mode:StorageMode) {
+  def setStorageMode(id: String, mode: StorageMode) {
     storages.get(id) match {
       case Some(s) => {
         s.mode = mode
@@ -199,7 +201,7 @@ class StorageManagerImpl extends StorageManager{
     }
   }
 
-  def updateStorageParams(storage:Storage) {
+  def updateStorageParams(storage: Storage) {
 
     val oldParams = configAccessor.load
 
@@ -210,13 +212,13 @@ class StorageManagerImpl extends StorageManager{
     updateDispatcher()
   }
 
-  def createIndex(index:StorageIndex) {
+  def createIndex(index: StorageIndex) {
     indexConfigAccessor.update(list => index :: list)
 
     taskManager.submitTask(new CreateIndexTask(listStorages, index))
   }
 
-  def removeIndex(name:String) {
+  def removeIndex(name: String) {
 
     indexConfigAccessor.load.filter(_.name == name).headOption match {
       case Some(index) => {
@@ -229,18 +231,18 @@ class StorageManagerImpl extends StorageManager{
     }
   }
 
-  def mergeStorages(fromId:String, toId:String){
+  def mergeStorages(fromId: String, toId: String) {
     storageDispatcher.mergeStorages(fromId, toId)
   }
 
-  def resetStorages(){
+  def resetStorages() {
 
     log.info("Performing storage reset, clearing ALL existing data")
 
     log.info("Closing all storages")
     val storageList = storages.values.toList
 
-    for(storage <- storageList){
+    for (storage <- storageList) {
       unregisterStorage(storage)
       storage.close()
     }
@@ -249,7 +251,7 @@ class StorageManagerImpl extends StorageManager{
     factories.values.foreach(_.storages.clear())
 
     log.info("Removing all storage data")
-    for(storage <- storageList){
+    for (storage <- storageList) {
       removeStorageData(storage)
     }
 
@@ -262,24 +264,24 @@ class StorageManagerImpl extends StorageManager{
     accessMediator ! StoragePurgedMsg('StorageManager)
   }
 
-  private def registerStorage(storage:Storage){
+  private def registerStorage(storage: Storage) {
     storages.put(storage.id, storage)
 
     volumeManager register storage
   }
 
-  private def unregisterStorage(storage:Storage){
+  private def unregisterStorage(storage: Storage) {
 
     storages.remove(storage.id)
     volumeManager unregister storage
   }
 
 
-  private def updateDispatcher(){
+  private def updateDispatcher() {
     storageDispatcher.setStorageParams(configAccessor.load)
   }
 
-  private def isIdCorrect(newId:String):Boolean = {
+  private def isIdCorrect(newId: String): Boolean = {
 
     log info "Checking id '" + newId + "' for existence in platform params"
 
@@ -288,45 +290,45 @@ class StorageManagerImpl extends StorageManager{
     !storageParams.exists(param => param.containsId(newId))
   }
 
-  private def removeStorageFromParams(storage:Storage){
+  private def removeStorageFromParams(storage: Storage) {
     configAccessor.update(storageParams => storageParams.filter(_.id != storage.id))
 
     updateDispatcher()
   }
 
-  private def addStorageToParams(storage:Storage){
+  private def addStorageToParams(storage: Storage) {
     configAccessor.update(storageParams => storage.params :: storageParams)
     updateDispatcher()
   }
 
-  private def createExistentStoragesForFactory(factory:StorageFactory){
+  private def createExistentStoragesForFactory(factory: StorageFactory) {
     val storageParams = configAccessor.load
 
     log info "Existent storages: " + storageParams
 
     log info "Looking for existent storages for factory: " + factory.name
 
-    for(param <- storageParams){
+    for (param <- storageParams) {
 
-      if(param.storageType.equals(factory.name)){
+      if (param.storageType.equals(factory.name)) {
         log info "Restoring existent storage: " + param.toString
         registerStorage(factory.createStorage(param, systemId))
       }
     }
   }
 
-  private def removeStorageData(storage:Storage) {
+  private def removeStorageData(storage: Storage) {
 
     log.info("Going to remove storage data dir " + storage.fullPath)
 
-    Files.walkFileTree(storage.fullPath.file.toPath, new SimpleFileVisitor[NioPath]{
-      override def visitFile(file:NioPath, attrs:BasicFileAttributes):FileVisitResult = {
+    Files.walkFileTree(storage.fullPath.file.toPath, new SimpleFileVisitor[NioPath] {
+      override def visitFile(file: NioPath, attrs: BasicFileAttributes): FileVisitResult = {
         log.info("Deleting path " + file)
         Files.delete(file)
         FileVisitResult.CONTINUE
       }
 
-      override def postVisitDirectory(dir:NioPath, e:IOException):FileVisitResult = {
+      override def postVisitDirectory(dir: NioPath, e: IOException): FileVisitResult = {
         log.info("Deleting directory " + dir)
 
         Files.delete(dir)
@@ -335,14 +337,18 @@ class StorageManagerImpl extends StorageManager{
     })
   }
 
-  private def getSystemId:String = {
+  private def getSystemId: String = {
     platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get systemId from params")
     }
   }
 
-  class CreateIndexTask(storages:List[Storage], index:StorageIndex) extends IterableTask(new SimpleCloseableIterable(storages)){
+  private def defaultStoragePath: Path = {
+    Path(platformConfigManager.dataDir.getAbsolutePath).append("storages")
+  }
+
+  class CreateIndexTask(storages: List[Storage], index: StorageIndex) extends IterableTask(new SimpleCloseableIterable(storages)) {
     def processElement(element: Storage) {
       log.info("Creating index for storage: " + element.id)
       element.createIndex(index)

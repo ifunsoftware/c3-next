@@ -50,7 +50,9 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def listStorageTypes:List[String] = storageManager.listStorageTypes
   
   def createStorage(storageType:String, path:String) {
-    storageManager.createStorage(storageType, new Path(path))
+    val storagePath = if(path.isEmpty) None else Some(Path(path))
+
+    storageManager.createStorage(storageType, storagePath)
   }
   
   def removeStorage(id:String) {
@@ -115,7 +117,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   def removeTypeMapping(mimeType:String) {
     mimeSelector.removeEntry(mimeType)
   }
-
 
   def statistics:Map[String,String] = statisticsManager.fullStatistics
 

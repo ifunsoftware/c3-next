@@ -52,6 +52,7 @@ import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import actors.remote.{Node, RemoteActor}
 import org.aphreet.c3.platform.access.StoragePurgedMsg
+import java.io.File
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -314,7 +315,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     Map(HTTP_PORT_KEY -> "7373",
       HTTPS_PORT_KEY -> "7374",
       REPLICATION_PORT_KEY -> replicationPortRetriever.getReplicationPort.toString,
-      REPLICATION_QUEUE_KEY -> "",
+      REPLICATION_QUEUE_KEY -> new File(platformConfigManager.dataDir, "queue").getAbsolutePath,
       REPLICATION_SECURE_KEY -> "false",
       Constants.C3_PUBLIC_HOSTNAME -> "localhost")
 

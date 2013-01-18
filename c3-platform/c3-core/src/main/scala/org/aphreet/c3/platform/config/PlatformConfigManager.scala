@@ -38,16 +38,18 @@ import org.aphreet.c3.platform.common.WatchedActor
 
 
 @Component
-trait PlatformConfigManager extends WatchedActor{
+trait PlatformConfigManager extends WatchedActor {
 
- def configDir:File
+  def configDir: File
 
- def getSystemId:String
+  def dataDir: File
 
- def getPlatformProperties:Map[String, String]
+  def getSystemId: String
 
- def setPlatformProperty(key:String, value:String)
-  
+  def getPlatformProperties: Map[String, String]
+
+  def setPlatformProperty(key: String, value: String)
+
 }
 
 case class RegisterMsg(listener: PlatformPropertyListener)
