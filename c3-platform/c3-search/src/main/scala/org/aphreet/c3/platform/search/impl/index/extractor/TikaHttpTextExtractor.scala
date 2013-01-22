@@ -5,10 +5,11 @@ import org.aphreet.c3.platform.common.Disposable
 import org.aphreet.c3.platform.common.Disposable._
 import org.aphreet.c3.platform.resource.{DataStream, Resource}
 import scala.collection.JavaConversions._
-import java.io.{Reader, BufferedReader, FileReader, File}
+import java.io._
 import java.nio.file.{StandardCopyOption, Files}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import org.springframework.stereotype.Component
+import scala.Some
 
 @Component
 class TikaHttpTextExtractor extends TextExtractor {
@@ -82,7 +83,7 @@ class TikaExtractedDocument(val file: File, val metadata :Map[String, String]) e
 
   private def openReader: Reader = {
     this.synchronized{
-      readers = new BufferedReader(new FileReader(file)) :: readers
+      readers = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")) :: readers
       readers.head
     }
   }
