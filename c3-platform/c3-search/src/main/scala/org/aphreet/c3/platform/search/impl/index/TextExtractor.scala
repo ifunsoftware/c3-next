@@ -7,6 +7,8 @@ import java.io.{FileOutputStream, File}
 import java.nio.channels.WritableByteChannel
 import org.aphreet.c3.platform.resource.{FileDataStream, Resource}
 import collection.JavaConversions._
+import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
+
 /**
  * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
@@ -39,6 +41,6 @@ import collection.JavaConversions._
 
 trait TextExtractor {
 
-  def extract(resource:Resource):Map[String,String]
+  def extract(resource: Resource): Option[ExtractedDocument]
 
 }

@@ -2,18 +2,22 @@ package org.aphreet.c3.platform.search.impl.index.extractor
 
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import org.aphreet.c3.platform.resource.Resource
+import java.io.StringReader
 
-/**
- * Created with IntelliJ IDEA.
- * User: aphreet
- * Date: 10/20/12
- * Time: 3:15 PM
- * To change this template use File | Settings | File Templates.
- */
 class SimpleTextExtractor extends TextExtractor{
 
-  def extract(resource: Resource) = {
-    Map("content" -> resource.versions.last.data.stringValue)
+  def extract(resource: Resource): Option[ExtractedDocument] = Some(new SimpleExtractedDocument(resource))
+
+}
+
+class SimpleExtractedDocument(val resource: Resource) extends ExtractedDocument{
+
+  def metadata = Map()
+
+  def contentReader = new StringReader(resource.versions.last.data.stringValue)
+
+  def dispose() {
+
   }
 
 }
