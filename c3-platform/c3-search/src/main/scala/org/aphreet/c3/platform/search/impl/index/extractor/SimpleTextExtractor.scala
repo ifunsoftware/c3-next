@@ -14,7 +14,7 @@ class SimpleExtractedDocument(val resource: Resource) extends ExtractedDocument{
 
   def metadata = Map()
 
-  def contentReader = new StringReader(resource.versions.last.data.stringValue)
+  lazy val content = new String(resource.versions.last.data.getBytes, "UTF-8")
 
   def dispose() {
 

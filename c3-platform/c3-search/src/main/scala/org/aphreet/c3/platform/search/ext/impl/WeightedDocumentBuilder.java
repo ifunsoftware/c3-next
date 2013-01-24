@@ -8,7 +8,6 @@ import org.aphreet.c3.platform.search.ext.DocumentBuilder;
 import org.aphreet.c3.platform.search.ext.FieldWeights;
 import org.aphreet.c3.platform.search.ext.SearchConfiguration;
 
-import java.io.Reader;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +40,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
 
     @Override
     public Document build(Map<String, String> metadata, Map<String, String> extractedMetadata,
-                          Reader contentReader,
+                          String content,
                           String language, String address, String domain) {
 
         FieldWeights weights = configuration.getFieldWeights();
@@ -50,8 +49,8 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
         Field field;
         String modifiedKey;
 
-        if(contentReader != null){
-            document.add(new Field("content", contentReader));
+        if(content != null){
+            document.add(new Field("content", content, Field.Store.YES, Field.Index.ANALYZED));
         }
 
         // store extracted Metadata

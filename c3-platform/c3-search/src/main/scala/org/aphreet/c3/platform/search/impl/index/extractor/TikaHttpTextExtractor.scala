@@ -10,15 +10,18 @@ import java.nio.file.{StandardCopyOption, Files}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import org.springframework.stereotype.Component
 import scala.Some
+import org.apache.commons.logging.LogFactory
 
 @Component
 class TikaHttpTextExtractor extends TextExtractor {
 
+  val log = LogFactory.getLog(getClass)
+
   def extract(resource: Resource): Option[ExtractedDocument] = {
-    callTika(resource.versions.last.data, resource.metadata.getOrElse("content.type", "application/octet-stream"))
+    callTika(resource.address, resource.versions.last.data, resource.metadata.getOrElse("content.type", "application/octet-stream"))
   }
 
-  def callTika(data: DataStream, contentType: String): Option[ExtractedDocument] = {
+  def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
 
     using(openConnection())(connection => {
 
@@ -40,9 +43,14 @@ class TikaHttpTextExtractor extends TextExtractor {
               val path = Files.createTempFile("extracted", "tmp")
 
               Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING)
-              headersMap + (("content" -> ""))
 
-              Some(new TikaExtractedDocument(path.toFile, headersMap))
+              if(path.toFile.length() > 5 * 1024 * 1024){
+                log.info("Content of the resource " + address + " was skipped due to too long length: " + path.toFile.length())
+                Files.deleteIfExists(path)
+                None
+              }else{
+                Some(new TikaExtractedDocument(path.toFile, headersMap))
+              }
             }
             case _ => None
           }
@@ -79,21 +87,9 @@ class TikaHttpTextExtractor extends TextExtractor {
 
 class TikaExtractedDocument(val file: File, val metadata :Map[String, String]) extends ExtractedDocument {
 
-  private var readers = List[Reader]()
-
-  private def openReader: Reader = {
-    this.synchronized{
-      readers = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")) :: readers
-      readers.head
-    }
-  }
-
-  def contentReader = openReader
-
-
+  lazy val content: String = new String(Files.readAllBytes(file.toPath), "UTF-8")
 
   def dispose() {
-    readers.foreach(_.close())
     Files.deleteIfExists(file.toPath)
   }
 }

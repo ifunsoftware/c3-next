@@ -11,7 +11,7 @@ abstract class TikaExtractionTestCase extends TestCase{
 
     val client = new TikaHttpTextExtractor
 
-    println(client.callTika(DataStream.create(new File("/emc/malygm/Downloads/2.4_Console_FUNSpec.doc")), "application/octet-stream"))
+    println(client.callTika("address", DataStream.create(new File("/emc/malygm/Downloads/2.4_Console_FUNSpec.doc")), "application/octet-stream"))
 
   }
 }

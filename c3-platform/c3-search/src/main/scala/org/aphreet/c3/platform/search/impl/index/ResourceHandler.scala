@@ -58,7 +58,7 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
 
     extracted match {
       case Some(document) => documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(document.metadata),
-        document.contentReader, lang, resource.address, domain)
+        document.content, lang, resource.address, domain)
       case None => documentBuilder.build(mapAsJavaMap(meta), Collections.emptyMap(), null, lang, resource.address, domain)
     }
 

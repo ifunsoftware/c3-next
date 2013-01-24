@@ -190,7 +190,7 @@ class RamIndexer(val fileIndexer: Actor,
   def getLanguage(metadata:Map[String, String], extracted: Option[ExtractedDocument]):String = {
 
     val reader: Option[Reader] = extracted match {
-      case Some(document) => Some(document.contentReader)
+      case Some(document) => Some(new StringReader(document.content))
       case None => metadata.get(TITLE) match {
         case Some(value) => Some(new StringReader(value))
         case None => None
