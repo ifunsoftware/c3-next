@@ -52,7 +52,7 @@ import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 class RamIndexer(val fileIndexer: Actor,
                  val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
-                 val textExtractor:TextExtractor) extends WatchedActor with Tracer {
+                 var textExtractor:TextExtractor) extends WatchedActor with Tracer {
 
   val log = logOfClass(getClass)
 
@@ -128,8 +128,9 @@ class RamIndexer(val fileIndexer: Actor,
           }else{
             log trace num + ": Writer is empty, flush skipped"
           }
-
         }
+
+        case UpdateTextExtractor(extractor) => textExtractor = extractor
 
         case DestroyMsg => {
 
@@ -215,3 +216,4 @@ case class ResourceIndexedMsg(address: String)
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)
 case class FlushIndex(force: Boolean)
+case class UpdateTextExtractor(extractor: TextExtractor)

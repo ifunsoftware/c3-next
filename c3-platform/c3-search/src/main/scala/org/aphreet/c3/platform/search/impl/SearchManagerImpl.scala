@@ -109,6 +109,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   var extractDocumentContent = false
 
+
+  var currentTikaAddress: String = null
+
+  def tikaHostAddress = if(currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
+
   @PostConstruct
   def init() {
 
@@ -324,6 +329,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         for(indexer <- ramIndexers){
           indexer.extractDocumentContent = extractDocumentContent
         }
+
+      case TIKA_HOST =>
+        log info "Setting tika host to " + event.newValue
+        currentTikaAddress = event.newValue
+        ramIndexers.foreach(_ ! UpdateTextExtractor(new TikaHttpTextExtractor(event.newValue)))
     }
   }
 
@@ -332,7 +342,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       searchConfigurationManager,
       number,
       extractDocumentContent,
-      new TikaHttpTextExtractor)
+      new TikaHttpTextExtractor(tikaHostAddress))
   }
 }
 

@@ -9,7 +9,7 @@ abstract class TikaExtractionTestCase extends TestCase{
 
   def testTextExtraction(){
 
-    val client = new TikaHttpTextExtractor
+    val client = new TikaHttpTextExtractor("http://tika-ifunsoftware.rhcloud.com")
 
     println(client.callTika("address", DataStream.create(new File("/emc/malygm/Downloads/2.4_Console_FUNSpec.doc")), "application/octet-stream"))
 

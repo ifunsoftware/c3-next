@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component
 import scala.Some
 import org.apache.commons.logging.LogFactory
 
-@Component
-class TikaHttpTextExtractor extends TextExtractor {
+class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
   val log = LogFactory.getLog(getClass)
 
@@ -60,7 +59,7 @@ class TikaHttpTextExtractor extends TextExtractor {
   }
 
   def openConnection(): HttpURLConnection = {
-    val connection = new URL("https://tika-ifunsoftware.rhcloud.com").openConnection().asInstanceOf[HttpURLConnection]
+    val connection = new URL(tikaHostName).openConnection().asInstanceOf[HttpURLConnection]
 
     connection.setDoInput(true)
     connection.setDoOutput(true)
