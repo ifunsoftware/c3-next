@@ -308,7 +308,6 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     encodings.add("cp1251")
     encodings.add("US-ASCII")
     encodings.add("UTF-16")
-    encodings.add("KOI8-R")
 
     EncodingGuesser.setSupportedEncodings(encodings)
     TextMimeDetector.setPreferredEncodings(Array("UTF-8"))

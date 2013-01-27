@@ -115,10 +115,7 @@ var Terminal = new Class({
     },
 
     validkey: function(code) {
-        return  (code > 64 && code < 91)  ||	// [A-Z]
-            (code > 96 && code < 123) ||	// [a-z]
-            (code == 95) || // _
-            (code > 44 && code < 58);		// -./[0-9]
+        return  (code >= 33 && code <= 127);
     },
 
     // Outputs a line of text

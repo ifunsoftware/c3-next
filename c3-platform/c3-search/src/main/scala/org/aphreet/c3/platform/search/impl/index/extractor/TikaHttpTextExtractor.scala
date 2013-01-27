@@ -8,16 +8,39 @@ import scala.collection.JavaConversions._
 import java.io._
 import java.nio.file.{StandardCopyOption, Files}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
-import org.springframework.stereotype.Component
 import scala.Some
 import org.apache.commons.logging.LogFactory
+import java.nio.charset.Charset
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
   val log = LogFactory.getLog(getClass)
 
   def extract(resource: Resource): Option[ExtractedDocument] = {
-    callTika(resource.address, resource.versions.last.data, resource.metadata.getOrElse("content.type", "application/octet-stream"))
+
+    val contentType = resource.metadata.getOrElse("content.type", "application/octet-stream")
+
+    val lastVersion = resource.versions.last
+
+    if(contentType.startsWith("text/plain;charset=")){
+      val encoding = contentType.replaceFirst("text/plain;charset=", "")
+
+      if(Charset.isSupported(encoding)){
+
+        if(isSmallEnough(lastVersion.data.length)){
+          val content = new String(lastVersion.data.getBytes, encoding)
+          Some(new TikaPlainTextDocument(content))
+        }else{
+          log.info("Content of the resource " + resource.address + " was skipped due to too long length: " + lastVersion.data.length)
+          None
+        }
+      }else{
+        log.warn("Charset " + encoding + " is not supported")
+        None
+      }
+    }else{
+      callTika(resource.address, lastVersion.data, contentType)
+    }
   }
 
   def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
@@ -43,7 +66,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
               Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING)
 
-              if(path.toFile.length() > 5 * 1024 * 1024){
+              if(isSmallEnough(path.toFile.length())){
                 log.info("Content of the resource " + address + " was skipped due to too long length: " + path.toFile.length())
                 Files.deleteIfExists(path)
                 None
@@ -82,6 +105,9 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
     }
   }
 
+  protected def isSmallEnough(length: Long): Boolean = {
+    length < 5 * 1024 * 1024
+  }
 }
 
 class TikaExtractedDocument(val file: File, val metadata :Map[String, String]) extends ExtractedDocument {
@@ -91,4 +117,11 @@ class TikaExtractedDocument(val file: File, val metadata :Map[String, String]) e
   def dispose() {
     Files.deleteIfExists(file.toPath)
   }
+}
+
+class TikaPlainTextDocument(val content: String) extends ExtractedDocument {
+
+  def metadata = Map()
+
+  def dispose() {}
 }
