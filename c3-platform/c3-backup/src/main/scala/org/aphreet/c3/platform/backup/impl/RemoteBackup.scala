@@ -4,45 +4,33 @@ import java.net.URI
 import com.sshtools.j2ssh.{SftpClient, SshClient}
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification
 import com.sshtools.j2ssh.authentication.{AuthenticationProtocolState, PublicKeyAuthenticationClient}
-import com.sshtools.j2ssh.transport.publickey.{SshPrivateKey, SshPrivateKeyFile}
+import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
 import java.io.{IOException, File}
 import org.aphreet.c3.platform.common.{Path => C3Path}
 import java.nio.file._
 import java.util
-import org.aphreet.c3.platform.backup.AbstractBackup
+import org.aphreet.c3.platform.backup.{RemoteBackupLocation, AbstractBackup}
 
-/**
- * Created with IntelliJ IDEA.
- * User: antey
- * Date: 01.02.13
- * Time: 23:55
- * To change this template use File | Settings | File Templates.
- */
-class RemoteBackup(val uri:URI, val create:Boolean) extends AbstractBackup {
+class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLocation) extends AbstractBackup {
 
-  var HOST : String = null
-  var USER : String = null
-  var PRIVATE_KEY_FILE_NAME : String = null
+  var HOST = config.host
+  var USER = config.user
+  var PRIVATE_KEY_FILE_NAME = config.privateKeyLocation
 
   var remotePath : String = null
   var backupName : String = null
   var tempBackupPath : String = null
 
   {
-      initZip()
+    initZip()
   }
 
   def initZip() {
-    HOST = "backup-c3backup.rhcloud.com"
-    USER = "d22b442f096243d499120ff44adfc76a"
-    PRIVATE_KEY_FILE_NAME = "/home/antey/.ssh/id_rsa"
-
     val stringUri = uri.toString
     val lastSlash = stringUri.lastIndexOf("/")
     remotePath = stringUri.substring(0, lastSlash)
     backupName = stringUri.substring(lastSlash + 1)
     tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + backupName
-
 
     if (!create) {
       downloadBackup()
@@ -54,37 +42,42 @@ class RemoteBackup(val uri:URI, val create:Boolean) extends AbstractBackup {
   }
 
   def downloadBackup() {
-    val sshClient: SshClient = new SshClient
+    val sshClient = new SshClient
+    var sftpClient : SftpClient = null
 
     try {
       sshClient.connect(HOST, new IgnoreHostKeyVerification)
+      log.info("Connecting to host " + HOST + "...")
 
-      val authClient: PublicKeyAuthenticationClient = new PublicKeyAuthenticationClient
+      val authClient = new PublicKeyAuthenticationClient
       authClient.setUsername(USER)
 
-      val keyFile: SshPrivateKeyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
-      val key: SshPrivateKey = keyFile.toPrivateKey("")
+      val keyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
+      val key = keyFile.toPrivateKey("")
       authClient.setKey(key)
 
-      val result: Int = sshClient.authenticate(authClient)
+      val result = sshClient.authenticate(authClient)
+      log.info("Authentication for user " + USER + "...")
       if (result != AuthenticationProtocolState.COMPLETE) {
-        throw new IOException("Fail")
+        throw new IOException("Authentication failed")
       }
 
-      val sftpClient: SftpClient = sshClient.openSftpClient
-      System.out.println("PWD: " + sftpClient.pwd)
+      sftpClient = sshClient.openSftpClient
       sftpClient.cd(remotePath)
-
-      System.out.println(tempBackupPath)
 
       sftpClient.get(backupName, tempBackupPath)
 
-      sftpClient.quit
-      sshClient.disconnect
-    }
-    catch {
+    } catch {
       case e: IOException => {
-        e.printStackTrace
+        log.error(e.getMessage)
+      }
+
+    } finally  {
+      if (sftpClient != null && !sftpClient.isClosed) {
+        sftpClient.quit
+      }
+      if (sshClient != null && sshClient.isConnected) {
+        sshClient.disconnect
       }
     }
   }
@@ -92,41 +85,46 @@ class RemoteBackup(val uri:URI, val create:Boolean) extends AbstractBackup {
   override def close() {
     super.close()
 
-    val sshClient: SshClient = new SshClient
+    val sshClient = new SshClient
+    var sftpClient : SftpClient = null
 
     try {
       sshClient.connect(HOST, new IgnoreHostKeyVerification)
+      log.info("Connecting to host " + HOST + "...")
 
-      val authClient: PublicKeyAuthenticationClient = new PublicKeyAuthenticationClient
+      val authClient = new PublicKeyAuthenticationClient
       authClient.setUsername(USER)
 
-      val keyFile: SshPrivateKeyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
-      val key: SshPrivateKey = keyFile.toPrivateKey("")
+      val keyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
+      val key = keyFile.toPrivateKey("")
       authClient.setKey(key)
 
-      val result: Int = sshClient.authenticate(authClient)
+      val result = sshClient.authenticate(authClient)
+      log.info("Authentication for user " + USER + "...")
       if (result != AuthenticationProtocolState.COMPLETE) {
-        throw new IOException("Fail")
+        throw new IOException("Authentication failed")
       }
 
-      val sftpClient: SftpClient = sshClient.openSftpClient
-      System.out.println("PWD: " + sftpClient.pwd)
+      sftpClient = sshClient.openSftpClient
       sftpClient.cd(remotePath)
-
-      System.out.println(tempBackupPath)
 
       sftpClient.put(tempBackupPath)
 
-      sftpClient.quit
-      sshClient.disconnect
-    }
-    catch {
+    } catch {
       case e: IOException => {
-        e.printStackTrace
+        log.error(e.getMessage)
+      }
+
+    } finally  {
+      if (sftpClient != null && !sftpClient.isClosed) {
+        sftpClient.quit
+      }
+      if (sshClient != null && sshClient.isConnected) {
+        sshClient.disconnect
       }
     }
 
-    val localBackup : File = new File(tempBackupPath)
+    val localBackup = new File(tempBackupPath)
     localBackup.delete()
   }
 }
@@ -134,16 +132,16 @@ class RemoteBackup(val uri:URI, val create:Boolean) extends AbstractBackup {
 
 object RemoteBackup {
 
-  def open(path:C3Path):RemoteBackup = {
+  def open(path:C3Path, config:RemoteBackupLocation):RemoteBackup = {
     val zipFile = URI.create(path.toString)
-    new RemoteBackup(zipFile, false)
+    new RemoteBackup(zipFile, false, config)
   }
 
-  def create(path:C3Path):RemoteBackup = {
+  def create(path:C3Path, config:RemoteBackupLocation):RemoteBackup = {
 
     val zipFile = URI.create(path.toString)
 
-    new RemoteBackup(zipFile, true)
+    new RemoteBackup(zipFile, true, config)
   }
 
   def directoryForAddress(fs:FileSystem, address:String):Path = {
@@ -153,5 +151,4 @@ object RemoteBackup {
 
     fs.getPath(firstLetter, secondLetter, thirdLetter)
   }
-
 }

@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.backup
 
-import impl.RemoteBackup
+import impl.{BackupConfigAccessor, RemoteBackup}
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import org.aphreet.c3.platform.common.Path
 import junit.framework.Assert._
@@ -27,7 +27,10 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backup = RemoteBackup.create(new Path("app-root/data/backup.zip"))
+    val configAccessor = new BackupConfigAccessor
+    val backupLocation = configAccessor.defaultConfig.head
+
+    val backup = RemoteBackup.create(new Path("app-root/data/backup.zip"), backupLocation)
 
     resourceList.foreach(backup.addResource(_))
 
@@ -38,7 +41,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
     backup.close()
 
-    val backup1 = RemoteBackup.open(new Path("app-root/data/backup.zip"))
+    val backup1 = RemoteBackup.open(new Path("app-root/data/backup.zip"), backupLocation)
 
     for(resource <- backup1){
       assertEquals(1, resourceList.filter(_.address == resource.address).size)

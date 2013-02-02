@@ -7,11 +7,15 @@ import java.nio.file.{Path, StandardOpenOption, Files, FileSystem}
 import collection.JavaConversions._
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.nio.charset.Charset
+import org.apache.commons.logging.LogFactory
 
 
-class AbstractBackup extends CloseableIterable[Resource] {
+abstract class AbstractBackup extends CloseableIterable[Resource] {
 
   var zipFs:FileSystem = null
+
+  val log = LogFactory getLog getClass
+
 
   def addResource(resource:Resource){
 
