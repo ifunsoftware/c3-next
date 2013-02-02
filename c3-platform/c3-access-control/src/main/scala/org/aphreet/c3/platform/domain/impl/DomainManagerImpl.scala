@@ -43,6 +43,7 @@ import java.util.{Random, UUID}
 import java.lang.Integer
 import org.apache.commons.logging.LogFactory
 import scala.Some
+import org.aphreet.c3.platform.config.PlatformConfigManager
 
 @Component("domainManager")
 @Scope("singleton")
@@ -50,14 +51,15 @@ class DomainManagerImpl extends DomainManager{
 
   val log = LogFactory getLog getClass
 
+  @Autowired
   var domainAccessor:DomainAccessor = _
+
+  @Autowired
+  var platformConfigManager: PlatformConfigManager = _
 
   private var domains:HashMap[String, Domain] = new HashMap()
 
   private var domainById:HashMap[String, Domain] = new HashMap()
-
-  @Autowired
-  def setDomainAccessor(accessor:DomainAccessor) {domainAccessor = accessor}
 
 
   @PostConstruct
@@ -155,14 +157,8 @@ class DomainManagerImpl extends DomainManager{
     domainList.filter(d => d.id == importedDomain.id).headOption match{
       case Some(domain) =>
         //Found domain with the same id
-        if(domain.name != importedDomain.name + "-" + remoteSystemId){
-          if(domainList.filter(d => d.name == importedDomain.name).isEmpty){
-            domain.name = importedDomain.name
-          }else{
-            domain.name = importedDomain.name + "-" + remoteSystemId
-          }
-        }
-
+          //Overriding name of the domain
+        domain.name = importedDomain.name
         domain.key = importedDomain.key
         domain.mode = importedDomain.mode
 
@@ -235,14 +231,12 @@ class DomainManagerImpl extends DomainManager{
   }
 
   def generateKey:String = {
-
     val random = new Random()
 
     String.format("%08x%08x%08x%08x", new Integer(random.nextInt),
       new Integer(random.nextInt),
       new Integer(random.nextInt),
       new Integer(random.nextInt))
-
   }
 
 }

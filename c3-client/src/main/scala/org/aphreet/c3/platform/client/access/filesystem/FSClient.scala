@@ -48,7 +48,7 @@ class FSClient(override val args:Array[String]) extends CLI(args){
 
   def cliDescription = parameters(
     "h" has mandatory argument "hostname" described "Host to connect to",
-    "u" has mandatory argument "username" described "Username used to access to C3",
+    "d" has mandatory argument "domain" described "C3 domain",
     "s" has mandatory argument "secret" described "Secret key",
     "ignoreSSLHostname" described  "Ignore host name verification error",
     "help" described "Prints this message"
@@ -61,14 +61,16 @@ class FSClient(override val args:Array[String]) extends CLI(args){
     if(cli.hasOption("ignoreSSLHostname")) disableHostNameVerification()
 
     val host = cliValue("h", "http://localhost:7373")
-    val user = cliValue("u", "anonymous")
+    val domain = cliValue("d", "anonymous")
     val secret = cliValue("s", "")
 
-    resourceAccessor = new C3HttpAccessor(host, user, secret)
-    fileAccessor = new C3FileHttpAccessor(host, user, secret)
-    searchAccessor = new C3SearchAccessor(host, user, secret)
+    resourceAccessor = new C3HttpAccessor(host, domain, secret)
+    fileAccessor = new C3FileHttpAccessor(host, domain, secret)
+    searchAccessor = new C3SearchAccessor(host, domain, secret)
 
     val reader = new BufferedReader(new InputStreamReader(System.in))
+
+    println("Connecting to domain " + domain + " at host " + host)
 
     println("C3 Filesystem client version " + VersionUtils.clientVersion)
     
