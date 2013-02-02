@@ -1,14 +1,19 @@
 package org.aphreet.c3.platform.backup
 
-import junit.framework.Assert._
-import org.aphreet.c3.platform.backup.ResourceConsumer
-import impl.Backup
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
+import impl.RemoteBackup
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
+import org.aphreet.c3.platform.common.Path
+import junit.framework.Assert._
+import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
 
-
-class BackupTestCase extends AbstractTestWithFileSystem{
+/**
+ * Created with IntelliJ IDEA.
+ * User: antey
+ * Date: 02.02.13
+ * Time: 0:31
+ * To change this template use File | Settings | File Templates.
+ */
+class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
   def testResourceCreate(){
 
@@ -22,7 +27,7 @@ class BackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backup = Backup.create(new Path(testDir.getAbsolutePath + "/backup.zip"))
+    val backup = RemoteBackup.create(new Path("app-root/data/backup.zip"))
 
     resourceList.foreach(backup.addResource(_))
 
@@ -33,7 +38,7 @@ class BackupTestCase extends AbstractTestWithFileSystem{
 
     backup.close()
 
-    val backup1 = Backup.open(new Path(testDir.getAbsolutePath + "/backup.zip"))
+    val backup1 = RemoteBackup.open(new Path("app-root/data/backup.zip"))
 
     for(resource <- backup1){
       assertEquals(1, resourceList.filter(_.address == resource.address).size)
