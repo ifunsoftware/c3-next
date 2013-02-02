@@ -13,7 +13,7 @@ import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Reso
  * Time: 0:31
  * To change this template use File | Settings | File Templates.
  */
-class RemoteBackupTestCase extends AbstractTestWithFileSystem{
+abstract class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
   def testResourceCreate(){
 
