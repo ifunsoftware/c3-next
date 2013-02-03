@@ -36,61 +36,68 @@ import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.storage.StorageManager
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.remote.replication._
-import actors.AbstractActor
+import actors.{Actor, AbstractActor}
 import actors.remote.{RemoteActor, Node}
 import impl.config.ConfigurationManager
 import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.domain.DomainManager
+import org.aphreet.c3.platform.statistics.StatisticsManager
 
 @Component
 @Scope("singleton")
-class ReplicationTargetActor extends WatchedActor{
+class ReplicationTargetActor extends WatchedActor {
 
   val log = LogFactory getLog getClass
 
   val WORKERS_COUNT = 8
 
   @Autowired
-  var accessMediator:AccessMediator = null
+  var accessMediator: AccessMediator = null
 
   @Autowired
-  var storageManager:StorageManager = null
+  var storageManager: StorageManager = null
 
   @Autowired
-  var configurationManager:ConfigurationManager = null
+  var configurationManager: ConfigurationManager = null
 
   @Autowired
-  var domainManager:DomainManager = null
+  var domainManager: DomainManager = null
 
   @Autowired
-  var sourceReplicationActor:ReplicationSourceActor = null
+  var sourceReplicationActor: ReplicationSourceActor = null
 
+  @Autowired
+  var statisticsManager: StatisticsManager = null
 
-  var replicationPort:Int = -1
+  @Autowired
+  @Qualifier("delayHistory")
+  var delayHistory: Actor = _
 
-  var config:Map[String, ReplicationHost] = Map()
+  var replicationPort: Int = -1
+
+  var config: Map[String, ReplicationHost] = Map()
 
   var remoteReplicationActors = Map[String, AbstractActor]()
 
   var workers = List[ReplicationTargetWorker]()
 
-  var iterator:Iterator[ReplicationTargetWorker] = null
+  var iterator: Iterator[ReplicationTargetWorker] = null
 
   var secureDataConnection = false
 
-  var localSystemId:String = _
+  var localSystemId: String = _
 
-  def setUseSecureDataConnection(use:Boolean) {
+  def setUseSecureDataConnection(use: Boolean) {
     secureDataConnection = use
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
   }
 
-  def startWithConfig(config:Map[String, ReplicationHost], replicationPort:Int, localSystemId:String) {
+  def startWithConfig(config: Map[String, ReplicationHost], replicationPort: Int, localSystemId: String) {
 
     log info "Starting ReplicationTargetActor on port " + replicationPort
 
@@ -100,8 +107,10 @@ class ReplicationTargetActor extends WatchedActor{
 
     this.config = config
 
-    for(i <- 1 to WORKERS_COUNT){
-      val worker = new ReplicationTargetWorker(this.localSystemId, storageManager, accessMediator, configurationManager, domainManager)
+    for (i <- 1 to WORKERS_COUNT) {
+      val worker = new ReplicationTargetWorker(this.localSystemId,
+        storageManager, accessMediator, configurationManager, domainManager, statisticsManager, delayHistory)
+
       worker.startWithConfig(this.config)
       worker.useSecureDataConnection = secureDataConnection
       workers = worker :: workers
@@ -114,19 +123,19 @@ class ReplicationTargetActor extends WatchedActor{
     log info "ReplicationTargetActor started"
   }
 
-  def updateConfig(config:Map[String, ReplicationHost]) {
+  def updateConfig(config: Map[String, ReplicationHost]) {
     this.config = config
 
     workers.foreach(_.updateConfig(this.config))
   }
 
-  override def act(){
+  override def act() {
 
     alive(replicationPort)
     register('ReplicationActor, this)
 
-    while(true){
-      receive{
+    while (true) {
+      receive {
         case DestroyMsg => {
           log info "DestoryMsg received. Stopping"
 
@@ -138,7 +147,7 @@ class ReplicationTargetActor extends WatchedActor{
         case ReplicateAddMsg(resource, signature) => {
 
           val target = getRemoteActor(signature.systemId)
-          if(target != null)
+          if (target != null)
             getNextWorker ! ProcessAddMsg(resource, signature, target)
 
         }
@@ -146,14 +155,14 @@ class ReplicationTargetActor extends WatchedActor{
         case ReplicateUpdateMsg(resource, signature) => {
 
           val target = getRemoteActor(signature.systemId)
-          if(target != null)
+          if (target != null)
             getNextWorker ! ProcessUpdateMsg(resource, signature, target)
 
         }
 
         case ReplicateDeleteMsg(address, signature) => {
           val target = getRemoteActor(signature.systemId)
-          if(target != null)
+          if (target != null)
             getNextWorker ! ProcessDeleteMsg(address, signature, target)
         }
 
@@ -173,19 +182,19 @@ class ReplicationTargetActor extends WatchedActor{
     }
   }
 
-  private def getNextWorker:ReplicationTargetWorker = {
-    if(iterator.hasNext){
+  private def getNextWorker: ReplicationTargetWorker = {
+    if (iterator.hasNext) {
       iterator.next()
-    }else{
+    } else {
       iterator = workers.iterator
       iterator.next()
     }
   }
 
 
-  private def getRemoteActor(id:String):AbstractActor = {
+  private def getRemoteActor(id: String): AbstractActor = {
 
-    remoteReplicationActors.get(id) match{
+    remoteReplicationActors.get(id) match {
       case Some(a) => return a
       case None =>
     }
@@ -197,7 +206,7 @@ class ReplicationTargetActor extends WatchedActor{
       case None => null
     }
 
-    if(host != null){
+    if (host != null) {
 
       val port = host.replicationPort.intValue
 
@@ -208,14 +217,14 @@ class ReplicationTargetActor extends WatchedActor{
       remoteReplicationActors = remoteReplicationActors + ((id, remoteActor))
 
       remoteActor
-    }else{
+    } else {
       log info "Can't find replication config for id " + id
       null
     }
   }
 
   @PreDestroy
-  def destroy(){
+  def destroy() {
     log info "Stopping ReplicationTarget Actor..."
     this ! DestroyMsg
   }

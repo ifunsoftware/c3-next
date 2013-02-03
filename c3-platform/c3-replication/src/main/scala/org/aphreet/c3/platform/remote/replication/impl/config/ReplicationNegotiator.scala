@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.remote.replication.impl.config
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.remote.replication._
 import impl.data.encryption.{DataEncryptor, SymmetricKeyGenerator, AsymmetricDataEncryptor}
+import impl.ReplicationPortRetriever
 import scala.actors.remote.RemoteActor._
 import org.apache.commons.logging.LogFactory
 import javax.annotation.{PreDestroy, PostConstruct}
@@ -52,20 +53,17 @@ class ReplicationNegotiator extends WatchedActor{
 
   val sharedKeys = new HashMap[String, String]
 
-  var authManager:AuthenticationManager = null
-
-  var configurationManager:ConfigurationManager = null
-
-  var replicationManager:ReplicationManager = null
+  @Autowired
+  var authManager:AuthenticationManager = _
 
   @Autowired
-  def setAuthManager(manager:AuthenticationManager) {authManager = manager}
+  var configurationManager:ConfigurationManager = _
 
   @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
+  var replicationManager:ReplicationManager = _
 
   @Autowired
-  def setReplicationManager(manager:ReplicationManager) {replicationManager = manager}
+  var replicationPortRetriever:ReplicationPortRetriever = _
 
   @PostConstruct
   def init(){
@@ -83,7 +81,7 @@ class ReplicationNegotiator extends WatchedActor{
 
   override def act(){
 
-    alive(7375)
+    alive(replicationPortRetriever.getReplicationPort)
     register('ReplicationNegotiator, this)
 
     loop{

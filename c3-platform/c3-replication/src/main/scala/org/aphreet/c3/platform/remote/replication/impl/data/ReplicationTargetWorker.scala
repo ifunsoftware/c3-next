@@ -36,29 +36,33 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
-import actors.AbstractActor
+import actors.{Actor, AbstractActor}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
 import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 import collection.mutable
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import stats.DelayInfoMsg
 
-class ReplicationTargetWorker(val localSystemId:String,
-                              val storageManager:StorageManager,
-                              val accessMediator:AccessMediator,
-                              val configurationManager:ConfigurationManager,
-                              val domainManager:DomainManager) extends WatchedActor {
+class ReplicationTargetWorker(val localSystemId: String,
+                              val storageManager: StorageManager,
+                              val accessMediator: AccessMediator,
+                              val configurationManager: ConfigurationManager,
+                              val domainManager: DomainManager,
+                              val statisticsManager: StatisticsManager,
+                              val delayHistory: Actor) extends WatchedActor {
 
   val log = LogFactory getLog getClass
 
-  var config:Map[String, ReplicationHost] = Map()
+  var config: Map[String, ReplicationHost] = Map()
 
   var decryptors = new mutable.HashMap[String, DataEncryptor]()
 
   var useSecureDataConnection = false
 
-  def startWithConfig(config:Map[String, ReplicationHost]) = {
+  def startWithConfig(config: Map[String, ReplicationHost]) = {
 
     log info "Starting replication worker"
 
@@ -67,21 +71,21 @@ class ReplicationTargetWorker(val localSystemId:String,
     this.start()
   }
 
-  def updateConfig(config:Map[String, ReplicationHost]) {
+  def updateConfig(config: Map[String, ReplicationHost]) {
     this.config = config
 
     val map = new mutable.HashMap[String, DataEncryptor]
 
-    for((id, host) <- config){
+    for ((id, host) <- config) {
       map.put(id, new DataEncryptor(host.encryptionKey))
     }
 
     decryptors = map
   }
 
-  override def act(){
-    loop{
-      react{
+  override def act() {
+    loop {
+      react {
 
         case ProcessAddMsg(bytes, sign, target) => replicateAdd(bytes, sign, target)
 
@@ -99,13 +103,13 @@ class ReplicationTargetWorker(val localSystemId:String,
     }
   }
 
-  private def replicateAdd(bytes:Array[Byte], signature:ReplicationSignature, target:AbstractActor){
+  private def replicateAdd(bytes: Array[Byte], signature: ReplicationSignature, target: AbstractActor) {
 
     log debug "Replicating incoming add"
-    try{
+    try {
       val host = checkSignature(bytes, signature)
 
-      if(host == null){
+      if (host == null) {
         log debug "Signature check failed"
         return
       }
@@ -127,19 +131,23 @@ class ReplicationTargetWorker(val localSystemId:String,
 
       accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
 
-    }catch{
+      statisticsManager ! IncreaseStatisticsMsg("c3.replication.created", 1)
+
+      handleDelay(resource)
+
+    } catch {
       case e: Throwable => log.error("Failed to replicate add", e)
     }
   }
 
-  private def replicateUpdate(bytes:Array[Byte], signature:ReplicationSignature, target:AbstractActor){
+  private def replicateUpdate(bytes: Array[Byte], signature: ReplicationSignature, target: AbstractActor) {
 
     log debug "Replicating incoming update"
 
-    try{
+    try {
       val host = checkSignature(bytes, signature)
 
-      if(host == null){
+      if (host == null) {
         log debug "Signature check failed"
         return
       }
@@ -150,7 +158,7 @@ class ReplicationTargetWorker(val localSystemId:String,
 
       val storage = storageManager.storageForResource(resource)
 
-      if(!storage.mode.allowWrite){
+      if (!storage.mode.allowWrite) {
         log warn "Failed to store resource, storage is not writable"
         return
       }
@@ -158,11 +166,13 @@ class ReplicationTargetWorker(val localSystemId:String,
       fillWithData(resource, host)
 
 
-      storage.get(resource.address) match{
+      storage.get(resource.address) match {
         case Some(r) => {
           compareUpdatedResource(resource, r)
           resource.verifyCheckSums()
           storage.update(resource)
+
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.updated", 1)
 
           accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
 
@@ -171,34 +181,38 @@ class ReplicationTargetWorker(val localSystemId:String,
           resource.verifyCheckSums()
           storage.put(resource)
 
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.created", 1)
+
           accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
         }
       }
 
+      handleDelay(resource)
+
       val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
-      val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
+      val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
 
       target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
 
-    }catch{
+    } catch {
       case e: Throwable => log.error("Failed to replicate update", e)
     }
   }
 
-  private def replicateDelete(address:String, signature:ReplicationSignature, target:AbstractActor){
-    try{
+  private def replicateDelete(address: String, signature: ReplicationSignature, target: AbstractActor) {
+    try {
 
       val host = checkSignature(address.getBytes("UTF-8"), signature)
 
-      if(host == null){
+      if (host == null) {
         log debug "Signature check failed"
         return
       }
 
       val storage = storageManager.storageForAddress(ResourceAddress(address))
 
-      if(storage.mode.allowWrite){
+      if (storage.mode.allowWrite) {
 
         storage.get(address) match {
           case Some(r) => storage.delete(address)
@@ -210,73 +224,82 @@ class ReplicationTargetWorker(val localSystemId:String,
         target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
 
         accessMediator ! ResourceDeletedMsg(address, 'ReplicationManager)
-      }else{
+
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.deleted", 1)
+      } else {
         log warn "Failed to replicate delete, storage is not writable"
       }
-
-
-    }catch{
+    } catch {
       case e: Throwable => log.error("Failed to replicate update", e)
     }
   }
 
-  private def processConfiguration(configuration:String, signature:ReplicationSignature) {
+  private def processConfiguration(configuration: String, signature: ReplicationSignature) {
 
-    if(checkSignature(configuration, signature) != null){
+    if (checkSignature(configuration, signature) != null) {
       log info "Processing configuration"
       configurationManager.processSerializedRemoteConfiguration(configuration)
-    }else{
+    } else {
       log info "Ignorring configuration due to incorrect message"
     }
   }
 
-  private def compareUpdatedResource(incomeResource:Resource, storedResource:Resource) {
+  private def compareUpdatedResource(incomeResource: Resource, storedResource: Resource) {
 
-    for(i <- 0 to incomeResource.versions.length - 1){
+    for (i <- 0 to incomeResource.versions.length - 1) {
 
       val incomeVersion = incomeResource.versions(i)
 
-      if(storedResource.versions.length > i){
+      if (storedResource.versions.length > i) {
         val storedVersion = storedResource.versions(i)
 
-        if(storedVersion.date != incomeVersion.date){
+        if (storedVersion.date != incomeVersion.date) {
           incomeVersion.persisted = false
         }
 
-      }else{
+      } else {
         incomeVersion.persisted = false
       }
 
     }
   }
 
-  private def fillWithData(resource:Resource, replicationHost:ReplicationHost) {
+  private def fillWithData(resource: Resource, replicationHost: ReplicationHost) {
 
     val domainId = resource.systemMetadata.get(Domain.MD_FIELD).get
 
-    val domain = domainManager.domainById(domainId) match{
+    val domain = domainManager.domainById(domainId) match {
       case Some(d) => d
       case None => throw new ReplicationException("Failed to replicate resource: " + resource.address + " due to unknown domain")
     }
 
-    for(i <- 0 to resource.versions.size - 1){
+    for (i <- 0 to resource.versions.size - 1) {
       val version = resource.versions(i)
-      val data = new RemoteSystemDataStream(replicationHost, useSecureDataConnection, resource.address, i+1, domain.id, domain.key)
+      val data = new RemoteSystemDataStream(replicationHost, useSecureDataConnection, resource.address, i + 1, domain.id, domain.key)
       version.data = data
     }
   }
 
-  private def checkSignature(bytes:Array[Byte], signature:ReplicationSignature):ReplicationHost = {
+  private def handleDelay(resource: Resource){
+    val timestamp = System.currentTimeMillis()
 
-    ReplicationSignatureCalculator.foundAndVerify(bytes, signature, config) match{
+    val modificationTimestamp = resource.versions.last.date.getTime
+
+    delayHistory ! DelayInfoMsg(timestamp, timestamp - modificationTimestamp)
+
+  }
+
+  private def checkSignature(bytes: Array[Byte], signature: ReplicationSignature): ReplicationHost = {
+
+    ReplicationSignatureCalculator.foundAndVerify(bytes, signature, config) match {
       case Some(host) => host
       case None => null
     }
   }
 
-  private def checkSignature(data:String, signature:ReplicationSignature):ReplicationHost = {
+  private def checkSignature(data: String, signature: ReplicationSignature): ReplicationHost = {
 
-    ReplicationSignatureCalculator.foundAndVerify(data, signature, config) match{
+    ReplicationSignatureCalculator.foundAndVerify(data, signature, config) match {
       case Some(host) => host
       case None => null
     }
@@ -285,20 +308,20 @@ class ReplicationTargetWorker(val localSystemId:String,
 }
 
 case class ProcessAddMsg(
-                          resource:Array[Byte],
-            signature:ReplicationSignature,
-            target:AbstractActor
-        )
+                          resource: Array[Byte],
+                          signature: ReplicationSignature,
+                          target: AbstractActor
+                          )
 
 case class ProcessUpdateMsg(
-                             resource:Array[Byte],
-            signature:ReplicationSignature,
-            target:AbstractActor
-        )
+                             resource: Array[Byte],
+                             signature: ReplicationSignature,
+                             target: AbstractActor
+                             )
 
 
 case class ProcessDeleteMsg(
-                             address:String,
-            signature:ReplicationSignature,
-            target:AbstractActor
-        )
+                             address: String,
+                             signature: ReplicationSignature,
+                             target: AbstractActor
+                             )
