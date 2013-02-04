@@ -66,7 +66,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
               Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING)
 
-              if(isSmallEnough(path.toFile.length())){
+              if(!isSmallEnough(path.toFile.length())){
                 log.info("Content of the resource " + address + " was skipped due to too long length: " + path.toFile.length())
                 Files.deleteIfExists(path)
                 None
