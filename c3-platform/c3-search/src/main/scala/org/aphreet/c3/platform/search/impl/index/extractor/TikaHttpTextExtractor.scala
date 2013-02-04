@@ -106,7 +106,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
   }
 
   protected def isSmallEnough(length: Long): Boolean = {
-    length < 5 * 1024 * 1024
+    length < 5L * 1024 * 1024
   }
 }
 
