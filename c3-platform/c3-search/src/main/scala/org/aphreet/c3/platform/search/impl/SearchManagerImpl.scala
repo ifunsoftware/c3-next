@@ -31,7 +31,6 @@ package org.aphreet.c3.platform.search.impl
 
 import background._
 import index._
-import extractor.TikaTextExtractor
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
@@ -45,6 +44,8 @@ import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.common.{ComponentGuard, Path}
 import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
+import java.io.File
+import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
@@ -58,6 +59,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   val INDEX_CREATE_TIMESTAMP = "c3.search.index.create_timestamp"
 
   val EXTRACT_DOCUMENT_CONTENT = "c3.search.index.extract_content"
+
+  val TIKA_HOST = "c3.search.index.tika_address"
 
   var numberOfIndexers = 2
 
@@ -106,6 +109,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   var extractDocumentContent = false
 
+
+  var currentTikaAddress: String = null
+
+  def tikaHostAddress = if(currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
+
   @PostConstruct
   def init() {
 
@@ -124,7 +132,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       fileIndexer = new FileIndexer(indexPath)
 
       for(i <- 1 to numberOfIndexers){
-        ramIndexers = new RamIndexer(fileIndexer, searchConfigurationManager, i, extractDocumentContent, new TikaTextExtractor) :: ramIndexers
+        ramIndexers = createIndexer(i) :: ramIndexers
       }
 
       searcher = new Searcher(indexPath, ramIndexers, searchConfigurationManager)
@@ -245,11 +253,13 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     INDEXER_COUNT -> numberOfIndexers.toString,
     MAX_TMP_INDEX_SIZE -> "100",
     INDEX_CREATE_TIMESTAMP -> "0",
-    EXTRACT_DOCUMENT_CONTENT -> "false"
+    EXTRACT_DOCUMENT_CONTENT -> "false",
+    INDEX_PATH -> new File(configManager.dataDir, "index").getAbsolutePath,
+    TIKA_HOST -> "https://tika-ifunsoftware.rhcloud.com"
   )
 
   override def listeningForProperties: Array[String] = Array(
-    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT
+    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT, TIKA_HOST
   )
 
   def propertyChanged(event: PropertyChangeEvent) {
@@ -284,7 +294,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
             val indexersToAdd = newCount - ramIndexers.size
 
             for (i <- 1 to indexersToAdd) {
-              val indexer = new RamIndexer(fileIndexer, searchConfigurationManager, i + ramIndexers.size, extractDocumentContent, new TikaTextExtractor)
+              val indexer = createIndexer(i + ramIndexers.size)
               indexer.start()
               ramIndexers = indexer :: ramIndexers
             }
@@ -319,9 +329,21 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         for(indexer <- ramIndexers){
           indexer.extractDocumentContent = extractDocumentContent
         }
+
+      case TIKA_HOST =>
+        log info "Setting tika host to " + event.newValue
+        currentTikaAddress = event.newValue
+        ramIndexers.foreach(_ ! UpdateTextExtractor(new TikaHttpTextExtractor(event.newValue)))
     }
   }
 
+  protected def createIndexer(number: Int): RamIndexer = {
+    new RamIndexer(fileIndexer,
+      searchConfigurationManager,
+      number,
+      extractDocumentContent,
+      new TikaHttpTextExtractor(tikaHostAddress))
+  }
 }
 
 class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{

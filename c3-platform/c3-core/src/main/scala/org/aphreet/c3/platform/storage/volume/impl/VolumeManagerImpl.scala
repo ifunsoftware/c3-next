@@ -74,16 +74,13 @@ class VolumeManagerImpl extends VolumeManager with SPlatformPropertyListener{
     if(volume != null){
       volume.storages += storage
       storage.volume = volume
-    }else
-      throw new StorageException("Can't find volume for path: " + storage.path.toString)
+    }
   }
 
   def unregister(storage:Storage) {
     val volume = volumeForPath(storage.path.toString)
     if(volume != null)
       volume.storages -= storage
-    else
-      throw new StorageException("Can't find volume for path: " + storage.path.toString)
   }
 
   private def volumeForPath(path:String):Volume = {

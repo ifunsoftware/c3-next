@@ -43,7 +43,7 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.util.UUID
 import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
 import org.apache.commons.fileupload.FileItem
-import org.aphreet.c3.platform.remote.rest.response.fs.{FSNode, FSDirectory}
+import org.aphreet.c3.platform.remote.rest.response.fs.{FSNodeData, FSNode, FSDirectory}
 import org.aphreet.c3.platform.remote.rest.response.{DirectoryResult, ResourceResult}
 import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
 import org.aphreet.c3.platform.domain.Domain
@@ -53,10 +53,14 @@ import collection.mutable
 import org.apache.commons.codec.binary.Base64
 import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
+import org.aphreet.c3.platform.query.QueryManager
 
-class DataController extends AbstractController with ServletContextAware {
+class DataController extends AbstractController with ServletContextAware with RestController{
 
   var servletContext: ServletContext = _
+
+  @Autowired
+  var queryManager: QueryManager = _
 
   @Autowired
   var accessControlManager: AccessControlManager = _
@@ -122,7 +126,7 @@ class DataController extends AbstractController with ServletContextAware {
           val dataAndMd = accessManager.getOption(child.address) match {
             case Some(resource) => {
               (if(metaKeys != null) resource.metadata.filterKeys(metaKeys.contains(_)) else null,
-              if(needsData) resource.versions.last.data.getBytes else null)
+              if(needsData) resource.versions.last else null)
             }
             case None => (null, null)
           }
@@ -139,7 +143,7 @@ class DataController extends AbstractController with ServletContextAware {
       new DirectoryResult(fsDirectory), response)
   }
 
-  protected def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
+  def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
 
     val map = new mutable.HashMap[String, String]
 

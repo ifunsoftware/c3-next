@@ -39,10 +39,11 @@ import org.xml.sax.InputSource
 import java.io.{StringReader, FileInputStream, File}
 import javax.xml.validation.SchemaFactory
 import org.aphreet.c3.platform.remote.rest.response._
-import fs.{FSNode, FSDirectory}
+import org.aphreet.c3.platform.remote.rest.response.fs.{FSNodeData, FSNode, FSDirectory}
 import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
 import collection.mutable
+import java.util.Date
 
 class TestXmlSerialization extends TestCase{
 
@@ -68,7 +69,10 @@ class TestXmlSerialization extends TestCase{
 
     val version = new ResourceVersion
     version.data = DataStream.create("string")
+    version.date = new Date()
     version.systemMetadata.put("sys_key", "sys_value")
+    version.systemMetadata.put("c3.data.length", "10240")
+    version.systemMetadata.put("c3.data.md5", "42688c7115664cc2a14c73ef9af6d266")
 
     resource.addVersion(version)
 
@@ -79,7 +83,6 @@ class TestXmlSerialization extends TestCase{
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 
     verifyXml(xml)
-
   }
 
   def testSearch(){
@@ -118,8 +121,8 @@ class TestXmlSerialization extends TestCase{
     metadata.put("key", "value")
 
     val directory = new FSDirectory("name", "address",
-      Array(FSNode("name", "address", true, metadata, null),
-        FSNode("name2", "address2", false, null, "<html>my string data value".getBytes("UTF-8"))))
+      Array(FSNode("name", "address", leaf = true, metadata, null),
+        FSNode("name2", "address2", leaf = false, null, FSNodeData("<html>my string data value<p:response xmlns:p=\"http://c3.aphreet.org/rest/1.0\" xsi:schemaLocation=\"http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><p:response xmlns:p=\"http://c3.aphreet.org/rest/1.0\" xsi:schemaLocation=\"http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><html>my string data value<p:response xmlns:p=\"http://c3.aphreet.org/rest/1.0\" xsi:schemaLocation=\"http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/res".getBytes("UTF-8"), new Date))))
 
     val output = xStream.toXML(new DirectoryResult(directory))
 

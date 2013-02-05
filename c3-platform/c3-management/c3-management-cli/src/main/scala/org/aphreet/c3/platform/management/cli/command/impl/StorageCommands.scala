@@ -54,10 +54,10 @@ class AddStorageCommand extends Command{
 
   override
   def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 2){
-      wrongParameters("create storage <type> <path>")
+    if(params.size < 1){
+      wrongParameters("create storage <type> [<path>]")
     }else{
-      management.createStorage(params.head, params.tail.head)
+      management.createStorage(params.head, params.tail.headOption.getOrElse(""))
       "Storage created"
     }
   }

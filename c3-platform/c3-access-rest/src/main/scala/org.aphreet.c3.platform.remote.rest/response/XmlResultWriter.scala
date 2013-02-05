@@ -48,6 +48,8 @@ class XmlResultWriter(val stream:XStream) extends ResultWriter{
 
     val byteArray = bos.toByteArray
 
+    println(new String(byteArray, "UTF-8"))
+
     response.setContentLength(byteArray.length)
     response.getOutputStream.write(byteArray)
 

@@ -29,7 +29,7 @@
  */
 package org.aphreet.c3.platform.common
 
-import collection.mutable.HashSet
+import collection.mutable
 import org.apache.commons.logging.LogFactory
 
 class ThreadWatcher
@@ -38,21 +38,20 @@ object ThreadWatcher{
 
   val log = LogFactory getLog classOf[ThreadWatcher]
 
-  val registeredThreads = new HashSet[AnyRef]
+  val registeredThreads = new mutable.HashSet[AnyRef]
 
-  def +(any:AnyRef) = {
+  def +(any:AnyRef) {
     registeredThreads.synchronized{
       registeredThreads += any
-      log trace "Registered " + any + ", total: " + registeredThreads.size
+      log info "Registered " + any + ", total: " + registeredThreads.size
     }
   }
 
-  def -(any:AnyRef) = {
+  def -(any:AnyRef) {
     registeredThreads.synchronized{
       registeredThreads -= any
-      log trace "Unregistered " + any + ", left: " + registeredThreads.size
-      if(log.isTraceEnabled)
-        log.trace("Left threads: " + registeredThreads.toString)
+      log info "Unregistered " + any + ", left: " + registeredThreads.size
+      log.info("Left threads: " + registeredThreads.toString)
     }
   }
 

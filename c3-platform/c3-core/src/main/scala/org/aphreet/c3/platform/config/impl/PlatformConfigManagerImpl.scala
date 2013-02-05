@@ -51,6 +51,8 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   var configDir: File = _
 
+  var dataDir: File = _
+
   private val foundListeners = new mutable.HashSet[PlatformPropertyListener]
 
   private val propertyListeners = new mutable.HashMap[String, Set[PlatformPropertyListener]]
@@ -58,7 +60,6 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
   private var currentConfig: Map[String, String] = null
 
   var configAccessor: PlatformConfigAccessor = _
-
 
   @Autowired
   def setConfigAccessor(accessor: PlatformConfigAccessor) {
@@ -89,6 +90,18 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
     configPath = path.toString
     configDir = path.file
     if (!configDir.exists) configDir.mkdirs
+
+    val dataPath = new Path(System.getProperty("c3.data") match {
+      case value: String => value
+      case null => System.getProperty("user.home") + File.separator + ".c3data"
+    })
+
+
+    if(!dataPath.file.exists()){
+      dataPath.file.mkdirs()
+    }
+
+    dataDir = dataPath.file
   }
 
   @PostConstruct
@@ -226,9 +239,7 @@ class PlatformConfigManagerImpl extends PlatformConfigManager{
 
   override
   def setPlatformProperty(key: String, value: String) {
-
     this ! SetPropertyMsg(key, value)
-
   }
 }
 

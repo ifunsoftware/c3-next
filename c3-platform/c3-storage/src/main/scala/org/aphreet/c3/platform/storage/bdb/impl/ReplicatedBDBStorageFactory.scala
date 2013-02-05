@@ -30,10 +30,9 @@
 package org.aphreet.c3.platform.storage.bdb.impl
 
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
-import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.storage.bdb._
 
-@Component
+//@Component
 class ReplicatedBDBStorageFactory extends AbstractBDBStorageFactory{
 
   protected def createNewStorage(params:StorageParams, systemId:String):Storage =

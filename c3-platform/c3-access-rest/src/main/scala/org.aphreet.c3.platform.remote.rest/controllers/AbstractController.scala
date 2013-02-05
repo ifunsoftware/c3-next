@@ -66,16 +66,16 @@ class AbstractController {
     getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
   }
 
-  @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
-  def handleUnsupportedMethodException(e: HttpRequestMethodNotSupportedException,
-                                       request: HttpServletRequest,
-                                       response: HttpServletResponse) {
-
-    val contentType = request.getHeader("x-c3-type")
-
-    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
-  }
+//  @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
+//  def handleUnsupportedMethodException(e: HttpRequestMethodNotSupportedException,
+//                                       request: HttpServletRequest,
+//                                       response: HttpServletResponse) {
+//
+//    val contentType = request.getHeader("x-c3-type")
+//
+//    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
+//    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
+//  }
 
   @ExceptionHandler(Array(classOf[ResourceNotFoundException]))
   def handleResourceNotFoundException(e: ResourceNotFoundException,
@@ -149,7 +149,7 @@ class AbstractController {
   }
 
 
-  protected def getResultWriter(expectedType: String): ResultWriter = {
+  def getResultWriter(expectedType: String): ResultWriter = {
     writerSelector.selectWriterForType(expectedType)
   }
 }

@@ -40,6 +40,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
 
     @Override
     public Document build(Map<String, String> metadata, Map<String, String> extractedMetadata,
+                          String content,
                           String language, String address, String domain) {
 
         FieldWeights weights = configuration.getFieldWeights();
@@ -47,6 +48,10 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
         Document document = new Document();
         Field field;
         String modifiedKey;
+
+        if(content != null){
+            document.add(new Field("content", content, Field.Store.YES, Field.Index.ANALYZED));
+        }
 
         // store extracted Metadata
         for (String key : extractedMetadata.keySet()) {

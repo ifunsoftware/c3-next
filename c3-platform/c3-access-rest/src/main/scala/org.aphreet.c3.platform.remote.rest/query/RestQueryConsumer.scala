@@ -38,8 +38,17 @@ import com.thoughtworks.xstream.XStream
 import java.io.PrintWriter
 
 class RestQueryConsumer(writer: PrintWriter,
-                        resultWriter: ResultWriter) extends QueryConsumer {
+                        resultWriter: ResultWriter,
+                        skip: Int,
+                        limit: Option[Int]) extends QueryConsumer {
   var addressesWritten = 0
+
+  var skipped = 0
+  var consumed = 0
+  val limitNumber = limit match {
+    case Some(value) => value
+    case None => -1
+  }
 
   val (start, end, separator, xstream): (String, String, String, Option[XStream]) = resultWriter match {
     case jsonWriter: JsonResultWriter => ("[", "]", ",", Some(jsonWriter.stream))
@@ -51,19 +60,33 @@ class RestQueryConsumer(writer: PrintWriter,
     writer.println(start)
   }
 
-  override def addResource(resource: Resource) {
-    xstream match {
-      case Some(stream) => writer.println(stream.toXML(resource) + separator)
-      case _ => writer.println(resource.address)
+  override def consume(resource: Resource): Boolean = {
+
+    if (skipped < skip){
+      skipped = skipped + 1
+      true
+    }else{
+
+      xstream match {
+        case Some(stream) => writer.println(stream.toXML(resource) + separator)
+        case _ => writer.println(resource.address)
+      }
+
+      addressesWritten = addressesWritten + 1
+
+      if (addressesWritten >= 100) {
+        writer.flush()
+        addressesWritten = 0
+      }
+
+      consumed = consumed + 1
+
+      if (limitNumber >= 0 && consumed >= limitNumber){
+        false
+      }else{
+        true
+      }
     }
-
-    addressesWritten = addressesWritten + 1
-
-    if (addressesWritten >= 100) {
-      writer.flush()
-      addressesWritten = 0
-    }
-
   }
 
   override def close(){

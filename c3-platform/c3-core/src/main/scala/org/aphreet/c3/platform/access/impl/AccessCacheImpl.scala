@@ -32,24 +32,17 @@
 package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
-import actors.Actor._
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg._
 import net.sf.ehcache.{Element, Cache, CacheManager}
-import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
-import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
 import org.apache.commons.logging.LogFactory
-import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import org.aphreet.c3.platform.access.ResourceUpdatedMsg
-import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
-import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
+import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.ComponentGuard
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
-import org.aphreet.c3.platform.access.ResourceDeletedMsg
-import org.aphreet.c3.platform.access.ResourceAddedMsg
+import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
+import org.springframework.stereotype.Component
 import scala.Some
 
 @Component
@@ -74,7 +67,7 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
   @PostConstruct
   def init(){
 
-    val cacheManager = CacheManager.create;
+    val cacheManager = CacheManager.create()
 
     cache = new Cache("resourceCache", 5000, false, false, 120, 120)
 

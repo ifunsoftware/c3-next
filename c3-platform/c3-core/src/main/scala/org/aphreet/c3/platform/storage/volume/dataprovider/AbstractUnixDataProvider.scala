@@ -45,7 +45,7 @@ abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeData
     process.waitFor
     
     if(process.exitValue != 0){
-      throw new StorageException("Failed to get volume data, exit value " + process.exitValue)
+      return List()
     }
     
     val reader = new BufferedReader(new InputStreamReader(process.getInputStream))

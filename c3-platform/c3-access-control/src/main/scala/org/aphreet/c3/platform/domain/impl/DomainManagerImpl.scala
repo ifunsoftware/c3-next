@@ -43,25 +43,27 @@ import java.util.{Random, UUID}
 import java.lang.Integer
 import org.apache.commons.logging.LogFactory
 import scala.Some
+import org.aphreet.c3.platform.config.PlatformConfigManager
 
 @Component("domainManager")
 @Scope("singleton")
-class DomainManagerImpl extends DomainManager{
+class DomainManagerImpl extends DomainManager {
 
   val log = LogFactory getLog getClass
 
-  var domainAccessor:DomainAccessor = _
-
-  private var domains:HashMap[String, Domain] = new HashMap()
-
-  private var domainById:HashMap[String, Domain] = new HashMap()
+  @Autowired
+  var domainAccessor: DomainAccessor = _
 
   @Autowired
-  def setDomainAccessor(accessor:DomainAccessor) {domainAccessor = accessor}
+  var platformConfigManager: PlatformConfigManager = _
+
+  private var domains: HashMap[String, Domain] = new HashMap()
+
+  private var domainById: HashMap[String, Domain] = new HashMap()
 
 
   @PostConstruct
-  def init(){
+  def init() {
     reloadDomainConfig()
   }
 
@@ -71,7 +73,7 @@ class DomainManagerImpl extends DomainManager{
 
     var idMap = new HashMap[String, Domain]
 
-    for(domain <- domainAccessor.load){
+    for (domain <- domainAccessor.load) {
       map += ((domain.name, domain))
       idMap += ((domain.id, domain))
     }
@@ -84,7 +86,7 @@ class DomainManagerImpl extends DomainManager{
     domainAccessor.store(domains.values.toList)
   }
 
-  def addDomain(name:String) {
+  def addDomain(name: String) {
 
     domains.get(name) match {
       case Some(x) => throw new PlatformException("Domain with such name already exists")
@@ -98,7 +100,7 @@ class DomainManagerImpl extends DomainManager{
     reloadDomainConfig()
   }
 
-  def generateKey(name:String):String = {
+  def generateKey(name: String): String = {
     domains.get(name) match {
       case Some(d) =>
         d.key = generateKey
@@ -109,7 +111,7 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
-  def setMode(name:String, mode:String) {
+  def setMode(name: String, mode: String) {
     domains.get(name) match {
       case Some(d) =>
         d.mode = DomainMode.byName(mode)
@@ -119,7 +121,7 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
-  def updateName(name:String, newName:String) {
+  def updateName(name: String, newName: String) {
     domains.get(name) match {
       case Some(d) =>
         d.name = newName
@@ -129,18 +131,18 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
-  def domainList:List[Domain] = {
+  def domainList: List[Domain] = {
     domains.values.toList
   }
 
-  def getAnonymousDomain:Domain = {
+  def getAnonymousDomain: Domain = {
     domains.get("anonymous") match {
       case Some(d) => d
       case None => throw new DomainException("Can't find anonymous domain")
     }
   }
 
-  def importDomain(importedDomain:Domain, remoteSystemId:String){
+  def importDomain(importedDomain: Domain, remoteSystemId: String) {
 
     val domainList = domainAccessor.load
 
@@ -151,25 +153,21 @@ class DomainManagerImpl extends DomainManager{
     reloadDomainConfig()
   }
 
-  def addDomainToList(importedDomain:Domain, remoteSystemId:String, domainList:List[Domain]):List[Domain] = {
-    domainList.filter(d => d.id == importedDomain.id).headOption match{
+  def addDomainToList(importedDomain: Domain, remoteSystemId: String, domainList: List[Domain]): List[Domain] = {
+    domainList.filter(d => d.id == importedDomain.id).headOption match {
       case Some(domain) =>
-        //Found domain with the same id
-        if(domain.name != importedDomain.name + "-" + remoteSystemId){
-          if(domainList.filter(d => d.name == importedDomain.name).isEmpty){
-            domain.name = importedDomain.name
-          }else{
-            domain.name = importedDomain.name + "-" + remoteSystemId
-          }
-        }
 
+        log.info("Updating domain " + domain + " with imported domian: " + importedDomain)
+        //Found domain with the same id
+        //Overriding name of the domain
+        domain.name = importedDomain.name
         domain.key = importedDomain.key
         domain.mode = importedDomain.mode
 
         domainList
 
       case None => {
-        domainList.filter(d => d.name == importedDomain.name).headOption match{
+        domainList.filter(d => d.name == importedDomain.name).headOption match {
           case Some(domain) =>
             //We have a name collision for this domain, adding a remoteSystemId to its name
             importedDomain.name = importedDomain.name + "-" + remoteSystemId
@@ -189,23 +187,24 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
-  def domainById(id:String):Option[Domain] = {
+  def domainById(id: String): Option[Domain] = {
     domainById.get(id)
   }
 
 
-  def checkDomainAccess(name:String, hash:String, keyBase:String):Domain = {
+  def checkDomainAccess(name: String, hash: String, keyBase: String): Domain = {
 
-    domains.get(name) match{
+    domains.get(name) match {
       case Some(d) => {
         val key = d.key
 
-        if(key.isEmpty){
+        if (key.isEmpty) {
           d
-        }else{
-          if(HashUtil.hmac(key, keyBase) == hash){
+        } else {
+          if (HashUtil.hmac(key, keyBase) == hash) {
             d
-          }else{
+          } else {
+            log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
             throw new DomainException("Incorrect signature")
           }
         }
@@ -214,13 +213,14 @@ class DomainManagerImpl extends DomainManager{
         domainById.get(name) match {
           case Some(d) => {
             val key = d.key
-            if(!key.isEmpty){
-              if(HashUtil.hmac(key, keyBase) == hash){
+            if (!key.isEmpty) {
+              if (HashUtil.hmac(key, keyBase) == hash) {
                 d
-              }else{
+              } else {
+                log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
                 throw new DomainException("Incorrect signature")
               }
-            }else{
+            } else {
               d
             }
           }
@@ -232,15 +232,13 @@ class DomainManagerImpl extends DomainManager{
     }
   }
 
-  def generateKey:String = {
-
+  def generateKey: String = {
     val random = new Random()
 
     String.format("%08x%08x%08x%08x", new Integer(random.nextInt),
       new Integer(random.nextInt),
       new Integer(random.nextInt),
       new Integer(random.nextInt))
-
   }
 
 }

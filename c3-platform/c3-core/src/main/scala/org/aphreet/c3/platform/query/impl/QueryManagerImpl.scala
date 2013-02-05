@@ -52,14 +52,14 @@ class QueryManagerImpl extends QueryManager with Tracer{
                    systemFields:Map[String, String],
                    consumer:QueryConsumer){
 
-    debug("Starting query fields: " + fields + " systemFields: " + systemFields)
+    log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
 
     handling(classOf[Throwable]).by(e => warn("Exception while processing query", e))
       .andFinally(consumer.close())
       .apply(
       storageManager.listStorages.filter(_.mode.allowRead).foreach(storage =>
-        using(storage.iterator(fields, systemFields))(
-          _.foreach(consumer.addResource(_))
+        using(storage.iterator(fields, systemFields))(iterator =>
+          while(iterator.hasNext && consumer.consume(iterator.next())){}
         )
       )
     )

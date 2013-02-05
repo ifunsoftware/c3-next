@@ -38,13 +38,15 @@ import org.aphreet.c3.platform.search.ext.{SearchConfiguration, DocumentBuilderF
 import collection.JavaConversions._
 import org.apache.lucene.document.{Document, Field}
 import org.apache.lucene.util.Version
+import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
+import java.util.Collections
 
 
 class ResourceHandler(val factory:DocumentBuilderFactory,
                       val searchConfiguration:SearchConfiguration,
                       val resource:Resource,
                       val meta:Map[String, String],
-                      val extracted:Map[String, String],
+                      val extracted:Option[ExtractedDocument],
                       val lang:String){
 
 
@@ -54,7 +56,12 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
 
     val domain = resource.systemMetadata.get("c3.domain.id").get
 
-    documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(extracted), lang, resource.address, domain)
+    extracted match {
+      case Some(document) => documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(document.metadata),
+        document.content, lang, resource.address, domain)
+      case None => documentBuilder.build(mapAsJavaMap(meta), Collections.emptyMap(), null, lang, resource.address, domain)
+    }
+
   }
 
   def analyzer:Analyzer = {

@@ -34,49 +34,39 @@ import com.sleepycat.je._
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
-import collection.immutable.HashMap
 import org.aphreet.c3.platform.common.ComponentGuard
 import org.apache.commons.logging.LogFactory
 import BDBStorageIndex._
-import java.nio.ByteBuffer
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
-                         val map:Map[String, String],
-                         val systemMap:Map[String, String],
+                         val userMeta:Map[String, String],
+                         val systemMeta:Map[String, String],
                          val filter:(Resource) => Boolean,
                          val disableFunctionFilter: Boolean) extends StorageIterator with ComponentGuard{
 
   val log = LogFactory getLog getClass
 
   var cursor: Cursor = null
-
   var joinCursor : JoinCursor = null
   var joinConfig: JoinConfig = null
-
   var secCursors : List[SecondaryCursor] = List()
-
   var rangedCursor : SecondaryCursor = null
+  var hasRangedCursor: Boolean = false
 
-  private val usedIndexes:Map[StorageIndex, String] = indexesForQuery(map, systemMap)
+  private val usedIndexes:Map[StorageIndex, String] = indexesForQuery(userMeta, systemMeta)
+  private val useIndexes = !usedIndexes.isEmpty
 
-  private val mapFilter:(Resource) => Boolean = createMapFilter(map)
-  private val systemMapFilter:(Resource) => Boolean = createSystemMapFilter(systemMap)
-
+  private val userMetaFilter:(Resource) => Boolean = createUserMetaFilter(userMeta)
+  private val systemMetaFilter:(Resource) => Boolean = createSystemMetaFilter(systemMeta)
 
   private var bdbEntriesProcessed = 0
 
   private var resource: Resource = null
-
-  private var useIndexes = false
-
   private var isEmptyIterator = false
-
   private var closed = false
 
   {
     log.debug("Creating storage iterator for " + storage.id)
-
-    useIndexes = !usedIndexes.isEmpty
 
     if(useIndexes){
 
@@ -87,47 +77,29 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val indexDb = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
-          case Some(db) => db
+        val secCursor = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
+          case Some(db) => db.openCursor(null, null)
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
 
-
-        val secCursor = indexDb.openCursor(null, null)
-
-        val indexKey = new DatabaseEntry()
-        val rangedQuery = index.putSearchKey(value, indexKey)
-
-        val indexVal = new DatabaseEntry
-
-        val status = if(rangedQuery){
-          rangedCursor = secCursor
-          secCursor.getSearchKeyRange(indexKey, indexVal, LockMode.DEFAULT)
-        }else{
-          secCursor.getSearchKey(indexKey, indexVal, LockMode.DEFAULT)
-        }
-
-        if(status == OperationStatus.SUCCESS){
+        if(positionSecondaryCursor(secCursor, index, value) == OperationStatus.SUCCESS){
           secCursors = secCursor :: secCursors
         }else{
-          log.debug("failed to open cursor in storage " + storage.id + " for index: " + index + " and value " + value + ", operation status is " + status.toString)
-          isEmptyIterator = true
+          log.debug("failed to open cursor in storage " + storage.id + " for index: " + index + " and value " + value + ", operation status is not success")
 
+          isEmptyIterator = true
           secCursor.close()
         }
-
-      }
-
-      if(rangedCursor != null){
-        secCursors = rangedCursor :: secCursors.filter(_ ne rangedCursor)
       }
 
       if(!isEmptyIterator){
 
+        if(hasRangedCursor){
+          secCursors = rangedCursor :: secCursors.filter(_ ne rangedCursor)
+        }
+
         joinConfig = new JoinConfig
-
-        joinConfig.setNoSort(rangedCursor != null)
-
+        joinConfig.setNoSort(hasRangedCursor)
         joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
       }
 
@@ -137,77 +109,47 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     }
 
     if(!isEmptyIterator){
-      resource = findNextResource
+      resource = findNextResource()
     }
-
   }
 
-  private def indexesForQuery(query:Map[String, String],
-                              systemMap:Map[String, String]
+  private def positionSecondaryCursor(cursor: SecondaryCursor, index: StorageIndex, value: String): OperationStatus = {
+    val indexKey = new DatabaseEntry()
+    val rangedQuery = index.putSearchKey(value, indexKey)
+
+    if(rangedQuery){
+      rangedCursor = cursor
+      hasRangedCursor = true
+      cursor.getSearchKeyRange(indexKey, new DatabaseEntry, LockMode.DEFAULT)
+    }else{
+      cursor.getSearchKey(indexKey, new DatabaseEntry, LockMode.DEFAULT)
+    }
+  }
+
+  private def indexesForQuery(userMeta: Map[String, String],
+                              systemMeta: Map[String, String]
                                ):Map[StorageIndex, String] = {
 
-    var map = new HashMap[StorageIndex, String]
-
-    for(index <- storage.indexes){
-
-      if(!index.system){
-
-        if(query.contains(index.fields.head)){
-          val e:(StorageIndex, String) = (index, query.get(index.fields.head).get)
-          map = map + e
-        }
-
-      }else{
-        if(systemMap.contains(index.fields.head)){
-          val e:(StorageIndex, String) = (index, systemMap.get(index.fields.head).get)
-          map = map + e
-        }
-      }
-    }
-
-    map
-  }
-
-  private def createMapFilter(map:Map[String, String]):(Resource) => Boolean = {
-
-    log.debug("Creading filter function for user metadata")
-
-    //TODO rewrite last map call if we ever will have multi-field indexes
-    val indexedFields = storage.indexes.filter(!_.system).map(_.fields.head).toSet
-
-    val fieldsToCheck = map -- indexedFields
-
-    log.debug("Function will check the following user md fields: " + fieldsToCheck)
-
-    if(!fieldsToCheck.isEmpty){
-
-      ((res:Resource) => {
-        var result = true
-
-        for((key, value) <- fieldsToCheck){
-          res.metadata.get(key) match{
-            case Some(x) =>
-              if(x != value) result = false
-            case None =>
-              result = false
-          }
-        }
-
-        result
-      })
-
-    }else{
-      ((res:Resource) => true)
-    }
+    (for(index <- storage.indexes)
+    yield (if (index.system) systemMeta else userMeta).get(index.fields.head) match {
+        case Some(value) => ((index, value))
+        case None => ((index, null))
+      }).filter(_._2 != null).toMap
 
   }
 
-  private def createSystemMapFilter(map:Map[String, String]):(Resource) => Boolean = {
+  private def createUserMetaFilter(map:Map[String, String]):(Resource) => Boolean =
+    createMetadataFilter(map, isSystem = false)
+
+  private def createSystemMetaFilter(map:Map[String, String]):(Resource) => Boolean =
+    createMetadataFilter(map, isSystem = true)
+
+  private def createMetadataFilter(map: Map[String, String], isSystem: Boolean): (Resource) => Boolean = {
 
     log.debug("Creading filter function for system metadata")
 
     //TODO rewrite last map call if we ever will have multi-field indexes
-    val indexedFields = storage.indexes.filter(_.system).map(_.fields.head).toSet
+    val indexedFields = storage.indexes.filter(_.system == isSystem).map(_.fields.head).toSet
 
     val fieldsToCheck = map -- indexedFields
 
@@ -219,7 +161,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         var result = true
 
         for((key, value) <- fieldsToCheck){
-          res.systemMetadata.get(key) match{
+          (if(isSystem) res.systemMetadata else res.metadata).get(key) match{
             case Some(x) =>
               if(x != value) result = false
             case None =>
@@ -235,8 +177,8 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     }
   }
 
-  def isMatch(resource:Resource):Boolean = {
-    filter(resource) && mapFilter(resource) && systemMapFilter(resource)
+  private def matchesFilter(resource:Resource):Boolean = {
+    filter(resource) && userMetaFilter(resource) && systemMetaFilter(resource)
   }
 
 
@@ -244,21 +186,17 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     !isEmptyIterator && resource != null
   }
 
-  def next: Resource = {
-
+  def next(): Resource = {
     if(hasNext){
-
       val previousResource = resource
-
-      resource = findNextResource
-
+      resource = findNextResource()
       previousResource
     }else{
       null
     }
   }
 
-  protected def findNextResource: Resource = {
+  protected def findNextResource(): Resource = {
 
     var resource: Resource = null
     var resultFound = false
@@ -290,7 +228,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
               loadData(resource)
               resultFound = true
             }else{
-              if(isMatch(resource)){
+              if(matchesFilter(resource)){
                 loadData(resource)
                 resultFound = true
               }
@@ -309,25 +247,48 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
     resource
   }
 
-  private def fetchNextKey(dbKey:DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
+  private def fetchNextKey(dbKey: DatabaseEntry, dbValue:DatabaseEntry): OperationStatus = {
+
+    def next(cursor:JoinCursor, key: DatabaseEntry): Boolean = {
+      joinCursor.getNext(dbKey, LockMode.DEFAULT) == OperationStatus.SUCCESS
+    }
+
     if(useIndexes){
-      if (joinCursor.getNext(dbKey, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+
+      if (next(joinCursor, dbKey)){
         OperationStatus.SUCCESS
       }else{
 
-        val rangedKey = new DatabaseEntry()
-        if (rangedCursor != null && rangedCursor.getNext(rangedKey, new DatabaseEntry(), LockMode.DEFAULT) == OperationStatus.SUCCESS){
-          joinCursor.close()
-          joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+        var result = OperationStatus.KEYEMPTY
 
-          joinCursor.getNext(dbKey, LockMode.DEFAULT)
-        }else{
-          OperationStatus.NOTFOUND
+        while (result == OperationStatus.KEYEMPTY){
+          if (moveRangedCursor()){
+
+            joinCursor.close()
+            joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+
+            if (next(joinCursor, dbKey)){
+              result = OperationStatus.SUCCESS
+            }
+          }else{
+            result = OperationStatus.NOTFOUND
+          }
         }
+
+        result
       }
     }else{
+      //Just fetch a key without value
       dbValue.setPartial(0, 0, true)
       cursor.getNext(dbKey, dbValue, LockMode.DEFAULT)
+    }
+  }
+
+  private def moveRangedCursor(): Boolean = {
+    if(hasRangedCursor && rangedCursor.getNext(new DatabaseEntry(), new DatabaseEntry(), LockMode.DEFAULT) == OperationStatus.SUCCESS){
+      true
+    }else{
+      false
     }
   }
 

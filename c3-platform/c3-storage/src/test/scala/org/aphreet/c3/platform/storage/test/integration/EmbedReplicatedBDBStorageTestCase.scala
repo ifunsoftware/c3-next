@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.storage.bdb.impl.ReplicatedBDBStorage
 import collection.mutable
 import org.aphreet.c3.platform.storage.bdb.BDBConfig
 
-class EmbedReplicatedBDBStorageTestCase extends AbstractStorageTestCase {
+abstract class EmbedReplicatedBDBStorageTestCase extends AbstractStorageTestCase {
 
   def createStorage(id:String, params:mutable.HashMap[String, String]):Storage =
     new ReplicatedBDBStorage(

@@ -36,7 +36,7 @@ import org.apache.lucene.store.{RAMDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
-import java.io.StringReader
+import java.io.{Reader, StringReader}
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
@@ -46,12 +46,13 @@ import collection.JavaConversions._
 import org.apache.lucene.document.Document
 import org.aphreet.c3.platform.search.{HandleFieldListMsg, SearchConfigurationManager}
 import scala.util.control.Exception._
+import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 
 
 class RamIndexer(val fileIndexer: Actor,
                  val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
-                 val textExtractor:TextExtractor) extends WatchedActor with Tracer {
+                 var textExtractor:TextExtractor) extends WatchedActor with Tracer {
 
   val log = logOfClass(getClass)
 
@@ -127,8 +128,9 @@ class RamIndexer(val fileIndexer: Actor,
           }else{
             log trace num + ": Writer is empty, flush skipped"
           }
-
         }
+
+        case UpdateTextExtractor(extractor) => textExtractor = extractor
 
         case DestroyMsg => {
 
@@ -150,29 +152,32 @@ class RamIndexer(val fileIndexer: Actor,
   def indexResource(resource: Resource) {
     debug{ num + ": Indexing resource " + resource.address}
 
-    val extractedMeta =
-      if(extractDocumentContent){
-        textExtractor.extract(resource)
-      }else{
-        Map[String, String]()
+    val extractedDocument = if(extractDocumentContent){
+      textExtractor.extract(resource)
+    }else None
+
+    try{
+      val metadata = Map[String, String]() ++ resource.metadata
+      val language = getLanguage(metadata, extractedDocument)
+
+      val resourceHandler = new ResourceHandler(documentBuilderFactory,
+        configurationManager.searchConfiguration, resource, metadata, extractedDocument, language)
+
+      val document = resourceHandler.document
+      val analyzer = resourceHandler.analyzer
+
+      captureDocumentFields(document)
+
+      debug{"Lucene document: " + document.toString}
+
+      writer.addDocument(document, analyzer)
+      writer.commit()
+    }finally{
+      extractedDocument match {
+        case Some(document) => document.dispose()
+        case None =>
       }
-
-    val metadata = Map[String, String]() ++ resource.metadata
-    val language = getLanguage(metadata, extractedMeta)
-
-
-    val resourceHandler = new ResourceHandler(documentBuilderFactory,
-      configurationManager.searchConfiguration, resource, metadata, extractedMeta, language)
-
-    val document = resourceHandler.document
-    val analyzer = resourceHandler.analyzer
-
-    captureDocumentFields(document)
-
-    debug{"Lucene document: " + document.toString}
-
-    writer.addDocument(document, analyzer)
-    writer.commit()
+    }
 
     debug{ "Resource writen to tmp index (" + resource.address + ")"}
   }
@@ -183,19 +188,19 @@ class RamIndexer(val fileIndexer: Actor,
     configurationManager ! HandleFieldListMsg(indexedFieldList)
   }
 
-  def getLanguage(metadata:Map[String, String], extracted:Map[String, String]):String = {
-    var str:String = null
+  def getLanguage(metadata:Map[String, String], extracted: Option[ExtractedDocument]):String = {
 
-    if(extracted.contains(CONTENT))
-      str = extracted.get(CONTENT).get
-    else if(metadata.contains(TITLE)){
-      str = metadata.get(TITLE).get
+    val reader: Option[Reader] = extracted match {
+      case Some(document) => Some(new StringReader(document.content))
+      case None => metadata.get(TITLE) match {
+        case Some(value) => Some(new StringReader(value))
+        case None => None
+      }
     }
 
-    if(str != null){
-      languageGuesser.guessLanguage(new StringReader(str))
-    }else{
-      null
+    reader match {
+      case Some(value) => languageGuesser.guessLanguage(value)
+      case None => null
     }
   }
 
@@ -211,3 +216,4 @@ case class ResourceIndexedMsg(address: String)
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)
 case class FlushIndex(force: Boolean)
+case class UpdateTextExtractor(extractor: TextExtractor)
