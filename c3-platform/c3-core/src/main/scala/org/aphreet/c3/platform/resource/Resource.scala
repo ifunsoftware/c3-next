@@ -185,13 +185,11 @@ class Resource {
       dataOs.writeLong(date.getTime)
     }
 
-
-
     def writeVersions(versions:mutable.Buffer[ResourceVersion], dataOs:DataOutputStream) {
       dataOs.writeInt(0) //version class version, for future
       dataOs.writeInt(versions.size)
 
-      for(version <- versions){
+      for(version <- versions.sortBy(_.date.getTime)){
         dataOs.writeInt(version.revision)
         writeDate(version.date, dataOs)
 
