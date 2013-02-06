@@ -84,6 +84,8 @@ class XStreamFactory{
     xStream.omitField(classOf[ResourceVersion], "data")
     xStream.omitField(classOf[ResourceVersion], "revision")
     xStream.omitField(classOf[ResourceVersion], "persisted")
+    xStream.omitField(classOf[NodeRef], "deleted")
+    xStream.omitField(classOf[NodeRef], "modified")
     xStream
   }
 

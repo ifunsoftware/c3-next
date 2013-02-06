@@ -82,7 +82,7 @@ object Node{
   }
 }
 
-case class NodeRef(name:String, address:String, leaf:Boolean)
+case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, modified: Long)
 
 case class File(override val resource:Resource) extends Node(resource){
 
@@ -149,13 +149,15 @@ case class Directory(override val resource:Resource) extends Node(resource){
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    dataOs.writeShort(0)
+    dataOs.writeShort(1)
     dataOs.writeInt(children.size)
 
     for((name, nodeRef) <- children){
       dataOs.writeUTF(nodeRef.address)
       dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
+      dataOs.writeBoolean(nodeRef.deleted)
+      dataOs.writeLong(nodeRef.modified)
     }
 
     //We just need some entropy to make sure that initial directory content
@@ -170,11 +172,13 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
     if(resource.versions.length > 0){
 
-      val byteIn = new ByteArrayInputStream(resource.versions.last.data.getBytes)
+      val version = resource.versions.last
+
+      val byteIn = new ByteArrayInputStream(version.data.getBytes)
 
       val dataIn = new DataInputStream(byteIn)
 
-      dataIn.readShort
+      val serializationFormat = dataIn.readShort
 
       val count = dataIn.readInt
 
@@ -182,7 +186,17 @@ case class Directory(override val resource:Resource) extends Node(resource){
         val address = dataIn.readUTF
         val leaf = dataIn.readBoolean
         val name = dataIn.readUTF
-        children += (name -> NodeRef(name, address, leaf))
+
+        if(serializationFormat > 0){
+
+          val deleted = dataIn.readBoolean()
+          val modified = dataIn.readLong()
+
+          children += (name -> NodeRef(name, address, leaf, deleted, modified))
+
+        }else{
+          children += (name -> NodeRef(name, address, leaf, deleted = false, modified = version.date.getTime))
+        }
       }
     }
   }
