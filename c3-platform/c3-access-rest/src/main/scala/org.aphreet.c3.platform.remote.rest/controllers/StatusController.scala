@@ -22,12 +22,12 @@ class StatusController extends DataController {
                    @RequestHeader(value = "x-c3-type", required = false) contentType: String) {
     val writer = resp.getWriter
 
-    writer.println("[")
+    writer.println("{")
     val versionLines = versionManager.listC3Modules.map {
-      case (module, version) => module + ": " + version
+      case (module, version) => "\"" + module + "\" : \"" + version + "\""
     }
     writer.println(versionLines.mkString(",\n"))
-    writer.println("]")
+    writer.println("}")
 
     resp.flushBuffer()
   }
