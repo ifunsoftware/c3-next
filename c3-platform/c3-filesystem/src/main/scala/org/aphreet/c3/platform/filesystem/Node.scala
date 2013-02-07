@@ -82,7 +82,13 @@ object Node{
   }
 }
 
-case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, modified: Long)
+case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, modified: Long){
+
+  def delete:NodeRef = NodeRef(name, address, leaf, deleted = true, System.currentTimeMillis())
+
+  def update(newName: String): NodeRef = NodeRef(newName, address, leaf, deleted = false, System.currentTimeMillis())
+
+}
 
 case class File(override val resource:Resource) extends Node(resource){
 
@@ -104,6 +110,8 @@ object File{
 case class Directory(override val resource:Resource) extends Node(resource){
 
   private var children = new TreeMap[String, NodeRef]
+
+  private var persistedVersion: ResourceVersion = _
 
   {
     readData()
@@ -127,7 +135,22 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   def removeChild(name:String) {
 
-    children = children - name
+    children.get(name) match {
+      case Some(nodeRef) => {
+        children += (nodeRef.name -> nodeRef.delete)
+      }
+    }
+
+    updateResource()
+  }
+
+  def updateChild(name: String, newName: String) {
+    children.get(name) match {
+      case Some(nodeRef) => {
+        children += (name -> nodeRef.delete)
+        children += (newName -> nodeRef.update(newName))
+      }
+    }
 
     updateResource()
   }
@@ -142,6 +165,12 @@ case class Directory(override val resource:Resource) extends Node(resource){
     version.data = writeData(children)
     version.persisted = false
     resource.addVersion(version)
+
+    //As this method can be called several times before resource
+    //actually will be stored
+    //make sure, that created version references
+    //pervious persisted version
+    version.basedOnVersion = persistedVersion.date.getTime
   }
 
   private def writeData(children:Map[String, NodeRef]):DataStream = {
@@ -173,6 +202,8 @@ case class Directory(override val resource:Resource) extends Node(resource){
     if(resource.versions.length > 0){
 
       val version = resource.versions.last
+
+      persistedVersion = version
 
       val byteIn = new ByteArrayInputStream(version.data.getBytes)
 

@@ -63,6 +63,11 @@ class ResourceVersion{
    * Flag indicates if resource has been written to storage
    */
   var persisted = false
+
+  /**
+   * Timestamp of the version's precessor
+   */
+  var basedOnVersion = 0L
   
   override def toString:String = {
     val builder = new StringBuilder

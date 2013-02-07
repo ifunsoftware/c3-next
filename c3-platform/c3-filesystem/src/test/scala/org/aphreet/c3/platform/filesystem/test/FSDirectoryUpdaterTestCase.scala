@@ -33,7 +33,7 @@ package org.aphreet.c3.platform.filesystem.test
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.easymock.EasyMock._
-import org.aphreet.c3.platform.filesystem.impl.{FSManagerInternal, FSDirectoryUpdaterImpl}
+import org.aphreet.c3.platform.filesystem.impl.{FSDirectoryUpdaterImpl}
 import org.aphreet.c3.platform.filesystem.{ADD, FSDirectoryTask, NodeRef, ScheduleMsg}
 
 

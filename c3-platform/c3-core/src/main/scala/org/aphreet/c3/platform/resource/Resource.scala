@@ -138,6 +138,9 @@ class Resource {
    * Add new version to the resource
    */
   def addVersion(version:ResourceVersion){
+
+    version.basedOnVersion = versions.last.date.getTime
+
     if(!isVersioned){
       versions.clear()
     }
@@ -186,12 +189,13 @@ class Resource {
     }
 
     def writeVersions(versions:mutable.Buffer[ResourceVersion], dataOs:DataOutputStream) {
-      dataOs.writeInt(0) //version class version, for future
+      dataOs.writeInt(1) //version class version
       dataOs.writeInt(versions.size)
 
       for(version <- versions.sortBy(_.date.getTime)){
         dataOs.writeInt(version.revision)
         writeDate(version.date, dataOs)
+        dataOs.writeLong(version.basedOnVersion)
 
         if (embedData){
           version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
@@ -312,13 +316,21 @@ object Resource {
 
       val result = new ArrayBuffer[ResourceVersion]
 
-      dataIs.readInt //read version
+      val classVersion = dataIs.readInt //read version
+
       val count = dataIs.readInt
 
       for(i <- 1 to count){
         val version = new ResourceVersion
         version.revision = dataIs.readInt
         version.date = new Date(dataIs.readLong)
+
+        if(classVersion == 0){
+          version.basedOnVersion = 0L
+        }else{
+          version.basedOnVersion = dataIs.readLong
+        }
+
         version.systemMetadata = readMap(dataIs, serializeVersion)
         version.persisted = true
 
