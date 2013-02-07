@@ -30,7 +30,7 @@
 package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.common.{Path}
+import org.aphreet.c3.platform.common.Path
 
 trait StorageManager{
 
@@ -65,4 +65,5 @@ trait StorageManager{
 
   def resetStorages()
 
+  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver)
 }

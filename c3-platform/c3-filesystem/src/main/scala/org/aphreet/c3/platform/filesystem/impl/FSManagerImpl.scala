@@ -43,6 +43,7 @@ import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, Resourc
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
+import org.aphreet.c3.platform.storage.StorageManager
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -70,6 +71,9 @@ with WatchedActor {
   @Autowired
   var accessMediator: AccessMediator = _
 
+  @Autowired
+  var storageManager: StorageManager = _
+
   var fsRoots: Map[String, String] = Map()
 
   @PostConstruct
@@ -78,6 +82,8 @@ with WatchedActor {
     log info "Starting Filesystem manager"
 
     accessManager.registerOwner(this)
+
+    //storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
 
     accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
 

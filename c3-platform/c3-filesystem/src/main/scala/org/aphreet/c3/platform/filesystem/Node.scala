@@ -35,6 +35,7 @@ import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArr
 import org.apache.commons.logging.LogFactory
 import collection.immutable.TreeMap
 import java.util.Date
+import scala.collection.mutable
 
 abstract class Node(val resource:Resource){
 
@@ -164,6 +165,10 @@ case class Directory(override val resource:Resource) extends Node(resource){
     children.values.toArray
   }
 
+  def importChildren(newChildren: mutable.Map[String, NodeRef]){
+    children = new TreeMap[String, NodeRef]() ++ newChildren
+    updateResource()
+  }
 
   protected def updateResource() {
     val version = new ResourceVersion

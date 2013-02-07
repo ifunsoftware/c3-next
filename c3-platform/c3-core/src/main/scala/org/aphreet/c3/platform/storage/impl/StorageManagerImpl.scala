@@ -84,6 +84,8 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   lazy val storageLocation = defaultStoragePath
 
+  val conflictResolvers = new mutable.HashMap[String, ConflictResolver]()
+
   @PostConstruct
   def init() {
     log info "Starting StorageManager..."
@@ -266,7 +268,17 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
 
   def conflictResolverFor(resource: Resource) = {
-    new DefaultConflictResolver
+    val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE).getOrElse("")
+    conflictResolvers.get(contentType) match {
+      case Some(resolver) => resolver
+      case None => new DefaultConflictResolver
+    }
+  }
+
+  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver){
+    conflictResolvers.synchronized(
+      conflictResolvers.put(contentType, conflictResolver)
+    )
   }
 
   private def registerStorage(storage: Storage) {
