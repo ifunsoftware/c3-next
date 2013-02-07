@@ -202,18 +202,12 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     database
   }
 
-  override def getSecondaryDatabases(writeFlag : Boolean) : mutable.HashMap[String, SecondaryDatabase] = {
+  override def secondaryDatabases(writeFlag : Boolean) : mutable.HashMap[String, SecondaryDatabase] = {
     secondaryDatabases
   }
 
-  override def getEnvironment: Environment = {
+  override def environment: Environment = {
     env
-  }
-
-  def failuresArePossible(block: => Any) {
-    //Do nothing here
-    //Nothing to do if operation falls
-    block
   }
 
 }

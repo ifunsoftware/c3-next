@@ -123,7 +123,7 @@ class ReplicationTargetWorker(val localSystemId: String,
       val storage = storageManager.storageForResource(resource)
 
       resource.verifyCheckSums()
-      storage.put(resource)
+      storage.update(resource)
 
       val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
@@ -165,27 +165,12 @@ class ReplicationTargetWorker(val localSystemId: String,
 
       fillWithData(resource, host)
 
+      resource.verifyCheckSums()
+      storage.update(resource)
 
-      storage.get(resource.address) match {
-        case Some(r) => {
-          compareUpdatedResource(resource, r)
-          resource.verifyCheckSums()
-          storage.update(resource)
+      statisticsManager ! IncreaseStatisticsMsg("c3.replication.updated", 1)
 
-          statisticsManager ! IncreaseStatisticsMsg("c3.replication.updated", 1)
-
-          accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
-
-        }
-        case None => {
-          resource.verifyCheckSums()
-          storage.put(resource)
-
-          statisticsManager ! IncreaseStatisticsMsg("c3.replication.created", 1)
-
-          accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
-        }
-      }
+      accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
 
       handleDelay(resource)
 
@@ -241,26 +226,6 @@ class ReplicationTargetWorker(val localSystemId: String,
       configurationManager.processSerializedRemoteConfiguration(configuration)
     } else {
       log info "Ignorring configuration due to incorrect message"
-    }
-  }
-
-  private def compareUpdatedResource(incomeResource: Resource, storedResource: Resource) {
-
-    for (i <- 0 to incomeResource.versions.length - 1) {
-
-      val incomeVersion = incomeResource.versions(i)
-
-      if (storedResource.versions.length > i) {
-        val storedVersion = storedResource.versions(i)
-
-        if (storedVersion.date != incomeVersion.date) {
-          incomeVersion.persisted = false
-        }
-
-      } else {
-        incomeVersion.persisted = false
-      }
-
     }
   }
 

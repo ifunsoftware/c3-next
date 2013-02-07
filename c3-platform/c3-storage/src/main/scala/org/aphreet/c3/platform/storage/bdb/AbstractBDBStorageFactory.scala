@@ -86,21 +86,12 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
       log info "Updating storage param " + event.name
 
       for (storage <- createdStorages) {
-        if (storage.isInstanceOf[AbstractSingleInstanceBDBStorage]) {
-          val mode = storage.mode
-          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-          storage.close()
-          storage.asInstanceOf[AbstractSingleInstanceBDBStorage].open(currentConfig)
-          storage.mode = mode
-        } else if (storage.isInstanceOf[AbstractReplicatedBDBStorage]) {
-          val mode = storage.mode
-          storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
-          storage.close()
-          storage.asInstanceOf[AbstractReplicatedBDBStorage].open(currentConfig)
-          storage.mode = mode
-        }
+        val mode = storage.mode
+        storage.mode = new U(Constants.STORAGE_MODE_MAINTAIN)
+        storage.close()
+        storage.asInstanceOf[AbstractSingleInstanceBDBStorage].open(currentConfig)
+        storage.mode = mode
       }
-
     }
 
     event.name match {

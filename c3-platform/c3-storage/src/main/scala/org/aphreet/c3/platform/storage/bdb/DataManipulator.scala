@@ -50,12 +50,6 @@ trait  DataManipulator {
 
   }
 
-  def putData(resource:Resource) {}
-
-  def putData(resource:Resource, tx:Transaction) {
-    putData(resource)
-  }
-
   def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false
   
 }

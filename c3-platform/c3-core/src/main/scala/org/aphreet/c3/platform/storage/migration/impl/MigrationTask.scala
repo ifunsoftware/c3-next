@@ -44,7 +44,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
   
   override def step() {
     val resource = iterator.next
-    target.put(resource)
+    target.update(resource)
   }
   
   override def postComplete() {

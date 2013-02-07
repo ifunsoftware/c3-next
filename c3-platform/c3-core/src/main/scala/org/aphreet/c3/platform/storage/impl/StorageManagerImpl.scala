@@ -124,11 +124,11 @@ class StorageManagerImpl extends StorageManager {
     }
   }
 
-  def storageForResource(resource: Resource): Storage = {
+  def storageForResource(resource: Resource): StorageLike = {
     storageForAddress(ResourceAddress(resource.address))
   }
 
-  def storageForAddress(address: ResourceAddress): Storage = {
+  def storageForAddress(address: ResourceAddress): StorageLike = {
     storageDispatcher.selectStorageForAddress(address) match {
       case Some(params) => storageForId(params.id)
       case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)

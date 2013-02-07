@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.resource.{Resource, DataStream, ResourceVersion}
 import org.aphreet.c3.platform.storage.bdb._
 import scala.Some
 
-trait BDBDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy{
+trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
 
   override def storeData(resource: Resource, tx: Transaction) {
 
@@ -58,20 +58,6 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     }
   }
 
-  override def putData(resource: Resource, tx: Transaction) {
-
-    if (!resource.embedData){
-      for (version <- resource.versions) {
-        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-          case Some(vk) => vk
-          case None => throw new StorageException("Can't find address for data in version")
-        }
-
-        storeVersionData(versionKey, version, tx, allowOverwrite = false)
-      }
-    }
-  }
-
   def loadData(resource: Resource) {
 
     if (!resource.embedData){
@@ -83,7 +69,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
           case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
         }
 
-        version.data = new LazyBDBDataStream(versionKey, getRODatabase)
+        version.data = new LazyBDBDataStream(versionKey, roDatabase)
       }
     }
   }
@@ -94,7 +80,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = getRWDatabase.get(null, key, value, LockMode.DEFAULT)
+    val status = rwDatabase.get(null, key, value, LockMode.DEFAULT)
 
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
@@ -106,9 +92,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
             case Some(address) => new DatabaseEntry(address.getBytes)
             case None => throw new StorageException("No data address in version for resource: " + ra)
           }
-          failuresArePossible{
-            getRWDatabase.delete(tx, dataKey)
-          }
+          rwDatabase.delete(tx, dataKey)
         }
       }
 
@@ -124,17 +108,14 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider with Fail
 
     var status: OperationStatus = null
 
-    failuresArePossible{
+    if (allowOverwrite) {
+      status = rwDatabase.put(tx, dbKey, dbValue)
+    } else {
+      status = rwDatabase.putNoOverwrite(tx, dbKey, dbValue)
+    }
 
-      if (allowOverwrite) {
-        status = getRWDatabase.put(tx, dbKey, dbValue)
-      } else {
-        status = getRWDatabase.putNoOverwrite(tx, dbKey, dbValue)
-      }
-
-      if (status != OperationStatus.SUCCESS) {
-        throw new StorageException("Failed to write version data, operation status is " + status.toString)
-      }
+    if (status != OperationStatus.SUCCESS) {
+      throw new StorageException("Failed to write version data, operation status is " + status.toString)
     }
 
     version.data = DataStream.create(version.data.getBytes)

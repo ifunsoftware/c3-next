@@ -41,9 +41,9 @@ trait StorageManager{
 
   def storageForId(id:String):Storage
 
-  def storageForResource(resource:Resource):Storage
+  def storageForResource(resource:Resource):StorageLike
 
-  def storageForAddress(address:ResourceAddress):Storage
+  def storageForAddress(address:ResourceAddress):StorageLike
 
   def createStorage(storageType:String, storagePath:Option[Path])
   

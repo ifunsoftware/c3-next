@@ -60,18 +60,6 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     }
   }
 
-  override def putData(resource:Resource){
-    if (!resource.embedData){
-      for(version <- resource.versions){
-        val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
-          case Some(name) => name
-          case None => throw new StorageException("Can't find data address for version")
-        }
-        storeVersionData(fileName, version)
-      }
-    }
-  }
-
   def loadData(resource:Resource) {
     if (!resource.embedData){
       for(version <- resource.versions){
@@ -91,7 +79,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = getRWDatabase.get(null, key, value, LockMode.DEFAULT)
+    val status = rwDatabase.get(null, key, value, LockMode.DEFAULT)
 
     if(status == OperationStatus.SUCCESS){
       val resource = Resource.fromByteArray(value.getData)
