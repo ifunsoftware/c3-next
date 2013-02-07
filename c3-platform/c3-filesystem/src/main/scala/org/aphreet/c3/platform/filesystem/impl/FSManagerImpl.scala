@@ -30,20 +30,20 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.filesystem._
-import org.apache.commons.logging.LogFactory
 import annotation.tailrec
-import org.aphreet.c3.platform.statistics.StatisticsManager
-import org.aphreet.c3.platform.task.TaskManager
 import java.lang.IllegalStateException
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
 import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
+import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.filesystem._
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.task.TaskManager
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -66,9 +66,6 @@ with WatchedActor {
   var taskManager: TaskManager = _
 
   @Autowired
-  var directoryUpdater: FSDirectoryUpdater = _
-
-  @Autowired
   var accessMediator: AccessMediator = _
 
   @Autowired
@@ -83,7 +80,7 @@ with WatchedActor {
 
     accessManager.registerOwner(this)
 
-    //storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
+    storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
 
     accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
 
@@ -215,23 +212,20 @@ with WatchedActor {
 
   override def deleteResource(resource: Resource) {
 
-    resource.systemMetadata.get(Node.NODE_FIELD_NAME) match {
-      case None => //it seems that resource is not a part of FS, skipping
-      case Some(name) =>
-        resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match {
-          case Some(parentAddress) => {
-            val parent = accessManager.get(parentAddress)
+    resource.systemMetadata.get(Node.NODE_FIELD_NAME) foreach {
+      name => resource.systemMetadata.get(Node.NODE_FIELD_PARENT).foreach{
+        parentAddress => {
+          val parent = accessManager.get(parentAddress)
 
-            val node = Node.fromResource(parent)
+          val node = Node.fromResource(parent)
 
-            if (node.isDirectory) {
-              val directory = node.asInstanceOf[Directory]
-              directory.removeChild(name)
-              accessManager.update(directory.resource)
-            }
+          if (node.isDirectory) {
+            val directory = node.asInstanceOf[Directory]
+            directory.removeChild(name)
+            accessManager.update(directory.resource)
           }
-          case None =>
         }
+      }
     }
   }
 
