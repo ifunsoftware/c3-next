@@ -36,13 +36,14 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
 import org.aphreet.c3.platform.resource.{ResourceVersion, Resource}
 import org.aphreet.c3.platform.storage.common.AbstractStorage
-import org.aphreet.c3.platform.storage.{StorageParams, StorageIterator}
+import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams, StorageIterator}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
                                   override val systemId:String,
-                                  val config:BDBConfig) extends AbstractStorage(parameters, systemId)
+                                  val config:BDBConfig,
+                                  val conflictResolverProvider: ConflictResolverProvider) extends AbstractStorage(parameters, systemId)
 with DataManipulator
 with DatabaseProvider{
 
@@ -244,9 +245,7 @@ with DatabaseProvider{
         //no conflict
         savedResource.addVersion(resource.versions.last)
       }else{
-        //Conflict resolution goes here
-        //TODO resolve conflict here
-        savedResource.addVersion(resource.versions.last)
+        conflictResolverProvider.conflictResolverFor(resource).resolve(savedResource, resource)
       }
     }
 

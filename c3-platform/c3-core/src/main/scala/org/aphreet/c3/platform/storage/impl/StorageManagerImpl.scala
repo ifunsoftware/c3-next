@@ -51,7 +51,7 @@ import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
 
 @Component("storageManager")
-class StorageManagerImpl extends StorageManager {
+class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   val log = LogFactory.getLog(getClass)
 
@@ -151,7 +151,7 @@ class StorageManagerImpl extends StorageManager {
           RW(Constants.STORAGE_MODE_NONE),
           indexConfigAccessor.load,
           new mutable.HashMap[String, String]),
-          systemId)
+          systemId, this)
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -264,6 +264,11 @@ class StorageManagerImpl extends StorageManager {
     accessMediator ! StoragePurgedMsg('StorageManager)
   }
 
+
+  def conflictResolverFor(resource: Resource) = {
+    new DefaultConflictResolver
+  }
+
   private def registerStorage(storage: Storage) {
     storages.put(storage.id, storage)
 
@@ -312,7 +317,7 @@ class StorageManagerImpl extends StorageManager {
 
       if (param.storageType.equals(factory.name)) {
         log info "Restoring existent storage: " + param.toString
-        registerStorage(factory.createStorage(param, systemId))
+        registerStorage(factory.createStorage(param, systemId, this))
       }
     }
   }

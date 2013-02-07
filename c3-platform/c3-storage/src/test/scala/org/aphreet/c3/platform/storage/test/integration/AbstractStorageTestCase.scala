@@ -17,6 +17,10 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   var storagePath:Path = null
 
+  val conflictResolverProvider: ConflictResolverProvider = new ConflictResolverProvider {
+    def conflictResolverFor(resource: Resource) = new DefaultConflictResolver
+  }
+
   def createStorage(id:String, disableIteratorFunctionFilter:Boolean = false):Storage = {
     val params = new mutable.HashMap[String, String]()
 
@@ -326,6 +330,51 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     }finally storage.close()
   }
+
+  def testUnversionedNonTrivialUpdate() {
+    val storage = createStorage("1002_1")
+
+        try{
+          val resource = createResource(versioned = false)
+
+          val ra = storage.add(resource)
+
+          Thread.sleep(10) //Just to make sure we have another version timestamp
+
+          val readResource1 = storage.get(ra).get
+          readResource1.metadata.put("new_key", "new_value")
+          readResource1.systemMetadata.put("new_md_key", "new_md_value")
+          readResource1.addVersion(createVersion())
+
+          Thread.sleep(10)
+
+          val readResource2 = storage.get(ra).get
+          readResource2.metadata.put("new_key", "new_value3")
+          readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+          readResource2.addVersion(createVersion("This is another data"))
+
+          Thread.sleep(10)
+
+          storage.update(readResource1)
+          storage.update(readResource2)
+
+          val readResource = storage.get(ra) match {
+            case Some(r) => r
+            case None => null
+          }
+
+          assertEquals(1, readResource.versions.size)
+
+          val expectedMeta = resource.metadata ++ readResource2.metadata
+          val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
+
+          assertEquals(expectedMeta, readResource.metadata)
+          assertEquals(expectedSystemMeta, readResource.systemMetadata)
+
+          assertEquals(readResource.versions(0).data.stringValue, "This is another data")
+
+        }finally storage.close()
+    }
 
   def testDelete(){
 

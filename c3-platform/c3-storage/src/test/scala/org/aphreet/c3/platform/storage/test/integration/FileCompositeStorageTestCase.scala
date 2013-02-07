@@ -11,5 +11,5 @@ class FileCompositeStorageTestCase extends AbstractStorageTestCase{
         new CompositeStorage(
           new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
           "FCOS" + id,
-          new BDBConfig(true, 20, 0, 0))
+          new BDBConfig(true, 20, 0, 0), conflictResolverProvider)
 }

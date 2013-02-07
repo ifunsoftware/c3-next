@@ -32,13 +32,15 @@ package org.aphreet.c3.platform.storage.bdb
 import java.io.File
 import com.sleepycat.je._
 import org.aphreet.c3.platform.common.Constants
-import org.aphreet.c3.platform.storage.{U, StorageIndex, StorageParams}
+import org.aphreet.c3.platform.storage.{ConflictResolverProvider, U, StorageIndex, StorageParams}
 import java.util.concurrent.TimeUnit
 import collection.mutable
 
 abstract class AbstractSingleInstanceBDBStorage (override val parameters: StorageParams,
                      override val systemId:String,
-                     override val config: BDBConfig) extends AbstractBDBStorage(parameters, systemId, config) {
+                     override val config: BDBConfig,
+                     override val conflictResolverProvider: ConflictResolverProvider)
+  extends AbstractBDBStorage(parameters, systemId, config, conflictResolverProvider) {
 
   protected var env : Environment = null
 
