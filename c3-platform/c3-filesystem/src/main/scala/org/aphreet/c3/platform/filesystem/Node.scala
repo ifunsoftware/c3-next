@@ -34,6 +34,7 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
 import collection.immutable.TreeMap
+import java.util.Date
 
 abstract class Node(val resource:Resource){
 
@@ -84,9 +85,9 @@ object Node{
 
 case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, modified: Long){
 
-  def delete:NodeRef = NodeRef(name, address, leaf, deleted = true, System.currentTimeMillis())
+  def delete(timestamp: Long) :NodeRef = NodeRef(name, address, leaf, deleted = true, timestamp)
 
-  def update(newName: String): NodeRef = NodeRef(newName, address, leaf, deleted = false, System.currentTimeMillis())
+  def update(newName: String, timestamp: Long): NodeRef = NodeRef(newName, address, leaf, deleted = false, timestamp)
 
 }
 
@@ -111,7 +112,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   private var children = new TreeMap[String, NodeRef]
 
-  private var persistedVersion: ResourceVersion = _
+  private var persistedVersionTimestamp = 0L
+
+  private var updateTimestamp = -1L
 
   {
     readData()
@@ -126,9 +129,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
     children.get(name)
   }
 
-  def addChild(node:NodeRef) {
+  def addChild(name: String, address: String, leaf: Boolean) {
 
-    children += (node.name -> node)
+    children += (name -> NodeRef(name, address, leaf, deleted = false, modified = takeUpdateTimestamp()))
 
     updateResource()
   }
@@ -137,8 +140,9 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
     children.get(name) match {
       case Some(nodeRef) => {
-        children += (nodeRef.name -> nodeRef.delete)
+        children += (nodeRef.name -> nodeRef.delete(takeUpdateTimestamp()))
       }
+      case None =>
     }
 
     updateResource()
@@ -147,9 +151,10 @@ case class Directory(override val resource:Resource) extends Node(resource){
   def updateChild(name: String, newName: String) {
     children.get(name) match {
       case Some(nodeRef) => {
-        children += (name -> nodeRef.delete)
-        children += (newName -> nodeRef.update(newName))
+        children += (name -> nodeRef.delete(takeUpdateTimestamp()))
+        children += (newName -> nodeRef.update(newName, takeUpdateTimestamp()))
       }
+      case None =>
     }
 
     updateResource()
@@ -165,12 +170,21 @@ case class Directory(override val resource:Resource) extends Node(resource){
     version.data = writeData(children)
     version.persisted = false
     resource.addVersion(version)
+    version.date = new Date(takeUpdateTimestamp())
 
     //As this method can be called several times before resource
     //actually will be stored
     //make sure, that created version references
     //pervious persisted version
-    version.basedOnVersion = persistedVersion.date.getTime
+    version.basedOnVersion = persistedVersionTimestamp
+  }
+
+  protected def takeUpdateTimestamp(): Long = {
+    if(updateTimestamp == -1L){
+      updateTimestamp = System.currentTimeMillis()
+    }
+
+    updateTimestamp
   }
 
   private def writeData(children:Map[String, NodeRef]):DataStream = {
@@ -203,7 +217,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
       val version = resource.versions.last
 
-      persistedVersion = version
+      persistedVersionTimestamp = version.date.getTime
 
       val byteIn = new ByteArrayInputStream(version.data.getBytes)
 

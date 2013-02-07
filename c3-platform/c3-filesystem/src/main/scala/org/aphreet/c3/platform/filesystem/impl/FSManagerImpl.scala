@@ -161,7 +161,7 @@ with WatchedActor {
       oldDir.removeChild(oldPathAndName._2)
       accessManager.update(oldDir.resource)
 
-      newDir.addChild(NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf, deleted = false, modified = System.currentTimeMillis()))
+      newDir.addChild(newPathAndName._2, nodeAddress, nodeRef.leaf)
       accessManager.update(newDir.resource)
     }
   }
@@ -175,7 +175,7 @@ with WatchedActor {
 
         if (nodeType == Node.NODE_TYPE_DIR) {
           val directory = Directory(resource)
-          if (directory.getChildren.isEmpty) {
+          if (directory.getChildren.filter(!_.deleted).isEmpty) {
             canDelete = fsRoots.values.forall(_ != resource.address)
           } else {
             canDelete = false
@@ -335,7 +335,7 @@ with WatchedActor {
     newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
     val newAddress = accessManager.add(newNode.resource)
 
-    directory.addChild(NodeRef(name, newAddress, !newNode.isDirectory, false, System.currentTimeMillis()))
+    directory.addChild(name, newAddress, !newNode.isDirectory)
 
     accessManager.update(directory.resource)
   }

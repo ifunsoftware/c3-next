@@ -139,7 +139,11 @@ class Resource {
    */
   def addVersion(version:ResourceVersion){
 
-    version.basedOnVersion = versions.last.date.getTime
+    if(versions.size > 0){
+      version.basedOnVersion = versions.last.date.getTime
+    }else{
+      version.basedOnVersion = 0L
+    }
 
     if(!isVersioned){
       versions.clear()
