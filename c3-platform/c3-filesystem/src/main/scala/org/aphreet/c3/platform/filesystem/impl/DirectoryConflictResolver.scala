@@ -17,7 +17,20 @@ class DirectoryConflictResolver extends ConflictResolver{
     addAllNodes(resultNodes, savedDirectory)
     addAllNodes(resultNodes, incomeDirectory)
 
+    filterUpdatedDeletedNodes(resultNodes)
+
     savedDirectory.importChildren(resultNodes)
+  }
+
+  private def filterUpdatedDeletedNodes(resultNodes: mutable.HashMap[String, NodeRef]){
+
+    val deletedAddresses = resultNodes.filter(kv => kv._2.deleted == true).map(kv => kv._2.address).toSet
+
+    val deletedNodes = resultNodes.filter(kv => deletedAddresses.contains(kv._2.address))
+
+    for ((name, ref) <- deletedNodes){
+      resultNodes.put(name, NodeRef(name, ref.address, ref.leaf, deleted = true, ref.modified))
+    }
   }
 
   private def addAllNodes(resultNodes: mutable.HashMap[String, NodeRef], directory: Directory){
