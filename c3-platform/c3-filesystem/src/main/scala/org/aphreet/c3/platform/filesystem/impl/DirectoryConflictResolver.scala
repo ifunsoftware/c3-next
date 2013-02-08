@@ -24,8 +24,22 @@ class DirectoryConflictResolver extends ConflictResolver{
     for(node <- directory.getChildren){
       resultNodes.get(node.name) match {
         case Some(nodeRef) => {
-          if (node.modified > nodeRef.modified){
-            resultNodes.put(node.name, node)
+
+          if (!nodeRef.deleted){
+            if (node.deleted){
+              resultNodes.put(node.name, node)
+            }else{
+              if (node.address == nodeRef.address){
+                if (node.modified > nodeRef.modified){
+                  resultNodes.put(node.name, node)
+                }
+              }else{
+                //We have two files or directories with the same name but with different content
+                resultNodes.remove(node.name)
+                resultNodes.put(node.name + "-" + node.modified, NodeRef(node.name + "-" + node.modified, node.address, node.leaf, false, node.modified))
+                resultNodes.put(nodeRef.name + "-" + nodeRef.modified, NodeRef(nodeRef.name + "-" + nodeRef.modified, nodeRef.address, nodeRef.leaf, false, nodeRef.modified))
+              }
+            }
           }
         }
         case None => resultNodes.put(node.name, node)
