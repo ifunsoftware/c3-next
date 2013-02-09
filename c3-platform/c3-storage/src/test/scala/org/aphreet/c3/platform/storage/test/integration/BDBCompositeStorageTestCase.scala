@@ -12,5 +12,5 @@ class BDBCompositeStorageTestCase extends AbstractStorageTestCase{
       new CompositeStorage(
         new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
         "BDCS" + id,
-        new BDBConfig(true, 20, 0, 102400))
+        new BDBConfig(true, 20, 0, 102400), conflictResolverProvider)
 }

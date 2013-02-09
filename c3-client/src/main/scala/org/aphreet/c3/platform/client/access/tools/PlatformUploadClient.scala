@@ -10,7 +10,6 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
 
   def cliDescription = parameters(
     HOST_ARG,
-    POOL_ARG,
     OUT_ARG,
     FILE_ARG,
     USER_ARG,
@@ -31,10 +30,10 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     }
 
 
-    upload(HOST_ARG, USER_ARG, KEY_ARG, POOL_ARG, file, OUT_ARG)
+    upload(HOST_ARG, USER_ARG, KEY_ARG, file, OUT_ARG)
   }
 
-  def upload(host:String, user:String, key:String, pool:String, path:File, out:String){
+  def upload(host:String, user:String, key:String, path:File, out:String){
 
     var fos:OutputStream = null
 
@@ -62,7 +61,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     }
 
     for(file <- fileList){
-      val ra = uploadFile(client, file, pool)
+      val ra = uploadFile(client, file)
       if(fos != null) fos.write((ra + "\n").getBytes)
     }
 
@@ -71,12 +70,12 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
     println("Upload complete")
   }
 
-  def uploadFile(client:C3HttpAccessor, path:File, pool:String):String = {
+  def uploadFile(client:C3HttpAccessor, path:File):String = {
 
     print("Uploading " + path.getName + "...")
 
 
-    val metadata:Map[String, String] = Map("pool" -> pool, "origname" -> path.getName)
+    val metadata:Map[String, String] = Map("origname" -> path.getName)
     try{
       val ra = client.upload(path, metadata)
       println("Done")

@@ -52,6 +52,8 @@ class StorageManagerTestCase extends TestCase{
 
   def testRegisterFactory() {
 
+    val storageManager = new StorageManagerImpl
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
 
 
@@ -67,7 +69,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234")
+      storageParams, "12341234", storageManager)
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -83,7 +85,7 @@ class StorageManagerTestCase extends TestCase{
     ).atLeastOnce
     replay(configManager)
 
-    val storageManager = new StorageManagerImpl
+
 
     storageManager.configAccessor = configAccessor
     storageManager.volumeManager = volumeManager
@@ -106,6 +108,8 @@ class StorageManagerTestCase extends TestCase{
 
   def testUpdateStorageMode() {
 
+    val storageManager = new StorageManagerImpl
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
     val updatedParams = StorageParams(storageId, new Path(storagePath), storageName, RO("USER"), List(), new mutable.HashMap[String, String])
 
@@ -122,7 +126,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234")
+      storageParams, "12341234", storageManager)
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -143,7 +147,6 @@ class StorageManagerTestCase extends TestCase{
     ).atLeastOnce
     replay(configManager)
 
-    val storageManager = new StorageManagerImpl
 
     storageManager.configAccessor = configAccessor
     storageManager.volumeManager = volumeManager

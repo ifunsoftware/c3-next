@@ -1,18 +1,19 @@
-/**
- * Copyright (c) 2011, Mikhail Malygin
+import org.aphreet.c3.platform.client.access.tools.ConcurrentDirectoryChangeTest
+
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -28,41 +29,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.filesystem.test
 
-import junit.framework.TestCase
-import junit.framework.Assert._
-import org.easymock.EasyMock._
-import org.aphreet.c3.platform.filesystem.impl.{FSManagerInternal, FSDirectoryUpdaterImpl}
-import org.aphreet.c3.platform.filesystem.{ADD, FSDirectoryTask, NodeRef, ScheduleMsg}
+object DirectoryTest {
 
-
-class FSDirectoryUpdaterTestCase extends TestCase{
-
-  def testDirectoryUpdate() {
-
-    val fsManager = createMock(classOf[FSManagerInternal])
-
-    expect(fsManager.executeDirectoryTasks("address", List(FSDirectoryTask(ADD, NodeRef("name1", "child-address", true)))))
-    expect(fsManager.executeDirectoryTasks("address", List(FSDirectoryTask(ADD, NodeRef("name2", "child-address", true)))))
-
-
-    replay(fsManager)
-
-    val directoryUpdater = new FSDirectoryUpdaterImpl
-
-    directoryUpdater.fsManager = fsManager
-
-    directoryUpdater.init()
-
-    directoryUpdater ! ScheduleMsg("address", FSDirectoryTask(ADD, NodeRef("name1", "child-address", true)))
-    directoryUpdater ! ScheduleMsg("address", FSDirectoryTask(ADD, NodeRef("name2", "child-address", true)))
-
-    Thread.sleep(5000)
-
-    directoryUpdater.destroy()
-
-    verify(fsManager)
-
+  def main(args: Array[String]){
+    new ConcurrentDirectoryChangeTest(args).run()
   }
 }

@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory
 /**
  * Base class for all storages
  */
-abstract class Storage extends CloseableIterable[Resource]{
+abstract class Storage extends StorageLike with CloseableIterable[Resource]{
 
   val log = LogFactory.getLog(getClass)
 
@@ -54,48 +54,8 @@ abstract class Storage extends CloseableIterable[Resource]{
 
   /**
    * Primary id of this storage
-   * All resources added to this storage will have this as suffix in resource address
    */
   def id:String
-
-  /**
-   * Add resource to storage and return address of this resource
-   */
-  def add(resource:Resource):String
-
-  /**
-   * Get resource from this storage
-   * If resource is not found throws ResourceNotFoundException
-   */
-  def get(ra:String):Option[Resource]
-
-  /**
-   * Update resource that already exists in this storage
-   * If there is no such resource throws ResourceNotFoundException
-   * returns new address of this resource (it may change)
-   * Must perform write lock while update is running
-   */
-  def update(resource:Resource):String
-
-  /**
-   * Delete resource from storage.
-   * If resource with specified address is not exists in storage
-   * throws ResourceNotFoundException
-   */
-  def delete(ra:String)
-
-  /**
-   * Just put resource to storage without generating new resource address
-   * Resource must already have resource address
-   * This method ignores persisted flag in ResourceVersion
-   */
-  def put(resource:Resource)
-
-  /**
-   * Append specified map to system metadata of the specified resource
-   * Must perform write lock while update is running
-   */
-  def appendSystemMetadata(ra:String, metadata:Map[String, String])
 
   /**
    * Create new index with specified parameters

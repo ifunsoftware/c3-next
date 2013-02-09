@@ -14,6 +14,8 @@
 
     <reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 
+    <reference id="storageService" interface="org.aphreet.c3.platform.storage.StorageManager"/>
+
     <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
     <reference id="taskService" interface="org.aphreet.c3.platform.task.TaskManager"/>

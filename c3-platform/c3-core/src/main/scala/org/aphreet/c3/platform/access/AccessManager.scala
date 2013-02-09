@@ -5,7 +5,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -33,21 +33,21 @@ import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.WatchedActor
 
 
-trait AccessManager extends WatchedActor{
+trait AccessManager extends WatchedActor {
 
-  def get(ra:String):Resource
+  def get(ra: String): Resource
 
-  def getOption(ra:String):Option[Resource]
+  def getOption(ra: String): Option[Resource]
 
-  def add(resource:Resource):String
+  def add(resource: Resource): String
 
-  def update(resource:Resource):String
+  def update(resource: Resource): String
 
-  def delete(ra:String)
+  def delete(ra: String)
 
-  def registerOwner(owner:ResourceOwner)
+  def registerOwner(owner: ResourceOwner)
 
-  def unregisterOwner(owner:ResourceOwner)
+  def unregisterOwner(owner: ResourceOwner)
 }
 
-case class UpdateMetadataMsg(address:String, metadata:Map[String,String])
+case class UpdateMetadataMsg(address: String, metadata: Map[String, String])
