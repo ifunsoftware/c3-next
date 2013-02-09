@@ -29,26 +29,24 @@
  */
 package org.aphreet.c3.platform.storage.impl
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.storage._
-
-import dispatcher.StorageDispatcher
-
-import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
-import org.aphreet.c3.platform.storage.volume.VolumeManager
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
+import collection.mutable
 import java.io.IOException
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
-import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
-import collection.mutable
-import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
-import java.nio.file.attribute.BasicFileAttributes
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.storage._
+import dispatcher.StorageDispatcher
+import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
 
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager with ConflictResolverProvider {

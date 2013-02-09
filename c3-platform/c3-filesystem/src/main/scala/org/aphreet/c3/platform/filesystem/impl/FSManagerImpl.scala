@@ -78,6 +78,8 @@ with WatchedActor {
 
     log info "Starting Filesystem manager"
 
+    start()
+
     accessManager.registerOwner(this)
 
     storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
@@ -101,7 +103,7 @@ with WatchedActor {
   def act() {
     loop {
       react {
-        case StoragePurgedMsg => this.resetFileSystemRoots()
+        case StoragePurgedMsg(source) => this.resetFileSystemRoots()
         case DestroyMsg => this.exit()
         case _ =>
       }

@@ -1,5 +1,7 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+import org.aphreet.c3.platform.client.access.tools.ConcurrentDirectoryChangeTest
+
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -27,31 +29,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.bdb
 
-import org.aphreet.c3.platform.resource.Resource
-import com.sleepycat.je.Transaction
+object DirectoryTest {
 
-trait  DataManipulator {
-
-  def loadData(resource:Resource)
-
-  def loadDataForUpdate(resource:Resource, tx:Transaction)
-
-  def storeData(resource:Resource, tx:Transaction) {
-    storeData(resource)
+  def main(args: Array[String]){
+    new ConcurrentDirectoryChangeTest(args).run()
   }
-
-  def storeData(resource:Resource) {}
-
-  def deleteData(ra:String, tx:Transaction) {
-    deleteData(ra)
-  }
-
-  def deleteData(ra:String) {
-
-  }
-
-  def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false
-  
 }

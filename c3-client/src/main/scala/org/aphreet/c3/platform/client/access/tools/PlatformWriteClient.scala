@@ -41,21 +41,16 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
 
   def cliDescription = parameters(
     HOST_ARG,
-    POOL_ARG,
     USER_ARG,
     KEY_ARG,
     SIZE_ARG,
     COUNT_ARG,
     THREADS_ARG,
-    TYPE_ARG,
     OUT_ARG,
     HELP_ARG
     )
 
   def run() {
-    val objectType:String = TYPE_ARG
-    val pool:String = POOL_ARG
-
     //    println(pool.getBytes.toString)
     //    println(pool.getBytes("UTF-8").toString)
     //    pool = new String(pool.getBytes("UTF-8"))
@@ -67,7 +62,7 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
     //pool = new String(pool.getBytes, "UTF-8")
 
 
-    writeObjects(HOST_ARG, USER_ARG, KEY_ARG, COUNT_ARG, SIZE_ARG, THREADS_ARG, Map("c3.pool" -> pool, "content.type" -> objectType), OUT_ARG)
+    writeObjects(HOST_ARG, USER_ARG, KEY_ARG, COUNT_ARG, SIZE_ARG, THREADS_ARG, Map(), OUT_ARG)
   }
 
   def writeObjects(host: String, user:String, key:String, count: Int, size: Int, threads: Int, metadata: Map[String, String], file: String) {

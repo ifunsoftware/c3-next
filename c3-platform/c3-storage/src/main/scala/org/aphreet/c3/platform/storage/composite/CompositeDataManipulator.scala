@@ -33,6 +33,11 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
   }
 
   override
+  def loadDataForUpdate(resource: Resource, tx: Transaction){
+    selectDataManipulator(resource).loadDataForUpdate(resource, tx)
+  }
+
+  override
   def storeData(resource:Resource, tx:Transaction) {
     selectDataManipulator(resource).storeData(resource, tx)
   }

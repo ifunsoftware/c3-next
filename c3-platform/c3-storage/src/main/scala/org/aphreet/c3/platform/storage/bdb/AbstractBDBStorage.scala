@@ -63,6 +63,7 @@ with DatabaseProvider{
   override protected def updateObjectCount() {
     log trace "Updating object count"
     val cnt = rwDatabase.count
+
     this.synchronized{
       objectCount = cnt
     }
@@ -242,11 +243,13 @@ with DatabaseProvider{
     }else{
 
       if (resource.versions.last.basedOnVersion == savedResource.versions.last.date.getTime){
-        //no conflict
         savedResource.addVersion(resource.versions.last)
       }else{
+        loadDataForUpdate(savedResource, tx)
         conflictResolverProvider.conflictResolverFor(resource).resolve(savedResource, resource)
       }
+
+      savedResource.versions.last.persisted = false
     }
 
     savedResource.embedData = canEmbedData(resource, config)

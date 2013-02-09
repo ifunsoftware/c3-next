@@ -34,7 +34,7 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
 import collection.immutable.TreeMap
-import java.util.Date
+import java.util.{UUID, Date}
 import scala.collection.mutable
 
 abstract class Node(val resource:Resource){
@@ -116,6 +116,8 @@ case class Directory(override val resource:Resource) extends Node(resource){
   private var persistedVersionTimestamp = 0L
 
   private var updateTimestamp = -1L
+
+  private var randomUUID: UUID = null
 
   {
     readData()
@@ -213,6 +215,11 @@ case class Directory(override val resource:Resource) extends Node(resource){
     //and as a result storage is not the same
     dataOs.writeLong(resource.createDate.getTime)
 
+    if(randomUUID != null){
+      dataOs.writeLong(randomUUID.getLeastSignificantBits)
+      dataOs.writeLong(randomUUID.getMostSignificantBits)
+    }
+
     DataStream.create(byteOs.toByteArray)
   }
 
@@ -270,6 +277,8 @@ object Directory{
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
 
     val directory = Directory(resource)
+
+    directory.randomUUID = UUID.randomUUID()
 
     directory.updateResource()
 

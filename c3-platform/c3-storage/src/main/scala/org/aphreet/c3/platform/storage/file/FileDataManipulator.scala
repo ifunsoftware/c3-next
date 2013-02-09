@@ -29,7 +29,7 @@
  */
 package org.aphreet.c3.platform.storage.file
 
-import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry}
+import com.sleepycat.je.{Transaction, OperationStatus, LockMode, DatabaseEntry}
 import java.io.{IOException, File}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataStream}
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
@@ -58,6 +58,10 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
         }
       }
     }
+  }
+
+  def loadDataForUpdate(resource: Resource, tx: Transaction){
+    loadData(resource)
   }
 
   def loadData(resource:Resource) {

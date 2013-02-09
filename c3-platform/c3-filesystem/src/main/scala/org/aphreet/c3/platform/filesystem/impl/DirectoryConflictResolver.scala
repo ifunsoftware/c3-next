@@ -4,6 +4,7 @@ import org.aphreet.c3.platform.storage.ConflictResolver
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.filesystem.{NodeRef, Node, Directory}
 import scala.collection.mutable
+import org.apache.commons.logging.LogFactory
 
 class DirectoryConflictResolver extends ConflictResolver{
 
@@ -26,10 +27,12 @@ class DirectoryConflictResolver extends ConflictResolver{
 
     val deletedAddresses = resultNodes.filter(kv => kv._2.deleted == true).map(kv => kv._2.address).toSet
 
-    val deletedNodes = resultNodes.filter(kv => deletedAddresses.contains(kv._2.address))
+    if(!deletedAddresses.isEmpty){
+      val deletedNodes = resultNodes.filter(kv => deletedAddresses.contains(kv._2.address))
 
-    for ((name, ref) <- deletedNodes){
-      resultNodes.put(name, NodeRef(name, ref.address, ref.leaf, deleted = true, ref.modified))
+      for ((name, ref) <- deletedNodes){
+        resultNodes.put(name, NodeRef(name, ref.address, ref.leaf, deleted = true, ref.modified))
+      }
     }
   }
 

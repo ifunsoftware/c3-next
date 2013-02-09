@@ -41,9 +41,9 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.apache.commons.logging.LogFactory
-import javax.annotation.PreDestroy
+import javax.annotation.{PostConstruct, PreDestroy}
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.config.{PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
+import org.aphreet.c3.platform.config.{RegisterMsg, PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
 import eu.medsea.util.EncodingGuesser
 import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
 import org.aphreet.c3.platform.common.Constants
@@ -54,6 +54,7 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageS
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
+  private val USE_ACCESS_CACHE = "c3.platform.cache.enabled"
 
   @Autowired
   var storageManager:StorageManager = _
@@ -74,14 +75,19 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   val resourceOwners = new mutable.HashSet[ResourceOwner]
 
+  private var useAccessCache = false
+
   lazy val systemId = getSystemId
 
-  {
+  @PostConstruct
+  def init(){
     log info "Starting AccessManager"
 
     configureDefaultMimeDetector()
 
     start()
+
+    configManager ! RegisterMsg(this)
   }
 
   @PreDestroy
@@ -106,9 +112,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       log.debug("Getting resource with address: " + ra)
     }
 
-    accessCache.get(ra) match{
-      case Some(resource) => return resource
-      case None =>
+    if(useAccessCache){
+      accessCache.get(ra) match{
+        case Some(resource) => return resource
+        case None =>
+      }
     }
 
     try{
@@ -121,7 +129,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
       storage.get(ra) match {
         case Some(r) => {
-          accessCache.put(r)
+          if(useAccessCache){
+            accessCache.put(r)
+          }
           r
         }
         case None => throw new ResourceNotFoundException(ra)
@@ -308,17 +318,34 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
   def propertyChanged(event:PropertyChangeEvent) {
 
-    log info "Received new value for mime detector: " + event.newValue
+    event.name match {
+      case MIME_DETECTOR_CLASS => {
+        log info "Received new value for mime detector: " + event.newValue
 
-    if(event.oldValue != null){
-      MimeUtil unregisterMimeDetector event.oldValue
+        if(event.oldValue != null){
+          MimeUtil unregisterMimeDetector event.oldValue
+        }
+
+        MimeUtil registerMimeDetector event.newValue
+      }
+      case USE_ACCESS_CACHE => {
+        useAccessCache = event.newValue.toBoolean
+        if(useAccessCache){
+          log.info("Access cache in enabled")
+        }else{
+          log.info("Access cache is disabled")
+        }
+      }
     }
 
-    MimeUtil registerMimeDetector event.newValue
+
   }
 
   def defaultValues:Map[String,String] =
-    Map(MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
+    Map(
+      MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.MagicMimeMimeDetector",
+      USE_ACCESS_CACHE -> "true"
+    )
 
   def configureDefaultMimeDetector() {
 
@@ -335,9 +362,9 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   private def getSystemId:String = {
-      configManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
-        case Some(value) => value
-        case None => throw new ConfigurationException("Failed to get systemId from params")
-      }
+    configManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
+      case Some(value) => value
+      case None => throw new ConfigurationException("Failed to get systemId from params")
     }
+  }
 }

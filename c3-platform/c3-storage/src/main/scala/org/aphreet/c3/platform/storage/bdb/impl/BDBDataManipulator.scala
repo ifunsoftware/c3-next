@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.storage.bdb.impl
 
 import com.sleepycat.je._
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
-import org.aphreet.c3.platform.resource.{Resource, DataStream, ResourceVersion}
+import org.aphreet.c3.platform.resource.{BytesDataStream, Resource, DataStream, ResourceVersion}
 import org.aphreet.c3.platform.storage.bdb._
 import scala.Some
 
@@ -74,6 +74,28 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
     }
   }
 
+
+  def loadDataForUpdate(resource: Resource, tx: Transaction) {
+    if (!resource.embedData){
+
+      for (version <- resource.versions) {
+
+        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          case Some(value: String) => value
+          case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
+        }
+
+        val key = new DatabaseEntry(versionKey.getBytes("UTF-8"))
+        val value = new DatabaseEntry()
+
+        if(getDatabase(true).get(tx, key, value, LockMode.RMW) == OperationStatus.SUCCESS){
+          version.data = new BytesDataStream(value.getData)
+        }else{
+          throw new StorageException("Can't load data for update")
+        }
+      }
+    }
+  }
 
   override def deleteData(ra: String, tx: Transaction) {
 
