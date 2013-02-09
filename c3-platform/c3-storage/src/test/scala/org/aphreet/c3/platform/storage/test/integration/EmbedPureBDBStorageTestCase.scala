@@ -11,5 +11,5 @@ class EmbedPureBDBStorageTestCase extends AbstractStorageTestCase{
     new PureBDBStorage(
       new StorageParams(id, storagePath, "PureBDBStorage", RW(""), List(), params),
       "EPBS" + id,
-      new BDBConfig(true, 20, 5120, 102400))
+      new BDBConfig(true, 20, 5120, 102400), conflictResolverProvider)
 }

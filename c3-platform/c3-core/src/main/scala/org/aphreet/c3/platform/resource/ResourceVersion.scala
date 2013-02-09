@@ -63,6 +63,11 @@ class ResourceVersion{
    * Flag indicates if resource has been written to storage
    */
   var persisted = false
+
+  /**
+   * Timestamp of the version's precessor
+   */
+  var basedOnVersion = 0L
   
   override def toString:String = {
     val builder = new StringBuilder
@@ -97,6 +102,7 @@ class ResourceVersion{
     version.persisted = this.persisted
     version.date = if(this.date != null) this.date.clone.asInstanceOf[Date] else null
 
+    version.basedOnVersion = this.basedOnVersion
     version.revision = this.revision
     version.systemMetadata = this.systemMetadata.clone()
     version.data = if(this.data != null) this.data.copy else null

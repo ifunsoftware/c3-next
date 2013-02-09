@@ -11,5 +11,5 @@ class EmbedFileBDBStorageTest  extends AbstractStorageTestCase{
     new FileBDBStorage(
       new StorageParams(id, storagePath, "FileBDBStorage", RW(""), List(), params),
       "EFBS" + id,
-      new BDBConfig(true, 20, 5120, 102400))
+      new BDBConfig(true, 20, 5120, 102400), conflictResolverProvider)
 }

@@ -17,6 +17,10 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   var storagePath:Path = null
 
+  val conflictResolverProvider: ConflictResolverProvider = new ConflictResolverProvider {
+    def conflictResolverFor(resource: Resource) = new DefaultConflictResolver
+  }
+
   def createStorage(id:String, disableIteratorFunctionFilter:Boolean = false):Storage = {
     val params = new mutable.HashMap[String, String]()
 
@@ -128,11 +132,12 @@ abstract class AbstractStorageTestCase extends TestCase{
       resource.isVersioned = true
 
       val ra = storage.add(resource)
+
       //Thread.sleep(1000) //TODO Please, remove this!
 
       resource.metadata.put("new_key", "new_value")
       resource.systemMetadata.put("new_md_key", "new_md_value")
-      resource.addVersion(createVersion)
+      resource.addVersion(createVersion())
 
       assertEquals("Resource must contain 2 versions", 2, resource.versions.size)
 
@@ -149,6 +154,156 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   }
 
+  def testVersionedNonTrivialUpdate() {
+    val storage = createStorage("1001_1")
+
+    try{
+
+      val resource = createResource(versioned = true)
+      resource.isVersioned = true
+
+      val ra = storage.add(resource)
+
+      Thread.sleep(10) //Just to make sure we have another version timestamp
+
+      resource.metadata.put("new_key", "new_value")
+      resource.systemMetadata.put("new_md_key", "new_md_value")
+      resource.addVersion(createVersion())
+
+      resource.versions.foreach(_.persisted = false)
+
+      assertEquals("Resource must contain 2 versions", 2, resource.versions.size)
+
+      storage.update(resource)
+
+      val readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      compareResources(resource, readResource, comparePersistedFlag = false)
+
+    }finally storage.close()
+
+  }
+
+  def testVersionedNonTrivialUpdate2() {
+    val storage = createStorage("1001_2")
+
+    try{
+
+      val resource = createResource(versioned = true)
+      resource.isVersioned = true
+
+      val ra = storage.add(resource)
+
+      Thread.sleep(10) //Just to make sure we have another version timestamp
+
+      val readResource1 = storage.get(ra).get
+      readResource1.metadata.put("new_key", "new_value")
+      readResource1.systemMetadata.put("new_md_key", "new_md_value")
+      readResource1.addVersion(createVersion())
+
+      Thread.sleep(10)
+
+      val readResource2 = storage.get(ra).get
+      readResource2.metadata.put("new_key", "new_value3")
+      readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+      readResource2.addVersion(createVersion("This is another data"))
+
+      Thread.sleep(10)
+
+      storage.update(readResource1)
+      storage.update(readResource2)
+
+
+
+      val readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      assertEquals(3, readResource.versions.size)
+
+      val expectedMeta = resource.metadata ++ readResource2.metadata
+      val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
+
+      assertEquals(expectedMeta, readResource.metadata)
+      assertEquals(expectedSystemMeta, readResource.systemMetadata)
+
+      assertEquals(readResource.versions(0).data.stringValue, "This is data ")
+      assertEquals(readResource.versions(1).data.stringValue, "This is new data")
+      assertEquals(readResource.versions(2).data.stringValue, "This is another data")
+
+    }finally storage.close()
+
+  }
+
+
+  def testVersionedNonTrivialUpdate3() {
+    val storage = createStorage("1001_3")
+
+    try{
+
+      val resource = createResource(versioned = true)
+      resource.isVersioned = true
+
+      resource.calculateCheckSums
+
+      val ra = storage.add(resource)
+
+      Thread.sleep(10) //Just to make sure we have another version timestamp
+
+      val readResource1 = storage.get(ra).get
+      readResource1.metadata.put("new_key", "new_value")
+      readResource1.systemMetadata.put("new_md_key", "new_md_value")
+      readResource1.addVersion(createVersion())
+
+      readResource1.calculateCheckSums
+
+      Thread.sleep(10)
+
+      val readResource2 = storage.get(ra).get
+      readResource2.metadata.put("new_key", "new_value3")
+      readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+      readResource2.addVersion(createVersion("This is another data"))
+
+      Thread.sleep(5)
+
+      readResource2.addVersion(createVersion("This is fully new new data"))
+
+      readResource2.calculateCheckSums
+
+      Thread.sleep(10)
+
+      storage.update(readResource1)
+      storage.update(readResource2)
+
+
+
+      val readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
+
+      assertEquals(4, readResource.versions.size)
+
+      val expectedMeta = resource.metadata ++ readResource2.metadata
+      val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
+
+      assertEquals(expectedMeta, readResource.metadata)
+      assertEquals(expectedSystemMeta, readResource.systemMetadata)
+
+      assertEquals(readResource.versions(0).data.stringValue, "This is data ")
+      assertEquals(readResource.versions(1).data.stringValue, "This is new data")
+      assertEquals(readResource.versions(2).data.stringValue, "This is another data")
+      assertEquals(readResource.versions(3).data.stringValue, "This is fully new new data")
+
+
+    }finally storage.close()
+
+  }
+
   def testUnversionedUpdate() {
     val storage = createStorage("1002")
 
@@ -160,7 +315,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       resource.metadata.put("new_key", "new_value")
       resource.systemMetadata.put("new_md_key", "new_md_value")
-      resource.addVersion(createVersion)
+      resource.addVersion(createVersion())
 
       assertEquals("Resource must contain only one version", 1, resource.versions.size)
 
@@ -175,6 +330,51 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     }finally storage.close()
   }
+
+  def testUnversionedNonTrivialUpdate() {
+    val storage = createStorage("1002_1")
+
+        try{
+          val resource = createResource(versioned = false)
+
+          val ra = storage.add(resource)
+
+          Thread.sleep(10) //Just to make sure we have another version timestamp
+
+          val readResource1 = storage.get(ra).get
+          readResource1.metadata.put("new_key", "new_value")
+          readResource1.systemMetadata.put("new_md_key", "new_md_value")
+          readResource1.addVersion(createVersion())
+
+          Thread.sleep(10)
+
+          val readResource2 = storage.get(ra).get
+          readResource2.metadata.put("new_key", "new_value3")
+          readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+          readResource2.addVersion(createVersion("This is another data"))
+
+          Thread.sleep(10)
+
+          storage.update(readResource1)
+          storage.update(readResource2)
+
+          val readResource = storage.get(ra) match {
+            case Some(r) => r
+            case None => null
+          }
+
+          assertEquals(1, readResource.versions.size)
+
+          val expectedMeta = resource.metadata ++ readResource2.metadata
+          val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
+
+          assertEquals(expectedMeta, readResource.metadata)
+          assertEquals(expectedSystemMeta, readResource.systemMetadata)
+
+          assertEquals(readResource.versions(0).data.stringValue, "This is another data")
+
+        }finally storage.close()
+    }
 
   def testDelete(){
 
@@ -499,7 +699,7 @@ abstract class AbstractStorageTestCase extends TestCase{
         case None => null
       }
 
-      storage1.put(readResource)
+      storage1.update(readResource)
 
       val readFrom1 = storage1.get(ra) match {
         case Some(r) => r
@@ -604,7 +804,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     assertTrue("Not all resources found via iterator: " + expectedResources.keySet.toList, expectedResources.isEmpty)
   }
 
-  private def compareResources(res0:Resource, res1:Resource) {
+  private def compareResources(res0:Resource, res1:Resource, comparePersistedFlag: Boolean = true) {
     assertFalse("Resource can't be null", res0 == null || res1 == null)
 
     assertEquals("Resource addresses do not match", res0.address, res1.address)
@@ -629,7 +829,9 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertEquals("Version revision do not match", v0.revision, v1.revision)
 
-      assertEquals("Version persisted flag do not match", v0.persisted, v1.persisted)
+      if (comparePersistedFlag){
+        assertEquals("Version persisted flag do not match", v0.persisted, v1.persisted)
+      }
 
       assertTrue("Version datum do not match", isDatumEqual(v0.data, v1.data))
     }
@@ -679,12 +881,12 @@ abstract class AbstractStorageTestCase extends TestCase{
     resource
   }
 
-  private def createVersion:ResourceVersion = {
+  private def createVersion(data:String = "This is new data") :ResourceVersion = {
     val version = new ResourceVersion
 
     version.systemMetadata.put("key3", "some_value3")
 
-    version.data = DataStream.create("This is new data")
+    version.data = DataStream.create(data)
 
     version
   }

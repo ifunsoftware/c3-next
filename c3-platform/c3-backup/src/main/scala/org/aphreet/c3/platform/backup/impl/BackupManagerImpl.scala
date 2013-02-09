@@ -174,7 +174,7 @@ class RestoreTask(val storageManager:StorageManager, val accessMediator:AccessMe
     if(log.isDebugEnabled)
       log.debug("Importing resource " + resource.address)
 
-    storageManager.storageForAddress(ResourceAddress(resource.address)).put(resource)
+    storageManager.storageForAddress(ResourceAddress(resource.address)).update(resource)
     accessMediator ! ResourceAddedMsg(resource, 'BackupManager)
   }
 

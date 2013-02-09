@@ -82,8 +82,7 @@ abstract class ConsumerClient(override val args:Array[String]) extends CLI(args)
 
     consumers.foreach(executor.submit(_))
 
-    var addressReader = new BufferedReader(new FileReader(new File(file)))
-
+    val addressReader = new BufferedReader(new FileReader(new File(file)))
 
     var ra = addressReader.readLine
     while(isRunning(consumers)){

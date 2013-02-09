@@ -29,29 +29,27 @@
  */
 package org.aphreet.c3.platform.storage.impl
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.storage._
-
-import dispatcher.StorageDispatcher
-
-import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
-import org.aphreet.c3.platform.storage.volume.VolumeManager
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
+import collection.mutable
 import java.io.IOException
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
-import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
-import collection.mutable
-import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
-import java.nio.file.attribute.BasicFileAttributes
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.storage._
+import dispatcher.StorageDispatcher
+import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
 
 @Component("storageManager")
-class StorageManagerImpl extends StorageManager {
+class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   val log = LogFactory.getLog(getClass)
 
@@ -83,6 +81,8 @@ class StorageManagerImpl extends StorageManager {
   lazy val systemId = getSystemId
 
   lazy val storageLocation = defaultStoragePath
+
+  val conflictResolvers = new mutable.HashMap[String, ConflictResolver]()
 
   @PostConstruct
   def init() {
@@ -124,11 +124,11 @@ class StorageManagerImpl extends StorageManager {
     }
   }
 
-  def storageForResource(resource: Resource): Storage = {
+  def storageForResource(resource: Resource): StorageLike = {
     storageForAddress(ResourceAddress(resource.address))
   }
 
-  def storageForAddress(address: ResourceAddress): Storage = {
+  def storageForAddress(address: ResourceAddress): StorageLike = {
     storageDispatcher.selectStorageForAddress(address) match {
       case Some(params) => storageForId(params.id)
       case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
@@ -151,7 +151,7 @@ class StorageManagerImpl extends StorageManager {
           RW(Constants.STORAGE_MODE_NONE),
           indexConfigAccessor.load,
           new mutable.HashMap[String, String]),
-          systemId)
+          systemId, this)
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -264,6 +264,21 @@ class StorageManagerImpl extends StorageManager {
     accessMediator ! StoragePurgedMsg('StorageManager)
   }
 
+
+  def conflictResolverFor(resource: Resource) = {
+    val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE).getOrElse("")
+    conflictResolvers.get(contentType) match {
+      case Some(resolver) => resolver
+      case None => new DefaultConflictResolver
+    }
+  }
+
+  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver){
+    conflictResolvers.synchronized(
+      conflictResolvers.put(contentType, conflictResolver)
+    )
+  }
+
   private def registerStorage(storage: Storage) {
     storages.put(storage.id, storage)
 
@@ -312,7 +327,7 @@ class StorageManagerImpl extends StorageManager {
 
       if (param.storageType.equals(factory.name)) {
         log info "Restoring existent storage: " + param.toString
-        registerStorage(factory.createStorage(param, systemId))
+        registerStorage(factory.createStorage(param, systemId, this))
       }
     }
   }

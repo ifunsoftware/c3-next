@@ -11,5 +11,5 @@ class EmbedCompositeStorageTestCase extends AbstractStorageTestCase{
         new CompositeStorage(
           new StorageParams(id, storagePath, "CompositeStorage", RW(""), List(), params),
           "ECOS" + id,
-          new BDBConfig(true, 20, 5120, 102400))
+          new BDBConfig(true, 20, 5120, 102400), conflictResolverProvider)
 }
