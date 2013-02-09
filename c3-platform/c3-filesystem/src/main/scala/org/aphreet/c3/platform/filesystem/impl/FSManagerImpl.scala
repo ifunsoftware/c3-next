@@ -30,55 +30,59 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.filesystem._
-import org.apache.commons.logging.LogFactory
 import annotation.tailrec
-import org.aphreet.c3.platform.statistics.StatisticsManager
-import org.aphreet.c3.platform.task.TaskManager
 import java.lang.IllegalStateException
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
 import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
+import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.filesystem._
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.statistics.StatisticsManager
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.task.TaskManager
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
-                       with FSManagerInternal
-                       with ResourceOwner
-                       with ComponentGuard
-                       with WatchedActor{
+with ResourceOwner
+with ComponentGuard
+with WatchedActor {
 
   val log = LogFactory getLog getClass
 
   @Autowired
-  var accessManager:AccessManager = _
+  var accessManager: AccessManager = _
 
   @Autowired
-  var configAccessor:FSConfigAccessor = _
+  var configAccessor: FSConfigAccessor = _
 
   @Autowired
-  var statisticsManager:StatisticsManager = _
+  var statisticsManager: StatisticsManager = _
 
   @Autowired
-  var taskManager:TaskManager = _
+  var taskManager: TaskManager = _
 
   @Autowired
-  var directoryUpdater:FSDirectoryUpdater = _
+  var accessMediator: AccessMediator = _
 
   @Autowired
-  var accessMediator:AccessMediator = _
+  var storageManager: StorageManager = _
 
-  var fsRoots:Map[String, String] = Map()
+  var fsRoots: Map[String, String] = Map()
 
   @PostConstruct
-  def init(){
+  def init() {
 
     log info "Starting Filesystem manager"
 
+    start()
+
     accessManager.registerOwner(this)
+
+    storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
 
     accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
 
@@ -86,9 +90,9 @@ class FSManagerImpl extends FSManager
   }
 
   @PreDestroy
-  def destroy(){
+  def destroy() {
 
-    letItFall{
+    letItFall {
       accessManager.unregisterOwner(this)
       accessMediator ! UnregisterNamedListenerMsg(this, 'FSManager)
     }
@@ -96,28 +100,28 @@ class FSManagerImpl extends FSManager
     this ! DestroyMsg
   }
 
-  def act(){
+  def act() {
     loop {
-      react{
-        case StoragePurgedMsg => this.resetFileSystemRoots()
+      react {
+        case StoragePurgedMsg(source) => this.resetFileSystemRoots()
         case DestroyMsg => this.exit()
         case _ =>
       }
     }
   }
 
-  def getNode(domainId:String, path:String):Node = {
+  def getNode(domainId: String, path: String): Node = {
     getFSNode(domainId, path)
   }
 
-  def deleteNode(domainId:String, path:String) {
+  def deleteNode(domainId: String, path: String) {
 
     val node = getNode(domainId, path)
 
     accessManager.delete(node.resource.address)
   }
 
-  def moveNode(domainId:String, oldPath:String, newPath:String){
+  def moveNode(domainId: String, oldPath: String, newPath: String) {
 
     val oldPathAndName = splitPath(oldPath)
 
@@ -128,9 +132,9 @@ class FSManagerImpl extends FSManager
 
     val newParent = getFSNode(domainId, newPathAndName._1)
 
-    if(!currentParent.isDirectory) throw new FSException("Current parent is not a directory")
+    if (!currentParent.isDirectory) throw new FSException("Current parent is not a directory")
 
-    if(!newParent.isDirectory) throw new FSException("Current parent is not a directory")
+    if (!newParent.isDirectory) throw new FSException("Current parent is not a directory")
 
     val nodeRef = currentParent.asInstanceOf[Directory].getChild(oldPathAndName._2) match {
       case Some(n) => n
@@ -141,13 +145,15 @@ class FSManagerImpl extends FSManager
 
     val node = Node.fromResource(accessManager.get(nodeAddress))
 
-    if(currentParent.resource.address == newParent.resource.address){
+    if (currentParent.resource.address == newParent.resource.address) {
 
-        node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-        accessManager.update(node.resource)
+      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+      accessManager.update(node.resource)
 
-        runDirectoryTask(currentParent.resource.address, FSDirectoryTask(UPDATE, NodeRef(newPathAndName._2, nodeRef.address, nodeRef.leaf)))
-    }else{
+      currentParent.asInstanceOf[Directory].updateChild(oldPathAndName._2, newPathAndName._2)
+
+      accessManager.update(currentParent.resource)
+    } else {
 
       val oldDir = Directory(accessManager.get(currentParent.resource.address))
       val newDir = Directory(accessManager.get(newParent.resource.address))
@@ -157,27 +163,29 @@ class FSManagerImpl extends FSManager
 
       accessManager.update(node.resource)
 
-      runDirectoryTask(oldDir.resource.address, FSDirectoryTask(DELETE, NodeRef(oldPathAndName._2, nodeAddress, nodeRef.leaf)))
+      oldDir.removeChild(oldPathAndName._2)
+      accessManager.update(oldDir.resource)
 
-      runDirectoryTask(newParent.resource.address, FSDirectoryTask(ADD, NodeRef(newPathAndName._2, nodeAddress, nodeRef.leaf)))
+      newDir.addChild(newPathAndName._2, nodeAddress, nodeRef.leaf)
+      accessManager.update(newDir.resource)
     }
   }
 
-  override def resourceCanBeDeleted(resource:Resource):Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match{
+  override def resourceCanBeDeleted(resource: Resource): Boolean = {
+    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) => {
 
         var canDelete = false
 
-        if(nodeType == Node.NODE_TYPE_DIR){
+        if (nodeType == Node.NODE_TYPE_DIR) {
           val directory = Directory(resource)
-          if(directory.getChildren.isEmpty){
+          if (directory.getChildren.filter(!_.deleted).isEmpty) {
             canDelete = fsRoots.values.forall(_ != resource.address)
-          }else{
+          } else {
             canDelete = false
           }
-        }else{
+        } else {
           canDelete = true
         }
 
@@ -186,46 +194,51 @@ class FSManagerImpl extends FSManager
     }
   }
 
-  override def resourceCanBeUpdated(resource:Resource):Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match{
+  override def resourceCanBeUpdated(resource: Resource): Boolean = {
+    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) =>
-        if(nodeType == Node.NODE_TYPE_DIR){
-          try{
+        if (nodeType == Node.NODE_TYPE_DIR) {
+          try {
             //trying to create a directory from provided ByteStream
             Directory(resource)
             true
-          }catch{
+          } catch {
             case e: Throwable => false
           }
-        }else{
+        } else {
           true
         }
     }
   }
 
-  override def deleteResource(resource:Resource) {
+  override def deleteResource(resource: Resource) {
 
-    resource.systemMetadata.get(Node.NODE_FIELD_NAME) match {
-      case None => //it seems that resource is not a part of FS, skipping
-      case Some(name) =>
-        resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
-          case Some(parentAddress) => {
-              directoryUpdater ! ScheduleMsg(parentAddress, FSDirectoryTask(DELETE, NodeRef(name, resource.address, leaf = false)))
+    resource.systemMetadata.get(Node.NODE_FIELD_NAME) foreach {
+      name => resource.systemMetadata.get(Node.NODE_FIELD_PARENT).foreach{
+        parentAddress => {
+          val parent = accessManager.get(parentAddress)
+
+          val node = Node.fromResource(parent)
+
+          if (node.isDirectory) {
+            val directory = node.asInstanceOf[Directory]
+            directory.removeChild(name)
+            accessManager.update(directory.resource)
           }
-          case None =>
         }
+      }
     }
   }
 
-  def createFile(domainId:String, fullPath:String, resource:Resource) {
+  def createFile(domainId: String, fullPath: String, resource: Resource) {
 
     val pathAndName = splitPath(fullPath)
 
     val path = pathAndName._1
     val name = pathAndName._2
 
-    if(log.isDebugEnabled){
+    if (log.isDebugEnabled) {
       log.debug("Creating file " + name + " at path " + path)
     }
 
@@ -233,63 +246,63 @@ class FSManagerImpl extends FSManager
 
   }
 
-  def createDirectory(domainId:String, fullPath:String) {
+  def createDirectory(domainId: String, fullPath: String) {
 
     val pathAndName = splitPath(fullPath)
 
     val path = pathAndName._1
     val name = pathAndName._2
 
-    if(log.isDebugEnabled){
+    if (log.isDebugEnabled) {
       log.debug("Creating directory " + name + " at path " + path)
     }
 
     addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
   }
 
-  def lookupResourcePath(address:String):Option[String] = {
-    try{
+  def lookupResourcePath(address: String): Option[String] = {
+    try {
 
       val pathComponents = lookupResourcePath(address, List[String]())
 
-      if(pathComponents.isEmpty){
+      if (pathComponents.isEmpty) {
         None
-      }else{
+      } else {
         Some(pathComponents.foldLeft("")(_ + "/" + _))
       }
-    }catch{
+    } catch {
       case e: Throwable => None
     }
   }
 
   @tailrec
-  private def lookupResourcePath(address:String, pathComponents:List[String]):List[String] = {
+  private def lookupResourcePath(address: String, pathComponents: List[String]): List[String] = {
 
     val resource = accessManager.get(address)
 
     val name = resource.systemMetadata.get(Node.NODE_FIELD_NAME)
 
-    resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match{
+    resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match {
       case Some(value) => lookupResourcePath(value, name.get :: pathComponents)
       case None => pathComponents
     }
 
   }
 
-  def fileSystemRoots:Map[String, String] = fsRoots
+  def fileSystemRoots: Map[String, String] = fsRoots
 
-  def importFileSystemRoot(domainId:String, address:String) {
+  def importFileSystemRoot(domainId: String, address: String) {
 
-    fsRoots.get(domainId) match{
+    fsRoots.get(domainId) match {
       case Some(x) =>
-        if(x != address)
+        if (x != address)
           throw new FSException("Can't import FS root - root already exists")
       case None => {
-        this.synchronized{
+        this.synchronized {
 
           log info "Adding new root: " + domainId + " => " + address
 
-          val map:Map[String, String] = fsRoots + ((domainId, address))
+          val map: Map[String, String] = fsRoots + ((domainId, address))
 
           configAccessor.store(map)
 
@@ -299,60 +312,53 @@ class FSManagerImpl extends FSManager
     }
   }
 
-  def resetFileSystemRoots(){
+  def resetFileSystemRoots() {
     log.info("Reseting file system roots")
     configAccessor.store(Map())
     fsRoots = configAccessor.load
   }
 
-  private def addNodeToDirectory(domainId:String, path:String, name:String, newNode:Node){
+  private def addNodeToDirectory(domainId: String, path: String, name: String, newNode: Node) {
 
     val node = getFSNode(domainId, path)
 
-    var directory:Directory = null
+    var directory: Directory = null
 
-    if(node.isDirectory){
+    if (node.isDirectory) {
       directory = node.asInstanceOf[Directory]
-    }else{
+    } else {
       throw new FSException("Can't add node to file")
     }
 
-    directory.getChild(name) match{
-      case Some(value) => throw new FSWrongRequestException("Node with name: " + name +  " already exists")
-      case None =>
+    if (!directory.getChild(name).isEmpty) {
+      throw new FSWrongRequestException("Node with name: " + name + " already exists")
     }
 
     newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
     val newAddress = accessManager.add(newNode.resource)
 
-    runDirectoryTask(directory.resource.address, FSDirectoryTask(ADD, NodeRef(name, newAddress, !newNode.isDirectory)))
+    directory.addChild(name, newAddress, !newNode.isDirectory)
+
+    accessManager.update(directory.resource)
   }
 
-  private def runDirectoryTask(address: String, task: FSDirectoryTask){
+  private def getFSNode(domainId: String, path: String): Node = {
 
-    task.monitor.synchronized{
-      directoryUpdater ! ScheduleMsg(address, task)
-      task.monitor.wait()
-    }
-  }
-
-  private def getFSNode(domainId:String, path:String):Node = {
-
-    if(log.isDebugEnabled){
+    if (log.isDebugEnabled) {
       log.debug("Looking for node for path: " + path)
     }
 
     val pathComponents = getPathComponents(path).filter(_.length > 0)
 
-    var resultNode:Node = getRoot(domainId)
+    var resultNode: Node = getRoot(domainId)
 
-    for(directoryName <- pathComponents){
+    for (directoryName <- pathComponents) {
 
-      if(log.isTraceEnabled){
+      if (log.isTraceEnabled) {
         log.trace("Getting node: " + directoryName)
       }
 
-      if(!resultNode.isDirectory){
+      if (!resultNode.isDirectory) {
         throw new FSException("Found file, expected directory")
       }
 
@@ -367,7 +373,7 @@ class FSManagerImpl extends FSManager
 
     }
 
-    if(log.isDebugEnabled){
+    if (log.isDebugEnabled) {
       log.debug("Found node for path: " + path)
     }
 
@@ -375,21 +381,21 @@ class FSManagerImpl extends FSManager
 
   }
 
-  private def getPathComponents(path:String):Array[String] = {
+  private def getPathComponents(path: String): Array[String] = {
     path.split("/")
   }
 
-  private def getRoot(domainId:String):Directory = {
+  private def getRoot(domainId: String): Directory = {
 
-    val rootAddress = fsRoots.get(domainId) match{
-      case Some(x) =>x
+    val rootAddress = fsRoots.get(domainId) match {
+      case Some(x) => x
       case None => createNewRoot(domainId)
     }
 
     Directory(accessManager.get(rootAddress))
   }
 
-  private def createNewRoot(domainId:String) = {
+  private def createNewRoot(domainId: String) = {
 
     log info "Creating root directory for domain: " + domainId
 
@@ -397,8 +403,8 @@ class FSManagerImpl extends FSManager
 
     val rootAddress = accessManager.add(directory.resource)
 
-    this.synchronized{
-      val map:Map[String, String] = fsRoots + ((domainId, rootAddress))
+    this.synchronized {
+      val map: Map[String, String] = fsRoots + ((domainId, rootAddress))
 
       configAccessor.store(map)
 
@@ -408,15 +414,15 @@ class FSManagerImpl extends FSManager
     rootAddress
   }
 
-  def splitPath(path:String):(String, String) = {
+  def splitPath(path: String): (String, String) = {
 
-    if(log.isDebugEnabled){
+    if (log.isDebugEnabled) {
       log debug "Splitting path: " + path
     }
 
     val components = getPathComponents(path)
 
-    val name = components.lastOption match{
+    val name = components.lastOption match {
       case Some(x) => x
       case None => throw new FSException("Name is not specified")
     }
@@ -427,45 +433,13 @@ class FSManagerImpl extends FSManager
 
   }
 
-  def startFilesystemCheck(){
+  def startFilesystemCheck() {
 
-    if(taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty){
+    if (taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty) {
       val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)
       taskManager.submitTask(task)
-    }else{
+    } else {
       throw new IllegalStateException("Task already started")
     }
-  }
-
-  def executeDirectoryTasks(address:String, tasks:List[FSDirectoryTask]){
-    val directory = Node.fromResource(accessManager.get(address)).asInstanceOf[Directory]
-
-    for (task <- tasks){
-      task.action match {
-        case ADD => directory.addChild(task.nodeRef)
-        case DELETE => directory.removeChild(task.nodeRef.name)
-        case UPDATE => {
-          directory.getChildren.filter(_.address == task.nodeRef.address).headOption match {
-            case Some(oldNodeRef) => {
-              val oldName = oldNodeRef.name
-              directory.removeChild(oldName)
-              directory.addChild(task.nodeRef)
-            }
-            case None => {
-              log.warn("Request to rename missing resource " + task.nodeRef.address + " in directory " + address)
-            }
-          }
-        }
-        case _ =>
-      }
-    }
-
-    accessManager.update(directory.resource)
-
-    tasks.foreach(task => {
-      task.monitor.synchronized{
-        task.monitor.notify()
-      }
-    })
   }
 }

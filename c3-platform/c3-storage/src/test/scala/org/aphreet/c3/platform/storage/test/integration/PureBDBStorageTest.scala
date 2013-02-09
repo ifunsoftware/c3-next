@@ -12,6 +12,6 @@ class PureBDBStorageTest extends AbstractStorageTestCase{
     new PureBDBStorage(
       new StorageParams(id, storagePath, "PureBDBStorage", RW(""), List(), params),
       "PBDS" + id,
-      new BDBConfig(true, 20, 0, 102400))
+      new BDBConfig(true, 20, 0, 102400), conflictResolverProvider)
 
 }

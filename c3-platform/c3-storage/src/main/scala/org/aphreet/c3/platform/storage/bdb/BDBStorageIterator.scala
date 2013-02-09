@@ -77,7 +77,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
       for((index, value) <- usedIndexes){
 
-        val secCursor = storage.getSecondaryDatabases(writeFlag = true).get(index.name) match{
+        val secCursor = storage.secondaryDatabases(writeFlag = true).get(index.name) match{
           case Some(db) => db.openCursor(null, null)
           case None => throw new StorageException("Failed to open index " + index.name + " database is not open or exist")
         }
@@ -100,12 +100,12 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
 
         joinConfig = new JoinConfig
         joinConfig.setNoSort(hasRangedCursor)
-        joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+        joinCursor = storage.rwDatabase.join(secCursors.toArray, joinConfig)
       }
 
     }else{
       log.debug("No indexes can be used for specified query")
-      cursor = storage.getRWDatabase.openCursor(null, null)
+      cursor = storage.rwDatabase.openCursor(null, null)
     }
 
     if(!isEmptyIterator){
@@ -265,7 +265,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
           if (moveRangedCursor()){
 
             joinCursor.close()
-            joinCursor = storage.getRWDatabase.join(secCursors.toArray, joinConfig)
+            joinCursor = storage.rwDatabase.join(secCursors.toArray, joinConfig)
 
             if (next(joinCursor, dbKey)){
               result = OperationStatus.SUCCESS

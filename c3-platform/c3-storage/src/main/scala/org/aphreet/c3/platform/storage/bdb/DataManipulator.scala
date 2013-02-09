@@ -36,6 +36,8 @@ trait  DataManipulator {
 
   def loadData(resource:Resource)
 
+  def loadDataForUpdate(resource:Resource, tx:Transaction)
+
   def storeData(resource:Resource, tx:Transaction) {
     storeData(resource)
   }
@@ -48,12 +50,6 @@ trait  DataManipulator {
 
   def deleteData(ra:String) {
 
-  }
-
-  def putData(resource:Resource) {}
-
-  def putData(resource:Resource, tx:Transaction) {
-    putData(resource)
   }
 
   def canEmbedData(resource:Resource, config:BDBConfig):Boolean = false

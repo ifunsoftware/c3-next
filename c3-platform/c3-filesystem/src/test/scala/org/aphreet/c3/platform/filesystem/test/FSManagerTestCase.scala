@@ -69,18 +69,24 @@ class FSManagerTestCase extends TestCase{
     //empty root directory
     assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
 
-
-    directory.addChild(NodeRef("name", "address", true))
+    directory.addChild("name", "address", leaf = true)
 
     //non-empty root directory
     assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
-
 
     directory.resource.address = "some other address"
 
     //non-empty non-root directory
     assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
 
+    directory.removeChild("name")
+
+
+    //Just a check that we still have a deleted child entry
+    //in the child list
+    assertTrue(directory.getChildren.length > 0)
+
+    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
 
     val file = File.createFile(new Resource, "some domain", "name")
 
@@ -91,7 +97,7 @@ class FSManagerTestCase extends TestCase{
 
     val fsManager = new FSManagerImpl
 
-    var resource = new Resource
+    val resource = new Resource
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
@@ -99,13 +105,12 @@ class FSManagerTestCase extends TestCase{
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
-
     val directory = Directory.emptyDirectory("domain id", "name")
 
     //empty directory
     assertTrue(fsManager.resourceCanBeUpdated(directory.resource))
 
-    directory.addChild(NodeRef("name", "address", true))
+    directory.addChild("name", "address", leaf = true)
 
     //non-empty directory
     assertTrue(fsManager.resourceCanBeUpdated(directory.resource))

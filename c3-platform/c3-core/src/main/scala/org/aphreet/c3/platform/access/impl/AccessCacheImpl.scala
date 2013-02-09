@@ -113,7 +113,7 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     val element = cache.get(address)
     if(element != null){
       statisticsService ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
-      Some(element.getObjectValue.asInstanceOf[Resource])
+      Some(element.getObjectValue.asInstanceOf[Resource].clone)
     }else{
       statisticsService ! IncreaseStatisticsMsg("c3.access.cache.miss", 1)
       None

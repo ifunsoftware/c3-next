@@ -34,7 +34,11 @@ import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import java.util.Random
 import java.util.concurrent.LinkedBlockingQueue
 
-class ResourceWriter(val number:Int, val host:String, val user:String, val key:String, val count:Int) extends Runnable {
+class ResourceWriter(val number:Int,
+                     val host:String,
+                     val user:String,
+                     val key:String,
+                     val count:Int) extends Runnable {
 
   var _size:Int = 1024
   var _md:Map[String, String] = Map()
@@ -63,7 +67,7 @@ class ResourceWriter(val number:Int, val host:String, val user:String, val key:S
         }
         written = written + 1
       }catch{
-        case e => {errors = errors + 1; System.err.println(e.getMessage)}
+        case e: Throwable => {errors = errors + 1; System.err.println(e.getMessage)}
       }
     }
 

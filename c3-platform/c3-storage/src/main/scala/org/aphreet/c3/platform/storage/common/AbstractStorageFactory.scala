@@ -29,20 +29,20 @@
  */
 package org.aphreet.c3.platform.storage.common
 
-import scala.collection.mutable.{Set, HashSet}
 
-import org.apache.commons.logging.LogFactory
-
-import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.{PostConstruct, PreDestroy}
-import org.aphreet.c3.platform.storage._
+import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.ComponentGuard
+import org.aphreet.c3.platform.storage._
+import org.springframework.beans.factory.annotation.Autowired
+import scala.collection.mutable
+
 
 abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard{
 
   val log = LogFactory.getLog(getClass)
   
-  val createdStorages : HashSet[Storage] = new HashSet
+  val createdStorages = new mutable.HashSet[Storage]
   
   var storageManager :StorageManager = null
   
@@ -50,8 +50,8 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
   def setStorageManager(_manager:StorageManager) {storageManager = _manager}
   
   
-  def createStorage(params:StorageParams, systemId:String):Storage = {
-    val storage = createNewStorage(params, systemId)
+  def createStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage = {
+    val storage = createNewStorage(params, systemId, conflictResolverProvider)
     
     storage.mode = params.mode
     
@@ -59,9 +59,9 @@ abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard
     storage
   }
 
-  def storages:Set[Storage] = createdStorages
+  def storages:mutable.Set[Storage] = createdStorages
   
-  protected def createNewStorage(params:StorageParams, systemId:String):Storage
+  protected def createNewStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage
   
   @PostConstruct
   def init() {

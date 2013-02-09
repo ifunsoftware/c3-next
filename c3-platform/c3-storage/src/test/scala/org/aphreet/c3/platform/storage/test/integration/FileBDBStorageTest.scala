@@ -13,5 +13,5 @@ class FileBDBStorageTest extends AbstractStorageTestCase{
     new FileBDBStorage(
       new StorageParams(id, storagePath, "FileBDBStorage", RW(""), List(), params),
       "FIBS" + id,
-      new BDBConfig(true, 20, 0, 102400))
+      new BDBConfig(true, 20, 0, 102400), conflictResolverProvider)
 }
