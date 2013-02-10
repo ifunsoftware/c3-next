@@ -37,6 +37,7 @@ import org.aphreet.c3.platform.remote.rest.response.Result
 import org.apache.commons.httpclient.util.URIUtil
 import java.io.BufferedReader
 import org.aphreet.c3.platform.accesscontrol._
+import org.apache.commons.codec.binary.Base64
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -89,7 +90,19 @@ class FSController extends DataController {
 
     if (nodetype == "directory") {
 
-      filesystemManager.createDirectory(domain, fsPath)
+      val metadata = scala.collection.mutable.HashMap[String, String]()
+      val metadataHeaders = request.getHeaders("x-c3-metadata")
+      while(metadataHeaders.hasMoreElements){
+        val header = metadataHeaders.nextElement().toString
+
+        val keyValue = header.split(":", 2)
+
+        if (keyValue.length == 2){
+          metadata.put(keyValue(0), new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8"))
+        }
+      }
+
+      filesystemManager.createDirectory(domain, fsPath, metadata.toMap)
 
       reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
     } else {
