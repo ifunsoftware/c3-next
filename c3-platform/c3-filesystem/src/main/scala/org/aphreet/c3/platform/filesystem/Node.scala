@@ -167,6 +167,10 @@ case class Directory(override val resource:Resource) extends Node(resource){
     children.values.toArray
   }
 
+  def nonDeletedChildren:Array[NodeRef] = {
+    children.values.filter(!_.deleted).toArray
+  }
+
   def importChildren(newChildren: mutable.Map[String, NodeRef]){
     children = new TreeMap[String, NodeRef]() ++ newChildren
     updateResource()

@@ -337,8 +337,6 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
         }
       }
     }
-
-
   }
 
   def defaultValues:Map[String,String] =
