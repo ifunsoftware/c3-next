@@ -72,7 +72,7 @@ class DirectorySerializationTestCase extends TestCase{
     try{
       val directory = Directory(resource)
 
-      for(child <- directory.getChildren){
+      for(child <- directory.allChildren){
         println(child)
       }
       assertFalse(false)
@@ -96,7 +96,7 @@ class DirectorySerializationTestCase extends TestCase{
       List(NodeRef("achild", "address", leaf = true, deleted = false, modified = timestamp),
            NodeRef("child", "address", leaf = true, deleted = false, modified = timestamp)),
 
-      node.asInstanceOf[Directory].getChildren.toList)
+      node.asInstanceOf[Directory].allChildren.toList)
 
   }
 

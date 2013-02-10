@@ -84,7 +84,7 @@ class FSManagerTestCase extends TestCase{
 
     //Just a check that we still have a deleted child entry
     //in the child list
-    assertTrue(directory.getChildren.length > 0)
+    assertTrue(directory.allChildren.length > 0)
 
     assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
 

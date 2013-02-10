@@ -180,7 +180,7 @@ with WatchedActor {
 
         if (nodeType == Node.NODE_TYPE_DIR) {
           val directory = Directory(resource)
-          if (directory.getChildren.filter(!_.deleted).isEmpty) {
+          if (directory.allChildren.filter(!_.deleted).isEmpty) {
             canDelete = fsRoots.values.forall(_ != resource.address)
           } else {
             canDelete = false

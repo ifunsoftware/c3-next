@@ -121,7 +121,7 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       val metaKeys = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty) else null
 
-      val children = directory.nonDeletedChildren.map((child:NodeRef) => {
+      val children = directory.children.map((child:NodeRef) => {
 
           val dataAndMd = accessManager.getOption(child.address) match {
             case Some(resource) => {

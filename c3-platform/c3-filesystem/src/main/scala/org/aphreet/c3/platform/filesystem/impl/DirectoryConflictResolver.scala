@@ -37,7 +37,7 @@ class DirectoryConflictResolver extends ConflictResolver{
   }
 
   private def addAllNodes(resultNodes: mutable.HashMap[String, NodeRef], directory: Directory){
-    for(node <- directory.getChildren){
+    for(node <- directory.allChildren){
       resultNodes.get(node.name) match {
         case Some(nodeRef) => {
 

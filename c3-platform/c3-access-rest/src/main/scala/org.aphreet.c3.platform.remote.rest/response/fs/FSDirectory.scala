@@ -56,7 +56,7 @@ object FSDirectory{
 
     val address = resource.address
 
-    FSDirectory(name, address, node.nonDeletedChildren.map(new FSNode(_, null, null)))
+    FSDirectory(name, address, node.children.map(new FSNode(_, null, null)))
   }
 
   def fromNodeAndChildren(node:Directory, children:Seq[FSNode]):FSDirectory = {

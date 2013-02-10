@@ -111,7 +111,7 @@ object File{
 
 case class Directory(override val resource:Resource) extends Node(resource){
 
-  private var children = new TreeMap[String, NodeRef]
+  private var childrenMap = new TreeMap[String, NodeRef]
 
   private var persistedVersionTimestamp = 0L
 
@@ -127,23 +127,23 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   def getChild(name:String):Option[NodeRef] = {
 
-    Node.log debug children.toString
+    Node.log debug childrenMap.toString
 
-    children.get(name)
+    childrenMap.get(name)
   }
 
   def addChild(name: String, address: String, leaf: Boolean) {
 
-    children += (name -> NodeRef(name, address, leaf, deleted = false, modified = takeUpdateTimestamp()))
+    childrenMap += (name -> NodeRef(name, address, leaf, deleted = false, modified = takeUpdateTimestamp()))
 
     updateResource()
   }
 
   def removeChild(name:String) {
 
-    children.get(name) match {
+    childrenMap.get(name) match {
       case Some(nodeRef) => {
-        children += (nodeRef.name -> nodeRef.delete(takeUpdateTimestamp()))
+        childrenMap += (nodeRef.name -> nodeRef.delete(takeUpdateTimestamp()))
       }
       case None =>
     }
@@ -152,10 +152,10 @@ case class Directory(override val resource:Resource) extends Node(resource){
   }
 
   def updateChild(name: String, newName: String) {
-    children.get(name) match {
+    childrenMap.get(name) match {
       case Some(nodeRef) => {
-        children += (name -> nodeRef.delete(takeUpdateTimestamp()))
-        children += (newName -> nodeRef.update(newName, takeUpdateTimestamp()))
+        childrenMap += (name -> nodeRef.delete(takeUpdateTimestamp()))
+        childrenMap += (newName -> nodeRef.update(newName, takeUpdateTimestamp()))
       }
       case None =>
     }
@@ -163,22 +163,22 @@ case class Directory(override val resource:Resource) extends Node(resource){
     updateResource()
   }
 
-  def getChildren:Array[NodeRef] = {
-    children.values.toArray
+  def allChildren:Array[NodeRef] = {
+    childrenMap.values.toArray
   }
 
-  def nonDeletedChildren:Array[NodeRef] = {
-    children.values.filter(!_.deleted).toArray
+  def children:Array[NodeRef] = {
+    childrenMap.values.filter(!_.deleted).toArray
   }
 
   def importChildren(newChildren: mutable.Map[String, NodeRef]){
-    children = new TreeMap[String, NodeRef]() ++ newChildren
+    childrenMap = new TreeMap[String, NodeRef]() ++ newChildren
     updateResource()
   }
 
   protected def updateResource() {
     val version = new ResourceVersion
-    version.data = writeData(children)
+    version.data = writeData(childrenMap)
     version.persisted = false
     resource.addVersion(version)
     version.date = new Date(takeUpdateTimestamp())
@@ -253,10 +253,10 @@ case class Directory(override val resource:Resource) extends Node(resource){
           val deleted = dataIn.readBoolean()
           val modified = dataIn.readLong()
 
-          children += (name -> NodeRef(name, address, leaf, deleted, modified))
+          childrenMap += (name -> NodeRef(name, address, leaf, deleted, modified))
 
         }else{
-          children += (name -> NodeRef(name, address, leaf, deleted = false, modified = version.date.getTime))
+          childrenMap += (name -> NodeRef(name, address, leaf, deleted = false, modified = version.date.getTime))
         }
       }
     }

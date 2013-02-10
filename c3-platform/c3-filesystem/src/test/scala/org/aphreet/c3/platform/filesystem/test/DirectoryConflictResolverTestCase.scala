@@ -33,7 +33,7 @@ class DirectoryConflictResolverTestCase extends TestCase{
 
     val mergedDirectory = Node.fromResource(resource0).asInstanceOf[Directory]
 
-    val children = mergedDirectory.getChildren
+    val children = mergedDirectory.allChildren
 
     assertEquals(4, children.length)
 
@@ -69,7 +69,7 @@ class DirectoryConflictResolverTestCase extends TestCase{
 
     val mergedDirectory = Node.fromResource(resource0).asInstanceOf[Directory]
 
-    val children = mergedDirectory.getChildren
+    val children = mergedDirectory.allChildren
 
     assertEquals(4, children.length)
 
@@ -105,7 +105,7 @@ class DirectoryConflictResolverTestCase extends TestCase{
 
     val mergedDirectory = Node.fromResource(resource0).asInstanceOf[Directory]
 
-    val children = mergedDirectory.getChildren
+    val children = mergedDirectory.allChildren
 
     assertEquals(3, children.length)
 
