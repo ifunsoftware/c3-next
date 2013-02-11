@@ -35,17 +35,18 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
 import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import org.aphreet.c3.platform.storage._
-import dispatcher.StorageDispatcher
+import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 import org.springframework.stereotype.Component
+import scala.actors.Actor
 
 
 @Component("storageManager")
@@ -73,7 +74,8 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
   var platformConfigManager: PlatformConfigManager = _
 
   @Autowired
-  var accessMediator: AccessMediator = _
+  @Qualifier("AccessMediator")
+  var accessMediator: Actor = _
 
   @Autowired
   var taskManager: TaskManager = _

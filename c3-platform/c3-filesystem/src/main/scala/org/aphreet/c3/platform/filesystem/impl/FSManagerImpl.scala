@@ -34,8 +34,8 @@ import annotation.tailrec
 import java.lang.IllegalStateException
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator, ResourceOwner, AccessManager}
-import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
+import org.aphreet.c3.platform.access.{AccessMediator, ResourceOwner, AccessManager}
+import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
 import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.Resource

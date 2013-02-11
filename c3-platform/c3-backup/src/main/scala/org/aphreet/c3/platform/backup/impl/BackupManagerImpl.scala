@@ -38,9 +38,8 @@ import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyLis
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.access.{ResourceAddedMsg, StoragePurgedMsg, AccessMediator}
+import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessMediator}
 import org.aphreet.c3.platform.filesystem.FSManager
-import com.sun.corba.se.spi.activation._ServerStub
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{

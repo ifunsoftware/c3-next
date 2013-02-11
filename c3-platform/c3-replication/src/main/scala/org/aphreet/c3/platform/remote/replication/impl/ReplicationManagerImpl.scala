@@ -51,7 +51,6 @@ import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Cons
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import actors.remote.{Node, RemoteActor}
-import org.aphreet.c3.platform.access.StoragePurgedMsg
 import java.io.File
 
 @Component("replicationManager")
