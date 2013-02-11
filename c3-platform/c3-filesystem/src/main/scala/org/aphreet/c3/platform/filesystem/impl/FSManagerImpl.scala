@@ -246,7 +246,7 @@ with WatchedActor {
 
   }
 
-  def createDirectory(domainId: String, fullPath: String) {
+  def createDirectory(domainId: String, fullPath: String, meta: Map[String, String]) {
 
     val pathAndName = splitPath(fullPath)
 
@@ -257,7 +257,7 @@ with WatchedActor {
       log.debug("Creating directory " + name + " at path " + path)
     }
 
-    addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name))
+    addNodeToDirectory(domainId, path, name, Directory.emptyDirectory(domainId, name, meta))
   }
 
   def lookupResourcePath(address: String): Option[String] = {
