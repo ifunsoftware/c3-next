@@ -90,17 +90,7 @@ class FSController extends DataController {
 
     if (nodetype == "directory") {
 
-      val metadata = scala.collection.mutable.HashMap[String, String]()
-      val metadataHeaders = request.getHeaders("x-c3-metadata")
-      while(metadataHeaders.hasMoreElements){
-        val header = metadataHeaders.nextElement().toString
-
-        val keyValue = header.split(":", 2)
-
-        if (keyValue.length == 2){
-          metadata.put(keyValue(0), new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8"))
-        }
-      }
+      val metadata = getMetadata(request)
 
       filesystemManager.createDirectory(domain, fsPath, metadata.toMap)
 
