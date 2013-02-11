@@ -11,26 +11,21 @@ import java.nio.file._
 import java.util
 import org.aphreet.c3.platform.backup.{RemoteBackupLocation, AbstractBackup}
 
-class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLocation) extends AbstractBackup {
+class RemoteBackup(val name : String, val create: Boolean, val config: RemoteBackupLocation) extends AbstractBackup {
 
-  var HOST = config.host
-  var USER = config.user
-  var PRIVATE_KEY_FILE_NAME = config.privateKeyLocation
+  val HOST = config.host
+  val USER = config.user
+  val REMOTE_FOLDER = config.folder
+  val PRIVATE_KEY = config.privateKey
 
-  var remotePath : String = null
-  var backupName : String = null
-  var tempBackupPath : String = null
+  var tempBackupPath: String = null
 
   {
     initZip()
   }
 
   def initZip() {
-    val stringUri = uri.toString
-    val lastSlash = stringUri.lastIndexOf("/")
-    remotePath = stringUri.substring(0, lastSlash)
-    backupName = stringUri.substring(lastSlash + 1)
-    tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + backupName
+    tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + name
 
     if (!create) {
       downloadBackup()
@@ -43,7 +38,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
 
   def downloadBackup() {
     val sshClient = new SshClient
-    var sftpClient : SftpClient = null
+    var sftpClient: SftpClient = null
 
     try {
       sshClient.connect(HOST, new IgnoreHostKeyVerification)
@@ -52,7 +47,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
       val authClient = new PublicKeyAuthenticationClient
       authClient.setUsername(USER)
 
-      val keyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
+      val keyFile = SshPrivateKeyFile.parse(PRIVATE_KEY.getBytes)
       val key = keyFile.toPrivateKey("")
       authClient.setKey(key)
 
@@ -63,16 +58,16 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
       }
 
       sftpClient = sshClient.openSftpClient
-      sftpClient.cd(remotePath)
+      sftpClient.cd(REMOTE_FOLDER)
 
-      sftpClient.get(backupName, tempBackupPath)
+      sftpClient.get(name, tempBackupPath)
 
     } catch {
       case e: IOException => {
         log.error(e.getMessage)
       }
 
-    } finally  {
+    } finally {
       if (sftpClient != null && !sftpClient.isClosed) {
         sftpClient.quit
       }
@@ -86,7 +81,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
     super.close()
 
     val sshClient = new SshClient
-    var sftpClient : SftpClient = null
+    var sftpClient: SftpClient = null
 
     try {
       sshClient.connect(HOST, new IgnoreHostKeyVerification)
@@ -95,7 +90,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
       val authClient = new PublicKeyAuthenticationClient
       authClient.setUsername(USER)
 
-      val keyFile = SshPrivateKeyFile.parse(new File(PRIVATE_KEY_FILE_NAME))
+      val keyFile = SshPrivateKeyFile.parse(PRIVATE_KEY.getBytes)
       val key = keyFile.toPrivateKey("")
       authClient.setKey(key)
 
@@ -106,7 +101,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
       }
 
       sftpClient = sshClient.openSftpClient
-      sftpClient.cd(remotePath)
+      sftpClient.cd(REMOTE_FOLDER)
 
       sftpClient.put(tempBackupPath)
 
@@ -115,7 +110,7 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
         log.error(e.getMessage)
       }
 
-    } finally  {
+    } finally {
       if (sftpClient != null && !sftpClient.isClosed) {
         sftpClient.quit
       }
@@ -125,26 +120,24 @@ class RemoteBackup(val uri:URI, val create:Boolean, val config : RemoteBackupLoc
     }
 
     val localBackup = new File(tempBackupPath)
-    localBackup.delete()
+    if (localBackup != null && localBackup.exists()) {
+      localBackup.delete()
+    }
   }
 }
 
 
 object RemoteBackup {
 
-  def open(path:C3Path, config:RemoteBackupLocation):RemoteBackup = {
-    val zipFile = URI.create(path.toString)
-    new RemoteBackup(zipFile, false, config)
+  def open(name: String, config: RemoteBackupLocation): RemoteBackup = {
+    new RemoteBackup(name, false, config)
   }
 
-  def create(path:C3Path, config:RemoteBackupLocation):RemoteBackup = {
-
-    val zipFile = URI.create(path.toString)
-
-    new RemoteBackup(zipFile, true, config)
+  def create(name: String, config: RemoteBackupLocation): RemoteBackup = {
+    new RemoteBackup(name, true, config)
   }
 
-  def directoryForAddress(fs:FileSystem, address:String):Path = {
+  def directoryForAddress(fs: FileSystem, address: String): Path = {
     val firstLetter = address.charAt(0).toString
     val secondLetter = address.charAt(1).toString
     val thirdLetter = address.charAt(2).toString
