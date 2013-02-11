@@ -11,22 +11,22 @@ import java.nio.file._
 import java.util
 import org.aphreet.c3.platform.backup.{RemoteBackupLocation, AbstractBackup}
 
-class RemoteBackup(val name : String, val create: Boolean, val config: RemoteBackupLocation) extends AbstractBackup {
+class RemoteBackup(val name: String, val create: Boolean, val config: RemoteBackupLocation) extends AbstractBackup {
 
   val HOST = config.host
   val USER = config.user
   val REMOTE_FOLDER = config.folder
   val PRIVATE_KEY = config.privateKey
 
-  var tempBackupPath: String = null
+  val sftpConnector = new SftpConnector(HOST, USER, PRIVATE_KEY)
+
+  val tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + name
 
   {
     initZip()
   }
 
   def initZip() {
-    tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + name
-
     if (!create) {
       downloadBackup()
     }
@@ -37,87 +37,22 @@ class RemoteBackup(val name : String, val create: Boolean, val config: RemoteBac
   }
 
   def downloadBackup() {
-    val sshClient = new SshClient
-    var sftpClient: SftpClient = null
-
-    try {
-      sshClient.connect(HOST, new IgnoreHostKeyVerification)
-      log.info("Connecting to host " + HOST + "...")
-
-      val authClient = new PublicKeyAuthenticationClient
-      authClient.setUsername(USER)
-
-      val keyFile = SshPrivateKeyFile.parse(PRIVATE_KEY.getBytes)
-      val key = keyFile.toPrivateKey("")
-      authClient.setKey(key)
-
-      val result = sshClient.authenticate(authClient)
-      log.info("Authentication for user " + USER + "...")
-      if (result != AuthenticationProtocolState.COMPLETE) {
-        throw new IOException("Authentication failed")
-      }
-
-      sftpClient = sshClient.openSftpClient
-      sftpClient.cd(REMOTE_FOLDER)
-
-      sftpClient.get(name, tempBackupPath)
-
-    } catch {
-      case e: IOException => {
-        log.error(e.getMessage)
-      }
-
-    } finally {
-      if (sftpClient != null && !sftpClient.isClosed) {
-        sftpClient.quit
-      }
-      if (sshClient != null && sshClient.isConnected) {
-        sshClient.disconnect
-      }
+    if (!sftpConnector.isConnected) {
+      sftpConnector.connect()
     }
+
+    sftpConnector.getFile(tempBackupPath, REMOTE_FOLDER, name)
   }
 
   override def close() {
     super.close()
 
-    val sshClient = new SshClient
-    var sftpClient: SftpClient = null
-
-    try {
-      sshClient.connect(HOST, new IgnoreHostKeyVerification)
-      log.info("Connecting to host " + HOST + "...")
-
-      val authClient = new PublicKeyAuthenticationClient
-      authClient.setUsername(USER)
-
-      val keyFile = SshPrivateKeyFile.parse(PRIVATE_KEY.getBytes)
-      val key = keyFile.toPrivateKey("")
-      authClient.setKey(key)
-
-      val result = sshClient.authenticate(authClient)
-      log.info("Authentication for user " + USER + "...")
-      if (result != AuthenticationProtocolState.COMPLETE) {
-        throw new IOException("Authentication failed")
-      }
-
-      sftpClient = sshClient.openSftpClient
-      sftpClient.cd(REMOTE_FOLDER)
-
-      sftpClient.put(tempBackupPath)
-
-    } catch {
-      case e: IOException => {
-        log.error(e.getMessage)
-      }
-
-    } finally {
-      if (sftpClient != null && !sftpClient.isClosed) {
-        sftpClient.quit
-      }
-      if (sshClient != null && sshClient.isConnected) {
-        sshClient.disconnect
-      }
+    if (!sftpConnector.isConnected) {
+      sftpConnector.connect()
     }
+
+    sftpConnector.putFile(tempBackupPath, REMOTE_FOLDER)
+    sftpConnector.disconnect()
 
     val localBackup = new File(tempBackupPath)
     if (localBackup != null && localBackup.exists()) {
