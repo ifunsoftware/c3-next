@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.storage
 import org.aphreet.c3.platform.common.{CloseableIterable, Constants, Path}
 import org.aphreet.c3.platform.resource.Resource
 
-import volume.Volume
 import org.aphreet.c3.platform.exception.StorageException
 import org.apache.commons.logging.LogFactory
 
@@ -41,61 +40,16 @@ import org.apache.commons.logging.LogFactory
 /**
  * Base class for all storages
  */
-abstract class Storage extends CloseableIterable[Resource]{
+abstract class Storage extends StorageLike with CloseableIterable[Resource]{
 
   val log = LogFactory.getLog(getClass)
 
   protected var storageMode:StorageMode = new RW
 
   /**
-   * Volume where this storage have it's data
-   */
-  var volume:Volume = null
-
-  /**
    * Primary id of this storage
-   * All resources added to this storage will have this as suffix in resource address
    */
   def id:String
-
-  /**
-   * Add resource to storage and return address of this resource
-   */
-  def add(resource:Resource):String
-
-  /**
-   * Get resource from this storage
-   * If resource is not found throws ResourceNotFoundException
-   */
-  def get(ra:String):Option[Resource]
-
-  /**
-   * Update resource that already exists in this storage
-   * If there is no such resource throws ResourceNotFoundException
-   * returns new address of this resource (it may change)
-   * Must perform write lock while update is running
-   */
-  def update(resource:Resource):String
-
-  /**
-   * Delete resource from storage.
-   * If resource with specified address is not exists in storage
-   * throws ResourceNotFoundException
-   */
-  def delete(ra:String)
-
-  /**
-   * Just put resource to storage without generating new resource address
-   * Resource must already have resource address
-   * This method ignores persisted flag in ResourceVersion
-   */
-  def put(resource:Resource)
-
-  /**
-   * Append specified map to system metadata of the specified resource
-   * Must perform write lock while update is running
-   */
-  def appendSystemMetadata(ra:String, metadata:Map[String, String])
 
   /**
    * Create new index with specified parameters
@@ -171,17 +125,21 @@ abstract class Storage extends CloseableIterable[Resource]{
 
         }
         case Constants.STORAGE_MODE_CAPACITY => {
-          newMode.message match{
-            case Constants.STORAGE_MODE_CAPACITY => storageMode = newMode
-            case Constants.STORAGE_MODE_MIGRATION => {
-              if(!newMode.allowWrite){
-                storageMode = newMode
+
+          if (mode.allowWrite){
+            storageMode = newMode
+          }else{
+            newMode.message match{
+              case Constants.STORAGE_MODE_CAPACITY => storageMode = newMode
+              case Constants.STORAGE_MODE_MIGRATION => {
+                if(!newMode.allowWrite){
+                  storageMode = newMode
+                }
               }
             }
           }
-
-
         }
+
         case Constants.STORAGE_MODE_NONE => {
           if(newMode.message == Constants.STORAGE_MODE_NONE){
             storageMode = newMode
@@ -216,6 +174,11 @@ abstract class Storage extends CloseableIterable[Resource]{
    * Size that is used by storage on disk
    */
   def usedCapacity:Long
+
+  /**
+   * Capcity available on the volume where storage is located
+   */
+  def availableCapacity: Long
 
   /**
    * Create new storage iterator

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -27,63 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.volume.dataprovider
 
-import java.io.{BufferedReader, InputStreamReader}
-import org.aphreet.c3.platform.storage.volume.Volume
-import org.aphreet.c3.platform.exception.StorageException
+package org.aphreet.c3.platform.remote.test.replication
 
-abstract class AbstractUnixDataProvider(val dfCommand:String) extends VolumeDataProvider{
+import junit.framework.TestCase
+import junit.framework.Assert._
+import org.aphreet.c3.platform.remote.replication.impl.data.stats.DelayHistory
 
-  def getVolumeList:List[Volume] = {
+class DelayHistoryTestCase extends TestCase{
 
-    var result:List[Volume] = List()
+  def testHistory{
+    val history = new DelayHistory
 
-    //"df -B 1"
-    val process = Runtime.getRuntime.exec(dfCommand)
-    
-    process.waitFor
-    
-    if(process.exitValue != 0){
-      return List()
-    }
-    
-    val reader = new BufferedReader(new InputStreamReader(process.getInputStream))
-    
-    reader.readLine
-    
-    try{
-    
-    	var line = reader.readLine
-      
-	    while(line != null){
+    history.add(500, 1000)
+    history.add(300, 1000) //300
+    history.add(100, 1000)
 
-        parseDfLine(line) match {
-          case Some(volume) => result = volume :: result
-          case None =>
-        }
+    history.add(300, 2000) //400
+    history.add(500, 2000)
 
-        line = reader.readLine
-	    }
-	    
-	    result
+    history.add(100, 3000) //100
 
-    }finally reader.close()
+    assertEquals(100, history.averageDelay(1, 3000))
+    assertEquals(250, history.averageDelay(2, 3000))
+    assertEquals(266, history.averageDelay(3, 3000))
+
+    assertEquals(0, history.averageDelay(1, 4000))
+    assertEquals(100, history.averageDelay(2, 4000))
+    assertEquals(250, history.averageDelay(3, 4000))
   }
 
-  def parseDfLine(line:String):Option[Volume] = {
-    val array = line.split("\\s+", 6)
-
-    if(array.length >= 6){
-      val size = toBytes(array(1).toLong)
-      val avail = toBytes(array(3).toLong)
-      val mounted:String = array(5)
-
-      Some(new Volume(mounted, size, avail))
-    }else{
-      None
-    }
-  }
-
-  def toBytes(size:Long):Long = size
 }

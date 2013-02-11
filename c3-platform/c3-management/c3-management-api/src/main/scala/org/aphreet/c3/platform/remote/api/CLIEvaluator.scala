@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.remote.servlet
+package org.aphreet.c3.platform.remote.api
 
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService

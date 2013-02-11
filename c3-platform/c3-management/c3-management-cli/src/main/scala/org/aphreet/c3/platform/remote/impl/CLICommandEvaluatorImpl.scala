@@ -1,12 +1,12 @@
 package org.aphreet.c3.platform.remote.impl
 
-import org.aphreet.c3.platform.remote.servlet.CLIEvaluator
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.management.cli.command.CommandFactory
+import org.aphreet.c3.platform.remote.api.CLIEvaluator
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
-import org.aphreet.c3.platform.management.cli.command.CommandFactory
-import scala.Some
 import org.springframework.stereotype.Component
-import org.apache.commons.logging.LogFactory
+import scala.Some
 
 @Component
 class CLICommandEvaluatorImpl extends CLIEvaluator {

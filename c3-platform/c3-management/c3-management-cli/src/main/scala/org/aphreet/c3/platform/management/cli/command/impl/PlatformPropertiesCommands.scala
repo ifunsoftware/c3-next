@@ -70,13 +70,7 @@ class ListPlatformPropertiesCommand extends Command{
 
   override
   def execute(management:PlatformManagementService):String = {
-    val set = new TreeSet[Pair]()(
-      new Ordering[Pair] {
-        override def compare(x:Pair, y:Pair):Int = x.key.compareTo(y.key)
-      }
-    )
-
-    (set ++ management.platformProperties)
+    management.platformProperties.sortBy(_.key)
       .map(e => String.format("| %-42s | %-50s |\n", e.key, e.value)).foldLeft(header)(_ + _) + footer
 
   }
@@ -94,8 +88,7 @@ class ListStatisticsCommand extends Command{
 
   override
   def execute(management:PlatformManagementService):String = {
-
-    management.statistics
+    management.statistics.sortBy(_.key)
       .map(e => (String.format("| %-40s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer
     
   }

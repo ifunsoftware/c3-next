@@ -16,7 +16,6 @@ import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
 import java.util.{HashMap, Map => JMap}
 import org.aphreet.c3.platform.statistics.StatisticsManager
-import org.aphreet.c3.platform.storage.volume.{Volume, VolumeManager}
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, StorageMode}
 
 @Component("platformManagementEndpoint")
@@ -41,9 +40,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
   @Autowired
   var statisticsManager:StatisticsManager = _
-
-  @Autowired
-  var volumeManager:VolumeManager = _
 
   def listStorages:List[Storage] = storageManager.listStorages
   
@@ -119,8 +115,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
 
   def statistics:Map[String,String] = statisticsManager.fullStatistics
-
-  def listVolumes:List[Volume] = volumeManager.volumeList
 
   def createIndex(index:StorageIndex) {
     storageManager.createIndex(index)

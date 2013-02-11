@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.remote.rest.controllers
 import javax.servlet.http._
 import org.aphreet.c3.platform.accesscontrol.{DELETE, UPDATE, CREATE, READ}
 import org.aphreet.c3.platform.filesystem.Node
-import org.aphreet.c3.platform.remote.rest.query.QueryRunner
 import org.aphreet.c3.platform.remote.rest.response.{Result, ResourceAddress, UploadResult}
 import org.aphreet.c3.platform.resource.Resource
 import org.springframework.stereotype.Controller

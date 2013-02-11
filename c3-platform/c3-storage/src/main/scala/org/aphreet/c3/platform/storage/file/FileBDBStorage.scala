@@ -30,13 +30,14 @@
 package org.aphreet.c3.platform.storage.file
 
 import java.io._
-import org.aphreet.c3.platform.storage.StorageParams
+import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams}
 import org.aphreet.c3.platform.storage.bdb.{AbstractSingleInstanceBDBStorage, BDBConfig}
 
 class FileBDBStorage(override val parameters:StorageParams,
                      override val systemId:String,
-                     override val config:BDBConfig)
-          extends AbstractSingleInstanceBDBStorage(parameters, systemId, config)
+                     override val config:BDBConfig,
+                     override val conflictResolverProvider: ConflictResolverProvider)
+          extends AbstractSingleInstanceBDBStorage(parameters, systemId, config, conflictResolverProvider)
           with FileDataManipulator{
 
   def name:String = FileBDBStorage.NAME

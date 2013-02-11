@@ -1,23 +1,21 @@
 package org.aphreet.c3.platform.storage.composite
 
-import org.aphreet.c3.platform.storage.bdb.{BDBConfigProvider, FailoverStrategy, DatabaseProvider, DataManipulator}
-import org.aphreet.c3.platform.storage.bdb.impl.BDBDataManipulator
-import org.aphreet.c3.platform.resource.Resource
 import com.sleepycat.je.{OperationStatus, LockMode, DatabaseEntry, Transaction}
 import java.io.File
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.storage.bdb.impl.BDBDataManipulator
+import org.aphreet.c3.platform.storage.bdb.{BDBConfigProvider, DatabaseProvider, DataManipulator}
 import org.aphreet.c3.platform.storage.file.FileDataManipulator
 
-trait CompositeDataManipulator extends DataManipulator with DatabaseProvider with FailoverStrategy with BDBConfigProvider{
+trait CompositeDataManipulator extends DataManipulator with DatabaseProvider with BDBConfigProvider{
 
   def getDataPath:File
 
   def bdbDataManipulator:BDBDataManipulator = new BDBDataManipulator {
+
     def getDatabase(writeFlag: Boolean) =
       CompositeDataManipulator.this.getDatabase(writeFlag)
 
-    def failuresArePossible(block: => Any){
-      CompositeDataManipulator.this.failuresArePossible(block)
-    }
   }
 
   def fileDataManipulator:FileDataManipulator = new FileDataManipulator {
@@ -35,6 +33,11 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
   }
 
   override
+  def loadDataForUpdate(resource: Resource, tx: Transaction){
+    selectDataManipulator(resource).loadDataForUpdate(resource, tx)
+  }
+
+  override
   def storeData(resource:Resource, tx:Transaction) {
     selectDataManipulator(resource).storeData(resource, tx)
   }
@@ -44,18 +47,13 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
     val key = new DatabaseEntry(ra.getBytes)
     val value = new DatabaseEntry()
 
-    val status = getRWDatabase.get(null, key, value, LockMode.DEFAULT)
+    val status = rwDatabase.get(null, key, value, LockMode.DEFAULT)
 
     //TODO consider reuse got resource in the data manipulators implemenations
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
       selectDataManipulator(resource).deleteData(ra, tx)
     }
-  }
-
-  override
-  def putData(resource:Resource, tx:Transaction) {
-    selectDataManipulator(resource).putData(resource, tx)
   }
 
   protected def selectDataManipulator(resource:Resource):DataManipulator = {

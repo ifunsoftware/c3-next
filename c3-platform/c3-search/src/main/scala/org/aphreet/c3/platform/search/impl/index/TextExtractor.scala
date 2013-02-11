@@ -1,12 +1,6 @@
 package org.aphreet.c3.platform.search.impl.index
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.search.tika.TikaProvider
-import org.aphreet.c3.platform.search.impl.rmi.SearchRmiProxyFactoryBean
-import java.io.{FileOutputStream, File}
-import java.nio.channels.WritableByteChannel
-import org.aphreet.c3.platform.resource.{FileDataStream, Resource}
-import collection.JavaConversions._
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 
 /**

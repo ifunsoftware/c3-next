@@ -49,8 +49,6 @@ class CommandFactory(additionalCommands:List[Commands] = List()) {
     register(TypeMappingCommands)
     register(UserCommands)
 
-    register(VolumeCommands)
-
     register(ReplicationCommands)
 
     register(DomainCommands)

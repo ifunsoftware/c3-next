@@ -1,5 +1,7 @@
-/**
- * Copyright (c) 2010, Mikhail Malygin
+import org.aphreet.c3.platform.client.access.tools.ConcurrentDirectoryChangeTest
+
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
  *
@@ -28,36 +30,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.management.cli.command.impl
+object DirectoryTest {
 
-import org.aphreet.c3.platform.management.cli.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, VolumeDescription}
-
-object VolumeCommands extends Commands{
-
-  override def instances = List(
-    new ListVolumesCommand
-  )
-}
-
-class ListVolumesCommand extends Command {
-
-  override def name:List[String] = List("list", "volumes")
-
-  override def execute(management:PlatformManagementService):String = {
-
-    def format(desc:VolumeDescription):String =
-      String.format("| %-31s | %8d | %13d | %13d | %13d |\n",
-      desc.path,
-      desc.storages,
-      desc.size,
-      desc.free,
-      desc.available)
-
-    val header = "|           Mount point           | Storages |     Total     |     Free      |   Available   |\n" +
-                 "|---------------------------------|----------|---------------|---------------|---------------|\n"
-    val footer = "|---------------------------------|----------|---------------|---------------|---------------|\n"
-
-    management.volumes.map(v => format(v)).foldLeft(header)(_ + _) + footer
+  def main(args: Array[String]){
+    new ConcurrentDirectoryChangeTest(args).run()
   }
 }

@@ -72,27 +72,31 @@ class DirectorySerializationTestCase extends TestCase{
     try{
       val directory = Directory(resource)
 
-      for(child <- directory.getChildren){
+      for(child <- directory.allChildren){
         println(child)
       }
       assertFalse(false)
     }catch{
-      case e => assertTrue(true)
+      case e : Throwable => assertTrue(true)
     }
   }
 
   def testSerializeDeserialize() {
     val directory = Directory.emptyDirectory("domain", "name")
-    directory.addChild(NodeRef("child", "address", true))
-    directory.addChild(NodeRef("achild", "address", true))
+    directory.addChild("child", "address", leaf = true)
+    directory.addChild("achild", "address", leaf = true)
 
     val resource = directory.resource
 
+    val timestamp = resource.versions.last.date.getTime
+
     val node = Node.fromResource(resource)
 
+    assertEquals(
+      List(NodeRef("achild", "address", leaf = true, deleted = false, modified = timestamp),
+           NodeRef("child", "address", leaf = true, deleted = false, modified = timestamp)),
 
-    assertEquals(List(NodeRef("achild", "address", true),
-      NodeRef("child", "address", true)), node.asInstanceOf[Directory].getChildren.toList)
+      node.asInstanceOf[Directory].allChildren.toList)
 
   }
 

@@ -1,9 +1,9 @@
-package org.aphreet.c3.platform.remote.rest.query
+package org.aphreet.c3.platform.remote.rest.controllers
 
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.accesscontrol.READ
 import org.aphreet.c3.platform.query.QueryManager
-import org.aphreet.c3.platform.remote.rest.controllers.RestController
+import org.aphreet.c3.platform.remote.rest.query.RestQueryConsumer
 import scala.collection.mutable
 
 trait QueryRunner extends RestController {

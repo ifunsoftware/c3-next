@@ -29,29 +29,27 @@
  */
 package org.aphreet.c3.platform.storage.impl
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.storage._
-
-import dispatcher.StorageDispatcher
-
-import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
-import org.aphreet.c3.platform.storage.volume.VolumeManager
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
+import collection.mutable
 import java.io.IOException
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
-import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
-import collection.mutable
-import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
-import java.nio.file.attribute.BasicFileAttributes
-import org.aphreet.c3.platform.access.{StoragePurgedMsg, AccessMediator}
-import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
+import org.aphreet.c3.platform.task.{Task, IterableTask, TaskManager}
+import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
+import org.springframework.stereotype.Component
+import scala.actors.Actor
+
 
 @Component("storageManager")
-class StorageManagerImpl extends StorageManager {
+class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   val log = LogFactory.getLog(getClass)
 
@@ -69,13 +67,11 @@ class StorageManagerImpl extends StorageManager {
   var indexConfigAccessor: StorageIndexConfigAccessor = _
 
   @Autowired
-  var volumeManager: VolumeManager = _
-
-  @Autowired
   var platformConfigManager: PlatformConfigManager = _
 
   @Autowired
-  var accessMediator: AccessMediator = _
+  @Qualifier("AccessMediator")
+  var accessMediator: Actor = _
 
   @Autowired
   var taskManager: TaskManager = _
@@ -84,10 +80,14 @@ class StorageManagerImpl extends StorageManager {
 
   lazy val storageLocation = defaultStoragePath
 
+  val conflictResolvers = new mutable.HashMap[String, ConflictResolver]()
+
   @PostConstruct
   def init() {
     log info "Starting StorageManager..."
     updateDispatcher()
+
+    taskManager.submitTask(new CapacityMonitoringTask(this))
   }
 
   @PreDestroy
@@ -124,11 +124,11 @@ class StorageManagerImpl extends StorageManager {
     }
   }
 
-  def storageForResource(resource: Resource): Storage = {
+  def storageForResource(resource: Resource): StorageLike = {
     storageForAddress(ResourceAddress(resource.address))
   }
 
-  def storageForAddress(address: ResourceAddress): Storage = {
+  def storageForAddress(address: ResourceAddress): StorageLike = {
     storageDispatcher.selectStorageForAddress(address) match {
       case Some(params) => storageForId(params.id)
       case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
@@ -151,7 +151,7 @@ class StorageManagerImpl extends StorageManager {
           RW(Constants.STORAGE_MODE_NONE),
           indexConfigAccessor.load,
           new mutable.HashMap[String, String]),
-          systemId)
+          systemId, this)
       }
       case None => throw new StorageException("Can't find factory for type: " + storageType)
     }
@@ -264,18 +264,28 @@ class StorageManagerImpl extends StorageManager {
     accessMediator ! StoragePurgedMsg('StorageManager)
   }
 
+
+  def conflictResolverFor(resource: Resource) = {
+    val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE).getOrElse("")
+    conflictResolvers.get(contentType) match {
+      case Some(resolver) => resolver
+      case None => new DefaultConflictResolver
+    }
+  }
+
+  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver){
+    conflictResolvers.synchronized(
+      conflictResolvers.put(contentType, conflictResolver)
+    )
+  }
+
   private def registerStorage(storage: Storage) {
     storages.put(storage.id, storage)
-
-    volumeManager register storage
   }
 
   private def unregisterStorage(storage: Storage) {
-
     storages.remove(storage.id)
-    volumeManager unregister storage
   }
-
 
   private def updateDispatcher() {
     storageDispatcher.setStorageParams(configAccessor.load)
@@ -312,7 +322,7 @@ class StorageManagerImpl extends StorageManager {
 
       if (param.storageType.equals(factory.name)) {
         log info "Restoring existent storage: " + param.toString
-        registerStorage(factory.createStorage(param, systemId))
+        registerStorage(factory.createStorage(param, systemId, this))
       }
     }
   }
@@ -353,6 +363,25 @@ class StorageManagerImpl extends StorageManager {
       log.info("Creating index for storage: " + element.id)
       element.createIndex(index)
       log.info("Index for storage " + element.id + " has been created")
+    }
+  }
+
+  class CapacityMonitoringTask(storageManager: StorageManager) extends Task {
+    override def step(){
+      for (storage <- storageManager.listStorages){
+        if (storage.availableCapacity < 100L * 1024 * 1024){
+          if (storage.mode.allowWrite){
+            storage.mode = RO(Constants.STORAGE_MODE_CAPACITY)
+          }
+        }else if(!storage.mode.allowWrite){
+          if (storage.availableCapacity > 500L * 1024 * 1024){
+            if (storage.mode == RO(Constants.STORAGE_MODE_CAPACITY)){
+              storage.mode = RW(Constants.STORAGE_MODE_CAPACITY)
+            }
+          }
+        }
+      }
+      Thread.sleep(10 * 1000)
     }
   }
 

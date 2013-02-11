@@ -34,6 +34,8 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
 import org.apache.commons.logging.LogFactory
 import collection.immutable.TreeMap
+import java.util.{UUID, Date}
+import scala.collection.mutable
 
 abstract class Node(val resource:Resource){
 
@@ -82,7 +84,13 @@ object Node{
   }
 }
 
-case class NodeRef(name:String, address:String, leaf:Boolean)
+case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, modified: Long){
+
+  def delete(timestamp: Long) :NodeRef = NodeRef(name, address, leaf, deleted = true, timestamp)
+
+  def update(newName: String, timestamp: Long): NodeRef = NodeRef(newName, address, leaf, deleted = false, timestamp)
+
+}
 
 case class File(override val resource:Resource) extends Node(resource){
 
@@ -103,7 +111,13 @@ object File{
 
 case class Directory(override val resource:Resource) extends Node(resource){
 
-  private var children = new TreeMap[String, NodeRef]
+  private var childrenMap = new TreeMap[String, NodeRef]
+
+  private var persistedVersionTimestamp = 0L
+
+  private var updateTimestamp = -1L
+
+  private var randomUUID: UUID = null
 
   {
     readData()
@@ -113,35 +127,75 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   def getChild(name:String):Option[NodeRef] = {
 
-    Node.log debug children.toString
+    Node.log debug childrenMap.toString
 
-    children.get(name)
+    childrenMap.get(name)
   }
 
-  def addChild(node:NodeRef) {
+  def addChild(name: String, address: String, leaf: Boolean) {
 
-    children += (node.name -> node)
+    childrenMap += (name -> NodeRef(name, address, leaf, deleted = false, modified = takeUpdateTimestamp()))
 
     updateResource()
   }
 
   def removeChild(name:String) {
 
-    children = children - name
+    childrenMap.get(name) match {
+      case Some(nodeRef) => {
+        childrenMap += (nodeRef.name -> nodeRef.delete(takeUpdateTimestamp()))
+      }
+      case None =>
+    }
 
     updateResource()
   }
 
-  def getChildren:Array[NodeRef] = {
-    children.values.toArray
+  def updateChild(name: String, newName: String) {
+    childrenMap.get(name) match {
+      case Some(nodeRef) => {
+        childrenMap += (name -> nodeRef.delete(takeUpdateTimestamp()))
+        childrenMap += (newName -> nodeRef.update(newName, takeUpdateTimestamp()))
+      }
+      case None =>
+    }
+
+    updateResource()
   }
 
+  def allChildren:Array[NodeRef] = {
+    childrenMap.values.toArray
+  }
+
+  def children:Array[NodeRef] = {
+    childrenMap.values.filter(!_.deleted).toArray
+  }
+
+  def importChildren(newChildren: mutable.Map[String, NodeRef]){
+    childrenMap = new TreeMap[String, NodeRef]() ++ newChildren
+    updateResource()
+  }
 
   protected def updateResource() {
     val version = new ResourceVersion
-    version.data = writeData(children)
+    version.data = writeData(childrenMap)
     version.persisted = false
     resource.addVersion(version)
+    version.date = new Date(takeUpdateTimestamp())
+
+    //As this method can be called several times before resource
+    //actually will be stored
+    //make sure, that created version references
+    //pervious persisted version
+    version.basedOnVersion = persistedVersionTimestamp
+  }
+
+  protected def takeUpdateTimestamp(): Long = {
+    if(updateTimestamp == -1L){
+      updateTimestamp = System.currentTimeMillis()
+    }
+
+    updateTimestamp
   }
 
   private def writeData(children:Map[String, NodeRef]):DataStream = {
@@ -149,19 +203,26 @@ case class Directory(override val resource:Resource) extends Node(resource){
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
-    dataOs.writeShort(0)
+    dataOs.writeShort(1)
     dataOs.writeInt(children.size)
 
     for((name, nodeRef) <- children){
       dataOs.writeUTF(nodeRef.address)
       dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
+      dataOs.writeBoolean(nodeRef.deleted)
+      dataOs.writeLong(nodeRef.modified)
     }
 
     //We just need some entropy to make sure that initial directory content
     //is not the same -> content md5 is not the same
     //and as a result storage is not the same
     dataOs.writeLong(resource.createDate.getTime)
+
+    if(randomUUID != null){
+      dataOs.writeLong(randomUUID.getLeastSignificantBits)
+      dataOs.writeLong(randomUUID.getMostSignificantBits)
+    }
 
     DataStream.create(byteOs.toByteArray)
   }
@@ -170,11 +231,15 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
     if(resource.versions.length > 0){
 
-      val byteIn = new ByteArrayInputStream(resource.versions.last.data.getBytes)
+      val version = resource.versions.last
+
+      persistedVersionTimestamp = version.date.getTime
+
+      val byteIn = new ByteArrayInputStream(version.data.getBytes)
 
       val dataIn = new DataInputStream(byteIn)
 
-      dataIn.readShort
+      val serializationFormat = dataIn.readShort
 
       val count = dataIn.readInt
 
@@ -182,7 +247,17 @@ case class Directory(override val resource:Resource) extends Node(resource){
         val address = dataIn.readUTF
         val leaf = dataIn.readBoolean
         val name = dataIn.readUTF
-        children += (name -> NodeRef(name, address, leaf))
+
+        if(serializationFormat > 0){
+
+          val deleted = dataIn.readBoolean()
+          val modified = dataIn.readLong()
+
+          childrenMap += (name -> NodeRef(name, address, leaf, deleted, modified))
+
+        }else{
+          childrenMap += (name -> NodeRef(name, address, leaf, deleted = false, modified = version.date.getTime))
+        }
       }
     }
   }
@@ -206,6 +281,8 @@ object Directory{
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
 
     val directory = Directory(resource)
+
+    directory.randomUUID = UUID.randomUUID()
 
     directory.updateResource()
 

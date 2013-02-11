@@ -9,7 +9,7 @@
 
     <context:annotation-config />
 
-    <bean id="resultWriterFactory" class="org.aphreet.c3.platform.remote.rest.response.ResultWriterFactory"/>
+    <bean id="resultWriterFactory" class="org.aphreet.c3.platform.remote.rest.controllers.ResultWriterFactory"/>
 
     <bean id="xmlResultWriter"
       factory-bean="resultWriterFactory"

@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2011, Mikhail Malygin
+ * Copyright (c) 2010, Mikhail Malygin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
-
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
@@ -28,41 +27,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.filesystem.test
 
-import junit.framework.TestCase
-import junit.framework.Assert._
-import org.easymock.EasyMock._
-import org.aphreet.c3.platform.filesystem.impl.{FSManagerInternal, FSDirectoryUpdaterImpl}
-import org.aphreet.c3.platform.filesystem.{ADD, FSDirectoryTask, NodeRef, ScheduleMsg}
+package org.aphreet.c3.platform.remote.rest.controllers
 
+import org.aphreet.c3.platform.remote.rest.response.{JsonResultWriter, XmlResultWriter}
+import org.aphreet.c3.platform.remote.rest.serialization.XStreamFactory
 
-class FSDirectoryUpdaterTestCase extends TestCase{
+class ResultWriterFactory{
 
-  def testDirectoryUpdate() {
-
-    val fsManager = createMock(classOf[FSManagerInternal])
-
-    expect(fsManager.executeDirectoryTasks("address", List(FSDirectoryTask(ADD, NodeRef("name1", "child-address", true)))))
-    expect(fsManager.executeDirectoryTasks("address", List(FSDirectoryTask(ADD, NodeRef("name2", "child-address", true)))))
-
-
-    replay(fsManager)
-
-    val directoryUpdater = new FSDirectoryUpdaterImpl
-
-    directoryUpdater.fsManager = fsManager
-
-    directoryUpdater.init()
-
-    directoryUpdater ! ScheduleMsg("address", FSDirectoryTask(ADD, NodeRef("name1", "child-address", true)))
-    directoryUpdater ! ScheduleMsg("address", FSDirectoryTask(ADD, NodeRef("name2", "child-address", true)))
-
-    Thread.sleep(5000)
-
-    directoryUpdater.destroy()
-
-    verify(fsManager)
-
+  def createXmlResultWriter:XmlResultWriter = {
+    new XmlResultWriter(new XStreamFactory().createXMLStream)
   }
+
+  def createJsonResultWriter:JsonResultWriter = {
+    new JsonResultWriter(new XStreamFactory().createJSONStream)
+  }
+  
 }

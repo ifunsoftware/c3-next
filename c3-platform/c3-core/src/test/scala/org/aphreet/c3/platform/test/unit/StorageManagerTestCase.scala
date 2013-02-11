@@ -34,7 +34,6 @@ import junit.framework.TestCase
 import junit.framework.Assert._
 import org.easymock.EasyMock._
 import org.aphreet.c3.platform.storage.impl.StorageManagerImpl
-import org.aphreet.c3.platform.storage.volume.VolumeManager
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.config.PlatformConfigManager
@@ -43,6 +42,7 @@ import collection.mutable
 import org.aphreet.c3.platform.storage.StorageParams
 import org.aphreet.c3.platform.storage.RW
 import org.aphreet.c3.platform.mock.StorageMock
+import org.aphreet.c3.platform.task.TaskManager
 
 class StorageManagerTestCase extends TestCase{
 
@@ -52,12 +52,13 @@ class StorageManagerTestCase extends TestCase{
 
   def testRegisterFactory() {
 
+    val storageManager = new StorageManagerImpl
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
 
-
-    val volumeManager = createMock(classOf[VolumeManager])
-    expect(volumeManager.register(StorageMock(storageId, storagePath)))
-    replay(volumeManager)
+    val taskManager = createMock(classOf[TaskManager])
+    expect(taskManager.submitTask(anyObject())).andReturn("capacityTaskId")
+    replay(taskManager)
 
     val storageDispatcher = createMock(classOf[StorageDispatcher])
     expect(storageDispatcher.setStorageParams(List(storageParams)))
@@ -67,7 +68,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234")
+      storageParams, "12341234", storageManager)
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -83,10 +84,8 @@ class StorageManagerTestCase extends TestCase{
     ).atLeastOnce
     replay(configManager)
 
-    val storageManager = new StorageManagerImpl
-
+    storageManager.taskManager = taskManager
     storageManager.configAccessor = configAccessor
-    storageManager.volumeManager = volumeManager
     storageManager.storageDispatcher = storageDispatcher
     storageManager.platformConfigManager = configManager
 
@@ -99,19 +98,21 @@ class StorageManagerTestCase extends TestCase{
 
     verify(storageFactory)
     verify(configAccessor)
-    verify(volumeManager)
     verify(storageDispatcher)
     verify(configManager)
+    verify(taskManager)
   }
 
   def testUpdateStorageMode() {
 
+    val storageManager = new StorageManagerImpl
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
     val updatedParams = StorageParams(storageId, new Path(storagePath), storageName, RO("USER"), List(), new mutable.HashMap[String, String])
 
-    val volumeManager = createMock(classOf[VolumeManager])
-    expect(volumeManager.register(StorageMock(storageId, storagePath)))
-    replay(volumeManager)
+    val taskManager = createMock(classOf[TaskManager])
+    expect(taskManager.submitTask(notNull())).andReturn("capacityTaskId")
+    replay(taskManager)
 
     val storageDispatcher = createMock(classOf[StorageDispatcher])
     expect(storageDispatcher.setStorageParams(List(storageParams)))
@@ -122,7 +123,7 @@ class StorageManagerTestCase extends TestCase{
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234")
+      storageParams, "12341234", storageManager)
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
 
@@ -143,10 +144,9 @@ class StorageManagerTestCase extends TestCase{
     ).atLeastOnce
     replay(configManager)
 
-    val storageManager = new StorageManagerImpl
 
+    storageManager.taskManager = taskManager
     storageManager.configAccessor = configAccessor
-    storageManager.volumeManager = volumeManager
     storageManager.storageDispatcher = storageDispatcher
     storageManager.platformConfigManager = configManager
 
@@ -164,9 +164,9 @@ class StorageManagerTestCase extends TestCase{
 
     verify(storageFactory)
     verify(configAccessor)
-    verify(volumeManager)
     verify(storageDispatcher)
     verify(configManager)
+    verify(taskManager)
   }
 
 
