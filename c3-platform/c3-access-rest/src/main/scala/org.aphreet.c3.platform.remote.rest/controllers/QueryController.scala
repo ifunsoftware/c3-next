@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.remote.rest.controllers
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.aphreet.c3.platform.remote.rest.query.QueryRunner
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, RequestMapping}
 

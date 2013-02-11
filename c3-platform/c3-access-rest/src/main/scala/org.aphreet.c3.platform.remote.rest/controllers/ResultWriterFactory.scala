@@ -28,8 +28,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.remote.rest.response
+package org.aphreet.c3.platform.remote.rest.controllers
 
+import org.aphreet.c3.platform.remote.rest.response.{JsonResultWriter, XmlResultWriter}
 import org.aphreet.c3.platform.remote.rest.serialization.XStreamFactory
 
 class ResultWriterFactory{
