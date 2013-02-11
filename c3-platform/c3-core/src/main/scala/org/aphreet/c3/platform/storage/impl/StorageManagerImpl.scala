@@ -42,8 +42,7 @@ import org.aphreet.c3.platform.exception.{ConfigurationException, StorageExcepti
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
-import org.aphreet.c3.platform.storage.volume.VolumeManager
-import org.aphreet.c3.platform.task.{IterableTask, TaskManager}
+import org.aphreet.c3.platform.task.{Task, IterableTask, TaskManager}
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 import org.springframework.stereotype.Component
 import scala.actors.Actor
@@ -68,9 +67,6 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
   var indexConfigAccessor: StorageIndexConfigAccessor = _
 
   @Autowired
-  var volumeManager: VolumeManager = _
-
-  @Autowired
   var platformConfigManager: PlatformConfigManager = _
 
   @Autowired
@@ -90,6 +86,8 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
   def init() {
     log info "Starting StorageManager..."
     updateDispatcher()
+
+    taskManager.submitTask(new CapacityMonitoringTask(this))
   }
 
   @PreDestroy
@@ -283,16 +281,11 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   private def registerStorage(storage: Storage) {
     storages.put(storage.id, storage)
-
-    volumeManager register storage
   }
 
   private def unregisterStorage(storage: Storage) {
-
     storages.remove(storage.id)
-    volumeManager unregister storage
   }
-
 
   private def updateDispatcher() {
     storageDispatcher.setStorageParams(configAccessor.load)
@@ -370,6 +363,25 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
       log.info("Creating index for storage: " + element.id)
       element.createIndex(index)
       log.info("Index for storage " + element.id + " has been created")
+    }
+  }
+
+  class CapacityMonitoringTask(storageManager: StorageManager) extends Task {
+    override def step(){
+      for (storage <- storageManager.listStorages){
+        if (storage.availableCapacity < 100L * 1024 * 1024){
+          if (storage.mode.allowWrite){
+            storage.mode = RO(Constants.STORAGE_MODE_CAPACITY)
+          }
+        }else if(!storage.mode.allowWrite){
+          if (storage.availableCapacity > 500L * 1024 * 1024){
+            if (storage.mode == RO(Constants.STORAGE_MODE_CAPACITY)){
+              storage.mode = RW(Constants.STORAGE_MODE_CAPACITY)
+            }
+          }
+        }
+      }
+      Thread.sleep(10 * 1000)
     }
   }
 

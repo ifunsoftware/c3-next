@@ -39,6 +39,7 @@ import org.aphreet.c3.platform.storage.common.AbstractStorage
 import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams, StorageIterator}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import java.nio.file.Files
 
 abstract class AbstractBDBStorage(override val parameters:StorageParams,
                                   override val systemId:String,
@@ -69,6 +70,8 @@ with DatabaseProvider{
     }
 
   }
+
+  def availableCapacity = Files.getFileStore(new File(storagePath).toPath).getUsableSpace
 
   def usedCapacity:Long = calculateSize(new File(storagePath))
 

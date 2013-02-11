@@ -101,12 +101,8 @@ class MigrationManagerImpl extends MigrationManager{
     
     val requiredFreeCapacity = source.usedCapacity
 
-    if(target.volume != null){
-      val freeCapacityOnTarget = target.volume.safeAvailable
-
-      if(freeCapacityOnTarget < requiredFreeCapacity){
-        throw new MigrationException("Not enought capacity on target")
-      }
+    if(target.availableCapacity < source.usedCapacity){
+      throw new MigrationException("Not enough capacity on target storage")
     }
     
     log info "Preconditions check complete"

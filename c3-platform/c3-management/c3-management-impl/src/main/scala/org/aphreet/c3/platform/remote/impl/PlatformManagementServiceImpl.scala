@@ -369,18 +369,6 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def volumes:Array[VolumeDescription] = {
-    try{
-      (for(v <- managementEndpoint.listVolumes)
-      yield new VolumeDescription(v.mountPoint, v.size, v.available, v.safeAvailable, v.storages.size)).toSeq.toArray
-    }catch{
-      case e: Throwable => {
-        e.printStackTrace()
-        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
-      }
-    }
-  }
-
   def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
     try{
       val idx = new StorageIndex(name,

@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.storage
 import org.aphreet.c3.platform.common.{CloseableIterable, Constants, Path}
 import org.aphreet.c3.platform.resource.Resource
 
-import volume.Volume
 import org.aphreet.c3.platform.exception.StorageException
 import org.apache.commons.logging.LogFactory
 
@@ -46,11 +45,6 @@ abstract class Storage extends StorageLike with CloseableIterable[Resource]{
   val log = LogFactory.getLog(getClass)
 
   protected var storageMode:StorageMode = new RW
-
-  /**
-   * Volume where this storage have it's data
-   */
-  var volume:Volume = null
 
   /**
    * Primary id of this storage
@@ -131,17 +125,21 @@ abstract class Storage extends StorageLike with CloseableIterable[Resource]{
 
         }
         case Constants.STORAGE_MODE_CAPACITY => {
-          newMode.message match{
-            case Constants.STORAGE_MODE_CAPACITY => storageMode = newMode
-            case Constants.STORAGE_MODE_MIGRATION => {
-              if(!newMode.allowWrite){
-                storageMode = newMode
+
+          if (mode.allowWrite){
+            storageMode = newMode
+          }else{
+            newMode.message match{
+              case Constants.STORAGE_MODE_CAPACITY => storageMode = newMode
+              case Constants.STORAGE_MODE_MIGRATION => {
+                if(!newMode.allowWrite){
+                  storageMode = newMode
+                }
               }
             }
           }
-
-
         }
+
         case Constants.STORAGE_MODE_NONE => {
           if(newMode.message == Constants.STORAGE_MODE_NONE){
             storageMode = newMode
@@ -176,6 +174,11 @@ abstract class Storage extends StorageLike with CloseableIterable[Resource]{
    * Size that is used by storage on disk
    */
   def usedCapacity:Long
+
+  /**
+   * Capcity available on the volume where storage is located
+   */
+  def availableCapacity: Long
 
   /**
    * Create new storage iterator

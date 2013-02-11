@@ -4,6 +4,7 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.remote.api.CLIEvaluator
 
 class CLIServlet extends HttpServlet{
 
