@@ -40,7 +40,7 @@ trait FSManager{
 
   def createFile(domainId:String, path:String, resource:Resource)
 
-  def createDirectory(domainId:String, path:String)
+  def createDirectory(domainId:String, path:String, meta: Map[String, String])
 
   def moveNode(domainId:String, oldPath:String, newPath:String)
 
