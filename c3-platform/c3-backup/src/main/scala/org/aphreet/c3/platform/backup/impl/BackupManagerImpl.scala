@@ -40,6 +40,7 @@ import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessMediator}
 import org.aphreet.c3.platform.filesystem.FSManager
+import java.io.File
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -81,6 +82,16 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
     val task = new RestoreTask(storageManager, accessMediator, filesystemManager, backup)
     taskManager.submitTask(task)
+  }
+
+  def listBackups(folderPath:String) : List[String] = {
+    val folder = new File(folderPath)
+    folder.listFiles()
+      .filter( (file) => file.isFile && )
+      .foreach( (file) => {
+
+    })
+
   }
 
   def propertyChanged(event: PropertyChangeEvent) {}

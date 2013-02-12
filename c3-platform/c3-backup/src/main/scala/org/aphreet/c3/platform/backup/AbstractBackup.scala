@@ -3,16 +3,20 @@ package org.aphreet.c3.platform.backup
 import impl.Backup
 import org.aphreet.c3.platform.common.{CloseableIterator, CloseableIterable}
 import org.aphreet.c3.platform.resource.{PathDataStream, ResourceSerializer, Resource}
-import java.nio.file.{Path, StandardOpenOption, Files, FileSystem}
+import java.nio.file._
 import collection.JavaConversions._
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io._
 import java.nio.charset.Charset
 import org.apache.commons.logging.LogFactory
+import org.apache.commons.codec.digest.DigestUtils
+import java.nio.file.FileSystem
 
 
 abstract class AbstractBackup extends CloseableIterable[Resource] {
 
   var zipFs:FileSystem = null
+  var zipFilePath : String = null
+  var md5FilePath : String = null
 
   val log = LogFactory getLog getClass
 
@@ -66,6 +70,15 @@ abstract class AbstractBackup extends CloseableIterable[Resource] {
 
     def close(){
       zipFs.close()
+
+      val zipInputStream = new FileInputStream(zipFilePath)
+      val md5 = DigestUtils.md5Hex(zipInputStream)
+      zipInputStream.close()
+
+      val md5FileWriter = new PrintWriter(new FileOutputStream(md5FilePath))
+      md5FileWriter.print(md5)
+      md5FileWriter.flush()
+      md5FileWriter.close()
     }
 
     private lazy val addresses:Seq[String] = Files.readAllLines(zipFs.getPath("list"), Charset.forName("UTF-8"))

@@ -36,4 +36,6 @@ trait BackupManager {
 
   def restoreBackup(location:String)
 
+  def listBackups(folderPath:String) : List[String]
+
 }

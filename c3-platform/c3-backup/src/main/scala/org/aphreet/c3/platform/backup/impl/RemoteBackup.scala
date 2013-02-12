@@ -20,28 +20,27 @@ class RemoteBackup(val name: String, val create: Boolean, val config: RemoteBack
 
   val sftpConnector = new SftpConnector(HOST, USER, PRIVATE_KEY)
 
-  val tempBackupPath = System.getProperty("java.io.tmpdir") + "/" + name
 
   {
-    initZip()
-  }
+    zipFilePath = System.getProperty("java.io.tmpdir") + "/" + name
+    md5FilePath = zipFilePath + ".md5"
 
-  def initZip() {
     if (!create) {
       downloadBackup()
     }
 
     val env = new util.HashMap[String, String]()
     env.put("create", create.toString)
-    zipFs = FileSystems.newFileSystem(URI.create("jar:file:" + tempBackupPath), env, null)
+    zipFs = FileSystems.newFileSystem(URI.create("jar:file:" + zipFilePath), env, null)
   }
+
 
   def downloadBackup() {
     if (!sftpConnector.isConnected) {
       sftpConnector.connect()
     }
 
-    sftpConnector.getFile(tempBackupPath, REMOTE_FOLDER, name)
+    sftpConnector.getFile(zipFilePath, REMOTE_FOLDER, name)
   }
 
   override def close() {
@@ -51,12 +50,18 @@ class RemoteBackup(val name: String, val create: Boolean, val config: RemoteBack
       sftpConnector.connect()
     }
 
-    sftpConnector.putFile(tempBackupPath, REMOTE_FOLDER)
+    sftpConnector.putFile(zipFilePath, REMOTE_FOLDER)
+    sftpConnector.putFile(md5FilePath, REMOTE_FOLDER)
     sftpConnector.disconnect()
 
-    val localBackup = new File(tempBackupPath)
-    if (localBackup != null && localBackup.exists()) {
-      localBackup.delete()
+    checkAndDelete(zipFilePath)
+    checkAndDelete(md5FilePath)
+  }
+
+  def checkAndDelete(fileName : String) {
+    val file = new File(fileName)
+    if (file != null && file.exists()) {
+      file.delete()
     }
   }
 }

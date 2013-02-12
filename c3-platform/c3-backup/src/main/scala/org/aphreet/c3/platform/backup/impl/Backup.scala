@@ -42,6 +42,9 @@ class Backup(val uri:URI, val create:Boolean) extends AbstractBackup {
     val env = new util.HashMap[String, String]()
     env.put("create", create.toString)
     zipFs = FileSystems.newFileSystem(uri, env, null)
+
+    zipFilePath = uri.toString.substring("jar:file:".length)
+    md5FilePath = zipFilePath + ".md5"
   }
 }
 
