@@ -54,7 +54,7 @@ import org.apache.commons.codec.binary.Base64
 import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
 import org.aphreet.c3.platform.query.QueryManager
-import org.aphreet.c3.platform.metadata.MetadataManager
+import org.aphreet.c3.platform.metadata.TransientMetadataManager
 
 class DataController extends AbstractController with ServletContextAware with RestController{
 
@@ -70,7 +70,7 @@ class DataController extends AbstractController with ServletContextAware with Re
   var accessManager: AccessManager = _
 
   @Autowired
-  var metadataManager: MetadataManager = _
+  var transientMetadataManager: TransientMetadataManager = _
 
   @Autowired
   var filesystemManager: FSManager = _
@@ -189,7 +189,7 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       val keys = extMeta.split(",")
 
-      metadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
+      transientMetadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
         case (k, v) => resource.transientMetadata.put(k, v)
       }
     }

@@ -6,12 +6,11 @@ import org.aphreet.c3.platform.common.WatchedActor
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
  * iFunSoftware
  */
-trait MetadataManager extends WatchedActor{
-  def getMetadata(ra: String): Map[String, String]
-
-  def getSystemMetadata(ra: String): Map[String, String]
+trait TransientMetadataManager extends WatchedActor{
 
   def getTransientMetadata(ra: String, metaKeys: Set[String]): Map[String, String]
+
+  def supportedMetaKeys: Set[String]
 }
 
 class TransientMetadataBuildStrategy(val transientMetaField: String, mdFunc: String => Option[String]) {

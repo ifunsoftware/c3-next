@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.metadata.impl
 
-import org.aphreet.c3.platform.metadata.{RegisterTransientMDBuildStrategy, TransientMetadataBuildStrategy, MetadataManager}
+import org.aphreet.c3.platform.metadata.{RegisterTransientMDBuildStrategy, TransientMetadataBuildStrategy, TransientMetadataManager}
 import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.access.AccessManager
@@ -14,8 +14,8 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
  * iFunSoftware
  */
-@Component("metadataManager")
-class MetadataManagerImpl extends MetadataManager{
+@Component("transientMetadataManager")
+class TransientMetadataManagerImpl extends TransientMetadataManager{
 
   private val logger = LogFactory.getLog(getClass)
 
@@ -26,7 +26,7 @@ class MetadataManagerImpl extends MetadataManager{
 
   @PostConstruct
   def init() {
-    logger info "Starting Metadata manager"
+    logger info "Starting Transient metadata manager"
     this.start()
   }
 
@@ -34,7 +34,7 @@ class MetadataManagerImpl extends MetadataManager{
     loop{
       react{
         case DestroyMsg => {
-          logger info "MetadataManager is stopped"
+          logger info "TransientMetadataManager is stopped"
           this.exit()
         }
         case RegisterTransientMDBuildStrategy(s) => transientMetadataBuildStrategies.put(s.transientMetaField, s)
@@ -45,10 +45,6 @@ class MetadataManagerImpl extends MetadataManager{
     }
   }
 
-  def getMetadata(ra: String): Map[String, String] = {
-    accessManager.get(ra).metadata.toMap
-  }
-
   def getTransientMetadata(ra: String, metaKeys: Set[String]): Map[String, String] = {
     (for {
       key <- metaKeys
@@ -57,7 +53,6 @@ class MetadataManagerImpl extends MetadataManager{
     } yield (key, value)).toMap
   }
 
-  def getSystemMetadata(ra: String): Map[String, String] = {
-    accessManager.get(ra).systemMetadata.toMap
-  }
+  def supportedMetaKeys: Set[String] = transientMetadataBuildStrategies.keySet.toSet
+
 }

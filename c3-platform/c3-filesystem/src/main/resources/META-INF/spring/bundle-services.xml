@@ -24,6 +24,6 @@
 
     <reference id="accessMediatorService" interface="org.aphreet.c3.platform.access.AccessMediator"/>
 
-    <reference id="metadataService" interface="org.aphreet.c3.platform.metadata.MetadataManager"/>
+    <reference id="transientMetadataService" interface="org.aphreet.c3.platform.metadata.TransientMetadataManager"/>
 
 </beans:beans>
