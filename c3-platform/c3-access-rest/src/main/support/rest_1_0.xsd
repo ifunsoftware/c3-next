@@ -44,6 +44,7 @@
         <xs:sequence>
             <xs:element name="metadata" type="p:metadataType"/>
             <xs:element name="systemMetadata" type="p:metadataType" minOccurs="0"/>
+            <xs:element name="transientMetadata" type="p:metadataType" minOccurs="0"/>
             <xs:element name="versions">
                 <xs:complexType>
                     <xs:sequence>

@@ -36,4 +36,7 @@
     <service id="statisticsService" ref="statisticsManager"
        interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
 
+    <service id="metadataService" ref="metadataManager"
+             interface="org.aphreet.c3.platform.metadata.MetadataManager"/>
+
 </beans:beans>  

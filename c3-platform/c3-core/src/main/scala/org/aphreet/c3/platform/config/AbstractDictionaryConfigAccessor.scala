@@ -41,8 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 abstract class AbstractDictionaryConfigAccessor(val configFileName: String) extends DictionaryConfigAccessor{
 
-
-
   def defaultConfig = Map()
 
   def readConfig(node:Node):Map[String, String] = {

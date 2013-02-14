@@ -54,6 +54,7 @@ import org.apache.commons.codec.binary.Base64
 import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
 import org.aphreet.c3.platform.query.QueryManager
+import org.aphreet.c3.platform.metadata.MetadataManager
 
 class DataController extends AbstractController with ServletContextAware with RestController{
 
@@ -67,6 +68,9 @@ class DataController extends AbstractController with ServletContextAware with Re
 
   @Autowired
   var accessManager: AccessManager = _
+
+  @Autowired
+  var metadataManager: MetadataManager = _
 
   @Autowired
   var filesystemManager: FSManager = _
@@ -185,14 +189,8 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       val keys = extMeta.split(",")
 
-      //Replace this with something like strategy if future if we need more fields
-      for (key <- keys) {
-        if (key == "c3.ext.fs.path") {
-          filesystemManager.lookupResourcePath(resource.address) match {
-            case Some(value) => resource.systemMetadata.put(key, value)
-            case None =>
-          }
-        }
+      metadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
+        case (k, v) => resource.transientMetadata.put(k, v)
       }
     }
 
