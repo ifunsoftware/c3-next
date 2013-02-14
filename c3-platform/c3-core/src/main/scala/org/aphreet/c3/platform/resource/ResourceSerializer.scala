@@ -68,6 +68,14 @@ object ResourceSerializer {
         writer.endObject
       }
 
+      writer.key("transientMetadata")
+
+      writer.`object`
+
+      resource.transientMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+
+      writer.endObject
+
       writer.key("versions")
 
       writer.array

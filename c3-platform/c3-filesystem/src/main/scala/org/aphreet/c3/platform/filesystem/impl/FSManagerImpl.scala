@@ -44,6 +44,7 @@ import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.metadata.{TransientMetadataBuildStrategy, RegisterTransientMDBuildStrategy, TransientMetadataManager}
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -71,6 +72,9 @@ with WatchedActor {
   @Autowired
   var storageManager: StorageManager = _
 
+  @Autowired
+  var transientMetadataManager: TransientMetadataManager = _
+
   var fsRoots: Map[String, String] = Map()
 
   @PostConstruct
@@ -85,6 +89,8 @@ with WatchedActor {
     storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
 
     accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
+
+    transientMetadataManager ! RegisterTransientMDBuildStrategy(new TransientMetadataBuildStrategy("c3.ext.fs.path", lookupResourcePath))
 
     fsRoots = configAccessor.load
   }

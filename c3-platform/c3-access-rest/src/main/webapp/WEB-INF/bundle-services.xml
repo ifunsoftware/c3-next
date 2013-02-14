@@ -20,4 +20,6 @@
 
     <reference id="filesystemService" interface="org.aphreet.c3.platform.filesystem.FSManager"/>
 
+    <reference id="transientMetadataService" interface="org.aphreet.c3.platform.metadata.TransientMetadataManager"/>
+
 </beans:beans>  

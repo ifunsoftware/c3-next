@@ -65,6 +65,11 @@ class Resource {
   var systemMetadata = new mutable.HashMap[String, String]
 
   /**
+   * Map with transient (non-persitent) metadata
+   */
+  var transientMetadata = new mutable.HashMap[String, String]
+
+  /**
    * Array of versions
    */
   var versions = new ArrayBuffer[ResourceVersion]
@@ -248,6 +253,7 @@ class Resource {
 
     resource.metadata = this.metadata.clone()
     resource.systemMetadata = this.systemMetadata.clone()
+    resource.transientMetadata = this.systemMetadata.clone()
 
     resource.isVersioned = this.isVersioned
     resource.embedData = this.embedData
