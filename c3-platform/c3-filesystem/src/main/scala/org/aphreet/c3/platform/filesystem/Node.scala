@@ -265,7 +265,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
 object Directory{
 
-  def emptyDirectory(domainId:String, name:String):Directory = {
+  def emptyDirectory(domainId:String, name:String, meta: Map[String, String] = Map()):Directory = {
     val resource = new Resource
     resource.isVersioned = false
     resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
@@ -279,6 +279,8 @@ object Directory{
 
     resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
     resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
+
+    meta foreach { case (k,v) => resource.metadata.put(k,v) }
 
     val directory = Directory(resource)
 

@@ -54,6 +54,7 @@ import org.apache.commons.codec.binary.Base64
 import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
 import org.aphreet.c3.platform.query.QueryManager
+import org.aphreet.c3.platform.metadata.TransientMetadataManager
 
 class DataController extends AbstractController with ServletContextAware with RestController{
 
@@ -67,6 +68,9 @@ class DataController extends AbstractController with ServletContextAware with Re
 
   @Autowired
   var accessManager: AccessManager = _
+
+  @Autowired
+  var transientMetadataManager: TransientMetadataManager = _
 
   @Autowired
   var filesystemManager: FSManager = _
@@ -185,14 +189,8 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       val keys = extMeta.split(",")
 
-      //Replace this with something like strategy if future if we need more fields
-      for (key <- keys) {
-        if (key == "c3.ext.fs.path") {
-          filesystemManager.lookupResourcePath(resource.address) match {
-            case Some(value) => resource.systemMetadata.put(key, value)
-            case None =>
-          }
-        }
+      transientMetadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
+        case (k, v) => resource.transientMetadata.put(k, v)
       }
     }
 
@@ -269,19 +267,7 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     } else {
 
-      val metadata = new mutable.HashMap[String, String]
-
-      val metadataHeaders = request.getHeaders("x-c3-metadata")
-
-      while(metadataHeaders.hasMoreElements){
-        val header = metadataHeaders.nextElement().toString
-
-        val keyValue = header.split(":", 2)
-
-        if (keyValue.length == 2){
-          metadata.put(keyValue(0), new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8"))
-        }
-      }
+      val metadata = getMetadata(request)
 
       if(request.getContentLength > 0) {
         val factory = createDiskFileItemFactory
@@ -347,5 +333,17 @@ class DataController extends AbstractController with ServletContextAware with Re
       case Some(token) => token.id
       case None => throw new AccessControlException("Failed to locate current domain in the access tokens")
     }
+  }
+
+  protected def getMetadata(request: HttpServletRequest): Map[String, String] = {
+    import scala.collection.JavaConversions._
+    val metadataHeaders = request.getHeaders("x-c3-metadata")
+
+    (for {
+      header <- metadataHeaders
+      keyValue = header.toString.split(":", 2)
+      key = keyValue(0)
+      value = new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8")
+    } yield (key, value)).toMap
   }
 }

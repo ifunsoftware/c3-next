@@ -45,7 +45,7 @@ class QueryManagerImpl extends QueryManager with Tracer{
   val log = logOfClass(classOf[QueryManagerImpl])
 
   @Autowired
-  var storageManager:StorageManager = _
+  var storageManager: StorageManager = _
 
   override
   def executeQuery(fields:Map[String, String],
