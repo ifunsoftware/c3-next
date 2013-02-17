@@ -178,27 +178,6 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def rawUpdate(resource: Resource): String = {
-    if(log.isDebugEnabled){
-      log.debug("Updating resource with address: " + resource.address)
-    }
-
-    try{
-      val storage = storageManager.storageForAddress(ResourceAddress(resource.address))
-
-      if(storage.mode.allowWrite){
-
-        val ra = storage.update(resource)
-        accessCache.remove(ra)
-        ra
-      }else{
-        throw new StorageIsNotWritableException(storage.id)
-      }
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
-    }
-  }
-
   def update(resource:Resource):String = {
 
     if(log.isDebugEnabled){
@@ -258,7 +237,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
 
         for(owner <- resourceOwners){
           if(!owner.resourceCanBeDeleted(resource)){
-            log info "" + owner + " forbided resource deletion"
+            log info "" + owner + " forbade resource deletion"
             throw new AccessException("Specified resource can't be deleted")
           }
         }
