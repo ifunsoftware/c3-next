@@ -289,7 +289,10 @@ class DataController extends AbstractController with ServletContextAware with Re
         resource.addVersion(version)
       }
 
+      getMetadataToDelete(request).foreach(resource.metadata.remove(_))
+
       resource.metadata ++= metadata
+
       accessTokens.updateMetadata(resource)
       log debug "Executing callback"
       runResourceStore(resource, request, processStore)
@@ -345,5 +348,14 @@ class DataController extends AbstractController with ServletContextAware with Re
       key = keyValue(0)
       value = new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8")
     } yield (key, value)).toMap
+  }
+
+  protected def getMetadataToDelete(request: HttpServletRequest): List[String] = {
+    import scala.collection.JavaConversions._
+    val metadataHeaders = request.getHeaders("x-c3-metadata-delete")
+
+    (for {
+      header <- metadataHeaders
+    } yield header.toString).toList
   }
 }
