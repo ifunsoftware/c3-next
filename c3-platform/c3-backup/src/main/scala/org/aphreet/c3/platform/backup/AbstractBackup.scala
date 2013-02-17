@@ -10,6 +10,7 @@ import java.nio.charset.Charset
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.codec.digest.DigestUtils
 import java.nio.file.FileSystem
+import org.aphreet.c3.platform.common.Disposable._
 
 
 abstract class AbstractBackup extends CloseableIterable[Resource] {
@@ -71,14 +72,11 @@ abstract class AbstractBackup extends CloseableIterable[Resource] {
     def close(){
       zipFs.close()
 
-      val zipInputStream = new FileInputStream(zipFilePath)
-      val md5 = DigestUtils.md5Hex(zipInputStream)
-      zipInputStream.close()
-
-      val md5FileWriter = new PrintWriter(new FileWriter(md5FilePath))
-      md5FileWriter.println(md5)
-      md5FileWriter.flush()
-      md5FileWriter.close()
+      using(new FileInputStream(zipFilePath))(is => {
+        using(new PrintWriter(new FileWriter(md5FilePath)))(pw => {
+          pw.println(DigestUtils.md5Hex(is))
+        })
+      })
     }
 
     private lazy val addresses:Seq[String] = Files.readAllLines(zipFs.getPath("list"), Charset.forName("UTF-8"))
