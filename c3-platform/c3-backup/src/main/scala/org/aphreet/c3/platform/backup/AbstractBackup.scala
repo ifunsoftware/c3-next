@@ -75,8 +75,8 @@ abstract class AbstractBackup extends CloseableIterable[Resource] {
       val md5 = DigestUtils.md5Hex(zipInputStream)
       zipInputStream.close()
 
-      val md5FileWriter = new PrintWriter(new FileOutputStream(md5FilePath))
-      md5FileWriter.print(md5)
+      val md5FileWriter = new PrintWriter(new FileWriter(md5FilePath))
+      md5FileWriter.println(md5)
       md5FileWriter.flush()
       md5FileWriter.close()
     }

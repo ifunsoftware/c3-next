@@ -85,4 +85,6 @@ trait PlatformManagementService {
 
   def restoreBackup(location:String)
 
+  def listBackups(folderPath : String) : Array[String]
+
 }

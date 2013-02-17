@@ -41,6 +41,8 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessMediator}
 import org.aphreet.c3.platform.filesystem.FSManager
 import java.io.File
+import java.util
+import collection.mutable.ListBuffer
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -86,12 +88,17 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
   def listBackups(folderPath:String) : List[String] = {
     val folder = new File(folderPath)
-    folder.listFiles()
-      .filter( (file) => file.isFile && )
-      .foreach( (file) => {
+    val listBuffer = new ListBuffer[String]()
 
-    })
+    if (folder.exists() && folder.isDirectory) {
+      val filesList = folder.listFiles()
 
+      filesList
+        .filter( file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
+        .foreach(file => listBuffer += file.getAbsolutePath)
+    }
+
+    listBuffer.toList
   }
 
   def propertyChanged(event: PropertyChangeEvent) {}

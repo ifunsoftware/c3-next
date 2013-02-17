@@ -35,6 +35,8 @@ import java.nio.file._
 import java.util
 import java.net.URI
 import org.aphreet.c3.platform.backup.AbstractBackup
+import java.io.{File, FileReader, BufferedReader, FileInputStream}
+import org.apache.commons.codec.digest.DigestUtils
 
 class Backup(val uri:URI, val create:Boolean) extends AbstractBackup {
 
@@ -48,8 +50,8 @@ class Backup(val uri:URI, val create:Boolean) extends AbstractBackup {
   }
 }
 
-object Backup{
 
+object Backup{
 
   def open(path:C3Path):Backup = {
     val zipFile = URI.create("jar:file:" + path)
@@ -69,5 +71,23 @@ object Backup{
     val thirdLetter = address.charAt(2).toString
 
     fs.getPath(firstLetter, secondLetter, thirdLetter)
+  }
+
+  def hasValidChecksum(path : String): Boolean = {
+    val zipInputStream = new FileInputStream(path)
+    val calculatedMd5 = DigestUtils.md5Hex(zipInputStream)
+    zipInputStream.close()
+
+    val md5File = new File(path + ".md5")
+
+    if (md5File.exists() && md5File.isFile) {
+      val md5FileReader = new BufferedReader(new FileReader(md5File))
+      val md5FromFile = md5FileReader.readLine()
+      md5FileReader.close()
+
+      calculatedMd5.equals(md5FromFile)
+    } else {
+      false
+    }
   }
 }

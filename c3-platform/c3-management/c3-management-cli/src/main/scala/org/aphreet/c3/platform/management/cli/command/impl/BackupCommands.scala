@@ -5,8 +5,9 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object BackupCommands extends Commands{
   def instances = List(new RestoreBackupCommand,
-    new CreateBackupCommand)
+    new CreateBackupCommand, new ListBackupsCommand)
 }
+
 
 class RestoreBackupCommand extends Command{
 
@@ -21,6 +22,7 @@ class RestoreBackupCommand extends Command{
   def name = List("restore" , "backup")
 }
 
+
 class CreateBackupCommand extends Command{
 
   override
@@ -30,5 +32,28 @@ class CreateBackupCommand extends Command{
   }
 
   def name = List("create", "backup")
+}
 
+
+class ListBackupsCommand extends Command {
+
+  override def execute(params: List[String], management:PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(value) => {
+        val backups = management.listBackups(value)
+
+        val builder = new StringBuilder
+        for (b <- backups) {
+          builder.append(b).append("\n")
+        }
+
+        builder.toString()
+      }
+
+      case None => wrongParameters("list backups <path>")
+    }
+  }
+
+  def name = List("list" , "backups")
 }
