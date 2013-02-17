@@ -37,6 +37,8 @@ import java.net.URI
 import org.aphreet.c3.platform.backup.AbstractBackup
 import java.io.{File, FileReader, BufferedReader, FileInputStream}
 import org.apache.commons.codec.digest.DigestUtils
+import org.aphreet.c3.platform.common.Disposable._
+
 
 class Backup(val uri:URI, val create:Boolean) extends AbstractBackup {
 
@@ -74,20 +76,18 @@ object Backup{
   }
 
   def hasValidChecksum(path : String): Boolean = {
-    val zipInputStream = new FileInputStream(path)
-    val calculatedMd5 = DigestUtils.md5Hex(zipInputStream)
-    zipInputStream.close()
+    var isValid = false
 
-    val md5File = new File(path + ".md5")
+    using(new FileInputStream(path)) (is => {
+      val calculatedMd5 = DigestUtils.md5Hex(is)
 
-    if (md5File.exists() && md5File.isFile) {
-      val md5FileReader = new BufferedReader(new FileReader(md5File))
-      val md5FromFile = md5FileReader.readLine()
-      md5FileReader.close()
+      val md5File = new File(path + ".md5")
 
-      calculatedMd5.equals(md5FromFile)
-    } else {
-      false
-    }
+      if (md5File.exists() && md5File.isFile) {
+        using(new BufferedReader(new FileReader(md5File))) (reader => {
+          isValid = reader.readLine().equals(calculatedMd5)
+        })
+      }
+    })
   }
 }
