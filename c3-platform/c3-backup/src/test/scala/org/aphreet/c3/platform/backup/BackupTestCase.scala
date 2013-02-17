@@ -1,7 +1,6 @@
 package org.aphreet.c3.platform.backup
 
 import junit.framework.Assert._
-import org.aphreet.c3.platform.backup.ResourceConsumer
 import impl.Backup
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}

@@ -59,7 +59,7 @@ object FSDirectory{
     FSDirectory(name, address, node.children.map(new FSNode(_, null, null)))
   }
 
-  def fromNodeAndChildren(node:Directory, children:Seq[FSNode]):FSDirectory = {
+  def fromNodeAndChildren(node:Directory, children:TraversableOnce[FSNode]):FSDirectory = {
 
     val resource = node.resource
 

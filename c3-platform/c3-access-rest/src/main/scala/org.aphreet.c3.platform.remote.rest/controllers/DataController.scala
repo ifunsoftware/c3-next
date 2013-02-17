@@ -125,7 +125,7 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     val fsDirectory = if(!metaKeys.isEmpty || needsData){
 
-      val children:Array[Option[FSNode]] = directory.children.map((child:NodeRef) => {
+      val children:List[Option[FSNode]] = directory.children.map((child:NodeRef) => {
 
         accessManager.getOption(child.address) match {
           case Some(resource) => {
@@ -143,7 +143,7 @@ class DataController extends AbstractController with ServletContextAware with Re
           }
           case None => None
         }
-      })
+      }).toList
 
       FSDirectory.fromNodeAndChildren(directory, children.flatten)
     }else{
