@@ -133,6 +133,7 @@ with WatchedActor {
 
     val newPathAndName = splitPath(newPath)
 
+    verifyName(newPathAndName._2)
 
     val currentParent = getFSNode(domainId, oldPathAndName._1)
 
@@ -206,9 +207,16 @@ with WatchedActor {
       case Some(nodeType) =>
         if (nodeType == Node.NODE_TYPE_DIR) {
           try {
-            //trying to create a directory from provided ByteStream
-            Directory(resource)
-            true
+            //Let's consider that we can't have directories with size more than 1MB
+            //As max file name limited to 512 chars, it is enough to have more than 10000 files in
+            // a directory
+            if(resource.versions.last.data.length > 10L * 1024 * 1024){
+              false
+            }else{
+              //trying to create a directory from provided ByteStream
+              Directory(resource)
+              true
+            }
           } catch {
             case e: Throwable => false
           }
@@ -325,6 +333,8 @@ with WatchedActor {
   }
 
   private def addNodeToDirectory(domainId: String, path: String, name: String, newNode: Node) {
+
+    verifyName(name)
 
     val node = getFSNode(domainId, path)
 
@@ -446,6 +456,12 @@ with WatchedActor {
       taskManager.submitTask(task)
     } else {
       throw new IllegalStateException("Task already started")
+    }
+  }
+
+  protected def verifyName(name: String) {
+    if(name.length > 512){
+      throw new FSException("System does not support names with length more than 512 bytes")
     }
   }
 }

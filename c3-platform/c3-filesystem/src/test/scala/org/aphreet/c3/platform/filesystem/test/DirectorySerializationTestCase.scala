@@ -97,7 +97,7 @@ class DirectorySerializationTestCase extends TestCase{
            NodeRef("child", "address", leaf = true, deleted = false, modified = timestamp)),
 
       node.asInstanceOf[Directory].allChildren.toList)
-
   }
+
 
 }

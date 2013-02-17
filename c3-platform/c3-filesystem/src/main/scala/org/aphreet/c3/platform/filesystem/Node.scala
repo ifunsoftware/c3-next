@@ -200,13 +200,24 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   private def writeData(children:Map[String, NodeRef]):DataStream = {
 
+    def isOldEntry(entry: NodeRef, ts: Long): Boolean = {
+      entry.deleted && ts - entry.modified > 24 * 60 * 60 * 10 * 1000L
+    }
+
+
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
     dataOs.writeShort(1)
-    dataOs.writeInt(children.size)
 
-    for((name, nodeRef) <- children){
+    val ts = System.currentTimeMillis()
+
+    val filterdChildren = children
+      .filter(c => !isOldEntry(c._2, ts))
+
+    dataOs.writeInt(filterdChildren.size)
+
+    for((name, nodeRef) <- filterdChildren){
       dataOs.writeUTF(nodeRef.address)
       dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
