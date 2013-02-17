@@ -42,13 +42,7 @@
 
         <dependency>
         	<groupId>sshtools</groupId>
-        	<artifactId>j2ssh-core</artifactId>
-        	<version>0.2.9</version>
-        </dependency>
-
-        <dependency>
-        	<groupId>sshtools</groupId>
-        	<artifactId>j2ssh-common</artifactId>
+        	<artifactId>com.ifunsoftware.j2ssh-core</artifactId>
         	<version>0.2.9</version>
         </dependency>
 
