@@ -121,24 +121,31 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     val directory = node.asInstanceOf[Directory]
 
-    val fsDirectory = if(childMeta != null || needsData){
+    val metaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
 
-      val metaKeys = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty) else null
+    val fsDirectory = if(!metaKeys.isEmpty || needsData){
 
-      val children = directory.children.map((child:NodeRef) => {
+      val children:Array[Option[FSNode]] = directory.children.map((child:NodeRef) => {
 
-          val dataAndMd = accessManager.getOption(child.address) match {
-            case Some(resource) => {
-              (if(metaKeys != null) resource.metadata.filterKeys(metaKeys.contains(_)) else null,
-              if(needsData) resource.versions.last else null)
-            }
-            case None => (null, null)
+        accessManager.getOption(child.address) match {
+          case Some(resource) => {
+            Some(new FSNode(child,
+              resource.metadata.filterKeys(metaKeys.contains(_)),
+
+              if(needsData){
+                resource.versions.last.systemMetadata.get("c3.data.length") match {
+                  case Some(value) => if(value.toLong < 10240) resource.versions.last else null
+                  case None => null
+                }
+              } else
+                null
+              ))
           }
-
-        new FSNode(child, dataAndMd._1, dataAndMd._2)
+          case None => None
+        }
       })
 
-      FSDirectory.fromNodeAndChildren(directory, children)
+      FSDirectory.fromNodeAndChildren(directory, children.flatten)
     }else{
       FSDirectory.fromNode(directory)
     }
