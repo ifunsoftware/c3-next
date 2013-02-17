@@ -89,5 +89,7 @@ object Backup{
         })
       }
     })
+
+    isValid
   }
 }
