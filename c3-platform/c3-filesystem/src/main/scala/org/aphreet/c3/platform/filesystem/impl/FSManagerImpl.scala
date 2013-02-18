@@ -190,12 +190,13 @@ with WatchedActor {
         var canDelete = false
 
         if (nodeType == Node.NODE_TYPE_DIR) {
-          val directory = Directory(resource)
-          if (directory.allChildren.filter(!_.deleted).isEmpty) {
-            canDelete = fsRoots.values.forall(_ != resource.address)
-          } else {
-            canDelete = true // we allow delete directories with children
-          }
+//          val directory = Directory(resource)
+//          if (directory.allChildren.filter(!_.deleted).isEmpty) {
+//            canDelete = fsRoots.values.forall(_ != resource.address)
+//          } else {
+//            canDelete = false
+//          }
+          canDelete = fsRoots.values.forall(_ != resource.address)
         } else {
           canDelete = true
         }

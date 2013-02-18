@@ -77,7 +77,7 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
     directory.resource.address = "some other address"
 
     //non-empty non-root directory
-    assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
+    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
 
     directory.removeChild("name")
 
