@@ -99,7 +99,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
         case ResourceUpdatedMsg(resource, source) => sendToAllLinks(ResourceUpdatedMsg(resource, source))
 
-        case ResourceDeletedMsg(address, source) => sendToAllLinks(ResourceDeletedMsg(address, source))
+        case ResourceDeletedMsg(address, source) if source != 'FSCleanupManager => sendToAllLinks(ResourceDeletedMsg(address, source))
 
         case StoragePurgedMsg(source) => manager ! StoragePurgedMsg(source)
 
