@@ -136,7 +136,6 @@ class ReplicationLink(val localSystemId:String,
 
 
         case ResourceDeletedMsg(address, source) => {
-
           sendRemoteMessage(remoteActor, ReplicateDeleteMsg(address, calculator.calculate(address)))
 
           statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.delete." + host.systemId, 1l)
