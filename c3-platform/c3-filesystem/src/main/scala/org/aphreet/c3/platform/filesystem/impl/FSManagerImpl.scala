@@ -207,7 +207,7 @@ with WatchedActor {
       case Some(nodeType) =>
         if (nodeType == Node.NODE_TYPE_DIR) {
           try {
-            //Let's consider that we can't have directories with size more than 1MB
+            //Let's consider that we can't have directories with size more than 10MB
             //As max file name limited to 512 chars, it is enough to have more than 10000 files in
             // a directory
             if(resource.versions.last.data.length > 10L * 1024 * 1024){
