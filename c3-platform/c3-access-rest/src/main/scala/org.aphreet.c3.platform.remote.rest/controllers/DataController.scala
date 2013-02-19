@@ -353,7 +353,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       header <- metadataHeaders
       keyValue = header.toString.split(":", 2)
       key = keyValue(0)
-      value = new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8")
+      value = keyValue(1)
     } yield (key, value)).toMap
   }
 
