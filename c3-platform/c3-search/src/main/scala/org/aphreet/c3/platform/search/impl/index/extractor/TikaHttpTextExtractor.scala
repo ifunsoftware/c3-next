@@ -1,16 +1,15 @@
 package org.aphreet.c3.platform.search.impl.index.extractor
 
+import java.io._
 import java.net.{HttpURLConnection, URL}
+import java.nio.file.{StandardCopyOption, Files}
+import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.Disposable
 import org.aphreet.c3.platform.common.Disposable._
 import org.aphreet.c3.platform.resource.{DataStream, Resource}
-import scala.collection.JavaConversions._
-import java.io._
-import java.nio.file.{StandardCopyOption, Files}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import scala.Some
-import org.apache.commons.logging.LogFactory
-import java.nio.charset.Charset
+import scala.collection.JavaConversions._
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
@@ -20,27 +19,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
     val contentType = resource.metadata.getOrElse("content.type", "application/octet-stream")
 
-    val lastVersion = resource.versions.last
-
-//    if(contentType.startsWith("text/plain;charset=")){
-//      val encoding = contentType.replaceFirst("text/plain;charset=", "")
-//
-//      if(Charset.isSupported(encoding)){
-//
-//        if(isSmallEnough(lastVersion.data.length)){
-//          val content = new String(lastVersion.data.getBytes, encoding)
-//          Some(new TikaPlainTextDocument(content))
-//        }else{
-//          log.info("Content of the resource " + resource.address + " was skipped due to too long length: " + lastVersion.data.length)
-//          None
-//        }
-//      }else{
-//        log.warn("Charset " + encoding + " is not supported")
-//        None
-//      }
-//    }else{
-      callTika(resource.address, lastVersion.data, contentType)
-//    }
+    callTika(resource.address, resource.versions.last.data, contentType)
   }
 
   def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
