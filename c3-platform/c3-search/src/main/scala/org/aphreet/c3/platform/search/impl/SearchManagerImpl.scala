@@ -234,13 +234,17 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   }
 
   def deleteIndexes(){
-    log.info("Reseting search index")
+    log.info("Resetting search index")
     fileIndexer ! DeleteIndexMsg
     configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, System.currentTimeMillis().toString)
   }
 
   def flushIndexes() {
     ramIndexers.foreach(_ ! FlushIndex(force = true))
+  }
+
+  def dumpIndex(path: String) {
+    taskManager.submitTask(new DumpIndexTask(indexPath, path))
   }
 
   def selectIndexer: RamIndexer = {

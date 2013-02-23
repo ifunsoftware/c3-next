@@ -157,12 +157,18 @@ class DomainManagerImpl extends DomainManager {
     domainList.filter(d => d.id == importedDomain.id).headOption match {
       case Some(domain) =>
 
-        log.info("Updating domain " + domain + " with imported domian: " + importedDomain)
-        //Found domain with the same id
-        //Overriding name of the domain
-        domain.name = importedDomain.name
-        domain.key = importedDomain.key
-        domain.mode = importedDomain.mode
+        if (domain.name != importedDomain.name
+          || domain.key != importedDomain.key
+          || domain.mode != importedDomain.mode){
+
+          log.info("Updating domain " + domain + " with imported domain: " + importedDomain)
+
+          //Found domain with the same id
+          //Overriding name of the domain
+          domain.name = importedDomain.name
+          domain.key = importedDomain.key
+          domain.mode = importedDomain.mode
+        }
 
         domainList
 
@@ -204,7 +210,7 @@ class DomainManagerImpl extends DomainManager {
           if (HashUtil.hmac(key, keyBase) == hash) {
             d
           } else {
-            log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
+            log.warn("Incorrect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
             throw new DomainException("Incorrect signature")
           }
         }
@@ -217,7 +223,7 @@ class DomainManagerImpl extends DomainManager {
               if (HashUtil.hmac(key, keyBase) == hash) {
                 d
               } else {
-                log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
+                log.warn("Incorrect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
                 throw new DomainException("Incorrect signature")
               }
             } else {

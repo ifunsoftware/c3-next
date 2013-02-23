@@ -49,6 +49,7 @@ import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.aphreet.c3.platform.backup.BackupManager
+import org.aphreet.c3.platform.search.SearchManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -65,6 +66,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _filesystemManager:FSManager = _
 
   private var _backupManager:BackupManager = _
+
+  private var _searchManager: SearchManager = _
 
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) {
@@ -94,6 +97,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setBackupManager(manager:BackupManager) {
     _backupManager = manager
+  }
+
+  @Autowired
+  private def setSearchManager(manager: SearchManager) {
+    _searchManager = manager
   }
 
   private def managementEndpoint:PlatformManagementEndpoint = {
@@ -578,6 +586,17 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listBackups(folderPath : String) : Array[String] = {
     try{
       backupManager.listBackups(folderPath).toArray
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def dumpSearchIndex(path: String) {
+    try{
+      _searchManager.dumpIndex(path)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

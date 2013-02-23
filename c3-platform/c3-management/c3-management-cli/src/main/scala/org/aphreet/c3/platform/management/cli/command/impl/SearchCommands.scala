@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object SearchCommands extends Commands{
 
-  def instances = List(new ResetSearchIndexCommand)
+  def instances = List(new ResetSearchIndexCommand, new DumpSearchIndexCommand)
 
 }
 
@@ -17,4 +17,22 @@ class ResetSearchIndexCommand extends Command{
   }
 
   def name = List("reset", "search", "index")
+}
+
+class DumpSearchIndexCommand extends Command{
+
+  override def execute(params:List[String], management: PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(path) => {
+        management.dumpSearchIndex(path)
+        "Search index is being dumped to path " + path
+      }
+      case None => wrongParameters("dump search index <path>")
+    }
+  }
+
+  def name = List("dump", "search", "index")
+
+
 }

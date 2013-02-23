@@ -81,6 +81,8 @@ trait PlatformManagementService {
 
   def resetSearchIndex()
 
+  def dumpSearchIndex(path: String)
+
   def createBackup()
 
   def restoreBackup(location:String)

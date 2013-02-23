@@ -39,5 +39,7 @@ trait SearchManager extends WatchedActor{
   def flushIndexes()
 
   def deleteIndexes()
-  
+
+  def dumpIndex(path: String)
+
 }

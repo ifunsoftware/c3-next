@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.task
 
 import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.{CloseableIterable, ThreadWatcher}
+import scala.util.control.Exception._
 
 abstract class Task extends Runnable{
 
@@ -48,6 +49,10 @@ abstract class Task extends Runnable{
       }
     }finally {
       ThreadWatcher - this
+
+      handling(classOf[Throwable])
+        .by(e => log.warn("Failed to run cleanup handler", e))
+        .apply(cleanup())
     }
   }
 
@@ -66,6 +71,8 @@ abstract class Task extends Runnable{
   protected def postComplete() {}
 
   protected def postFailure() {}
+
+  protected def cleanup() {}
 
   protected def canStart:Boolean = true
 

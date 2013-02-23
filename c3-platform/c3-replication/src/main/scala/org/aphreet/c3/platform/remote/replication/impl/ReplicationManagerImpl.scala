@@ -263,7 +263,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       registerReplicationTarget(host)
 
     }else{
-      throw new ReplicationException("Failed to esablish replication")
+      throw new ReplicationException("Failed to establish replication")
     }
   }
 
