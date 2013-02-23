@@ -37,7 +37,6 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
-import collection.mutable.HashMap
 import org.springframework.beans.factory.annotation.Qualifier
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
