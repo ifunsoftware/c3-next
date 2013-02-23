@@ -9,7 +9,7 @@ import org.aphreet.c3.platform.filesystem.{File, Directory, Node}
  */
 trait FSTestHelpers {
 
-  def resourceStub(name:String, parentAddress:String):Resource = {
+  def resourceStub(name:String, parentAddress:String, address: String = null):Resource = {
     val resource = new Resource
 
     if(name != null){
@@ -19,6 +19,9 @@ trait FSTestHelpers {
     if(parentAddress != null){
       resource.systemMetadata.put(Node.NODE_FIELD_PARENT, parentAddress)
     }
+
+    if (address != null)
+      resource.address = address
 
     resource
   }
