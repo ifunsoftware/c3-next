@@ -252,18 +252,9 @@ with WatchedActor {
           val node = Node.fromResource(resource)
 
           node match {
-            case d: Directory => {
-              d.children.foreach{
-                case f: File => {
-                  d.removeChild(d.resource.address)
-                  accessManager.delete(f.address)
-                }
-                case d: Directory => fsCleanupManager ! CleanupDirectoryTask(d)
-              }
-            }
-            case f: File => // do nothing here
+            case d: Directory => fsCleanupManager ! CleanupDirectoryTask(d)
+            case f: File => // do nothing for file
           }
-
         }
       }
     }
