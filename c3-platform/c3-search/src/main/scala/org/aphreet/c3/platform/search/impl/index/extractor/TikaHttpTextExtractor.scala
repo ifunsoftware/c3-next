@@ -22,25 +22,25 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
     val lastVersion = resource.versions.last
 
-    if(contentType.startsWith("text/plain;charset=")){
-      val encoding = contentType.replaceFirst("text/plain;charset=", "")
-
-      if(Charset.isSupported(encoding)){
-
-        if(isSmallEnough(lastVersion.data.length)){
-          val content = new String(lastVersion.data.getBytes, encoding)
-          Some(new TikaPlainTextDocument(content))
-        }else{
-          log.info("Content of the resource " + resource.address + " was skipped due to too long length: " + lastVersion.data.length)
-          None
-        }
-      }else{
-        log.warn("Charset " + encoding + " is not supported")
-        None
-      }
-    }else{
+//    if(contentType.startsWith("text/plain;charset=")){
+//      val encoding = contentType.replaceFirst("text/plain;charset=", "")
+//
+//      if(Charset.isSupported(encoding)){
+//
+//        if(isSmallEnough(lastVersion.data.length)){
+//          val content = new String(lastVersion.data.getBytes, encoding)
+//          Some(new TikaPlainTextDocument(content))
+//        }else{
+//          log.info("Content of the resource " + resource.address + " was skipped due to too long length: " + lastVersion.data.length)
+//          None
+//        }
+//      }else{
+//        log.warn("Charset " + encoding + " is not supported")
+//        None
+//      }
+//    }else{
       callTika(resource.address, lastVersion.data, contentType)
-    }
+//    }
   }
 
   def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
