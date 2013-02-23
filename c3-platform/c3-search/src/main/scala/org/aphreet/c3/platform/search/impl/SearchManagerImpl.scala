@@ -267,7 +267,8 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
   )
 
   override def listeningForProperties: Array[String] = Array(
-    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT, TIKA_HOST
+    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP,
+    EXTRACT_DOCUMENT_CONTENT, TIKA_HOST, THROTTLE_BACKGROUND_INDEX
   )
 
   def propertyChanged(event: PropertyChangeEvent) {
