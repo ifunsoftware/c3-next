@@ -45,6 +45,7 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.metadata.{TransientMetadataBuildStrategy, RegisterTransientMDBuildStrategy, TransientMetadataManager}
+import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -74,6 +75,9 @@ with WatchedActor {
 
   @Autowired
   var transientMetadataManager: TransientMetadataManager = _
+
+  @Autowired
+  var fsCleanupManager: FSCleanupManager = _
 
   var fsRoots: Map[String, String] = Map()
 
@@ -186,12 +190,7 @@ with WatchedActor {
         var canDelete = false
 
         if (nodeType == Node.NODE_TYPE_DIR) {
-          val directory = Directory(resource)
-          if (directory.allChildren.filter(!_.deleted).isEmpty) {
-            canDelete = fsRoots.values.forall(_ != resource.address)
-          } else {
-            canDelete = false
-          }
+          canDelete = fsRoots.values.forall(_ != resource.address)
         } else {
           canDelete = true
         }
@@ -231,14 +230,24 @@ with WatchedActor {
     resource.systemMetadata.get(Node.NODE_FIELD_NAME) foreach {
       name => resource.systemMetadata.get(Node.NODE_FIELD_PARENT).foreach{
         parentAddress => {
-          val parent = accessManager.get(parentAddress)
+          accessManager.getOption(parentAddress) match {
+            case Some(parent) => {
+              val node = Node.fromResource(parent)
 
-          val node = Node.fromResource(parent)
+              if (node.isDirectory) {
+                val directory = node.asInstanceOf[Directory]
+                directory.removeChild(name)
+                accessManager.update(directory.resource)
+              }
+            }
+            case _ => // do nothing
+          }
 
-          if (node.isDirectory) {
-            val directory = node.asInstanceOf[Directory]
-            directory.removeChild(name)
-            accessManager.update(directory.resource)
+          val node = Node.fromResource(resource)
+
+          node match {
+            case d: Directory => fsCleanupManager ! CleanupDirectoryTask(d)
+            case f: File => // do nothing for file
           }
         }
       }
