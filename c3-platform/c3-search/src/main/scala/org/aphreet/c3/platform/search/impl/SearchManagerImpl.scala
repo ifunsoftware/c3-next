@@ -48,7 +48,7 @@ import java.io.File
 import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
 
 @Component("searchManager")
-class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
+class SearchManagerImpl extends SearchManager with SearchManagerInternal with SPlatformPropertyListener with ComponentGuard{
 
   val INDEX_PATH = "c3.search.index.path"
 
@@ -61,6 +61,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
   val EXTRACT_DOCUMENT_CONTENT = "c3.search.index.extract_content"
 
   val TIKA_HOST = "c3.search.index.tika_address"
+
+  val THROTTLE_BACKGROUND_INDEX = "c3.search.index.throttle_background_index"
 
   var numberOfIndexers = 2
 
@@ -109,6 +111,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   var extractDocumentContent = false
 
+  var throttleBackgroundIndexer: Boolean = true
 
   var currentTikaAddress: String = null
 
@@ -259,7 +262,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
     INDEX_CREATE_TIMESTAMP -> "0",
     EXTRACT_DOCUMENT_CONTENT -> "false",
     INDEX_PATH -> new File(configManager.dataDir, "index").getAbsolutePath,
-    TIKA_HOST -> "https://tika-ifunsoftware.rhcloud.com"
+    TIKA_HOST -> "https://tika-ifunsoftware.rhcloud.com",
+    THROTTLE_BACKGROUND_INDEX -> "true"
   )
 
   override def listeningForProperties: Array[String] = Array(
@@ -338,6 +342,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
         log info "Setting tika host to " + event.newValue
         currentTikaAddress = event.newValue
         ramIndexers.foreach(_ ! UpdateTextExtractor(new TikaHttpTextExtractor(event.newValue)))
+
+      case THROTTLE_BACKGROUND_INDEX =>
+        log info "Setting " + THROTTLE_BACKGROUND_INDEX + " to " + event.newValue
+        throttleBackgroundIndexer = event.newValue.toBoolean
     }
   }
 
@@ -347,6 +355,10 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
       number,
       extractDocumentContent,
       new TikaHttpTextExtractor(tikaHostAddress))
+  }
+
+  def throttleBackgroundIndex = {
+    throttleBackgroundIndexer
   }
 }
 
