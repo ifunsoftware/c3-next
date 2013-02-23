@@ -142,6 +142,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 
       val newStartTime = System.currentTimeMillis + 1000 * 60 * 60
 
+      searchManager ! BackgroundIndexRunCompletedMsg
+
       while(System.currentTimeMillis < newStartTime){
         Thread.sleep(10 * 1000)
       }
@@ -152,3 +154,4 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 }
 
 case class BackgroundIndexMsg(resource:Resource)
+object BackgroundIndexRunCompletedMsg

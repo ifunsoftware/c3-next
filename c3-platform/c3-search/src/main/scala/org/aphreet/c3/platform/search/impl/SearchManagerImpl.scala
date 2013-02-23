@@ -198,6 +198,9 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
           configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, time.toString)
 
+        case BackgroundIndexRunCompletedMsg =>
+          statisticsManager ! IncreaseStatisticsMsg("c3.search.background.runs", 1)
+
         case StoragePurgedMsg(source) => deleteIndexes()
 
         case DestroyMsg =>
