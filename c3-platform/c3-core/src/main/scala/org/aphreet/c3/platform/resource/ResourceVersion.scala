@@ -52,7 +52,7 @@ class ResourceVersion{
   /**
    * System metadata of the version
    */
-  var systemMetadata = new mutable.HashMap[String, String]
+  var systemMetadata = new Metadata()
 
   /**
    * Version's data
@@ -75,7 +75,7 @@ class ResourceVersion{
     builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
     builder.append("\n\tMetadata:")
 
-    for((key, value) <- systemMetadata){
+    for((key, value) <- systemMetadata.asMap){
       builder.append("\n\t\t").append(key).append(" => ").append(value)
     }
 
