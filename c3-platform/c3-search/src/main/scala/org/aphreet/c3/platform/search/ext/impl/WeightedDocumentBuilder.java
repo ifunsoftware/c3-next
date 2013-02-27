@@ -8,7 +8,11 @@ import org.aphreet.c3.platform.search.ext.DocumentBuilder;
 import org.aphreet.c3.platform.search.ext.FieldWeights;
 import org.aphreet.c3.platform.search.ext.SearchConfiguration;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,12 +81,18 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
                     isAnalyzed = Field.Index.NOT_ANALYZED;
                 }
 
-                field = new Field(key.toLowerCase(), metadata.get(key), Field.Store.YES, isAnalyzed);
-                if (weights.containsField(key.toLowerCase())) {
-                    field.setBoost(weights.getBoostFactor(key.toLowerCase(), 1));
-                }
+                String fieldKey = getFieldKey(key);
+                Collection<String> values = getFieldValues(key, metadata.get(key));
 
-                document.add(field);
+                for(String value : values){
+
+                    field = new Field(fieldKey.toLowerCase(), value, Field.Store.YES, isAnalyzed);
+                    if (weights.containsField(fieldKey.toLowerCase())) {
+                        field.setBoost(weights.getBoostFactor(fieldKey.toLowerCase(), 1));
+                    }
+
+                    document.add(field);
+                }
             }
         }
 
@@ -94,5 +104,39 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
         document.add(new Field("domain", domain, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
         return document;
+    }
+
+    private String getFieldKey(String key){
+        return key.replaceAll("_list$", "");
+    }
+
+    private Collection<String> getFieldValues(String key, String value){
+
+        if(key.endsWith("_list")){
+            return splitList(value);
+        }else{
+            return Collections.singleton(value);
+        }
+
+    }
+
+    public static Collection<String> splitList(String values){
+
+        List<String> list = new ArrayList<>();
+
+        int valueStart = 0;
+
+        for(int i=0; i<values.length(); i++){
+            if(values.charAt(i) == ','){
+                if(i == 0 || (i > 0 && values.charAt(i - 1) != '\\')){
+                    list.add(values.substring(valueStart, i).replaceAll("\\\\,", ","));
+                    valueStart = i+1;
+                }
+            }
+        }
+
+        list.add(values.substring(valueStart, values.length()));
+
+        return list;
     }
 }
