@@ -122,7 +122,7 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
 
     public static Collection<String> splitList(String values){
 
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
 
         int valueStart = 0;
 
