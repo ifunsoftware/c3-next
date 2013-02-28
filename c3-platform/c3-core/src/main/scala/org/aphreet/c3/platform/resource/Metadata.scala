@@ -43,6 +43,8 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
 
   def get(key: String): Option[String] = map.get(key)
 
+  def contains(key: String): Boolean = map.contains(key)
+
   def getList(key: String): Option[List[String]] = None
 
   def ++=(metadata: Metadata): Metadata = {
@@ -50,8 +52,29 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
     this
   }
 
+  def ++(metadata: Metadata): Metadata = {
+    this.clone() ++= metadata
+  }
+
+  def ++=(metadataMap: Map[String, String]): Metadata = {
+    map ++= metadataMap
+    this
+  }
+
   override def clone() = {
     new Metadata(map.clone())
   }
 
+  override def hashCode() = {
+    map.hashCode()
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if(obj == null) return false
+
+    if(!obj.isInstanceOf[Metadata]) return false
+
+    obj.asInstanceOf[Metadata].map == map
+
+  }
 }
