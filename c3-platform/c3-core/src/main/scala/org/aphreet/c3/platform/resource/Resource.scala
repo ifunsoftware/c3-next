@@ -296,7 +296,7 @@ object Resource {
           version.basedOnVersion = dataIs.readLong
         }
 
-        version.systemMetadata = readMetadata(dataIs)
+        readMetadata(dataIs, version.systemMetadata)
         version.persisted = true
 
         if (embedData){
@@ -329,8 +329,8 @@ object Resource {
     resource.address = readString(dataIn)
     resource.createDate = new Date(dataIn.readLong)
 
-    resource.metadata = readMetadata(dataIn)
-    resource.systemMetadata = readMetadata(dataIn)
+    readMetadata(dataIn, resource.metadata)
+    readMetadata(dataIn, resource.systemMetadata)
 
     if(serializeVersion >= 3){
       resource.embedData = dataIn.readBoolean()

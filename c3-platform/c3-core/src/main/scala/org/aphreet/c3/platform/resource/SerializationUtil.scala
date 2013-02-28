@@ -65,13 +65,13 @@ object SerializationUtil {
     }
   }
 
-  def readMetadata(is: DataInputStream): Metadata = {
+  def readMetadata(is: DataInputStream, metadata: Metadata) = {
     val map = new mutable.HashMap[String, String]()
 
     val mapSize: Int = is.readInt
 
     new Range.Inclusive(1, mapSize, 1).foreach(i =>
-      map.put(readString(is), readString(is))
+      metadata(readString(is)) = readString(is)
     )
 
     new Metadata(map)
