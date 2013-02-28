@@ -119,8 +119,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       }
     }
 
-    if(!resource.systemMetadata.contains("c3.skip.index")){
-      resource.systemMetadata.get("indexed") match {
+    if(!resource.systemMetadata.has("c3.skip.index")){
+      resource.systemMetadata("indexed") match {
         case Some(x) => isInPreviousIndex(x)
         case None => isOutOfTimeout(resource.versions.last.date)
       }

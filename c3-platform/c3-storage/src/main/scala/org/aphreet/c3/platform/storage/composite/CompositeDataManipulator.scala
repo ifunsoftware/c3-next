@@ -58,17 +58,17 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
 
   protected def selectDataManipulator(resource:Resource):DataManipulator = {
     if (useFileStore(resource)){
-      resource.systemMetadata.put("c3.blob.store", "file")
+      resource.systemMetadata("c3.blob.store") = "file"
       fileDataManipulator
     }else{
-      resource.systemMetadata.put("c3.blob.store", "bdb")
+      resource.systemMetadata("c3.blob.store") = "bdb"
       bdbDataManipulator
     }
   }
 
   protected def useFileStore(resource:Resource):Boolean = {
 
-    resource.systemMetadata.get("c3.blob.store") match {
+    resource.systemMetadata("c3.blob.store") match {
       case Some(value) => value == "file"
       case None => (resource.versions.head.data.length > config.fileThreshold)
     }

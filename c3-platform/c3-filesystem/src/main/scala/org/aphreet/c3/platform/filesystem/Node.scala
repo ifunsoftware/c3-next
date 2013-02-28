@@ -62,7 +62,7 @@ object Node{
   val DIRECTORY_CONTENT_TYPE = "application/x-c3-directory"
 
   def fromResource(resource:Resource):Node = {
-    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
+    resource.systemMetadata(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => Directory(resource)
         case "file" => File(resource)
@@ -73,7 +73,7 @@ object Node{
   }
 
   def canBuildFromResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
+    resource.systemMetadata(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => true
         case "file" => true
@@ -101,9 +101,9 @@ case class File(override val resource:Resource) extends Node(resource){
 object File{
 
   def createFile(resource:Resource, domainId:String, name:String):File = {
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
-    resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
-    resource.systemMetadata.put("c3.domain.id", domainId)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
+    resource.systemMetadata(Node.NODE_FIELD_NAME) = name
+    resource.systemMetadata("c3.domain.id") = domainId
 
     File(resource)
   }
@@ -279,19 +279,19 @@ object Directory{
   def emptyDirectory(domainId:String, name:String, meta: Map[String, String] = Map()):Directory = {
     val resource = new Resource
     resource.isVersioned = false
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_DIR
 
     if(name != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
+      resource.systemMetadata(Node.NODE_FIELD_NAME) = name
     }
 
-    resource.systemMetadata.put("c3.skip.index", "true")
-    resource.systemMetadata.put("c3.domain.id", domainId)
+    resource.systemMetadata("c3.skip.index") = "true"
+    resource.systemMetadata("c3.domain.id") = domainId
 
-    resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
-    resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
+    resource.metadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
+    resource.systemMetadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
 
-    meta foreach { case (k,v) => resource.metadata.put(k,v) }
+    meta foreach { case (k,v) => resource.metadata(k) = v }
 
     val directory = Directory(resource)
 

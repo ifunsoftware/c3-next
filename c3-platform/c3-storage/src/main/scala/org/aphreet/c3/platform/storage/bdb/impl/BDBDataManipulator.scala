@@ -44,14 +44,14 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
         for (version <- resource.versions) {
           if (version.persisted == false) {
             val versionKey = resource.address + "-data-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
-            version.systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+            version.systemMetadata(Resource.MD_DATA_ADDRESS) = versionKey
             storeVersionData(versionKey, version, tx, allowOverwrite = false)
           }
         }
       } else {
         if(!resource.versions(0).persisted){
           val versionKey = resource.address + "-data"
-          resource.versions(0).systemMetadata.put(Resource.MD_DATA_ADDRESS, versionKey)
+          resource.versions(0).systemMetadata(Resource.MD_DATA_ADDRESS) = versionKey
           storeVersionData(versionKey, resource.versions(0), tx, allowOverwrite = true)
         }
       }
@@ -64,7 +64,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
 
       for (version <- resource.versions) {
 
-        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+        val versionKey = version.systemMetadata(Resource.MD_DATA_ADDRESS) match {
           case Some(value: String) => value
           case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
         }
@@ -80,7 +80,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
 
       for (version <- resource.versions) {
 
-        val versionKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+        val versionKey = version.systemMetadata(Resource.MD_DATA_ADDRESS) match {
           case Some(value: String) => value
           case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
         }
@@ -88,7 +88,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
         val key = new DatabaseEntry(versionKey.getBytes("UTF-8"))
         val value = new DatabaseEntry()
 
-        if(getDatabase(true).get(tx, key, value, LockMode.RMW) == OperationStatus.SUCCESS){
+        if(rwDatabase.get(tx, key, value, LockMode.RMW) == OperationStatus.SUCCESS){
           version.data = new BytesDataStream(value.getData)
         }else{
           throw new StorageException("Can't load data for update")
@@ -110,7 +110,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
       if (!resource.embedData){
 
         for (version <- resource.versions) {
-          val dataKey = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          val dataKey = version.systemMetadata(Resource.MD_DATA_ADDRESS) match {
             case Some(address) => new DatabaseEntry(address.getBytes)
             case None => throw new StorageException("No data address in version for resource: " + ra)
           }
@@ -141,7 +141,7 @@ trait BDBDataManipulator extends DataManipulator with DatabaseProvider{
     }
 
     version.data = DataStream.create(version.data.getBytes)
-    version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+    version.systemMetadata(Resource.MD_DATA_LENGTH) = version.data.length
   }
 
   override

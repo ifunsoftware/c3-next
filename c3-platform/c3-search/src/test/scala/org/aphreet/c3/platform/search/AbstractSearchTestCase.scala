@@ -64,7 +64,7 @@ abstract class AbstractSearchTestCase extends TestCase{
   def resource(address:String, data:String, metadata:Map[String, String] = Map(), domain:String = this.domain):Resource = {
     val resource = new Resource
     resource.address = address
-    resource.systemMetadata.put("c3.domain.id", domain)
+    resource.systemMetadata("c3.domain.id") = domain
     resource.addVersion(ResourceVersion(DataStream.create(data)))
     resource.metadata ++= metadata
 

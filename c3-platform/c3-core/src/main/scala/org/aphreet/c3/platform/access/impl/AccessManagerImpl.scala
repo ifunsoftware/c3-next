@@ -148,12 +148,12 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       log.debug("Adding new resources")
     }
 
-    val contentType = resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+    val contentType = resource.metadata(Resource.MD_CONTENT_TYPE) match {
       case None => resource.versions(0).data.mimeType
       case Some(x) => if(!x.isEmpty) x else resource.versions(0).data.mimeType
     }
 
-    resource.metadata.put(Resource.MD_CONTENT_TYPE, contentType)
+    resource.metadata(Resource.MD_CONTENT_TYPE) = contentType
     resource.address = ResourceAddress.generate(resource, systemId).stringValue
 
     val isVersioned = mimeStorageSelector.storageTypeForResource(resource)
@@ -197,7 +197,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
           }
         }
 
-        resource.systemMetadata.put(Resource.MD_UPDATED, System.currentTimeMillis().toString)
+        resource.systemMetadata(Resource.MD_UPDATED) = System.currentTimeMillis().toString
 
         val ra = storage.update(resource)
 

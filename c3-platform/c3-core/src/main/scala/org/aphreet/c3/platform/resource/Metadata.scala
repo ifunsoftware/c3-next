@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.resource
 
 import collection.Map
 import collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class Metadata(private val map: mutable.HashMap[String, String]) {
 
@@ -39,17 +40,33 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
 
   def asMap: Map[String, String] = map
 
+  @deprecated("use update instead", "1.3.6")
   def put(key: String, value: String) = map.put(key, value)
 
+  @deprecated("use apply instead", "1.3.6")
   def get(key: String): Option[String] = map.get(key)
+
+  def apply(key: String): Option[String] = map.get(key)
+
+  def update(key: String, value: String) = map.put(key, value)
+
+  def update(key: String, value: Long) = map.put(key, value.toString)
+
+  def update(key: String, value: Boolean) = map.put(key, value.toString)
 
   def remove(key: String){
     map.remove(key)
   }
 
-  def contains(key: String): Boolean = map.contains(key)
+  def has(key: String): Boolean = map.contains(key)
 
-  def getList(key: String): Option[List[String]] = None
+  def collectionValue(key: String): TraversableOnce[String] = {
+    map.get(key) match {
+      case None => None
+      case Some(value) => MetadataHelper.parseSequence(value)
+    }
+  }
+
 
   def ++=(metadata: Metadata): Metadata = {
     map ++= metadata.asMap
@@ -81,4 +98,35 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
     obj.asInstanceOf[Metadata].map == map
 
   }
+}
+
+object MetadataHelper{
+
+  private def isSequence(value: String): Boolean = {
+    value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
+  }
+
+  def parseSequence(value: String): TraversableOnce[String] = {
+
+    if(!isSequence(value)){
+      Some(value)
+    }else{
+
+      var valueStart = 1
+
+      val result = new ArrayBuffer[String]
+
+      for (i <- valueStart until value.length - 1){
+        if (value.charAt(i) == ',' && value.charAt(i - 1) != '\\'){
+          result += value.substring(valueStart, i).replaceAll("\\\\,", ",")
+          valueStart = i + 1
+        }
+      }
+
+      result += value.substring(valueStart, value.length - 1)
+
+      result
+    }
+  }
+
 }

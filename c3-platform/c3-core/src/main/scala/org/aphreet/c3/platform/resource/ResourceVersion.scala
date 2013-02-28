@@ -31,8 +31,6 @@ package org.aphreet.c3.platform.resource
 
 import java.util.Date
 
-import collection.mutable
-
 /**
  * Representation of the resource version
  *
@@ -85,11 +83,11 @@ class ResourceVersion{
   def setData(_data:DataStream) {data = _data}
 
   def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
+    systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH) = data.hash
   }
 
   def verifyCheckSum() {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
+    systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH) match {
       case Some(value) => {
         if(value != data.hash) throw new ResourceException("Checksum verification failed")
       }

@@ -13,11 +13,11 @@ trait FSTestHelpers {
     val resource = new Resource
 
     if(name != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
+      resource.systemMetadata(Node.NODE_FIELD_NAME) = name
     }
 
     if(parentAddress != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_PARENT, parentAddress)
+      resource.systemMetadata(Node.NODE_FIELD_PARENT) = parentAddress
     }
 
     if (address != null)
@@ -27,12 +27,12 @@ trait FSTestHelpers {
   }
 
   def directoryStub(res: Resource): Directory = {
-    res.systemMetadata.put(Node.NODE_FIELD_TYPE, "directory")
+    res.systemMetadata(Node.NODE_FIELD_TYPE) = "directory"
     Node.fromResource(res).asInstanceOf[Directory]
   }
 
   def fileStub(res: Resource): File = {
-    res.systemMetadata.put(Node.NODE_FIELD_TYPE, "file")
+    res.systemMetadata(Node.NODE_FIELD_TYPE) = "file"
     Node.fromResource(res).asInstanceOf[File]
   }
 }

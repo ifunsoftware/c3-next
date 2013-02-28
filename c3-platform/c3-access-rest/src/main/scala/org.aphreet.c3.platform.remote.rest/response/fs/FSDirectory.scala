@@ -49,7 +49,7 @@ object FSDirectory{
   def fromNode(node:Directory):FSDirectory = {
     val resource = node.resource
 
-    val name = resource.systemMetadata.get("c3.fs.nodename") match{
+    val name = resource.systemMetadata("c3.fs.nodename") match{
       case Some(x) => x
       case None => ""
     }
@@ -63,7 +63,7 @@ object FSDirectory{
 
     val resource = node.resource
 
-    val name = resource.systemMetadata.get("c3.fs.nodename") match{
+    val name = resource.systemMetadata("c3.fs.nodename") match{
       case Some(x) => x
       case None => ""
     }

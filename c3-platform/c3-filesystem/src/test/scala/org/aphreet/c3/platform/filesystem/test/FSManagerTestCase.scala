@@ -52,7 +52,7 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
     assertTrue(fsManager.resourceCanBeDeleted(resource))
 
 
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
     assertTrue(fsManager.resourceCanBeDeleted(resource))
 
@@ -101,7 +101,7 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
@@ -148,7 +148,7 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
 
     assertTrue(fsManager.resourceCanBeUpdated(resource0))
 
-    resource0.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
+    resource0.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_DIR
 
     assertFalse(fsManager.resourceCanBeUpdated(resource0))
 

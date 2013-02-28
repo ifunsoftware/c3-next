@@ -87,7 +87,7 @@ class Resource {
    */
   def mimeType:String = {
     if(metadata != null){
-      metadata.get(Resource.MD_CONTENT_TYPE) match{
+      metadata(Resource.MD_CONTENT_TYPE) match{
         case Some(t) => return t
         case None => null
       }
@@ -188,7 +188,7 @@ class Resource {
         dataOs.writeLong(version.basedOnVersion)
 
         if (embedData){
-          version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+          version.systemMetadata(Resource.MD_DATA_LENGTH) = version.data.length.toString
         }
 
         writeMetadata(version.systemMetadata, dataOs)

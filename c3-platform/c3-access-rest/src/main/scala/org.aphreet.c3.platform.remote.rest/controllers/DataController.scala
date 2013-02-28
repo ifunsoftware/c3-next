@@ -97,7 +97,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       resp.setStatus(HttpServletResponse.SC_OK)
       resp.setContentLength(resourceVersion.data.length.toInt)
 
-      resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+      resource.metadata(Resource.MD_CONTENT_TYPE) match {
         case Some(x) => resp.setContentType(x)
         case None =>
       }
@@ -133,7 +133,7 @@ class DataController extends AbstractController with ServletContextAware with Re
               resource.metadata.asMap.filterKeys(metaKeys.contains(_)),
 
               if(needsData){
-                resource.versions.last.systemMetadata.get("c3.data.length") match {
+                resource.versions.last.systemMetadata("c3.data.length") match {
                   case Some(value) => if(value.toLong < 10240) resource.versions.last else null
                   case None => null
                 }
@@ -197,7 +197,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       val keys = extMeta.split(",")
 
       transientMetadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
-        case (k, v) => resource.transientMetadata.put(k, v)
+        case (k, v) => resource.transientMetadata(k) = v
       }
     }
 

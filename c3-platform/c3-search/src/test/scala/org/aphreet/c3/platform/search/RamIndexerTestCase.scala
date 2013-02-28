@@ -40,7 +40,7 @@ class RamIndexerTestCase extends TestCase{
 
     val resource = new Resource
     resource.address = "aaaaaaaaaaaaaaaaaaaa-13a34a715e9-bbbbbbbb"
-    resource.systemMetadata.put("c3.domain.id", "qweqweqwe")
+    resource.systemMetadata("c3.domain.id") = "qweqweqwe"
     resource.addVersion(ResourceVersion(DataStream.create("Hello, for all c3 users!")))
 
     ramIndexer ! IndexMsg(resource)

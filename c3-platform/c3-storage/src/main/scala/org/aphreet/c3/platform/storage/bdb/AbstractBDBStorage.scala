@@ -302,8 +302,8 @@ with DatabaseProvider{
             previousVersion = version
             mergedVersions += version
           }else{
-            if (version.systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH)
-            != previousVersion.systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH)){
+            if (version.systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH)
+            != previousVersion.systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH)){
               previousVersion = version
               mergedVersions += version
             }

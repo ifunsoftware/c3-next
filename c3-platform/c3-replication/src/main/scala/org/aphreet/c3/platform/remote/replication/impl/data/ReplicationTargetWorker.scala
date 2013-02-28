@@ -231,7 +231,7 @@ class ReplicationTargetWorker(val localSystemId: String,
 
   private def fillWithData(resource: Resource, replicationHost: ReplicationHost) {
 
-    val domainId = resource.systemMetadata.get(Domain.MD_FIELD).get
+    val domainId = resource.systemMetadata(Domain.MD_FIELD).get
 
     val domain = domainManager.domainById(domainId) match {
       case Some(d) => d

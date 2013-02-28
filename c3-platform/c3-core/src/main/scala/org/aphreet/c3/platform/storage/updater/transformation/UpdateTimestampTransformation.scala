@@ -38,14 +38,14 @@ class UpdateTimestampTransformation {
 
   def apply(resource:Resource){
 
-    resource.systemMetadata.get(Resource.MD_UPDATED) match {
+    resource.systemMetadata(Resource.MD_UPDATED) match {
       case Some(value) => log.debug("Resource " + resource.address + " already have c3.updated md field")
       case None => {
         val lastVersion = resource.versions.last
 
         val createVersionTime = lastVersion.date.getTime
 
-        resource.systemMetadata.put(Resource.MD_UPDATED, createVersionTime.toString)
+        resource.systemMetadata(Resource.MD_UPDATED) = createVersionTime.toString
 
         log.debug("Resource " + resource.address + " does not have c3.updated md field, setting from version")
       }

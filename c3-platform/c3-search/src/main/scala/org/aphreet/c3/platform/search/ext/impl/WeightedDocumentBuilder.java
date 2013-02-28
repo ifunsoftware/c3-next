@@ -1,7 +1,5 @@
 package org.aphreet.c3.platform.search.ext.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.aphreet.c3.platform.search.ext.DocumentBuilder;
@@ -27,8 +25,6 @@ public class WeightedDocumentBuilder  implements DocumentBuilder {
     private SearchConfiguration configuration;
 
     public static final String EXTRACTED_SUFFIX = "_ex";
-
-    private static final Log log = LogFactory.getLog(WeightedDocumentBuilder.class);
 
     private Set<String> blacklistedMeta = new HashSet<String>();
 

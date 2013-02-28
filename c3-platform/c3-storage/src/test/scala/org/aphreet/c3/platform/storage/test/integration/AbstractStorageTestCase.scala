@@ -68,7 +68,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(resource, readResource)
 
-      resource.versions(0).systemMetadata.get(Resource.MD_DATA_LENGTH) match{
+      resource.versions(0).systemMetadata(Resource.MD_DATA_LENGTH) match{
         case Some(value) => assertEquals(lengthString, value)
         case None => assertTrue("Data length sys md is not found", false)
       }
@@ -115,8 +115,8 @@ abstract class AbstractStorageTestCase extends TestCase{
         case None => null
       }
 
-      assertEquals("sysvalue1", readResource.systemMetadata.get("sysmd1").get)
-      assertEquals("some_value", readResource.systemMetadata.get("key1").get)
+      assertEquals("sysvalue1", readResource.systemMetadata("sysmd1").get)
+      assertEquals("some_value", readResource.systemMetadata("key1").get)
 
 
     }finally
@@ -135,8 +135,8 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       //Thread.sleep(1000) //TODO Please, remove this!
 
-      resource.metadata.put("new_key", "new_value")
-      resource.systemMetadata.put("new_md_key", "new_md_value")
+      resource.metadata("new_key") = "new_value"
+      resource.systemMetadata("new_md_key") = "new_md_value"
       resource.addVersion(createVersion())
 
       assertEquals("Resource must contain 2 versions", 2, resource.versions.size)
@@ -166,8 +166,8 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       Thread.sleep(10) //Just to make sure we have another version timestamp
 
-      resource.metadata.put("new_key", "new_value")
-      resource.systemMetadata.put("new_md_key", "new_md_value")
+      resource.metadata("new_key") = "new_value"
+      resource.systemMetadata("new_md_key") = "new_md_value"
       resource.addVersion(createVersion())
 
       resource.versions.foreach(_.persisted = false)
@@ -200,15 +200,15 @@ abstract class AbstractStorageTestCase extends TestCase{
       Thread.sleep(10) //Just to make sure we have another version timestamp
 
       val readResource1 = storage.get(ra).get
-      readResource1.metadata.put("new_key", "new_value")
-      readResource1.systemMetadata.put("new_md_key", "new_md_value")
+      readResource1.metadata("new_key") = "new_value"
+      readResource1.systemMetadata("new_md_key") = "new_md_value"
       readResource1.addVersion(createVersion())
 
       Thread.sleep(10)
 
       val readResource2 = storage.get(ra).get
-      readResource2.metadata.put("new_key", "new_value3")
-      readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+      readResource2.metadata("new_key") = "new_value3"
+      readResource2.systemMetadata("new_md_key2") = "new_md_value2"
       readResource2.addVersion(createVersion("This is another data"))
 
       Thread.sleep(10)
@@ -255,8 +255,8 @@ abstract class AbstractStorageTestCase extends TestCase{
       Thread.sleep(10) //Just to make sure we have another version timestamp
 
       val readResource1 = storage.get(ra).get
-      readResource1.metadata.put("new_key", "new_value")
-      readResource1.systemMetadata.put("new_md_key", "new_md_value")
+      readResource1.metadata("new_key") = "new_value"
+      readResource1.systemMetadata("new_md_key") = "new_md_value"
       readResource1.addVersion(createVersion())
 
       readResource1.calculateCheckSums
@@ -264,8 +264,8 @@ abstract class AbstractStorageTestCase extends TestCase{
       Thread.sleep(10)
 
       val readResource2 = storage.get(ra).get
-      readResource2.metadata.put("new_key", "new_value3")
-      readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+      readResource2.metadata("new_key") = "new_value3"
+      readResource2.systemMetadata("new_md_key2") = "new_md_value2"
       readResource2.addVersion(createVersion("This is another data"))
 
       Thread.sleep(5)
@@ -313,8 +313,8 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       val ra = storage.add(resource)
 
-      resource.metadata.put("new_key", "new_value")
-      resource.systemMetadata.put("new_md_key", "new_md_value")
+      resource.metadata("new_key") = "new_value"
+      resource.systemMetadata("new_md_key") = "new_md_value"
       resource.addVersion(createVersion())
 
       assertEquals("Resource must contain only one version", 1, resource.versions.size)
@@ -342,15 +342,15 @@ abstract class AbstractStorageTestCase extends TestCase{
           Thread.sleep(10) //Just to make sure we have another version timestamp
 
           val readResource1 = storage.get(ra).get
-          readResource1.metadata.put("new_key", "new_value")
-          readResource1.systemMetadata.put("new_md_key", "new_md_value")
+          readResource1.metadata("new_key") = "new_value"
+          readResource1.systemMetadata("new_md_key") = "new_md_value"
           readResource1.addVersion(createVersion())
 
           Thread.sleep(10)
 
           val readResource2 = storage.get(ra).get
-          readResource2.metadata.put("new_key", "new_value3")
-          readResource2.systemMetadata.put("new_md_key2", "new_md_value2")
+          readResource2.metadata("new_key") = "new_value3"
+          readResource2.systemMetadata("new_md_key2") = "new_md_value2"
           readResource2.addVersion(createVersion("This is another data"))
 
           Thread.sleep(10)
@@ -463,15 +463,15 @@ abstract class AbstractStorageTestCase extends TestCase{
     try{
 
       val res0 = createResource("1")
-      res0.metadata.put("pool", "pool0")
+      res0.metadata("pool") = "pool0"
       val ra0 = storage.add(res0)
 
       val res1 = createResource("2")
-      res1.metadata.put("pool", "pool1")
+      res1.metadata("pool") = "pool1"
       storage.add(res1)
 
       val res2 = createResource("3")
-      res2.metadata.put("pool", "pool0")
+      res2.metadata("pool") = "pool0"
       val ra2 = storage.add(res2)
 
 
@@ -512,15 +512,15 @@ abstract class AbstractStorageTestCase extends TestCase{
     try{
 
       val res0 = createResource("1")
-      res0.systemMetadata.put("pool", "pool0")
+      res0.systemMetadata("pool") = "pool0"
       val ra0 = storage.add(res0)
 
       val res1 = createResource("2")
-      res1.systemMetadata.put("pool", "pool1")
+      res1.systemMetadata("pool") = "pool1"
       storage.add(res1)
 
       val res2 = createResource("3")
-      res2.systemMetadata.put("pool", "pool0")
+      res2.systemMetadata("pool") = "pool0"
       val ra2 = storage.add(res2)
 
 
@@ -562,27 +562,27 @@ abstract class AbstractStorageTestCase extends TestCase{
     try{
 
       val res0 = createResource("1")
-      res0.metadata.put("pool", "pool0")
-      res0.systemMetadata.put("c3.pool", "pool0")
+      res0.metadata("pool") ="pool0"
+      res0.systemMetadata("c3.pool") = "pool0"
       val ra0 = storage.add(res0)
 
       val res1 = createResource("2")
-      res1.metadata.put("pool", "pool0")
-      res1.systemMetadata.put("c3.pool", "pool1")
+      res1.metadata("pool") = "pool0"
+      res1.systemMetadata("c3.pool") = "pool1"
       storage.add(res1)
 
       val res2 = createResource("3")
-      res2.metadata.put("pool", "pool0")
-      res2.systemMetadata.put("c3.pool", "pool0")
+      res2.metadata("pool") = "pool0"
+      res2.systemMetadata("c3.pool") = "pool0"
       val ra2 = storage.add(res2)
 
       val res4 = createResource("4")
-      res4.metadata.put("pool", "pool1")
-      res4.systemMetadata.put("c3.pool", "pool0")
+      res4.metadata("pool") = "pool1"
+      res4.systemMetadata("c3.pool") = "pool0"
       storage.add(res4)
 
       val res5 = createResource("5")
-      res5.systemMetadata.put("c3.pool", "pool0")
+      res5.systemMetadata("c3.pool") = "pool0"
       storage.add(res5)
 
 
@@ -624,27 +624,27 @@ abstract class AbstractStorageTestCase extends TestCase{
     try{
 
       val res0 = createResource("1")
-      res0.metadata.put("pool", "pool0")
-      res0.systemMetadata.put("c3.pool", "pool0")
+      res0.metadata("pool") = "pool0"
+      res0.systemMetadata("c3.pool") = "pool0"
       val ra0 = storage.add(res0)
 
       val res1 = createResource("2")
-      res1.metadata.put("pool", "pool0")
-      res1.systemMetadata.put("c3.pool", "pool1")
+      res1.metadata("pool") = "pool0"
+      res1.systemMetadata("c3.pool") = "pool1"
       storage.add(res1)
 
       val res2 = createResource("3")
-      res2.metadata.put("pool", "pool0")
-      res2.systemMetadata.put("c3.pool", "pool0")
+      res2.metadata("pool") = "pool0"
+      res2.systemMetadata("c3.pool") = "pool0"
       val ra2 = storage.add(res2)
 
       val res4 = createResource("4")
-      res4.metadata.put("pool", "pool1")
-      res4.systemMetadata.put("c3.pool", "pool0")
+      res4.metadata("pool") = "pool1"
+      res4.systemMetadata("c3.pool") = "pool0"
       storage.add(res4)
 
       val res5 = createResource("5")
-      res5.systemMetadata.put("c3.pool", "pool0")
+      res5.systemMetadata("c3.pool") ="pool0"
       storage.add(res5)
 
 
@@ -719,11 +719,11 @@ abstract class AbstractStorageTestCase extends TestCase{
     val storage = createStorage("1012", disableIteratorFunctionFilter = true)
 
     val resource = createResource("czcxcc")
-    resource.metadata.put("pool", "pool0")
+    resource.metadata("pool") = "pool0"
     val ra = storage.add(resource)
 
     val resource2 = createResource("bla-bla-bla")
-    resource2.metadata.put("pool", "pool1")
+    resource2.metadata("pool") = "pool1"
     val ra2 = storage.add(resource2)
 
     val expectedResources = new mutable.HashMap[String, Resource]()
@@ -755,24 +755,24 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     val resource1 = createResource("qweqweqwe")
     resource1.createDate = new Date(1)
-    resource1.metadata.put("pool", "pool0")
-    val ra1 = storage.add(resource1)
+    resource1.metadata("pool") = "pool0"
+    storage.add(resource1)
 
     val resource2 = createResource("qweqweqwe1")
     resource2.createDate = new Date(5)
-    resource2.metadata.put("pool", "pool0")
+    resource2.metadata("pool") = "pool0"
     val ra2 = storage.add(resource2)
 
     val resource3 = createResource("qweqweqwe2")
     resource3.createDate = new Date(30)
-    resource3.metadata.put("pool", "pool0")
+    resource3.metadata("pool") = "pool0"
     val ra3 = storage.add(resource3)
 
 
     val resource4 = createResource("qweqweqwe3")
     resource4.createDate = new Date(20)
-    resource4.metadata.put("pool", "pool1")
-    val ra4 = storage.add(resource4)
+    resource4.metadata("pool") = "pool1"
+    storage.add(resource4)
 
     val expected = new mutable.HashMap[String, Resource]()
     expected.put(ra2, resource2)
@@ -865,12 +865,12 @@ abstract class AbstractStorageTestCase extends TestCase{
   private def createResource(data:String = "", versioned:Boolean=false):Resource = {
 
     val resource = new Resource
-    resource.metadata.put("key", "some_value")
-    resource.systemMetadata.put("key1", "some_value")
+    resource.metadata("key") = "some_value"
+    resource.systemMetadata("key1") = "some_value"
     resource.isVersioned = versioned
 
     val resVersion = new ResourceVersion
-    resVersion.systemMetadata.put("key2", "some_other_value")
+    resVersion.systemMetadata("key2") = "some_other_value"
 
     resVersion.data = DataStream.create("This is data " + data)
 
@@ -884,7 +884,7 @@ abstract class AbstractStorageTestCase extends TestCase{
   private def createVersion(data:String = "This is new data") :ResourceVersion = {
     val version = new ResourceVersion
 
-    version.systemMetadata.put("key3", "some_value3")
+    version.systemMetadata("key3") = "some_value3"
 
     version.data = DataStream.create(data)
 

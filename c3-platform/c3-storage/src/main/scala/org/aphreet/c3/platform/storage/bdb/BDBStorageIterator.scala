@@ -161,7 +161,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         var result = true
 
         for((key, value) <- fieldsToCheck){
-          (if(isSystem) res.systemMetadata else res.metadata).get(key) match{
+          (if(isSystem) res.systemMetadata else res.metadata)(key) match{
             case Some(x) =>
               if(x != value) result = false
             case None =>

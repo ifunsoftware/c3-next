@@ -158,7 +158,7 @@ with WatchedActor {
 
     if (currentParent.resource.address == newParent.resource.address) {
 
-      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+      node.resource.systemMetadata(Node.NODE_FIELD_NAME) = newPathAndName._2
       accessManager.update(node.resource)
 
       currentParent.asInstanceOf[Directory].updateChild(oldPathAndName._2, newPathAndName._2)
@@ -169,8 +169,8 @@ with WatchedActor {
       val oldDir = Directory(accessManager.get(currentParent.resource.address))
       val newDir = Directory(accessManager.get(newParent.resource.address))
 
-      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-      node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
+      node.resource.systemMetadata(Node.NODE_FIELD_NAME) = newPathAndName._2
+      node.resource.systemMetadata(Node.NODE_FIELD_PARENT) = newDir.resource.address
 
       accessManager.update(node.resource)
 
@@ -183,7 +183,7 @@ with WatchedActor {
   }
 
   override def resourceCanBeDeleted(resource: Resource): Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) => {
 
@@ -201,7 +201,7 @@ with WatchedActor {
   }
 
   override def resourceCanBeUpdated(resource: Resource): Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) =>
         if (nodeType == Node.NODE_TYPE_DIR) {
@@ -227,8 +227,8 @@ with WatchedActor {
 
   override def deleteResource(resource: Resource) {
 
-    resource.systemMetadata.get(Node.NODE_FIELD_NAME) foreach {
-      name => resource.systemMetadata.get(Node.NODE_FIELD_PARENT).foreach{
+    resource.systemMetadata(Node.NODE_FIELD_NAME) foreach {
+      name => resource.systemMetadata(Node.NODE_FIELD_PARENT).foreach{
         parentAddress => {
           accessManager.getOption(parentAddress) match {
             case Some(parent) => {
@@ -303,9 +303,9 @@ with WatchedActor {
 
     val resource = accessManager.get(address)
 
-    val name = resource.systemMetadata.get(Node.NODE_FIELD_NAME)
+    val name = resource.systemMetadata(Node.NODE_FIELD_NAME)
 
-    resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match {
+    resource.systemMetadata(Node.NODE_FIELD_PARENT) match {
       case Some(value) => lookupResourcePath(value, name.get :: pathComponents)
       case None => pathComponents
     }
@@ -359,7 +359,7 @@ with WatchedActor {
       throw new FSWrongRequestException("Node with name: " + name + " already exists")
     }
 
-    newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
+    newNode.resource.systemMetadata(Node.NODE_FIELD_PARENT) = directory.resource.address
     val newAddress = accessManager.add(newNode.resource)
 
     directory.addChild(name, newAddress, !newNode.isDirectory)

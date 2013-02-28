@@ -54,7 +54,7 @@ class ResourceHandler(val factory: DocumentBuilderFactory,
 
     val documentBuilder = factory.createDocumentBuilder(searchConfiguration)
 
-    val domain = resource.systemMetadata.get("c3.domain.id").get
+    val domain = resource.systemMetadata("c3.domain.id").get
 
     extracted match {
       case Some(document) => documentBuilder.build(mapAsJavaMap(metadata.asMap), mapAsJavaMap(document.metadata),

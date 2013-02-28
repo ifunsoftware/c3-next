@@ -44,11 +44,11 @@ class DomainAccessTokenTestCase extends TestCase{
     val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode))
 
     val resource = new Resource
-    resource.systemMetadata.put(Domain.MD_FIELD, "domain-id")
+    resource.systemMetadata(Domain.MD_FIELD) = "domain-id"
     token.checkAccess(resource)
 
 
-    resource.systemMetadata.put(Domain.MD_FIELD, "domain2-id")
+    resource.systemMetadata(Domain.MD_FIELD) = "domain2-id"
 
     try{
       token.checkAccess(resource)

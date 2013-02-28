@@ -147,14 +147,14 @@ class ResourceTestCase extends TestCase {
     val resource = Resource.fromByteArray(serializedResourceVersion0)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
-    assertEquals("value1", resource.metadata.get("key1").get)
-    assertEquals("value2", resource.metadata.get("key2").get)
-    assertEquals("svalue1", resource.systemMetadata.get("skey1").get)
-    assertEquals("svalue2", resource.systemMetadata.get("skey2").get)
+    assertEquals("value1", resource.metadata("key1").get)
+    assertEquals("value2", resource.metadata("key2").get)
+    assertEquals("svalue1", resource.systemMetadata("skey1").get)
+    assertEquals("svalue2", resource.systemMetadata("skey2").get)
     assertEquals(10000l, resource.createDate.getTime)
     assertEquals(false, resource.isVersioned)
     assertEquals(1, resource.versions.size)
-    assertEquals("rvalue1", resource.versions(0).systemMetadata.get("rkey1").get)
+    assertEquals("rvalue1", resource.versions(0).systemMetadata("rkey1").get)
 
   }
 
@@ -162,14 +162,14 @@ class ResourceTestCase extends TestCase {
     val resource = Resource.fromByteArray(serializedResourceVersion1)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
-    assertEquals("value1", resource.metadata.get("key1").get)
-    assertEquals("value2", resource.metadata.get("key2").get)
-    assertEquals("svalue1", resource.systemMetadata.get("skey1").get)
-    assertEquals("svalue2", resource.systemMetadata.get("skey2").get)
+    assertEquals("value1", resource.metadata("key1").get)
+    assertEquals("value2", resource.metadata("key2").get)
+    assertEquals("svalue1", resource.systemMetadata("skey1").get)
+    assertEquals("svalue2", resource.systemMetadata("skey2").get)
     assertEquals(10000l, resource.createDate.getTime)
     assertEquals(false, resource.isVersioned)
     assertEquals(1, resource.versions.size)
-    assertEquals("rvalue1", resource.versions(0).systemMetadata.get("rkey1").get)
+    assertEquals("rvalue1", resource.versions(0).systemMetadata("rkey1").get)
 
   }
 
@@ -177,14 +177,14 @@ class ResourceTestCase extends TestCase {
     val resource = Resource.fromByteArray(serializedResourceVersion2)
 
     assertEquals("0e6315ea-c2fd-4bef-936e-59cef7943841-6a47", resource.address)
-    assertEquals("value1", resource.metadata.get("key1").get)
-    assertEquals("value2", resource.metadata.get("key2").get)
-    assertEquals("svalue1", resource.systemMetadata.get("skey1").get)
-    assertEquals("svalue2", resource.systemMetadata.get("skey2").get)
+    assertEquals("value1", resource.metadata("key1").get)
+    assertEquals("value2", resource.metadata("key2").get)
+    assertEquals("svalue1", resource.systemMetadata("skey1").get)
+    assertEquals("svalue2", resource.systemMetadata("skey2").get)
     assertEquals(10000l, resource.createDate.getTime)
     assertEquals(false, resource.isVersioned)
     assertEquals(1, resource.versions.size)
-    assertEquals("rvalue1", resource.versions(0).systemMetadata.get("rkey1").get)
+    assertEquals("rvalue1", resource.versions(0).systemMetadata("rkey1").get)
 
   }
   
@@ -194,22 +194,22 @@ class ResourceTestCase extends TestCase {
     resource.address = "0e6315ea-c2fd-4bef-936e-59cef7943841-6a47"
     resource.createDate = new Date(1273087676152l)
 
-    resource.metadata.put("ke\"1", "value1")
-    resource.metadata.put("key2", "Значение2")
+    resource.metadata("ke\"1") = "value1"
+    resource.metadata("key2") = "Значение2"
 
-    resource.systemMetadata.put("skey1", "svalue1")
-    resource.systemMetadata.put("skey2", "svalue2")
+    resource.systemMetadata("skey1") = "svalue1"
+    resource.systemMetadata("skey2") = "svalue2"
 
     resource.isVersioned = true
 
     val version = new ResourceVersion
     version.data = DataStream.create("my data here")
-    version.systemMetadata.put("rkey1", "value1")
+    version.systemMetadata("rkey1") = "value1"
     version.date = new Date(1273087676152l)
 
     resource.addVersion(version)
 
-    assertEquals("Значение2", Resource.fromByteArray(resource.toByteArray).metadata.get("key2").get)
+    assertEquals("Значение2", Resource.fromByteArray(resource.toByteArray).metadata("key2").get)
 
   }
 

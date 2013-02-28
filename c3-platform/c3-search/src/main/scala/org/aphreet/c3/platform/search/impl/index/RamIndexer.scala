@@ -191,7 +191,7 @@ class RamIndexer(val fileIndexer: Actor,
 
     val reader: Option[Reader] = extracted match {
       case Some(document) => Some(new StringReader(document.content))
-      case None => metadata.get(TITLE) match {
+      case None => metadata(TITLE) match {
         case Some(value) => Some(new StringReader(value))
         case None => None
       }
@@ -204,7 +204,7 @@ class RamIndexer(val fileIndexer: Actor,
   }
 
   def shouldIndexResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get("c3.skip.index") match{
+    resource.systemMetadata("c3.skip.index") match{
       case Some(x) => false
       case None => true
     }
