@@ -40,7 +40,6 @@ import java.io.{Reader, StringReader}
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
-import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
 import org.apache.lucene.util.Version
 import collection.JavaConversions._
 import org.apache.lucene.document.Document
@@ -66,12 +65,8 @@ class RamIndexer(val fileIndexer: Actor,
 
   val languageGuesser = LanguageGuesserUtil.createGuesser
 
-  var documentBuilderFactory:DocumentBuilderFactory = _
-
   {
     createNewWriter()
-
-    documentBuilderFactory = new DocumentBuilderFactory()
   }
 
 
@@ -159,8 +154,7 @@ class RamIndexer(val fileIndexer: Actor,
     try{
       val language = getLanguage(resource.metadata, extractedDocument)
 
-      val resourceHandler = new ResourceHandler(documentBuilderFactory,
-        configurationManager.searchConfiguration, resource, resource.metadata, extractedDocument, language)
+      val resourceHandler = new ResourceHandler(configurationManager.searchConfiguration, resource, resource.metadata, extractedDocument, language)
 
       val document = resourceHandler.document
       val analyzer = resourceHandler.analyzer

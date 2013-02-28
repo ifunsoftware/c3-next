@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.search
 
-import ext.impl.MultiFieldSearchStrategy
-import ext.{SearchResultEntry, SearchConfiguration}
+import ext.{SearchConfiguration}
 import impl.index.extractor.SimpleTextExtractor
 import impl.index.{RamIndexer, MergeIndexMsg}
+import impl.search.MultiFieldSearchStrategy
 import junit.framework.TestCase
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import actors.Actor
@@ -57,7 +57,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
 
-    verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).map(e => SearchResultElement.fromEntry(e)).toList)
+    verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).toList)
 
   }
 

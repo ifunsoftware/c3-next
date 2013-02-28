@@ -29,21 +29,17 @@
  */
 package org.aphreet.c3.platform.search.impl.index
 
-import org.aphreet.c3.platform.resource.{Metadata, Resource}
 import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
-import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.search.ext.{SearchConfiguration, DocumentBuilderFactory}
-import collection.JavaConversions._
-import org.apache.lucene.document.{Document, Field}
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.Document
 import org.apache.lucene.util.Version
+import org.aphreet.c3.platform.resource.{Metadata, Resource}
+import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
-import java.util.Collections
 
 
-class ResourceHandler(val factory: DocumentBuilderFactory,
-                      val searchConfiguration: SearchConfiguration,
+class ResourceHandler(val searchConfiguration: SearchConfiguration,
                       val resource: Resource,
                       val metadata: Metadata,
                       val extracted: Option[ExtractedDocument],
@@ -52,14 +48,14 @@ class ResourceHandler(val factory: DocumentBuilderFactory,
 
   def document:Document = {
 
-    val documentBuilder = factory.createDocumentBuilder(searchConfiguration)
+    val documentBuilder = new WeightedDocumentBuilder(searchConfiguration)
 
     val domain = resource.systemMetadata("c3.domain.id").get
 
     extracted match {
-      case Some(document) => documentBuilder.build(mapAsJavaMap(metadata.asMap), mapAsJavaMap(document.metadata),
+      case Some(document) => documentBuilder.build(metadata, document.metadata,
         document.content, lang, resource.address, domain)
-      case None => documentBuilder.build(mapAsJavaMap(metadata.asMap), Collections.emptyMap(), null, lang, resource.address, domain)
+      case None => documentBuilder.build(metadata, Map(), null, lang, resource.address, domain)
     }
 
   }

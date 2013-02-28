@@ -1,26 +1,20 @@
-package org.aphreet.c3.platform.search.ext;
-
-import org.aphreet.c3.platform.search.ext.impl.WeightedDocumentBuilder;
-
-import java.util.Map;
-
-/**
- * Copyright (c) 2010, Mikhail Malygin
+/*
+ * Copyright (c) 2013, Mikhail Malygin
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * <p/>
+ *
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the IFMO nor the names of its contributors
+ * 3. Neither the name of the iFunSoftware nor the names of its contributors
  * may be used to endorse or promote products derived from this software
  * without specific prior written permission.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -33,9 +27,16 @@ import java.util.Map;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-public class DocumentBuilderFactory {
 
-    public DocumentBuilder createDocumentBuilder(SearchConfiguration configuration){
-        return new WeightedDocumentBuilder(configuration);
-    }
+package org.aphreet.c3.platform.search.impl.search
+
+import org.apache.lucene.search.IndexSearcher
+import org.aphreet.c3.platform.search.ext.SearchConfiguration
+import org.aphreet.c3.platform.search.SearchResultElement
+
+trait SearchStrategy {
+
+  def search(searcher: IndexSearcher, configuration: SearchConfiguration, query: String,
+             max: Int, offset: Int, domain: String): Array[SearchResultElement]
+
 }
