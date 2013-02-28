@@ -41,7 +41,7 @@ abstract class Node(val resource:Resource){
 
   def isDirectory:Boolean
 
-  def name:String = resource.systemMetadata.getOrElse(Node.NODE_FIELD_NAME, null)
+  def name:String = resource.systemMetadata.asMap.getOrElse(Node.NODE_FIELD_NAME, null)
 }
 
 

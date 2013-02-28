@@ -6,14 +6,7 @@ import org.aphreet.c3.platform.common.Path
 import junit.framework.Assert._
 import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
 
-/**
- * Created with IntelliJ IDEA.
- * User: antey
- * Date: 02.02.13
- * Time: 0:31
- * To change this template use File | Settings | File Templates.
- */
-class RemoteBackupTestCase extends AbstractTestWithFileSystem{
+abstract class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
   val BACKUP_NAME = "backup.zip";
   val PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----\n" +

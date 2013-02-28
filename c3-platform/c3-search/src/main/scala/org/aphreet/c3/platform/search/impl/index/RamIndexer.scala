@@ -33,7 +33,7 @@ package org.aphreet.c3.platform.search.impl.index
 import actors.Actor
 import org.apache.lucene.index.{IndexWriterConfig, IndexWriter}
 import org.apache.lucene.store.{RAMDirectory, Directory}
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.resource.{Metadata, Resource}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 import java.io.{Reader, StringReader}
@@ -157,11 +157,10 @@ class RamIndexer(val fileIndexer: Actor,
     }else None
 
     try{
-      val metadata = Map[String, String]() ++ resource.metadata
-      val language = getLanguage(metadata, extractedDocument)
+      val language = getLanguage(resource.metadata, extractedDocument)
 
       val resourceHandler = new ResourceHandler(documentBuilderFactory,
-        configurationManager.searchConfiguration, resource, metadata, extractedDocument, language)
+        configurationManager.searchConfiguration, resource, resource.metadata, extractedDocument, language)
 
       val document = resourceHandler.document
       val analyzer = resourceHandler.analyzer
@@ -188,7 +187,7 @@ class RamIndexer(val fileIndexer: Actor,
     configurationManager ! HandleFieldListMsg(indexedFieldList)
   }
 
-  def getLanguage(metadata:Map[String, String], extracted: Option[ExtractedDocument]):String = {
+  def getLanguage(metadata: Metadata, extracted: Option[ExtractedDocument]):String = {
 
     val reader: Option[Reader] = extracted match {
       case Some(document) => Some(new StringReader(document.content))

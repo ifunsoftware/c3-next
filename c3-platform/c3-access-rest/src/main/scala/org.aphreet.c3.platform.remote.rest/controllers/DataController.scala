@@ -130,7 +130,7 @@ class DataController extends AbstractController with ServletContextAware with Re
         accessManager.getOption(child.address) match {
           case Some(resource) => {
             Some(new FSNode(child,
-              resource.metadata.filterKeys(metaKeys.contains(_)),
+              resource.metadata.asMap.filterKeys(metaKeys.contains(_)),
 
               if(needsData){
                 resource.versions.last.systemMetadata.get("c3.data.length") match {

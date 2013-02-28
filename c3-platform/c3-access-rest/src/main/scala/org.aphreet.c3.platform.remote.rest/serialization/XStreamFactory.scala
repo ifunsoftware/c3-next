@@ -51,6 +51,7 @@ class XStreamFactory{
   }
 
   private def configureXStream(xStream:XStream):XStream = {
+    xStream.registerConverter(new MetadataConverter)
     xStream.registerConverter(new HashMapConverter)
     xStream.registerConverter(new ArrayBufferConverter(xStream.getMapper))
     xStream.registerConverter(new ISO8601DateConverter)

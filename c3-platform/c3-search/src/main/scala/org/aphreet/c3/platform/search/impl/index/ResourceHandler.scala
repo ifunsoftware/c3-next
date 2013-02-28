@@ -29,7 +29,7 @@
  */
 package org.aphreet.c3.platform.search.impl.index
 
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.resource.{Metadata, Resource}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
@@ -42,12 +42,12 @@ import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 import java.util.Collections
 
 
-class ResourceHandler(val factory:DocumentBuilderFactory,
-                      val searchConfiguration:SearchConfiguration,
-                      val resource:Resource,
-                      val meta:Map[String, String],
-                      val extracted:Option[ExtractedDocument],
-                      val lang:String){
+class ResourceHandler(val factory: DocumentBuilderFactory,
+                      val searchConfiguration: SearchConfiguration,
+                      val resource: Resource,
+                      val metadata: Metadata,
+                      val extracted: Option[ExtractedDocument],
+                      val lang: String){
 
 
   def document:Document = {
@@ -57,9 +57,9 @@ class ResourceHandler(val factory:DocumentBuilderFactory,
     val domain = resource.systemMetadata.get("c3.domain.id").get
 
     extracted match {
-      case Some(document) => documentBuilder.build(mapAsJavaMap(meta), mapAsJavaMap(document.metadata),
+      case Some(document) => documentBuilder.build(mapAsJavaMap(metadata.asMap), mapAsJavaMap(document.metadata),
         document.content, lang, resource.address, domain)
-      case None => documentBuilder.build(mapAsJavaMap(meta), Collections.emptyMap(), null, lang, resource.address, domain)
+      case None => documentBuilder.build(mapAsJavaMap(metadata.asMap), Collections.emptyMap(), null, lang, resource.address, domain)
     }
 
   }

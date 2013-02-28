@@ -43,6 +43,10 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
 
   def get(key: String): Option[String] = map.get(key)
 
+  def remove(key: String){
+    map.remove(key)
+  }
+
   def contains(key: String): Boolean = map.contains(key)
 
   def getList(key: String): Option[List[String]] = None

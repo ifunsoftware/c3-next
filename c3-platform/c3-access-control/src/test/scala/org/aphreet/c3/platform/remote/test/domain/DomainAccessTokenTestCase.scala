@@ -66,6 +66,6 @@ class DomainAccessTokenTestCase extends TestCase{
 
     token.updateResource(resource)
 
-    assertEquals("domain-id", resource.systemMetadata.getOrElse(Domain.MD_FIELD, ""))
+    assertEquals("domain-id", resource.systemMetadata.asMap.getOrElse(Domain.MD_FIELD, ""))
   }
 }
