@@ -42,8 +42,8 @@ import org.apache.lucene.queryParser.MultiFieldQueryParser
 import org.apache.lucene.search._
 import highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
 import org.apache.lucene.util.Version.LUCENE_35
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 
 class MultiFieldSearchStrategy extends SearchStrategy{

@@ -31,8 +31,8 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import org.apache.lucene.document.{Document, Field}
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import org.aphreet.c3.platform.resource.Metadata
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 class WeightedDocumentBuilder(val configuration: SearchConfiguration) {
 

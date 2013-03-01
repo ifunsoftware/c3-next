@@ -5,9 +5,6 @@ import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
-import scala.collection.JavaConversions._
-import collection.immutable.SortedMap
 
 @Component
 class SearchConfigurationManagerImpl extends SearchConfigurationManager{
@@ -24,7 +21,7 @@ class SearchConfigurationManagerImpl extends SearchConfigurationManager{
 
     currentFields = configAccessor.load
 
-    currentSearchConfiguration.loadFieldWeight(mapAsJavaMap(currentFields.fieldMap))
+    currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
 
     this.start()
   }
@@ -39,7 +36,7 @@ class SearchConfigurationManagerImpl extends SearchConfigurationManager{
       react{
         case HandleFieldListMsg(fields) => {
           currentFields = currentFields.handleIndexedFields(fields)
-          currentSearchConfiguration.loadFieldWeight(mapAsJavaMap(currentFields.fieldMap))
+          currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
           configAccessor.store(currentFields)
         }
         case DestroyMsg => this.exit()

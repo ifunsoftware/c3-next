@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.search
 
-import ext.SearchConfiguration
 import impl.index.extractor.SimpleTextExtractor
 import impl.index.{IndexMsg, MergeIndexMsg, RamIndexer}
 import junit.framework.TestCase
@@ -12,6 +11,7 @@ import org.apache.lucene.queryParser.QueryParser
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
 import org.apache.lucene.index.IndexReader
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 class RamIndexerTestCase extends TestCase{
 

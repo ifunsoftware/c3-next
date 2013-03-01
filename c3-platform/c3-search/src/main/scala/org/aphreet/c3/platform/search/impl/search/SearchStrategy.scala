@@ -31,8 +31,8 @@
 package org.aphreet.c3.platform.search.impl.search
 
 import org.apache.lucene.search.IndexSearcher
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 trait SearchStrategy {
 

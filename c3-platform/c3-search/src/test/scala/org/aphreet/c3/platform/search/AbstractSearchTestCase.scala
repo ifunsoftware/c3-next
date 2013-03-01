@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.search
 
-import ext.{SearchConfiguration}
 import impl.index.extractor.SimpleTextExtractor
 import impl.index.{RamIndexer, MergeIndexMsg}
 import impl.search.MultiFieldSearchStrategy
@@ -9,14 +8,14 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import actors.Actor
 import org.apache.lucene.index.IndexReader
 import org.apache.lucene.search.IndexSearcher
-import collection.JavaConversions
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 abstract class AbstractSearchTestCase extends TestCase{
 
   var ramIndexer:RamIndexer = _
 
   val configuration = new SearchConfiguration
-  configuration.loadFieldWeight(JavaConversions.mapAsJavaMap(fieldWeights))
+  configuration.loadFieldWeight(fieldWeights)
 
   val searchStrategy = new MultiFieldSearchStrategy()
 

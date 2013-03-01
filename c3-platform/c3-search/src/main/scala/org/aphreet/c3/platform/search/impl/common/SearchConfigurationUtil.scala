@@ -31,9 +31,10 @@
 
 package org.aphreet.c3.platform.search.impl.common
 
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import java.util.Properties
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import scala.collection.mutable
 
 object SearchConfigurationUtil{
 
@@ -56,7 +57,7 @@ object SearchConfigurationUtil{
 
     val it  = properties.keySet.iterator
 
-    val map = new java.util.HashMap[String, java.lang.Float]
+    val map = new mutable.HashMap[String, java.lang.Float]
 
     while(it.hasNext){
       val key = it.next.asInstanceOf[String]

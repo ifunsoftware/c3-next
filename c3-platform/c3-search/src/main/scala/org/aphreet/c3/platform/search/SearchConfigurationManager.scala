@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.search
 
-import ext.SearchConfiguration
 import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 trait SearchConfigurationManager extends WatchedActor{
 

@@ -35,8 +35,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.util.Version
 import org.aphreet.c3.platform.resource.{Metadata, Resource}
-import org.aphreet.c3.platform.search.ext.SearchConfiguration
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 
 class ResourceHandler(val searchConfiguration: SearchConfiguration,
