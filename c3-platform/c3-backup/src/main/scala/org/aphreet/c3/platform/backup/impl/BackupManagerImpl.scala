@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.backup.impl
 
-import org.aphreet.c3.platform.backup.BackupManager
+import org.aphreet.c3.platform.backup.{BackupLocation, BackupManager}
 import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -41,8 +41,8 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessMediator}
 import org.aphreet.c3.platform.filesystem.FSManager
 import java.io.File
-import java.util
 import collection.mutable.ListBuffer
+import javax.annotation.PostConstruct
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -63,6 +63,17 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
 
   @Autowired
   var taskManager:TaskManager = _
+
+  @Autowired
+  var configAccessor: BackupConfigAccessor = _
+
+  var targets : List[BackupLocation] = null
+
+
+  @PostConstruct
+  def init(){
+    targets = configAccessor.load
+  }
 
   def createBackup(){
     val backupDirectory = configManager.getPlatformProperties.get(BACKUP_LOCATION) match {
@@ -96,6 +107,32 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
       filesList
         .filter( file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
         .foreach(file => listBuffer += file.getAbsolutePath)
+    }
+
+    listBuffer.toList
+  }
+
+  def listTargets() : List[String] = {
+    val listBuffer = new ListBuffer[String]()
+    var count = 1
+
+    for (target <- targets) {
+      val builder = new StringBuilder
+
+      builder.append(count).append("\t")
+      count += 1
+      builder.append(target.id).append("\t")
+
+      builder.append( target.backupType match {
+        case "local" => "localhost"
+        case "remote" => target.host
+        case _ => throw new IllegalStateException("Wrong type for backup target")
+      })
+      builder.append("\t")
+
+      builder.append(target.folder).append("\t")
+
+      listBuffer += builder.toString()
     }
 
     listBuffer.toList

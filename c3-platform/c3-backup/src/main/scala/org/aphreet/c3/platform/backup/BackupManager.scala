@@ -38,4 +38,5 @@ trait BackupManager {
 
   def listBackups(folderPath:String) : List[String]
 
+  def listTargets() : List[String]
 }

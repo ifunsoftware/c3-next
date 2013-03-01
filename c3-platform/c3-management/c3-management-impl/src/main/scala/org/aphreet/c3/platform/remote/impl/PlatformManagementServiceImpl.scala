@@ -576,9 +576,20 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   }
 
   def listBackups(folderPath : String) : Array[String] = {
-    try{
+    try {
       backupManager.listBackups(folderPath).toArray
-    }catch{
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def listTargets() : Array[String] = {
+    try {
+      backupManager.listTargets().toArray
+    } catch {
       case e: Throwable => {
         e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)

@@ -1,17 +1,15 @@
 package org.aphreet.c3.platform.backup
 
-import impl.{BackupConfigAccessor, RemoteBackup}
+import impl.RemoteBackup
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-import org.aphreet.c3.platform.common.Path
 import junit.framework.Assert._
 import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
 
 /**
- * Created with IntelliJ IDEA.
+ *
  * User: antey
  * Date: 02.02.13
  * Time: 0:31
- * To change this template use File | Settings | File Templates.
  */
 class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
@@ -57,7 +55,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backupLocation = new RemoteBackupLocation("backup-c3backup.rhcloud.com",
+    val backupLocation = new BackupLocation("", "remote", "backup-c3backup.rhcloud.com",
       "d22b442f096243d499120ff44adfc76a", "app-root/data", PRIVATE_KEY)
 
     val backup = RemoteBackup.create(BACKUP_NAME, backupLocation)

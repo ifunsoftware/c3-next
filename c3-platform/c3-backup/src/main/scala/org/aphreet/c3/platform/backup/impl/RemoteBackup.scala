@@ -1,17 +1,13 @@
 package org.aphreet.c3.platform.backup.impl
 
 import java.net.URI
-import com.sshtools.j2ssh.{SftpClient, SshClient}
-import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification
-import com.sshtools.j2ssh.authentication.{AuthenticationProtocolState, PublicKeyAuthenticationClient}
-import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
-import java.io.{IOException, File}
+import java.io.File
 import org.aphreet.c3.platform.common.{Path => C3Path}
 import java.nio.file._
 import java.util
-import org.aphreet.c3.platform.backup.{RemoteBackupLocation, AbstractBackup}
+import org.aphreet.c3.platform.backup.{BackupLocation, AbstractBackup}
 
-class RemoteBackup(val name: String, val create: Boolean, val config: RemoteBackupLocation) extends AbstractBackup {
+class RemoteBackup(val name: String, val create: Boolean, val config: BackupLocation) extends AbstractBackup {
 
   val HOST = config.host
   val USER = config.user
@@ -69,11 +65,11 @@ class RemoteBackup(val name: String, val create: Boolean, val config: RemoteBack
 
 object RemoteBackup {
 
-  def open(name: String, config: RemoteBackupLocation): RemoteBackup = {
+  def open(name: String, config: BackupLocation): RemoteBackup = {
     new RemoteBackup(name, false, config)
   }
 
-  def create(name: String, config: RemoteBackupLocation): RemoteBackup = {
+  def create(name: String, config: BackupLocation): RemoteBackup = {
     new RemoteBackup(name, true, config)
   }
 
