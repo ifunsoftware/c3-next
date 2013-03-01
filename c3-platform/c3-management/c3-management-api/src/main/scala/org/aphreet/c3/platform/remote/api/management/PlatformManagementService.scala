@@ -107,4 +107,6 @@ trait PlatformManagementService {
 
   def showBackupTargetInfo(targetId: String) : TargetDescription
 
+  def listTargets() : Array[String]
+
 }
