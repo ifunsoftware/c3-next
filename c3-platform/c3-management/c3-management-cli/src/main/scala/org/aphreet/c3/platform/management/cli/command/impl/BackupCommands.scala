@@ -5,7 +5,8 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object BackupCommands extends Commands{
   def instances = List(new RestoreBackupCommand,
-    new CreateBackupCommand, new ListBackupsCommand, new ListTargetsCommand)
+    new CreateBackupCommand, new ListBackupsCommand, new ListTargetsCommand,
+    new ShowTargetInfoCommand)
 }
 
 
@@ -74,4 +75,17 @@ class ListTargetsCommand extends Command {
   }
 
   def name = List("list", "targets")
+}
+
+class ShowTargetInfoCommand extends Command {
+  override def execute(params: List[String], management: PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(value) => management.showTargetInfo(value)
+
+      case None => wrongParameters("show target <target id / target number>")
+    }
+  }
+
+  def name = List("show", "target")
 }

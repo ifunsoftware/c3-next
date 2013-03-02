@@ -138,6 +138,51 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     listBuffer.toList
   }
 
+  def showTargetInfo(targetId : String) : String = {
+    val target = getBackupLocation(targetId)
+
+    val builder = new StringBuilder("Target info\n")
+    builder.append("ID: ").append(target.id).append("\n")
+
+    val isRemote = target.backupType.equals("remote")
+    builder.append("Type: ").append(target.backupType).append("\n")
+
+    if (isRemote) {
+      builder.append("Host: ").append(target.host).append("\n")
+      builder.append("User: ").append(target.user).append("\n")
+    }
+
+    builder.append("Folder: ").append(target.folder).append("\n")
+
+    if (isRemote) {
+      builder.append("Key: ").append(target.privateKey).append("\n")
+    }
+
+    builder.toString()
+  }
+
+  def getBackupLocation(targetId : String) : BackupLocation = {
+    val maybeLocation = targets.find(target => target.id.equals(targetId))
+
+    val backupLocation = maybeLocation match {
+      case Some(value) => value
+      case None => {
+        if (targetId.forall(_.isDigit)) {
+          val num = targetId.toInt
+          if (num >= 1 && num <= targets.size) {
+            targets(num - 1)
+          } else {
+            throw new IllegalArgumentException("Target number is too big or less than 1")
+          }
+        } else {
+          throw new IllegalArgumentException("Argument is not a target id nor target number")
+        }
+      }
+    }
+
+    backupLocation
+  }
+
   def propertyChanged(event: PropertyChangeEvent) {}
 
   def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
