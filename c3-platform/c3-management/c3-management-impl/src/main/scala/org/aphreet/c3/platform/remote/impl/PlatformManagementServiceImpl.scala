@@ -693,4 +693,15 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
   }
+
+  def showTargetInfo(targetId: String) : String = {
+    try {
+      backupManager.showTargetInfo(targetId)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
 }
