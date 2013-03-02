@@ -88,6 +88,12 @@ trait PlatformManagementService {
 
   def listBackups(folderPath : String) : Array[String]
 
+  def createLocalTarget(id : String, path : String)
+
+  def createRemoteTarget(id : String, host : String, user : String, path : String, privateKeyFile : String)
+
+  def removeTarget(id : String)
+
   def listTargets() : Array[String]
 
   def showTargetInfo(targetId: String) : String

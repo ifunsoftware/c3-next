@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.backup.impl
 
-import org.aphreet.c3.platform.backup.{BackupLocation, BackupManager}
+import org.aphreet.c3.platform.backup.{RemoteBackupLocation, LocalBackupLocation, BackupLocation, BackupManager}
 import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -43,6 +43,7 @@ import org.aphreet.c3.platform.filesystem.FSManager
 import java.io.File
 import collection.mutable.ListBuffer
 import javax.annotation.PostConstruct
+import org.apache.commons.logging.LogFactory
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -110,6 +111,33 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     }
 
     listBuffer.toList
+  }
+
+
+  def createLocalTarget(id: String, path: String) {
+    if (existsTargetId(id)) {
+      throw new IllegalArgumentException("There is already a target with specified ID")
+    }
+
+    val target = LocalBackupLocation.create(id, path)
+    targets ::= target
+    configAccessor.update(l => targets)
+  }
+
+  def createRemoteTarget(id: String, host: String, user: String, path: String, privateKeyFile: String) {
+    if (existsTargetId(id)) {
+      throw new IllegalArgumentException("There is already a target with specified ID")
+    }
+
+    val target = RemoteBackupLocation.create(id, host, user, path, privateKeyFile)
+    targets ::= target
+    configAccessor.update(l => targets)
+  }
+
+  def removeTarget(id: String) {
+    val target = getBackupLocation(id)
+    targets = targets.diff(List(target))
+    configAccessor.update(l => targets)
   }
 
   def listTargets() : List[String] = {
@@ -181,6 +209,14 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     }
 
     backupLocation
+  }
+
+  def existsTargetId(targetId : String) : Boolean = {
+    targets.find(target => target.id.equals(targetId)) match {
+
+      case Some(value) => true
+      case None => false
+    }
   }
 
   def propertyChanged(event: PropertyChangeEvent) {}

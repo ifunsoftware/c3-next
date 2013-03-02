@@ -6,6 +6,7 @@ import com.sshtools.j2ssh.authentication.{AuthenticationProtocolState, PublicKey
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
 import java.io.IOException
 import org.apache.commons.logging.LogFactory
+import com.sshtools.j2ssh.sftp.FileAttributes
 
 
 class SftpConnector(val host : String, val user : String, val privateKey : String) {
@@ -83,5 +84,25 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
     sftpClient.cd(remoteFolder)
     sftpClient.get(remoteFileName, localFilePath)
     sftpClient.cd(oldDir)
+  }
+
+  def makeDir(path: String) {
+    if (!isConnected) {
+      throw new IllegalStateException("There is no connection!")
+    }
+
+    try {
+      val attributes = sftpClient.stat(path)
+      if (!attributes.isDirectory) {
+        throw new IllegalStateException(path + " is not a directory")
+      }
+      log.info("Directory " + path + " already exists")
+
+    } catch {
+      case e : IOException =>  {
+        log.info("Directory " + path + " is going to be created")
+        sftpClient.mkdirs(path)
+      }
+    }
   }
 }

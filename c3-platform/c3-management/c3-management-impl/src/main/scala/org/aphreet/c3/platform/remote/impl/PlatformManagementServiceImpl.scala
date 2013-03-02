@@ -586,6 +586,42 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+
+  def createLocalTarget(id: String, path: String) {
+
+    try {
+      backupManager.createLocalTarget(id, path)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def createRemoteTarget(id: String, host: String, user: String, path: String, privateKeyFile: String) {
+
+    try {
+      backupManager.createRemoteTarget(id, host, user, path, privateKeyFile)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def removeTarget(id: String) {
+    try {
+      backupManager.removeTarget(id)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
   def listTargets() : Array[String] = {
     try {
       backupManager.listTargets().toArray

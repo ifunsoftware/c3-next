@@ -4,9 +4,9 @@ import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object BackupCommands extends Commands{
-  def instances = List(new RestoreBackupCommand,
-    new CreateBackupCommand, new ListBackupsCommand, new ListTargetsCommand,
-    new ShowTargetInfoCommand)
+  def instances = List(new RestoreBackupCommand, new CreateBackupCommand,
+    new ListBackupsCommand, new CreateLocalTargetCommand, new CreateRemoteTargetCommand,
+    new RemoveTargetCommand, new ListTargetsCommand, new ShowTargetInfoCommand)
 }
 
 
@@ -57,6 +57,56 @@ class ListBackupsCommand extends Command {
   }
 
   def name = List("list", "backups")
+}
+
+
+class CreateLocalTargetCommand extends Command {
+
+  override def execute(params: List[String], management: PlatformManagementService):String = {
+
+    if (params.size < 2) {
+      wrongParameters("create target local <id> <path>")
+    } else {
+      management.createLocalTarget(params(0), params(1))
+      "Local target created"
+    }
+  }
+
+  def name = List("create", "target", "local")
+}
+
+
+class CreateRemoteTargetCommand extends Command {
+
+  override def execute(params: List[String], management: PlatformManagementService):String = {
+
+    if (params.size < 5) {
+      wrongParameters("create target remote <id> <host> <user> <path> <private key file path>")
+    } else {
+      val paramsArray = params.toArray
+      management.createRemoteTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), paramsArray(4))
+      "Remote target created"
+    }
+  }
+
+  def name = List("create", "target", "remote")
+}
+
+class RemoveTargetCommand extends Command {
+
+  override def execute(params: List[String], management: PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(id) => {
+        management.removeTarget(id)
+        "Target deleted"
+      }
+
+      case None => wrongParameters("remove target <id / number>")
+    }
+  }
+
+  def name = List("remove", "target")
 }
 
 

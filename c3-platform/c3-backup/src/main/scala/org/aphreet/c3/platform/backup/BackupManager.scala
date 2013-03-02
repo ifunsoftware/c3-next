@@ -38,7 +38,13 @@ trait BackupManager {
 
   def listBackups(folderPath:String) : List[String]
 
+  def createLocalTarget(id : String, path : String)
+
+  def createRemoteTarget(id : String, host : String, user : String, path : String, privateKeyFile : String)
+
+  def removeTarget(id : String)
+
   def listTargets() : List[String]
 
-  def showTargetInfo(targetId : String) : String
+  def showTargetInfo(id : String) : String
 }
