@@ -24,7 +24,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
   def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
 
-    using(openConnection())(connection => {
+    using(openConnection(address))(connection => {
 
       using(connection.getOutputStream)(os => {
 
@@ -60,12 +60,13 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
     })
   }
 
-  def openConnection(): HttpURLConnection = {
+  def openConnection(address: String): HttpURLConnection = {
     val connection = new URL(tikaHostName).openConnection().asInstanceOf[HttpURLConnection]
 
     connection.setDoInput(true)
     connection.setDoOutput(true)
     connection.setRequestMethod("POST")
+    connection.setRequestProperty("c3.address", address)
 
     connection.connect()
 
