@@ -233,7 +233,7 @@ class Resource {
 
     resource.metadata = this.metadata.clone()
     resource.systemMetadata = this.systemMetadata.clone()
-    resource.transientMetadata = this.systemMetadata.clone()
+    resource.transientMetadata = this.transientMetadata.clone()
 
     resource.isVersioned = this.isVersioned
     resource.embedData = this.embedData
