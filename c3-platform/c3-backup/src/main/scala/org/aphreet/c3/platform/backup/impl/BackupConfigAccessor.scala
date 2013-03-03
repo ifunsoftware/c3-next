@@ -9,6 +9,7 @@ import org.aphreet.c3.platform.backup.BackupLocation
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import scala.collection.JavaConversions._
+import org.apache.commons.logging.LogFactory
 
 @Component
 @Scope("singleton")
@@ -20,6 +21,8 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
   def configDir: File = configManager.configDir
 
   def configFileName: String = "c3-backup-config.json"
+
+  val log = LogFactory getLog getClass
 
 
   def defaultConfig:List[BackupLocation] = {
@@ -36,8 +39,8 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
         locationNode.getNode("host"),
         locationNode.getNode("user"),
         locationNode.getNode("folder"),
-        locationNode.getNode("key"))
-      ).toList
+        locationNode.getNode("key").toString().replaceAll("\\\\n", "\n").replaceAll("\"", "").trim)
+    ).toList
   }
 
   def writeConfig(list: List[BackupLocation], writer: JSONWriter) {
