@@ -1,11 +1,15 @@
 package org.aphreet.c3.platform.backup.impl
 
 import java.net.URI
-import java.io.File
+import java.io.{FileReader, BufferedReader, FileInputStream, File}
 import org.aphreet.c3.platform.common.{Path => C3Path}
 import java.nio.file._
 import java.util
 import org.aphreet.c3.platform.backup.{BackupLocation, AbstractBackup}
+import org.apache.commons.codec.digest.DigestUtils
+import org.aphreet.c3.platform.common.Disposable._
+import io.Source
+import org.apache.commons.logging.LogFactory
 
 class RemoteBackup(val name: String, val create: Boolean, val config: BackupLocation) extends AbstractBackup {
 
@@ -65,6 +69,8 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
 
 object RemoteBackup {
 
+  val log = LogFactory getLog getClass
+
   def open(name: String, config: BackupLocation): RemoteBackup = {
     new RemoteBackup(name, false, config)
   }
@@ -79,5 +85,46 @@ object RemoteBackup {
     val thirdLetter = address.charAt(2).toString
 
     fs.getPath(firstLetter, secondLetter, thirdLetter)
+  }
+
+  def hasValidChecksum(connector: SftpConnector, folder: String, fileName: String) : Boolean = {
+    log.info("Verifying MD5 sum for file " + folder + "/" + fileName)
+
+    var isValid = false
+    val tempFilePath: String = System.getProperty("java.io.tmpdir") + '/' + fileName
+    var backupFile = new File(tempFilePath)
+
+    val calculatedMd5 =
+      if (backupFile.exists() && backupFile.isFile) {
+        log.info("File " + fileName + " was previously cached in temporary directory")
+        using(new FileInputStream(backupFile)) (is => DigestUtils.md5Hex(is))
+
+      } else {
+        log.info("Calculating MD5 sum on remote host...")
+        var md5 = connector.getMd5Hash(folder, fileName)
+
+        if (md5.equals("")) {
+          log.info("Downloading file " + fileName + " to the local temporary directory...")
+
+          connector.getFile(tempFilePath, folder, fileName)
+          backupFile = new File(tempFilePath)
+          if (backupFile.exists() && backupFile.isFile) {
+            using(new FileInputStream(backupFile)) (is => md5 = DigestUtils.md5Hex(is))
+          }
+        }
+        md5
+      }
+
+    connector.getFile(tempFilePath + ".md5", folder, fileName + ".md5")
+    val md5File = new File(tempFilePath + ".md5")
+    if (md5File.exists() && md5File.isFile) {
+      using (new BufferedReader(new FileReader(md5File))) (reader => {
+        isValid = reader.readLine().equals(calculatedMd5)
+      })
+    } else {
+      log.info("File " + md5File.getName + " doesn't exist")
+    }
+
+    isValid
   }
 }

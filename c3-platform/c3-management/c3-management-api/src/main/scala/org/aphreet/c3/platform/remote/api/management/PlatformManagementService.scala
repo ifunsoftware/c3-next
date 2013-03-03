@@ -86,7 +86,7 @@ trait PlatformManagementService {
 
   def restoreBackup(location:String)
 
-  def listBackups(folderPath : String) : Array[String]
+  def listBackups(targetId : String) : Array[String]
 
   def createLocalTarget(id : String, path : String)
 

@@ -44,6 +44,7 @@ import java.io.File
 import collection.mutable.ListBuffer
 import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -69,6 +70,8 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   var configAccessor: BackupConfigAccessor = _
 
   var targets : List[BackupLocation] = null
+
+  val log = LogFactory getLog getClass
 
 
   @PostConstruct
@@ -98,16 +101,56 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     taskManager.submitTask(task)
   }
 
-  def listBackups(folderPath:String) : List[String] = {
-    val folder = new File(folderPath)
+  def listBackups(targetId:String) : List[String] = {
+    val target = getBackupLocation(targetId)
+
+    target.backupType match {
+      case "local" => listLocalBackups(target)
+      case "remote" => listRemoteBackups(target)
+      case _ => throw new IllegalStateException("Wrong target type")
+    }
+  }
+
+  def listLocalBackups(target: BackupLocation) : List[String] = {
     val listBuffer = new ListBuffer[String]()
+    val folder = new File(target.folder)
 
     if (folder.exists() && folder.isDirectory) {
       val filesList = folder.listFiles()
 
       filesList
         .filter( file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
-        .foreach(file => listBuffer += file.getAbsolutePath)
+        .foreach( file => listBuffer += file.getAbsolutePath)
+    }
+
+    listBuffer.toList
+  }
+
+  def listRemoteBackups(target: BackupLocation) : List[String] = {
+    val listBuffer = new ListBuffer[String]()
+
+    val connector = new SftpConnector(target.host, target.user, target.privateKey)
+    connector.connect()
+
+    val allFilesNames = connector.listFiles(target.folder)
+
+    log.info("All file Names in folder:")
+    for (name <- allFilesNames) {
+      log.info(name)
+    }
+
+    allFilesNames
+      .filter( fileName => fileName.endsWith(".zip")
+                             && !allFilesNames.find(str => str.equals(fileName + ".md5")).isEmpty
+                             && RemoteBackup.hasValidChecksum(connector, target.folder, fileName))
+
+      .foreach( fileName => listBuffer += fileName)
+
+    connector.disconnect()
+
+    log.info("Filtered file names in folder:")
+    for (name <- listBuffer) {
+      log.info(name)
     }
 
     listBuffer.toList

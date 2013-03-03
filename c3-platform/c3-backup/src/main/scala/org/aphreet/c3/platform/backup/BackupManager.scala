@@ -36,7 +36,7 @@ trait BackupManager {
 
   def restoreBackup(location:String)
 
-  def listBackups(folderPath:String) : List[String]
+  def listBackups(targetId:String) : List[String]
 
   def createLocalTarget(id : String, path : String)
 

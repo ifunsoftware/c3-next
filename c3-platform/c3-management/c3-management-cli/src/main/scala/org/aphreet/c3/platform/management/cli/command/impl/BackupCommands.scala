@@ -52,7 +52,7 @@ class ListBackupsCommand extends Command {
         builder.toString()
       }
 
-      case None => wrongParameters("list backups <path>")
+      case None => wrongParameters("list backups <target id / number>")
     }
   }
 
