@@ -32,9 +32,9 @@ package org.aphreet.c3.platform.backup
 
 trait BackupManager {
 
-  def createBackup()
+  def createBackup(targetId : String)
 
-  def restoreBackup(location:String)
+  def restoreBackup(targetId: String, name: String)
 
   def listBackups(targetId:String) : List[String]
 

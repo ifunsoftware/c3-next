@@ -541,9 +541,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def createBackup(){
+  def createBackup(targetId: String){
     try{
-      backupManager.createBackup()
+      backupManager.createBackup(targetId)
     }catch{
       case e: Throwable => {
         e.printStackTrace()
@@ -552,9 +552,9 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def restoreBackup(location:String){
+  def restoreBackup(targetId: String, name: String){
     try{
-      backupManager.restoreBackup(location)
+      backupManager.restoreBackup(targetId, name)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

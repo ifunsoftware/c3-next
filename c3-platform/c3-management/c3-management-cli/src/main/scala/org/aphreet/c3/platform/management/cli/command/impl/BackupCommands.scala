@@ -14,9 +14,11 @@ class RestoreBackupCommand extends Command{
 
   override
   def execute(params: List[String], management:PlatformManagementService):String = {
-    params.headOption match {
-      case Some(value) => management.restoreBackup(value); ""
-      case None => wrongParameters("restore backup <path>")
+    if (params.size < 2) {
+      wrongParameters("restore backup <target id / number> <name>")
+    } else {
+      management.restoreBackup(params(0), params(1));
+      ""
     }
   }
 
@@ -27,9 +29,15 @@ class RestoreBackupCommand extends Command{
 class CreateBackupCommand extends Command{
 
   override
-  def execute(management:PlatformManagementService):String = {
-    management.createBackup()
-    ""
+  def execute(params: List[String], management:PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(value) => {
+        management.createBackup(value)
+        ""
+      }
+      case None => wrongParameters("create backup <target id / number>")
+    }
   }
 
   def name = List("create", "backup")

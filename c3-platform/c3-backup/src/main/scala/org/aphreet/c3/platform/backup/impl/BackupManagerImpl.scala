@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.backup.impl
 
-import org.aphreet.c3.platform.backup.{RemoteBackupLocation, LocalBackupLocation, BackupLocation, BackupManager}
+import org.aphreet.c3.platform.backup._
 import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -45,6 +45,9 @@ import collection.mutable.ListBuffer
 import javax.annotation.PostConstruct
 import org.apache.commons.logging.LogFactory
 import org.slf4j.LoggerFactory
+import scala.Some
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import org.aphreet.c3.platform.backup.BackupLocation
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -79,21 +82,24 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     targets = configAccessor.load
   }
 
-  def createBackup(){
-    val backupDirectory = configManager.getPlatformProperties.get(BACKUP_LOCATION) match {
-      case Some(value) => value
-      case None => throw new IllegalStateException("Can't create backup without " + BACKUP_LOCATION + " property")
-    }
+  def createBackup(targetId : String) {
+    val target = getBackupLocation(targetId)
 
     val storages = storageManager.listStorages
 
-    val task = new BackupTask(storages, filesystemManager, new Path(backupDirectory))
+    val task = new BackupTask(storages, filesystemManager, target)
 
     taskManager.submitTask(task)
   }
 
-  def restoreBackup(location:String){
-    val backup = Backup.open(Path(location))
+  def restoreBackup(targetId: String, name: String) {
+    val target = getBackupLocation(targetId)
+
+    val backup : AbstractBackup = target.backupType match {
+      case "local" => Backup.open(Path(target.folder + "/" + name))
+      case "remote" => RemoteBackup.open(name, target)
+      case _ => throw new IllegalStateException("Wrong target type")
+    }
 
     storageManager.resetStorages()
 
@@ -267,15 +273,18 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
 }
 
-class BackupTask(val storages:List[Storage], val fsManager:FSManager, val directory:Path) extends Task{
+class BackupTask(val storages:List[Storage], val fsManager:FSManager, val target: BackupLocation) extends Task{
 
   var iterator:StorageIterator = null
 
   var storagesToProcess = storages
 
-  var backup:Backup = null
+  var backup : AbstractBackup = null
 
   var backupName:Path = null
+
+  var isLocal : Boolean = true
+
 
   protected override def step() {
     if (iterator == null){
@@ -309,22 +318,39 @@ class BackupTask(val storages:List[Storage], val fsManager:FSManager, val direct
       backup.close()
     }
 
-    if (backupName.file.exists()){
-      backupName.file.delete()
+    if (isLocal) {
+      if (backupName.file.exists()){
+        backupName.file.delete()
+      }
     }
   }
 
   override def preStart(){
-
-    if(!directory.file.exists()){
-      directory.file.mkdirs()
+    isLocal = target.backupType match {
+      case "local" => true
+      case "remote" => false
+      case _ => throw new IllegalStateException("Wrong type of target")
     }
 
-    backupName = directory.append("backup-" + System.currentTimeMillis() + ".zip")
+    if (isLocal) {
+      val directory = new Path(target.folder)
+      if(!directory.file.exists()){
+        directory.file.mkdirs()
+      }
 
-    log.info("Creating backup file " + backupName.stringValue)
+      backupName = directory.append("backup-" + System.currentTimeMillis() + ".zip")
 
-    backup = Backup.create(backupName)
+      log.info("Creating backup file " + backupName.stringValue)
+
+      backup = Backup.create(backupName)
+
+    } else {
+      backupName = new Path("backup-" + System.currentTimeMillis() + ".zip")
+
+      log.info("Creating backup file " + backupName.stringValue)
+
+      backup = RemoteBackup.create(backupName.stringValue, target)
+    }
   }
 
   override def postComplete(){
@@ -344,29 +370,28 @@ class BackupTask(val storages:List[Storage], val fsManager:FSManager, val direct
   }
 }
 
-class RestoreTask(val storageManager:StorageManager, val accessMediator:AccessMediator, val fsManager:FSManager, val backup:Backup)
+class RestoreTask(val storageManager: StorageManager, val accessMediator: AccessMediator,
+                  val fsManager: FSManager, val backup: AbstractBackup)
   extends IterableTask[Resource](backup){
 
   override def processElement(resource:Resource){
 
-    if(log.isDebugEnabled)
+    if (log.isDebugEnabled)
       log.debug("Importing resource " + resource.address)
 
     storageManager.storageForAddress(ResourceAddress(resource.address)).update(resource)
     accessMediator ! ResourceAddedMsg(resource, 'BackupManager)
   }
 
-  override
-  protected def preStart(){
+  override protected def preStart(){
     val fsRoots = backup.readFileSystemRoots
 
     for ((domain, address) <- fsRoots){
-      try{
+      try {
         fsManager.importFileSystemRoot(domain, address)
-      }catch{
+      } catch {
         case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
       }
     }
-
   }
 }

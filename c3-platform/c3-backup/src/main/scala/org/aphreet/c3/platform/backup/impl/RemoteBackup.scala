@@ -18,15 +18,21 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
   val REMOTE_FOLDER = config.folder
   val PRIVATE_KEY = config.privateKey
 
-  val sftpConnector = new SftpConnector(HOST, USER, PRIVATE_KEY)
+  val connector = new SftpConnector(HOST, USER, PRIVATE_KEY)
 
 
   {
     zipFilePath = System.getProperty("java.io.tmpdir") + "/" + name
     md5FilePath = zipFilePath + ".md5"
 
-    if (!create) {
-      downloadBackup()
+    if (!connector.isConnected) {
+      connector.connect()
+    }
+
+    if (create) {
+      connector.makeDir(REMOTE_FOLDER)
+    } else { // open
+      connector.getFile(zipFilePath, REMOTE_FOLDER, name)
     }
 
     val env = new util.HashMap[String, String]()
@@ -34,25 +40,16 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
     zipFs = FileSystems.newFileSystem(URI.create("jar:file:" + zipFilePath), env, null)
   }
 
-
-  def downloadBackup() {
-    if (!sftpConnector.isConnected) {
-      sftpConnector.connect()
-    }
-
-    sftpConnector.getFile(zipFilePath, REMOTE_FOLDER, name)
-  }
-
   override def close() {
     super.close()
 
-    if (!sftpConnector.isConnected) {
-      sftpConnector.connect()
+    if (!connector.isConnected) {
+      connector.connect()
     }
 
-    sftpConnector.putFile(zipFilePath, REMOTE_FOLDER)
-    sftpConnector.putFile(md5FilePath, REMOTE_FOLDER)
-    sftpConnector.disconnect()
+    connector.putFile(zipFilePath, REMOTE_FOLDER)
+    connector.putFile(md5FilePath, REMOTE_FOLDER)
+    connector.disconnect()
 
     checkAndDelete(zipFilePath)
     checkAndDelete(md5FilePath)

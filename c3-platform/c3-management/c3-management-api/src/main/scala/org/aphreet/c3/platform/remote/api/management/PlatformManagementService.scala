@@ -82,9 +82,9 @@ trait PlatformManagementService {
   def resetSearchIndex()
 
 
-  def createBackup()
+  def createBackup(targetId : String)
 
-  def restoreBackup(location:String)
+  def restoreBackup(targetId: String, name: String)
 
   def listBackups(targetId : String) : Array[String]
 
