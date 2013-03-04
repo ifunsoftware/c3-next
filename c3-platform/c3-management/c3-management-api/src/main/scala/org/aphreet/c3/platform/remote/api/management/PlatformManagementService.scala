@@ -88,14 +88,14 @@ trait PlatformManagementService {
 
   def listBackups(targetId : String) : Array[String]
 
-  def createLocalTarget(id : String, path : String)
+  def createLocalBackupTarget(id : String, path : String)
 
-  def createRemoteTarget(id : String, host : String, user : String, path : String, privateKeyFile : String)
+  def createRemoteBackupTarget(id : String, host : String, user : String, path : String, privateKeyFile : String)
 
-  def removeTarget(id : String)
+  def removeBackupTarget(id : String)
 
-  def listTargets() : Array[String]
+  def listBackupTargets() : Array[String]
 
-  def showTargetInfo(targetId: String) : String
+  def showBackupTargetInfo(targetId: String) : String
 
 }

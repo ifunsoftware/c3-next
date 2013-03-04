@@ -75,7 +75,7 @@ class CreateLocalTargetCommand extends Command {
     if (params.size < 2) {
       wrongParameters("create target local <id> <path>")
     } else {
-      management.createLocalTarget(params(0), params(1))
+      management.createLocalBackupTarget(params(0), params(1))
       "Local target created"
     }
   }
@@ -92,7 +92,7 @@ class CreateRemoteTargetCommand extends Command {
       wrongParameters("create target remote <id> <host> <user> <path> <private key file path>")
     } else {
       val paramsArray = params.toArray
-      management.createRemoteTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), paramsArray(4))
+      management.createRemoteBackupTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), paramsArray(4))
       "Remote target created"
     }
   }
@@ -106,7 +106,7 @@ class RemoveTargetCommand extends Command {
 
     params.headOption match {
       case Some(id) => {
-        management.removeTarget(id)
+        management.removeBackupTarget(id)
         "Target deleted"
       }
 
@@ -122,7 +122,7 @@ class ListTargetsCommand extends Command {
 
   override def execute(management: PlatformManagementService):String = {
 
-    val targets = management.listTargets()
+    val targets = management.listBackupTargets()
 
     val builder = new StringBuilder
     for (target <- targets) {
@@ -139,7 +139,7 @@ class ShowTargetInfoCommand extends Command {
   override def execute(params: List[String], management: PlatformManagementService):String = {
 
     params.headOption match {
-      case Some(value) => management.showTargetInfo(value)
+      case Some(value) => management.showBackupTargetInfo(value)
 
       case None => wrongParameters("show target <target id / target number>")
     }

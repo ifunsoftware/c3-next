@@ -587,7 +587,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   }
 
 
-  def createLocalTarget(id: String, path: String) {
+  def createLocalBackupTarget(id: String, path: String) {
 
     try {
       backupManager.createLocalTarget(id, path)
@@ -599,7 +599,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def createRemoteTarget(id: String, host: String, user: String, path: String, privateKeyFile: String) {
+  def createRemoteBackupTarget(id: String, host: String, user: String, path: String, privateKeyFile: String) {
 
     try {
       backupManager.createRemoteTarget(id, host, user, path, privateKeyFile)
@@ -611,7 +611,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def removeTarget(id: String) {
+  def removeBackupTarget(id: String) {
     try {
       backupManager.removeTarget(id)
     } catch {
@@ -622,7 +622,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def listTargets() : Array[String] = {
+  def listBackupTargets() : Array[String] = {
     try {
       backupManager.listTargets().toArray
     } catch {
@@ -633,7 +633,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def showTargetInfo(targetId: String) : String = {
+  def showBackupTargetInfo(targetId: String) : String = {
     try {
       backupManager.showTargetInfo(targetId)
     } catch {
