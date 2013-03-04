@@ -19,7 +19,7 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
   var sshClient : SshClient = null
   var sftpClient : SftpClient = null
 
-  val MD5_CMD_TEMPLATE = "cd \"%s\" && md5sum \"%s\""
+  val MD5_CMD_TEMPLATE = "cd \"%s\" && md5sum \"%s\" && cd -"
   val CMD_NOT_FOUND = "command not found"
   val BAD_ARG = "No such file or directory"
 
@@ -139,7 +139,9 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
     var session : SessionChannelClient  = null
     try {
       session = sshClient.openSessionChannel()
-      session.requestPseudoTerminal("ansi", 80, 24, 0, 0, "")
+      // really wide terminal, it has enough space for every command
+      // TODO improve parser
+      session.requestPseudoTerminal("ansi", 1024, 24, 0, 0, "")
       session.startShell
       val out = session.getOutputStream
 
