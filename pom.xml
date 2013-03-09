@@ -10,6 +10,7 @@
         <module>c3-platform</module>
         <module>c3-client</module>
         <module>c3-deploy</module>
+        <module>c3-metadata</module>
     </modules>
 
     <scm>

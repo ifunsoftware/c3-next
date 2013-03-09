@@ -50,6 +50,8 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
 
   def update(key: String, value: String) = map.put(key, value)
 
+  def update(key: String, values: TraversableOnce[String]) = map.put(key, "[" + values.map(s => s.replaceAll(",", "\\,")).mkString(",") + "]")
+
   def update(key: String, value: Long) = map.put(key, value.toString)
 
   def update(key: String, value: Boolean) = map.put(key, value.toString)
