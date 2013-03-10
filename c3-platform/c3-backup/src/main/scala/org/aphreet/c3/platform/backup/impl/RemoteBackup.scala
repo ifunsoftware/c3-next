@@ -32,7 +32,11 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
     if (create) {
       connector.makeDir(REMOTE_FOLDER)
     } else { // open
-      connector.getFile(zipFilePath, REMOTE_FOLDER, name)
+      if (RemoteBackup.hasValidChecksum(connector, REMOTE_FOLDER, name)) {
+        connector.getFile(zipFilePath, REMOTE_FOLDER, name)
+      } else {
+        throw new IllegalStateException("Remote backup " + name + " doesn't have valid checksum")
+      }
     }
 
     val env = new util.HashMap[String, String]()
