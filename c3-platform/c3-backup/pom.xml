@@ -71,6 +71,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>META-INF/spring/*.xml</include>
+                    <include>*.key</include>
                 </includes>
             </resource>
         </resources>
