@@ -1,21 +1,21 @@
-package org.aphreet.c3.platform.backup.impl
+package org.aphreet.c3.platform.backup.ssh
 
-import com.sshtools.j2ssh.{SftpClient, SshClient}
+import com.sshtools.j2ssh.{SshException, SftpClient, SshClient}
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification
-import com.sshtools.j2ssh.authentication.{AuthenticationProtocolState, PublicKeyAuthenticationClient}
+import com.sshtools.j2ssh.authentication.{PasswordAuthenticationClient, SshAuthenticationClient, AuthenticationProtocolState, PublicKeyAuthenticationClient}
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
 import java.io.{InputStreamReader, BufferedReader, IOException}
 import org.apache.commons.logging.LogFactory
-import com.sshtools.j2ssh.sftp.{SftpFile, FileAttributes}
+import com.sshtools.j2ssh.sftp.SftpFile
 import collection.mutable.ListBuffer
 import com.sshtools.j2ssh.session.SessionChannelClient
-import com.sshtools.j2ssh.connection.ChannelOutputStream
 import org.aphreet.c3.platform.common.Disposable._
 import java.lang.String
 import scala.collection.JavaConversions._
 
 
-class SftpConnector(val host : String, val user : String, val privateKey : String) {
+class SftpConnector(val host: String, val user: String, val privateKey: String, val port: Int = -1) {
+
   var sshClient : SshClient = null
   var sftpClient : SftpClient = null
 
@@ -32,12 +32,7 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
   }
 
   def connect() {
-    sshClient = new SshClient
-
     try {
-      sshClient.connect(host, new IgnoreHostKeyVerification)
-      log.info("Connecting to host " + host + "...")
-
       val authClient = new PublicKeyAuthenticationClient
       authClient.setUsername(user)
 
@@ -45,19 +40,48 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
       val key = keyFile.toPrivateKey("")
       authClient.setKey(key)
 
-      val result = sshClient.authenticate(authClient)
-      log.info("Authentication for user " + user + "...")
-      if (result != AuthenticationProtocolState.COMPLETE) {
-        throw new IOException("Authentication failed")
-      }
-
-      sftpClient = sshClient.openSftpClient
+      connect(authClient)
 
     } catch {
       case e: IOException => {
         log.error(e.getMessage)
       }
     }
+  }
+
+  def connect(password: String) {
+    try {
+      val authClient = new PasswordAuthenticationClient
+      authClient.setUsername(user)
+      authClient.setPassword(password)
+
+      connect(authClient)
+
+    } catch {
+      case e: IOException => {
+        log.error(e.getMessage)
+      }
+    }
+  }
+
+  private def connect(authClient : SshAuthenticationClient) {
+    sshClient = new SshClient
+
+    if (port < 0) {
+      sshClient.connect(host, new IgnoreHostKeyVerification)
+      log.info("Connecting to host " + host + "...")
+    } else {
+      sshClient.connect(host, port, new IgnoreHostKeyVerification)
+      log.info("Connecting to host " + host + " on port " + port + "...")
+    }
+
+    val result = sshClient.authenticate(authClient)
+    log.info("Authentication for user " + user + "...")
+    if (result != AuthenticationProtocolState.COMPLETE) {
+      throw new SshException("Authentication failed")
+    }
+
+    sftpClient = sshClient.openSftpClient
   }
 
   def disconnect() {
@@ -141,25 +165,26 @@ class SftpConnector(val host : String, val user : String, val privateKey : Strin
       session = sshClient.openSessionChannel()
       // really wide terminal, it has enough space for every command
       // TODO improve parser
-      session.requestPseudoTerminal("ansi", 1024, 24, 0, 0, "")
-      session.startShell
-      val out = session.getOutputStream
+      if (session.requestPseudoTerminal("ansi", 1024, 24, 0, 0, "")) {
+        session.startShell
+        val out = session.getOutputStream
 
-      using(new BufferedReader(new InputStreamReader(session.getInputStream))) (in => {
-        val cmd = String.format(MD5_CMD_TEMPLATE, folder, fileName)
-        out.write((cmd + "\n").getBytes())
+        using(new BufferedReader(new InputStreamReader(session.getInputStream))) (in => {
+          val cmd = String.format(MD5_CMD_TEMPLATE, folder, fileName)
+          out.write((cmd + "\n").getBytes())
 
-        var line : String = null
-        do {
+          var line : String = null
+          do {
+            line = in.readLine()
+          } while (!line.endsWith(cmd) || line.length == cmd.length)
           line = in.readLine()
-        } while (!line.endsWith(cmd) || line.length == cmd.length)
-        line = in.readLine()
-        if (!line.equals(CMD_NOT_FOUND) && !line.equals(BAD_ARG)) {
-          md5Hash = line.split("\\s+")(0)
-        } else {
-          log.info("Calculating MD5 sum on remote host failed")
-        }
-      })
+          if (!line.equals(CMD_NOT_FOUND) && !line.equals(BAD_ARG)) {
+            md5Hash = line.split("\\s+")(0)
+          } else {
+            log.info("Calculating MD5 sum on remote host failed")
+          }
+        })
+      }
 
     } finally {
       if (session != null && session.isOpen) {

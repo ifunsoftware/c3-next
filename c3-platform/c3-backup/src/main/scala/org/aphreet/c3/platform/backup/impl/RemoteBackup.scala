@@ -10,15 +10,17 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.aphreet.c3.platform.common.Disposable._
 import io.Source
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.backup.ssh.SftpConnector
 
-class RemoteBackup(val name: String, val create: Boolean, val config: BackupLocation) extends AbstractBackup {
+class RemoteBackup(val name: String, val create: Boolean, val config: BackupLocation,
+                   val port: Int = -1, val password: String = null) extends AbstractBackup {
 
   val HOST = config.host
   val USER = config.user
   val REMOTE_FOLDER = config.folder
   val PRIVATE_KEY = config.privateKey
 
-  val connector = new SftpConnector(HOST, USER, PRIVATE_KEY)
+  val connector = new SftpConnector(HOST, USER, PRIVATE_KEY, port)
 
 
   {
@@ -26,7 +28,11 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
     md5FilePath = zipFilePath + ".md5"
 
     if (!connector.isConnected) {
-      connector.connect()
+      if (password == null) {
+        connector.connect()
+      } else {
+        connector.connect(password)
+      }
     }
 
     if (create) {
@@ -78,6 +84,14 @@ object RemoteBackup {
 
   def create(name: String, config: BackupLocation): RemoteBackup = {
     new RemoteBackup(name, true, config)
+  }
+
+  def open(name: String, config: BackupLocation, port: Int, password: String): RemoteBackup = {
+    new RemoteBackup(name, false, config, port, password)
+  }
+
+  def create(name: String, config: BackupLocation, port: Int, password: String): RemoteBackup = {
+    new RemoteBackup(name, true, config, port, password)
   }
 
   def directoryForAddress(fs: FileSystem, address: String): Path = {

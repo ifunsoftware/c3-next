@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory
 import scala.Some
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.backup.BackupLocation
+import ssh.SftpConnector
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{

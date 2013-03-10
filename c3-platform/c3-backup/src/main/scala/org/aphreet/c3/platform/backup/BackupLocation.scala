@@ -1,11 +1,11 @@
 package org.aphreet.c3.platform.backup
 
-import impl.SftpConnector
 import reflect.BeanProperty
 import org.aphreet.c3.platform.common.Disposable._
 import io.Source
 import java.io.File
 import org.apache.commons.logging.LogFactory
+import ssh.SftpConnector
 
 case class BackupLocation(
             @BeanProperty var id: String,
