@@ -34,9 +34,11 @@ import collection.Map
 import collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class Metadata(private val map: mutable.HashMap[String, String]) {
+class Metadata(private val map: mutable.HashMap[String, String], private var deletedKeys: List[String]) {
 
-  def this() = this(new mutable.HashMap[String, String]())
+  def this(map: mutable.HashMap[String, String]) = this(map, Nil)
+
+  def this() = this(new mutable.HashMap[String, String](), Nil)
 
   def asMap: Map[String, String] = map
 
@@ -56,7 +58,10 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
 
   def remove(key: String){
     map.remove(key)
+    deletedKeys = key :: deletedKeys
   }
+
+  def removed:List[String] = deletedKeys
 
   def has(key: String): Boolean = map.contains(key)
 
@@ -66,7 +71,6 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
       case Some(value) => MetadataHelper.parseSequence(value)
     }
   }
-
 
   def ++=(metadata: Metadata): Metadata = {
     map ++= metadata.asMap
@@ -83,7 +87,7 @@ class Metadata(private val map: mutable.HashMap[String, String]) {
   }
 
   override def clone() = {
-    new Metadata(map.clone())
+    new Metadata(map.clone(), deletedKeys)
   }
 
   override def hashCode() = {

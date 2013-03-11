@@ -210,8 +210,8 @@ class DomainManagerImpl extends DomainManager {
           if (HashUtil.hmac(key, keyBase) == hash) {
             d
           } else {
-            log.warn("Incorrect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
-            throw new DomainException("Incorrect signature")
+            log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
+            throw new DomainException("Incorrect signature for signature base " + keyBase)
           }
         }
       }
@@ -223,8 +223,8 @@ class DomainManagerImpl extends DomainManager {
               if (HashUtil.hmac(key, keyBase) == hash) {
                 d
               } else {
-                log.warn("Incorrect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
-                throw new DomainException("Incorrect signature")
+                log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
+                throw new DomainException("Incorrect signature for signature base " + keyBase)
               }
             } else {
               d

@@ -237,6 +237,7 @@ with DatabaseProvider{
   protected def doUpdate(tx: Transaction, resource: Resource, savedResource: Resource){
     //Appending metadata
     savedResource.metadata ++= resource.metadata
+    resource.metadata.removed.foreach(savedResource.metadata.remove(_))
 
     //Appending system metadata
     savedResource.systemMetadata ++= resource.systemMetadata

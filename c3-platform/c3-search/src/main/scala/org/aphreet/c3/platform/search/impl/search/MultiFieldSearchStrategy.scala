@@ -38,11 +38,11 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.Term
-import org.apache.lucene.queryParser.MultiFieldQueryParser
+import org.apache.lucene.queryParser.{ParseException, MultiFieldQueryParser}
 import org.apache.lucene.search._
 import highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
 import org.apache.lucene.util.Version.LUCENE_35
-import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
+import org.aphreet.c3.platform.search.{SearchQueryException, SearchResultElement, SearchResultFragment}
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 
@@ -117,6 +117,9 @@ class MultiFieldSearchStrategy extends SearchStrategy{
 
       result.toArray
     }catch{
+      case e: ParseException =>
+        log.warn("Incorrect search query: ", e)
+        throw new SearchQueryException(e.getMessage, e)
       case e: Throwable => {
         log.error("Failed to execute query", e)
         Array()

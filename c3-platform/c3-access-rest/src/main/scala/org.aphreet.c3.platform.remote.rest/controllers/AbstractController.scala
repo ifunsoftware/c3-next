@@ -42,6 +42,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
 import org.aphreet.c3.platform.resource.ResourceException
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
+import org.aphreet.c3.platform.search.SearchQueryException
 
 class AbstractController {
 
@@ -76,6 +77,16 @@ class AbstractController {
 //    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
 //    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
 //  }
+
+  @ExceptionHandler(Array(classOf[SearchQueryException]))
+  def handleIncorrectSearchQueryException(e: SearchQueryException,
+                                           request: HttpServletRequest,
+                                           response: HttpServletResponse) {
+    val contentType = request.getHeader("x-c3-type")
+
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+  }
 
   @ExceptionHandler(Array(classOf[ResourceNotFoundException]))
   def handleResourceNotFoundException(e: ResourceNotFoundException,
