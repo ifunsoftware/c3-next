@@ -26,4 +26,6 @@
 
     <reference id="transientMetadataService" interface="org.aphreet.c3.platform.metadata.TransientMetadataManager"/>
 
+    <reference id="queryService" interface="org.aphreet.c3.platform.query.QueryManager"/>
+
 </beans:beans>

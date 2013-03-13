@@ -30,36 +30,68 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.aphreet.c3.platform.task.Task
 import org.aphreet.c3.platform.access.AccessManager
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.filesystem.{Node, Directory}
+import org.aphreet.c3.platform.query.{GenericQueryConsumer, QueryManager}
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.{ResetStatisticsMsg, IncreaseStatisticsMsg, StatisticsManager}
+import org.aphreet.c3.platform.task.Task
 
-class FSCheckTask(val accessManager:AccessManager,
-                  val statisticsManager:StatisticsManager,
+class FSCheckTask(val accessManager: AccessManager,
+                  val statisticsManager: StatisticsManager,
+                  val queryManager: QueryManager,
+                  val fsManager: FSManagerImpl,
                   val fsRoots:Map[String, String]) extends Task{
 
-  var rootListToCheck = List[String]()
+  var rootsToCheck = Map[String, String]()
 
   override def preStart {
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.found")
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.failure")
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.total")
+    statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.root.found")
+    statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.root.fixed")
 
-    rootListToCheck = fsRoots.map(e => e._2).toList
+    rootsToCheck = fsRoots
   }
 
   override def step {
-    
-    rootListToCheck.headOption match{
-      case Some(currentRoot) => {
-        rootListToCheck = rootListToCheck.tail
-        val resource = accessManager.get(currentRoot)
-        val node = Node.fromResource(resource)
 
-        if(node.isDirectory)
-          checkDirectoryContents(node.asInstanceOf[Directory])
+    rootsToCheck.headOption match{
+      case Some(currentRoot) => {
+        rootsToCheck = rootsToCheck.tail
+        val resource = accessManager.get(currentRoot._2)
+
+        val domain = currentRoot._1
+
+        val correctRoot = if (resource.systemMetadata("c3.domain.id").get != domain){
+          log.warn("Failed incorrect root " + currentRoot._2 + " for domain " + domain)
+
+          statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.root.found", 1)
+
+          log.info("Looking for correct root for domain " + domain)
+
+          findCorrectRoot(domain) match {
+            case Some(address) => {
+              log.info("Found new root for domain: " + domain + " with address " + address)
+              fsManager.overrideFileSystemRoot(domain, address)
+              statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.root.fixed", 1)
+              Some(accessManager.get(address))
+            }
+            case None => None
+          }
+
+        }else{
+          Some(resource)
+        }
+
+        correctRoot.foreach{ r =>
+          val node = Node.fromResource(r)
+          if(node.isDirectory)
+            checkDirectoryContents(node.asInstanceOf[Directory])
+
+        }
       }
       case None => {
         shouldStopFlag = true
@@ -70,7 +102,7 @@ class FSCheckTask(val accessManager:AccessManager,
   override def progress:Int = {
     val totalRootsToCheck = fsRoots.size
 
-    ((totalRootsToCheck - rootListToCheck.size).toFloat / totalRootsToCheck).toInt * 100
+    ((totalRootsToCheck - rootsToCheck.size).toFloat / totalRootsToCheck).toInt * 100
   }
 
   def checkDirectoryContents(directory:Directory) {
@@ -112,7 +144,29 @@ class FSCheckTask(val accessManager:AccessManager,
       if(node.isDirectory)
         checkDirectoryContents(node.asInstanceOf[Directory])
     }
-
   }
+
+  def findCorrectRoot(domainId: String): Option[String] = {
+
+    val consumer = new GenericQueryConsumer[Option[String]] {
+
+      var result: Option[String] = None
+
+      def consume(resource: Resource) = {
+        if (!resource.systemMetadata.asMap.contains(Node.NODE_FIELD_NAME)){
+          log.info("Found correct root for domain " + resource.address)
+          result = Some(resource.address)
+          false
+        }else{
+          true
+        }
+      }
+
+      def close() {}
+    }
+
+    queryManager.executeQuery(systemFields = Map("c3.domain.id" -> domainId, Node.NODE_FIELD_TYPE -> Node.NODE_TYPE_DIR), consumer = consumer)
+  }
+
 
 }

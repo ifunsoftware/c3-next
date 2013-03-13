@@ -48,9 +48,9 @@ class QueryManagerImpl extends QueryManager with Tracer{
   var storageManager: StorageManager = _
 
   override
-  def executeQuery(fields:Map[String, String],
+  def executeQuery[T](fields:Map[String, String],
                    systemFields:Map[String, String],
-                   consumer:QueryConsumer){
+                   consumer:GenericQueryConsumer[T]): T = {
 
     log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
 
@@ -63,5 +63,7 @@ class QueryManagerImpl extends QueryManager with Tracer{
         )
       )
     )
+
+    consumer.result
   }
 }

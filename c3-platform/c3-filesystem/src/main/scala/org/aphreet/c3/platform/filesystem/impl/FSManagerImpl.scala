@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.metadata.{TransientMetadataBuildStrategy, RegisterTransientMDBuildStrategy, TransientMetadataManager}
 import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
+import org.aphreet.c3.platform.query.QueryManager
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -72,6 +73,9 @@ with WatchedActor {
 
   @Autowired
   var storageManager: StorageManager = _
+
+  @Autowired
+  var queryManager: QueryManager = _
 
   @Autowired
   var transientMetadataManager: TransientMetadataManager = _
@@ -314,6 +318,16 @@ with WatchedActor {
 
   def fileSystemRoots: Map[String, String] = fsRoots
 
+  def overrideFileSystemRoot(domainId: String, address: String) {
+    log info "Adding new root: " + domainId + " => " + address
+
+    val map: Map[String, String] = fsRoots + ((domainId, address))
+
+    configAccessor.store(map)
+
+    fsRoots = configAccessor.load
+  }
+
   def importFileSystemRoot(domainId: String, address: String) {
 
     fsRoots.get(domainId) match {
@@ -461,7 +475,7 @@ with WatchedActor {
   def startFilesystemCheck() {
 
     if (taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty) {
-      val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)
+      val task = new FSCheckTask(accessManager, statisticsManager, queryManager, this, fsRoots)
       taskManager.submitTask(task)
     } else {
       throw new IllegalStateException("Task already started")

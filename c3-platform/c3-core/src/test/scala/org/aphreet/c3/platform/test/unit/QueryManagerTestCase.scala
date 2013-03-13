@@ -56,6 +56,7 @@ class QueryManagerTestCase extends TestCase
     expect(queryConsumer.consume(resources(1))).andReturn(true)
     expect(queryConsumer.consume(resources(2))).andReturn(true)
     expect(queryConsumer.close())
+    expect(queryConsumer.result).andReturn(null)
 
     replay(storageManager, queryConsumer)
 
