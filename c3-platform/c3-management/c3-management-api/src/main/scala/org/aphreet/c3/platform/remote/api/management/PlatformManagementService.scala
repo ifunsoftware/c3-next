@@ -3,79 +3,85 @@ package org.aphreet.c3.platform.remote.api.management
 import javax.jws.WebService
 
 
-@WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
+@WebService(serviceName = "ManagementService", targetNamespace = "remote.c3.aphreet.org")
 trait PlatformManagementService {
 
-  def removeStorage(id:String)
+  def removeStorage(id: String)
 
-  def listStorages:Array[StorageDescription]
+  def listStorages: Array[StorageDescription]
 
-  def listStorageTypes:Array[String]
+  def listStorageTypes: Array[String]
 
-  def createStorage(stType:String, path:String)
+  def createStorage(stType: String, path: String)
 
   def purgeStorageData()
 
-  def migrate(source:String, target:String)
+  def migrate(source: String, target: String)
 
-  def setStorageMode(id:String, mode:String)
+  def setStorageMode(id: String, mode: String)
 
-  def setPlatformProperty(key:String, value:String)
+  def setPlatformProperty(key: String, value: String)
 
-  def platformProperties:Array[Pair]
+  def platformProperties: Array[Pair]
 
-  def listTasks:Array[RemoteTaskDescription]
+  def listTasks: Array[RemoteTaskDescription]
 
-  def listFinishedTasks:Array[RemoteTaskDescription]
+  def listFinishedTasks: Array[RemoteTaskDescription]
 
-  def setTaskMode(taskId:String, mode:String)
-
-
-  def listTypeMappings:Array[TypeMapping]
-
-  def addTypeMapping(mimeType:String, versioned:java.lang.Boolean)
-
-  def removeTypeMapping(mimeType:String)
+  def setTaskMode(taskId: String, mode: String)
 
 
-  def listUsers:Array[UserDescription]
+  def listTypeMappings: Array[TypeMapping]
 
-  def addUser(name:String, password:String)
+  def addTypeMapping(mimeType: String, versioned: java.lang.Boolean)
 
-  def updateUser(name:String, password:String, enabled:java.lang.Boolean)
+  def removeTypeMapping(mimeType: String)
 
-  def deleteUser(name:String)
 
-  def statistics:Array[Pair]
+  def listUsers: Array[UserDescription]
 
-  def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean)
+  def addUser(name: String, password: String)
 
-  def removeIndex(name:String)
+  def updateUser(name: String, password: String, enabled: java.lang.Boolean)
 
-  def establishReplication(host:String, port:java.lang.Integer, username:String, password:String)
+  def deleteUser(name: String)
 
-  def removeReplicationTarget(id:String)
+  def statistics: Array[Pair]
 
-  def listReplicationTargets:Array[ReplicationHost]
+  def createIndex(name: String, fields: Array[String], system: java.lang.Boolean, multi: java.lang.Boolean)
+
+  def removeIndex(name: String)
+
+  def establishReplication(host: String, port: java.lang.Integer, username: String, password: String)
+
+  def removeReplicationTarget(id: String)
+
+  def listReplicationTargets: Array[ReplicationHost]
 
   def replayReplicationQueue()
 
-  def copyDataToReplicationTarget(id:String)
+  def copyDataToReplicationTarget(id: String)
 
 
-  def createDomain(name:String)
+  def createDomain(name: String)
 
-  def listDomains:Array[DomainDescription]
+  def listDomains: Array[DomainDescription]
 
-  def updateDomainName(name:String, newName:String)
+  def updateDomainName(name: String, newName: String)
 
-  def generateDomainKey(name:String):String
+  def generateDomainKey(name: String): String
 
-  def setDomainMode(name:String, mode:String)
+  def setDomainMode(name: String, mode: String)
 
-  def listFileSystemRoots:Array[Pair]
+  def setDefaultDomain(domainId: String)
 
-  def importFileSystemRoot(domainId:String, address:String)
+  def removeDomainKey(name: String)
+
+  def getDefaultDomain: String
+
+  def listFileSystemRoots: Array[Pair]
+
+  def importFileSystemRoot(domainId: String, address: String)
 
   def startFilesystemCheck()
 
@@ -85,8 +91,8 @@ trait PlatformManagementService {
 
   def createBackup()
 
-  def restoreBackup(location:String)
+  def restoreBackup(location: String)
 
-  def listBackups(folderPath : String) : Array[String]
+  def listBackups(folderPath: String): Array[String]
 
 }

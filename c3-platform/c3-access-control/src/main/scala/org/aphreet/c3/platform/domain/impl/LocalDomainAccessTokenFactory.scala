@@ -14,7 +14,7 @@ class LocalDomainAccessTokenFactory extends DomainAccessTokenFactory {
         case Some(domain) => domain
         case None => throw new DomainException("Unknown domain " + domainId)
       }
-      case None => domainManager.getAnonymousDomain
+      case None => domainManager.getDefaultDomain
     }
   }
 

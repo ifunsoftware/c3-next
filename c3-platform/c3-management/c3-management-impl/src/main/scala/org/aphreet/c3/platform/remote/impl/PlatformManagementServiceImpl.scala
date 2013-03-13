@@ -516,6 +516,41 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+
+  def setDefaultDomain(domainId: String) {
+    try{
+      domainManager.setDefaultDomain(domainId)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def removeDomainKey(name: String) {
+    try{
+      domainManager.removeKey(name)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+
+  def getDefaultDomain = {
+    try{
+      domainManager.getDefaultDomainId
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
   def listFileSystemRoots:Array[Pair] = {
     try{
       filesystemManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray

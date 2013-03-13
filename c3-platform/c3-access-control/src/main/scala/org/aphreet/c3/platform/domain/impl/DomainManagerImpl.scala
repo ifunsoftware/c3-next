@@ -54,13 +54,11 @@ class DomainManagerImpl extends DomainManager {
   @Autowired
   var domainAccessor: DomainAccessor = _
 
-  @Autowired
-  var platformConfigManager: PlatformConfigManager = _
-
   private var domains: HashMap[String, Domain] = new HashMap()
 
   private var domainById: HashMap[String, Domain] = new HashMap()
 
+  private var defaultDomainId: String = _
 
   @PostConstruct
   def init() {
@@ -73,17 +71,21 @@ class DomainManagerImpl extends DomainManager {
 
     var idMap = new HashMap[String, Domain]
 
-    for (domain <- domainAccessor.load) {
+    val config = domainAccessor.load
+
+    for (domain <- config.domains) {
       map += ((domain.name, domain))
       idMap += ((domain.id, domain))
     }
 
     domains = map
     domainById = idMap
+
+    defaultDomainId = config.defaultDomain
   }
 
   private def storeDomainConfig() {
-    domainAccessor.store(domains.values.toList)
+    domainAccessor.store(DomainConfig(domains.values.toList, defaultDomainId))
   }
 
   def addDomain(name: String) {
@@ -95,7 +97,7 @@ class DomainManagerImpl extends DomainManager {
 
     val domain = Domain(UUID.randomUUID.toString, name, generateKey, FullMode)
 
-    domainAccessor.update(l => domain :: l)
+    domainAccessor.update(config => DomainConfig(domain :: config.domains, config.defaultDomain))
 
     reloadDomainConfig()
   }
@@ -107,6 +109,17 @@ class DomainManagerImpl extends DomainManager {
         storeDomainConfig()
         reloadDomainConfig()
         d.key
+      case None => throw new PlatformException("Domain with such name does not exists")
+    }
+  }
+
+
+  def removeKey(name: String) {
+    domains.get(name) match {
+      case Some(d) =>
+        d.key = ""
+        storeDomainConfig()
+        reloadDomainConfig()
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
@@ -135,20 +148,33 @@ class DomainManagerImpl extends DomainManager {
     domains.values.toList
   }
 
-  def getAnonymousDomain: Domain = {
-    domains.get("anonymous") match {
+  def getDefaultDomain: Domain = {
+    domainById.get(defaultDomainId) match {
       case Some(d) => d
-      case None => throw new DomainException("Can't find anonymous domain")
+      case None => throw new DomainException("Can't find default domain with id " + defaultDomainId)
     }
   }
 
+  def setDefaultDomain(domainId: String) = {
+    if (domainById.contains(domainId)){
+      defaultDomainId = domainId
+      storeDomainConfig()
+    }else{
+      throw new DomainException("Can't find domain with id " + domainId)
+    }
+  }
+
+  def getDefaultDomainId: String = defaultDomainId
+
   def importDomain(importedDomain: Domain, remoteSystemId: String) {
 
-    val domainList = domainAccessor.load
+    val domainConfig = domainAccessor.load
+
+    val domainList = domainConfig.domains
 
     val newDomainList = addDomainToList(importedDomain, remoteSystemId, domainList)
 
-    domainAccessor.store(newDomainList)
+    domainAccessor.store(DomainConfig(newDomainList, domainConfig.defaultDomain))
 
     reloadDomainConfig()
   }

@@ -44,7 +44,8 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     val expectedDomain = Domain("anonymous-id", "anonymous", "", FullMode)
 
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain)
+    expect(domainManager.getDefaultDomainId).andReturn("anonymous-id")
+    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain)
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory
@@ -62,7 +63,8 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     val expectedDomain = Domain("anonymous-id", "anonymous", "", ReadOnlyMode)
 
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
+    expect(domainManager.getDefaultDomainId).andReturn("anonymous-id").times(2)
+    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain).times(2)
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory
@@ -80,7 +82,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
-      case e => assertTrue(false)
+      case e => e.printStackTrace(); assertTrue(false)
     }
 
     verify(domainManager)
@@ -90,7 +92,8 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     val expectedDomain = Domain("anonymous-id", "anonymous", "", DisabledMode)
 
     val domainManager:DomainManager = createMock(classOf[DomainManager])
-    expect(domainManager.getAnonymousDomain).andReturn(expectedDomain).anyTimes()
+    expect(domainManager.getDefaultDomainId).andReturn("anonymous-id").times(2)
+    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain).times(2)
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory
@@ -146,6 +149,10 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
   def testNamedDomainNoSign(){
     val domainManager:DomainManager = createMock(classOf[DomainManager])
 
+    val keyBase = "/rest/fs/directory/file.txtSun, 13 Mar 2011 23:37:51 MSKplab"
+
+    expect(domainManager.checkDomainAccess("plab", "", keyBase)).andThrow(new DomainException())
+
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory
@@ -160,7 +167,8 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:DomainException =>
-      case e => assertTrue(false)
+      case e => e.printStackTrace()
+      assertTrue(false)
     }
 
     verify(domainManager)
@@ -168,6 +176,10 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
 
   def testNamedDomainNoDate(){
     val domainManager:DomainManager = createMock(classOf[DomainManager])
+
+    val keyBase = "/rest/fs/directory/file.txtplab"
+
+    expect(domainManager.checkDomainAccess("plab", "", keyBase)).andThrow(new DomainException())
 
     replay(domainManager)
 
