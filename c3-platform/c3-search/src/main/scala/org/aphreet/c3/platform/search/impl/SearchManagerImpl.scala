@@ -103,7 +103,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
   val indexScheduler = new SearchIndexScheduler(this)
 
 
-  var indexerTaskId:String = null
+  var indexerTaskId: String = null
 
   var backgroundIndexTask:BackgroundIndexTask = null
 

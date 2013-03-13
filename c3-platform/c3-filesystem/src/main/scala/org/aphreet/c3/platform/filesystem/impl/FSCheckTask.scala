@@ -66,7 +66,7 @@ class FSCheckTask(val accessManager: AccessManager,
         val domain = currentRoot._1
 
         val correctRoot = if (resource.systemMetadata("c3.domain.id").get != domain){
-          log.warn("Failed incorrect root " + currentRoot._2 + " for domain " + domain)
+          log.warn("Found incorrect root " + currentRoot._2 + " for domain " + domain)
 
           statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.root.found", 1)
 
