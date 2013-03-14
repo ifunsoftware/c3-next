@@ -113,7 +113,7 @@ class FSCheckTask(val accessManager: AccessManager,
 
     log debug "Checking directory " + directory.resource.address
 
-    for (child <- directory.allChildren) {
+    for (child <- directory.allChildren if !child.deleted) {
 
       val address = child.address
 
@@ -141,7 +141,7 @@ class FSCheckTask(val accessManager: AccessManager,
 
     log debug "Directory check complete " + directory.resource.address
 
-    for (child <- directory.allChildren if !child.leaf) {
+    for (child <- directory.allChildren if !child.leaf && !child.deleted) {
       accessManager.getOption(child.address) match {
         case Some(resource) => {
           val node = Node.fromResource(resource)
