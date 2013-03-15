@@ -187,7 +187,7 @@ class DomainManagerImpl extends DomainManager {
           || domain.key != importedDomain.key
           || domain.mode != importedDomain.mode){
 
-          log.info("Updating domain " + domain + " with imported domain: " + importedDomain)
+          log.debug("Updating domain " + domain + " with imported domain: " + importedDomain)
 
           //Found domain with the same id
           //Overriding name of the domain

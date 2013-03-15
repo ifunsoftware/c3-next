@@ -5,6 +5,7 @@ var Terminal = new Class({
 
     commandHistory: [],
     commandHistoryIndex: -1,
+    inCopyPaste: false,
 
     initialize: function(container) {
         this.terminal = container;
@@ -28,21 +29,40 @@ var Terminal = new Class({
 
         var command = this.currentCommand.get('html');
 
-//        if(event.control){
-//            if(event.code == 86){
-//                command += window.clipboardData.getData('Text');
-//                this.currentCommand.set('html', command);
-//                return;
-//            }
-//        }
+        if(event.control){
+            if(event.code == 86){
+                $('paste-block').style.visibility = 'visible'
+
+                $('paste-block-input').value = ''
+                $('paste-block-input').focus()
+                this.inCopyPaste = true
+            }
+        }
+
 
         if (event.control || event.alt || event.meta) return;
 
+        if(event.key == 'esc') {
+            if(this.inCopyPaste){
+                this.inCopyPaste = false
+                $('paste-block').style.visibility = 'hidden'
+                $('paste-block-input').value = ''
+                return;
+            }
+        }
 
         if (event.key == 'enter') {
-            event.preventDefault();
-            this.run();
-            return;
+            if(!this.inCopyPaste){
+                event.preventDefault();
+                if(command != ''){
+                    this.run();
+                }
+                return;
+            }else{
+                this.inCopyPaste = false
+                $('paste-block').style.visibility = 'hidden'
+                this.currentCommand.set('html', command + $('paste-block-input').value);
+            }
         }
 
         if (event.key == 'backspace') {
@@ -73,13 +93,6 @@ var Terminal = new Class({
                 this.commandHistoryIndex++;
                 this.currentCommand.set('html', this.commandHistory[this.commandHistoryIndex]);
                 // This can overflow the array by 1, which will clear the command line
-            }
-        }
-
-        if(event.control){
-            if(event.code == 86){
-                command += window.clipboardData.getData('Text');
-                this.currentCommand.set('html', command);
             }
         }
 
@@ -147,7 +160,12 @@ var Terminal = new Class({
         this.commandHistoryIndex = this.commandHistory.length;
 
 
-        var request = new Request.HTML().get('/ws/cli?command=' + encodeURIComponent(command));
+        var request = new Request.HTML(
+            {
+                url: 'http://node0.c3.ifunsoftware.com/ws/cli?command=' + encodeURIComponent(command),
+                method: 'GET'
+                //headers: {'Authorization': 'Basic '}
+            });
         request.addEvent('complete', function() {
             if (request.isSuccess()) {
                 this.out(request.response.text);
@@ -156,6 +174,8 @@ var Terminal = new Class({
             }
             this.prompt();
         }.bind(this));
+
+        request.send();
 
     }
 });
