@@ -13,5 +13,14 @@ trait TaskManager {
   def resumeTask(id:String)
   
   def submitTask(task:Task):String
+
+
+  def scheduleTask(task: Task, crontabSchedule: String)
+
+  def rescheduleTask(id: String, crontabSchedule: String)
+
+  def removeScheduledTask(id: String)
+
+  def scheduledTaskList: List[TaskDescription]
   
 }

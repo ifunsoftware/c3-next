@@ -6,7 +6,7 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 object BackupCommands extends Commands{
   def instances = List(new RestoreBackupCommand, new CreateBackupCommand,
     new ListBackupsCommand, new CreateLocalTargetCommand, new CreateRemoteTargetCommand,
-    new RemoveTargetCommand, new ListTargetsCommand, new ShowTargetInfoCommand)
+    new RemoveTargetCommand, new ListTargetsCommand, new ShowTargetInfoCommand, new ScheduleBackupCommand)
 }
 
 
@@ -41,6 +41,28 @@ class CreateBackupCommand extends Command{
   }
 
   def name = List("create", "backup")
+}
+
+class ScheduleBackupCommand extends Command {
+
+  override
+  def execute(params: List[String], management:PlatformManagementService):String = {
+
+    if (params.size < 2) {
+      wrongParameters("schedule backup <target id / number> <crontab schedule>")
+    } else {
+      val builder = new StringBuilder
+      for (item <- params.tail) {
+        builder.append(item).append(" ")
+      }
+      val crontabSchedule = builder.toString().replaceAll("\"", "").trim
+
+      management.scheduleBackup(params(0), crontabSchedule)
+      "Backup schedule was created"
+    }
+  }
+
+  def name = List("schedule", "backup")
 }
 
 

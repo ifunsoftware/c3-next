@@ -281,6 +281,39 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+  def listScheduledTasks = {
+    try {
+      managementEndpoint.listScheduledTasks.map(fromLocalDescription(_)).toArray
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def rescheduleTask(id: String, crontabSchedule: String) {
+    try {
+      managementEndpoint.rescheduleTask(id, crontabSchedule)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def removeScheduledTask(id: String) {
+    try {
+      managementEndpoint.removeScheduledTask(id)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
   def listTypeMappings:Array[TypeMapping] =
     try{
       (for(entry <- managementEndpoint.listTypeMappings)
@@ -555,6 +588,17 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def restoreBackup(targetId: String, name: String){
     try{
       backupManager.restoreBackup(targetId, name)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def scheduleBackup(targetId: String, crontabSchedule: String) {
+    try{
+      backupManager.scheduleBackup(targetId, crontabSchedule)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

@@ -101,7 +101,17 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
       case _ => null
     }
   }
-  
+
+  def listScheduledTasks = taskManager.scheduledTaskList
+
+  def rescheduleTask(id: String, crontabSchedule: String) {
+    taskManager.rescheduleTask(id, crontabSchedule)
+  }
+
+  def removeScheduledTask(id: String) {
+    taskManager.removeScheduledTask(id)
+  }
+
   def listTypeMappings:List[(String, Boolean)] = {
     mimeSelector.configEntries
   }

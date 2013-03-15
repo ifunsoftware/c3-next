@@ -108,6 +108,14 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     taskManager.submitTask(task)
   }
 
+  def scheduleBackup(targetId:String, crontabSchedule: String) {
+    val target = getBackupLocation(targetId)
+
+    val task = new ScheduledBackupTask(storageManager, filesystemManager, target)
+
+    taskManager.scheduleTask(task, crontabSchedule)
+  }
+
   def listBackups(targetId:String) : List[String] = {
     val target = getBackupLocation(targetId)
 
@@ -274,7 +282,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
 }
 
-class BackupTask(val storages:List[Storage], val fsManager:FSManager, val target: BackupLocation) extends Task{
+class BackupTask(var storages:List[Storage], val fsManager:FSManager, val target: BackupLocation) extends Task{
 
   var iterator:StorageIterator = null
 
@@ -371,6 +379,7 @@ class BackupTask(val storages:List[Storage], val fsManager:FSManager, val target
   }
 }
 
+
 class RestoreTask(val storageManager: StorageManager, val accessMediator: AccessMediator,
                   val fsManager: FSManager, val backup: AbstractBackup)
   extends IterableTask[Resource](backup){
@@ -394,5 +403,16 @@ class RestoreTask(val storageManager: StorageManager, val accessMediator: Access
         case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
       }
     }
+  }
+}
+
+
+class ScheduledBackupTask(val storageManager: StorageManager, fsManager:FSManager, target: BackupLocation)
+  extends BackupTask(null, fsManager, target) {
+
+  override def preStart() {
+    storages = storageManager.listStorages
+    storagesToProcess = storages
+    super.preStart()
   }
 }

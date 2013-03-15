@@ -9,6 +9,8 @@ abstract class Task extends Runnable{
 
   val id = name + "-" + System.currentTimeMillis
 
+  var schedule = ""
+
   protected var shouldStopFlag = false
 
   val SLEEP_ON_PAUSE_INTERVAL = 5000
@@ -75,7 +77,7 @@ abstract class Task extends Runnable{
 
   def progress:Int = -1
 
-  def description:TaskDescription = new TaskDescription(id, name, state, progress)
+  def description:TaskDescription = new TaskDescription(id, name, state, progress, schedule)
 
   protected def isPaused:Boolean = {taskState == PAUSED}
 

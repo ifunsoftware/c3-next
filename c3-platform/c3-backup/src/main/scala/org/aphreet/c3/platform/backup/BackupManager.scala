@@ -47,4 +47,6 @@ trait BackupManager {
   def listTargets() : List[String]
 
   def showTargetInfo(id : String) : String
+
+  def scheduleBackup(targetId: String, crontabSchedule: String)
 }

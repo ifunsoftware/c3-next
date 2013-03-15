@@ -38,7 +38,10 @@ object TaskCommands extends Commands{
   def instances = List(
     new ListRunningTasksCommand,
     new ListFinishedTasksCommand,
-    new SetTaskMode
+    new SetTaskMode,
+    new ListScheduledTasksCommand,
+    new RescheduleTaskCommand,
+    new RemoveScheduledTaskCommand
   )
 }
 
@@ -91,6 +94,15 @@ class ListFinishedTasksCommand extends ListTasksCommand {
   def name = List("list", "finished", "tasks")
 }
 
+class ListScheduledTasksCommand extends  ListTasksCommand {
+
+  override
+  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listScheduledTasks
+
+  override
+  def name = List("list", "scheduled", "tasks")
+}
+
 class SetTaskMode extends Command {
 
   override
@@ -105,4 +117,37 @@ class SetTaskMode extends Command {
   }
 
   def name = List("set", "task", "mode")
+}
+
+class RescheduleTaskCommand extends Command {
+
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
+
+    if(params.size < 2){
+      wrongParameters("reschedule task <id> <crontab schedule>")
+    }else{
+      management.rescheduleTask(params(0), params(1))
+      "Rescheduled"
+    }
+  }
+
+  def name = List("reschedule", "task")
+}
+
+class RemoveScheduledTaskCommand extends Command {
+
+  override
+  def execute(params:List[String], management:PlatformManagementService):String = {
+
+    params.headOption match {
+      case Some(value) => {
+        management.removeScheduledTask(value)
+        "Removed"
+      }
+      case None => wrongParameters("remove scheduled task <id>")
+    }
+  }
+
+  def name = List("remove", "scheduled", "task")
 }

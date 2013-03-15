@@ -24,11 +24,18 @@ trait PlatformManagementService {
 
   def platformProperties:Array[Pair]
 
+
   def listTasks:Array[RemoteTaskDescription]
 
   def listFinishedTasks:Array[RemoteTaskDescription]
 
   def setTaskMode(taskId:String, mode:String)
+
+  def listScheduledTasks:Array[RemoteTaskDescription]
+
+  def rescheduleTask(id: String, crontabSchedule: String)
+
+  def removeScheduledTask(id: String)
 
 
   def listTypeMappings:Array[TypeMapping]
@@ -85,6 +92,8 @@ trait PlatformManagementService {
   def createBackup(targetId : String)
 
   def restoreBackup(targetId: String, name: String)
+
+  def scheduleBackup(targetId: String, crontabSchedule: String)
 
   def listBackups(targetId : String) : Array[String]
 
