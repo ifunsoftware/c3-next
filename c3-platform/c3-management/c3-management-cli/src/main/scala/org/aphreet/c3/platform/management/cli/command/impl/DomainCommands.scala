@@ -172,7 +172,7 @@ class ListDomainsCommand extends Command {
 
     val defaultId = management.getDefaultDomain
 
-    management.listDomains.map(d => format(d, defaultId)).foldLeft(header)(_ + _) + footer
+    management.listDomains.sortBy(_.getName).map(d => format(d, defaultId)).foldLeft(header)(_ + _) + footer
   }
 
 

@@ -42,7 +42,7 @@ class FSCheckTask(val accessManager: AccessManager,
                   val statisticsManager: StatisticsManager,
                   val queryManager: QueryManager,
                   val fsManager: FSManagerImpl,
-                  val fsRoots:Map[String, String]) extends Task{
+                  val fsRoots: Map[String, String]) extends Task {
 
   var rootsToCheck = Map[String, String]()
 
@@ -58,14 +58,14 @@ class FSCheckTask(val accessManager: AccessManager,
 
   override def step {
 
-    rootsToCheck.headOption match{
+    rootsToCheck.headOption match {
       case Some(currentRoot) => {
         rootsToCheck = rootsToCheck.tail
         val resource = accessManager.get(currentRoot._2)
 
         val domain = currentRoot._1
 
-        val correctRoot = if (resource.systemMetadata("c3.domain.id").get != domain){
+        val correctRoot = if (resource.systemMetadata("c3.domain.id").get != domain) {
           log.warn("Found incorrect root " + currentRoot._2 + " for domain " + domain)
 
           statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.root.found", 1)
@@ -79,17 +79,21 @@ class FSCheckTask(val accessManager: AccessManager,
               statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.root.fixed", 1)
               Some(accessManager.get(address))
             }
-            case None => None
+            case None => {
+              log.warn("Failed to find correct root for domain " + domain)
+              None
+            }
           }
 
-        }else{
+        } else {
           Some(resource)
         }
 
-        correctRoot.foreach{ r =>
-          val node = Node.fromResource(r)
-          if(node.isDirectory)
-            checkDirectoryContents(node.asInstanceOf[Directory])
+        correctRoot.foreach {
+          r =>
+            val node = Node.fromResource(r)
+            if (node.isDirectory)
+              checkDirectoryContents(node.asInstanceOf[Directory], domain)
 
         }
       }
@@ -99,28 +103,28 @@ class FSCheckTask(val accessManager: AccessManager,
     }
   }
 
-  override def progress:Int = {
+  override def progress: Int = {
     val totalRootsToCheck = fsRoots.size
 
     ((totalRootsToCheck - rootsToCheck.size).toFloat / totalRootsToCheck).toInt * 100
   }
 
-  def checkDirectoryContents(directory:Directory) {
+  def checkDirectoryContents(directory: Directory, domain: String) {
 
     log debug "Checking directory " + directory.resource.address
 
-    for(child <- directory.allChildren){
+    for (child <- directory.allChildren if !child.deleted) {
 
       val address = child.address
 
-      try{
+      try {
         statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.total", 1)
-        if(log.isTraceEnabled){
+        if (log.isTraceEnabled) {
           log trace "Checking child " + address
         }
         accessManager.get(address)
-      }catch{
-        case e:ResourceNotFoundException => {
+      } catch {
+        case e: ResourceNotFoundException => {
           directory.removeChild(child.name)
           log debug "Removed missing resource " + child.name + "(" + address + ") from directory " + directory.resource.address
           statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.found", 1)
@@ -137,12 +141,21 @@ class FSCheckTask(val accessManager: AccessManager,
 
     log debug "Directory check complete " + directory.resource.address
 
-    for(child <- directory.allChildren if !child.leaf){
-      val resource = accessManager.get(child.address)
-      val node = Node.fromResource(resource)
+    for (child <- directory.allChildren if !child.leaf && !child.deleted) {
+      accessManager.getOption(child.address) match {
+        case Some(resource) => {
+          val node = Node.fromResource(resource)
 
-      if(node.isDirectory)
-        checkDirectoryContents(node.asInstanceOf[Directory])
+          if (node.isDirectory)
+            checkDirectoryContents(node.asInstanceOf[Directory], domain)
+        }
+        case None => {
+          log.warn("Failed to load child of the directory " + directory.resource.address + " in the domain " + domain)
+          directory.removeChild(child.name)
+          accessManager.update(directory.resource)
+        }
+      }
+
     }
   }
 
@@ -153,11 +166,11 @@ class FSCheckTask(val accessManager: AccessManager,
       var result: Option[String] = None
 
       def consume(resource: Resource) = {
-        if (!resource.systemMetadata.asMap.contains(Node.NODE_FIELD_NAME)){
+        if (!resource.systemMetadata.has(Node.NODE_FIELD_NAME)) {
           log.info("Found correct root for domain " + resource.address)
           result = Some(resource.address)
           false
-        }else{
+        } else {
           true
         }
       }
