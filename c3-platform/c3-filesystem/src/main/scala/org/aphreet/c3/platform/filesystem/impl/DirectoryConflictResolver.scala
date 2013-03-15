@@ -21,6 +21,7 @@ class DirectoryConflictResolver extends ConflictResolver{
     filterUpdatedDeletedNodes(resultNodes)
 
     savedDirectory.importChildren(resultNodes)
+    savedResource.calculateCheckSums
   }
 
   private def filterUpdatedDeletedNodes(resultNodes: mutable.HashMap[String, NodeRef]){

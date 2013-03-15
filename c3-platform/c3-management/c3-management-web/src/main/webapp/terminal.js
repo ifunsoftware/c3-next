@@ -160,12 +160,7 @@ var Terminal = new Class({
         this.commandHistoryIndex = this.commandHistory.length;
 
 
-        var request = new Request.HTML(
-            {
-                url: 'http://node0.c3.ifunsoftware.com/ws/cli?command=' + encodeURIComponent(command),
-                method: 'GET'
-                //headers: {'Authorization': 'Basic '}
-            });
+        var request = new Request.HTML().get('/ws/cli?command=' + encodeURIComponent(command));
         request.addEvent('complete', function() {
             if (request.isSuccess()) {
                 this.out(request.response.text);

@@ -34,7 +34,7 @@ import com.sleepycat.je._
 import java.io.File
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.resource.{ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{ResourceSerializer, ResourceVersion, Resource}
 import org.aphreet.c3.platform.storage.common.AbstractStorage
 import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams, StorageIterator}
 import scala.collection.mutable

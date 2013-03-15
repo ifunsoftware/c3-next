@@ -142,20 +142,11 @@ class FSCheckTask(val accessManager: AccessManager,
     log debug "Directory check complete " + directory.resource.address
 
     for (child <- directory.allChildren if !child.leaf && !child.deleted) {
-      accessManager.getOption(child.address) match {
-        case Some(resource) => {
-          val node = Node.fromResource(resource)
-
-          if (node.isDirectory)
-            checkDirectoryContents(node.asInstanceOf[Directory], domain)
-        }
-        case None => {
-          log.warn("Failed to load child of the directory " + directory.resource.address + " in the domain " + domain)
-          directory.removeChild(child.name)
-          accessManager.update(directory.resource)
-        }
-      }
-
+      accessManager.getOption(child.address).foreach(resource => {
+        val node = Node.fromResource(resource)
+        if (node.isDirectory)
+          checkDirectoryContents(node.asInstanceOf[Directory], domain)
+      })
     }
   }
 
