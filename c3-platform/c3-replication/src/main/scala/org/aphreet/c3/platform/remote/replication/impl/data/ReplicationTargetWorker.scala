@@ -136,7 +136,10 @@ class ReplicationTargetWorker(val localSystemId: String,
       handleDelay(resource)
 
     } catch {
-      case e: Throwable => log.error("Failed to replicate add", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate add", e)
+      }
     }
   }
 
@@ -181,7 +184,10 @@ class ReplicationTargetWorker(val localSystemId: String,
       target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
 
     } catch {
-      case e: Throwable => log.error("Failed to replicate update", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate update", e)
+      }
     }
   }
 
@@ -215,7 +221,10 @@ class ReplicationTargetWorker(val localSystemId: String,
         log warn "Failed to replicate delete, storage is not writable"
       }
     } catch {
-      case e: Throwable => log.error("Failed to replicate update", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate update", e)
+      }
     }
   }
 
