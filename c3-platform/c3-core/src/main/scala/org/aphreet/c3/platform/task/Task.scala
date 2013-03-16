@@ -13,6 +13,8 @@ abstract class Task extends Runnable{
 
   protected var shouldStopFlag = false
 
+  protected var restartableFlag = false
+
   val SLEEP_ON_PAUSE_INTERVAL = 5000
 
   private var taskState:TaskState = PENDING
@@ -49,6 +51,9 @@ abstract class Task extends Runnable{
         postFailure()
       }
     }finally {
+      if (isRestartable) {
+        shouldStopFlag = false
+      }
       ThreadWatcher - this
     }
   }
@@ -80,6 +85,10 @@ abstract class Task extends Runnable{
   def description:TaskDescription = new TaskDescription(id, name, state, progress, schedule)
 
   protected def isPaused:Boolean = {taskState == PAUSED}
+
+  def isRestartable: Boolean = restartableFlag
+
+  def setRestartable(restartable: Boolean) { restartableFlag = restartable }
 
   def stop() {
     Thread.currentThread.interrupt()

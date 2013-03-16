@@ -80,6 +80,8 @@ class TaskManagerImpl extends TaskManager{
     }
 
   def scheduleTask(task: Task, crontabSchedule: String) {
+    task.setRestartable(true)
+
     val scheduledFuture = scheduler.schedule(task, new CronTrigger(crontabSchedule))
 
     task.schedule = crontabSchedule
