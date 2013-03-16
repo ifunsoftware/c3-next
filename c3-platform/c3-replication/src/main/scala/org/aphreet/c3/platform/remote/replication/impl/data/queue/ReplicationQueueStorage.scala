@@ -39,13 +39,13 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.remote.replication.impl.data._
 import org.aphreet.c3.platform.remote.replication.ReplicationException
 
-class ReplicationQueueStorage(val path:Path) {
+class ReplicationQueueStorage(val path: Path) {
 
   val log = LogFactory getLog getClass
 
-  protected var env : Environment = null
+  protected var env: Environment = null
 
-  protected var database : Database = null
+  protected var database: Database = null
 
   {
     open()
@@ -58,11 +58,10 @@ class ReplicationQueueStorage(val path:Path) {
     envConfig setAllowCreate true
     envConfig setSharedCache false
     envConfig setTransactional false
-    envConfig setTxnNoSync true
-    envConfig setTxnWriteNoSync true
+    envConfig setDurability Durability.COMMIT_WRITE_NO_SYNC
 
     val storagePathFile = path.file
-    if(!storagePathFile.exists){
+    if (!storagePathFile.exists) {
       storagePathFile.mkdirs
     }
 
@@ -76,9 +75,9 @@ class ReplicationQueueStorage(val path:Path) {
     log info "ReplicationQueueDB opened"
   }
 
-  def add(tasks:Set[ReplicationTask]) {
-    for(task <- tasks){
-      try{
+  def add(tasks: Set[ReplicationTask]) {
+    for (task <- tasks) {
+      try {
         val key = new DatabaseEntry(task.getKeyBytes)
         val value = new DatabaseEntry()
 
@@ -88,10 +87,13 @@ class ReplicationQueueStorage(val path:Path) {
           case OperationStatus.SUCCESS => {
             val queuedAction = ReplicationAction.fromBytes(value.getData)
 
-            if(task.action.isStronger(queuedAction)){
+            if (task.action.isStronger(queuedAction)) {
               value.setData(task.action.toBytes)
-              if(database.put(null, key, value) != OperationStatus.SUCCESS){
-                log warn "Can't put task to queue " + task
+
+              database.put(null, key, value) match {
+                case OperationStatus.SUCCESS =>
+                case putStatus: OperationStatus =>
+                  log warn "Can't put task to queue " + task + " operation status is " + putStatus
               }
             }
 
@@ -99,32 +101,33 @@ class ReplicationQueueStorage(val path:Path) {
 
           case OperationStatus.NOTFOUND => {
             value.setData(task.action.toBytes)
-            if(database.put(null, key, value) != OperationStatus.SUCCESS){
-              log warn "Can't put task to queue " + task
+
+            database.put(null, key, value) match {
+              case OperationStatus.SUCCESS =>
+              case putStatus: OperationStatus =>
+                log warn "Can't put task to queue " + task + " operation status is " + putStatus
             }
           }
         }
-
-
-      }catch{
-        case e: Throwable => log error ("Can't add entry to database", e)
+      } catch {
+        case e: Throwable => log error("Can't add entry to database", e)
       }
     }
   }
 
-  def iterator:ReplicationQueueIterator = new ReplicationQueueIterator(database)
+  def iterator: ReplicationQueueIterator = new ReplicationQueueIterator(database)
 
-  def deleteAll(){
+  def deleteAll() {
 
     log.info("Deleting all elements from the replication queue")
 
     val iterator = this.iterator
-    try{
-      while(iterator.hasNext){
+    try {
+      while (iterator.hasNext) {
         iterator.remove()
       }
       log.info("Replication queue has been cleared")
-    }finally {
+    } finally {
       iterator.close()
     }
   }
@@ -133,12 +136,12 @@ class ReplicationQueueStorage(val path:Path) {
 
     log info "Closing ReplicationQueueDB..."
 
-    if(database != null){
+    if (database != null) {
       database.close()
       database = null
     }
 
-    if(env != null){
+    if (env != null) {
       env.cleanLog
       env.close()
       env = null
@@ -149,13 +152,13 @@ class ReplicationQueueStorage(val path:Path) {
 
 }
 
-class ReplicationQueueIterator(val database:Database) extends java.util.Iterator[ReplicationTask]{
+class ReplicationQueueIterator(val database: Database) extends java.util.Iterator[ReplicationTask] {
 
   val cursor = database.openCursor(null, null)
 
   private var nextElement = findNextTask
 
-  override def hasNext:Boolean = {
+  override def hasNext: Boolean = {
 
     nextElement match {
       case Some(task) => true
@@ -164,7 +167,7 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
 
   }
 
-  override def next:ReplicationTask = {
+  override def next: ReplicationTask = {
 
     val result = nextElement match {
       case Some(task) => task
@@ -183,14 +186,14 @@ class ReplicationQueueIterator(val database:Database) extends java.util.Iterator
 
     cursor.getPrev(key, value, LockMode.DEFAULT)
 
-    if(cursor.delete != OperationStatus.SUCCESS){
-      throw new ReplicationException("Failed to remove task from queue") 
+    if (cursor.delete != OperationStatus.SUCCESS) {
+      throw new ReplicationException("Failed to remove task from queue")
     }
 
     nextElement = findNextTask
   }
 
-  private def findNextTask:Option[ReplicationTask] = {
+  private def findNextTask: Option[ReplicationTask] = {
 
     val key = new DatabaseEntry
     val value = new DatabaseEntry
