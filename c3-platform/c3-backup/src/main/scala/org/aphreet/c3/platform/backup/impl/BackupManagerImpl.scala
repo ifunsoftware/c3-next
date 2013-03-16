@@ -86,9 +86,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def createBackup(targetId : String) {
     val target = getBackupLocation(targetId)
 
-    val storages = storageManager.listStorages
-
-    val task = new BackupTask(storages, filesystemManager, target)
+    val task = new BackupTask(storageManager, filesystemManager, target)
 
     taskManager.submitTask(task)
   }
@@ -111,7 +109,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def scheduleBackup(targetId:String, crontabSchedule: String) {
     val target = getBackupLocation(targetId)
 
-    val task = new ScheduledBackupTask(storageManager, filesystemManager, target)
+    val task = new BackupTask(storageManager, filesystemManager, target)
 
     taskManager.scheduleTask(task, crontabSchedule)
   }
@@ -282,11 +280,11 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
 }
 
-class BackupTask(var storages:List[Storage], val fsManager:FSManager, val target: BackupLocation) extends Task{
+class BackupTask(val storageManager: StorageManager, val fsManager:FSManager, val target: BackupLocation) extends Task{
 
   var iterator:StorageIterator = null
 
-  var storagesToProcess = storages
+  var storagesToProcess: List[Storage] = null
 
   var backup : AbstractBackup = null
 
@@ -335,6 +333,8 @@ class BackupTask(var storages:List[Storage], val fsManager:FSManager, val target
   }
 
   override def preStart(){
+    storagesToProcess = storageManager.listStorages
+
     isLocal = target.backupType match {
       case "local" => true
       case "remote" => false
@@ -403,16 +403,5 @@ class RestoreTask(val storageManager: StorageManager, val accessMediator: Access
         case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
       }
     }
-  }
-}
-
-
-class ScheduledBackupTask(val storageManager: StorageManager, fsManager:FSManager, target: BackupLocation)
-  extends BackupTask(null, fsManager, target) {
-
-  override def preStart() {
-    storages = storageManager.listStorages
-    storagesToProcess = storages
-    super.preStart()
   }
 }
