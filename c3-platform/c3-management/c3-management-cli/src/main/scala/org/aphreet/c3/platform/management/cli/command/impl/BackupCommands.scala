@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
-import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.remote.api.management.{TargetDescription, PlatformManagementService}
 
 object BackupCommands extends Commands{
   def instances = List(new RestoreBackupCommand, new CreateBackupCommand,
@@ -142,14 +142,30 @@ class RemoveTargetCommand extends Command {
 
 class ListTargetsCommand extends Command {
 
+  val header = "| No |       ID       |          Host          |                   Folder                   |\n" +
+               "|----|----------------|------------------------|--------------------------------------------|\n"
+  val footer = "|----|----------------|------------------------|--------------------------------------------|\n"
+
+  def format(counter: Int, desc: TargetDescription):String =
+        String.format("| %2s | %14s | %-22s | %42s |\n",
+          counter.toString,
+          desc.id,
+          desc.backupType match {
+            case "local" => "localhosst"
+            case "remote" => desc.folder
+            case _ => ""
+          },
+          desc.folder)
+
   override def execute(management: PlatformManagementService):String = {
+    val builder = new StringBuilder(header)
+    var counter = 1
 
-    val targets = management.listBackupTargets()
-
-    val builder = new StringBuilder
-    for (target <- targets) {
-      builder.append(target).append("\n")
+    for (target <- management.listBackupTargets()) {
+      builder.append(format(counter, target))
+      counter += 1
     }
+    builder.append(footer)
 
     builder.toString()
   }
@@ -158,10 +174,32 @@ class ListTargetsCommand extends Command {
 }
 
 class ShowTargetInfoCommand extends Command {
+
   override def execute(params: List[String], management: PlatformManagementService):String = {
 
     params.headOption match {
-      case Some(value) => management.showBackupTargetInfo(value)
+      case Some(value) => {
+        val desc = management.showBackupTargetInfo(value)
+
+        val builder = new StringBuilder("Target info\n")
+        builder.append("ID: ").append(desc.id).append("\n")
+
+        val isRemote = desc.backupType.equals("remote")
+        builder.append("Type: ").append(desc.backupType).append("\n")
+
+        if (isRemote) {
+          builder.append("Host: ").append(desc.host).append("\n")
+          builder.append("User: ").append(desc.user).append("\n")
+        }
+
+        builder.append("Folder: ").append(desc.folder).append("\n")
+
+        if (isRemote) {
+          builder.append("Key: ").append(desc.privateKey).append("\n")
+        }
+
+        builder.toString()
+      }
 
       case None => wrongParameters("show target <target id / target number>")
     }

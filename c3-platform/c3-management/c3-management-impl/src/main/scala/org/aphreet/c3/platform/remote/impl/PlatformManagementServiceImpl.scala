@@ -666,9 +666,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def listBackupTargets() : Array[String] = {
+  def listBackupTargets() : Array[TargetDescription] = {
     try {
-      backupManager.listTargets().toArray
+      backupManager.listTargets()
+        .map(e => new TargetDescription(e.id, e.backupType, e.host, e.user, e.folder, e.privateKey))
+        .toArray
     } catch {
       case e: Throwable => {
         e.printStackTrace()
@@ -677,9 +679,13 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def showBackupTargetInfo(targetId: String) : String = {
+  def showBackupTargetInfo(targetId: String) : TargetDescription = {
     try {
-      backupManager.showTargetInfo(targetId)
+      val target = backupManager.showTargetInfo(targetId)
+      val targetDescription = new TargetDescription(target.id, target.backupType, target.host, target.user,
+          target.folder, target.privateKey)
+
+      targetDescription
     } catch {
       case e: Throwable => {
         e.printStackTrace()

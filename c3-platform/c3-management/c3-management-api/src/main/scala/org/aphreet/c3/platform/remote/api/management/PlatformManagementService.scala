@@ -103,8 +103,8 @@ trait PlatformManagementService {
 
   def removeBackupTarget(id : String)
 
-  def listBackupTargets() : Array[String]
+  def listBackupTargets() : Array[TargetDescription]
 
-  def showBackupTargetInfo(targetId: String) : String
+  def showBackupTargetInfo(targetId: String) : TargetDescription
 
 }

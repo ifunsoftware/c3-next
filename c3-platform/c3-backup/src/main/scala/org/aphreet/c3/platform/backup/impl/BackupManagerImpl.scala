@@ -196,54 +196,9 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     configAccessor.update(l => targets)
   }
 
-  def listTargets() : List[String] = {
-    val listBuffer = new ListBuffer[String]()
-    var count = 1
+  def listTargets() : List[BackupLocation] = targets
 
-    for (target <- targets) {
-      val builder = new StringBuilder
-
-      builder.append(count).append("\t")
-      count += 1
-      builder.append(target.id).append("\t")
-
-      builder.append( target.backupType match {
-        case "local" => "localhost"
-        case "remote" => target.host
-        case _ => throw new IllegalStateException("Wrong type for backup target")
-      })
-      builder.append("\t")
-
-      builder.append(target.folder).append("\t")
-
-      listBuffer += builder.toString()
-    }
-
-    listBuffer.toList
-  }
-
-  def showTargetInfo(targetId : String) : String = {
-    val target = getBackupLocation(targetId)
-
-    val builder = new StringBuilder("Target info\n")
-    builder.append("ID: ").append(target.id).append("\n")
-
-    val isRemote = target.backupType.equals("remote")
-    builder.append("Type: ").append(target.backupType).append("\n")
-
-    if (isRemote) {
-      builder.append("Host: ").append(target.host).append("\n")
-      builder.append("User: ").append(target.user).append("\n")
-    }
-
-    builder.append("Folder: ").append(target.folder).append("\n")
-
-    if (isRemote) {
-      builder.append("Key: ").append(target.privateKey).append("\n")
-    }
-
-    builder.toString()
-  }
+  def showTargetInfo(targetId : String) : BackupLocation = getBackupLocation(targetId)
 
   def getBackupLocation(targetId : String) : BackupLocation = {
     val maybeLocation = targets.find(target => target.id.equals(targetId))
