@@ -68,19 +68,12 @@ class ScheduleBackupCommand extends Command {
 
 class ListBackupsCommand extends Command {
 
+  val headerTemplate = "Backups in target %s:"
+
   override def execute(params: List[String], management:PlatformManagementService):String = {
 
     params.headOption match {
-      case Some(value) => {
-        val backups = management.listBackups(value)
-
-        val builder = new StringBuilder
-        for (b <- backups) {
-          builder.append(b).append("\n")
-        }
-
-        builder.toString()
-      }
+      case Some(value) => management.listBackups(value).foldLeft(String.format(headerTemplate, value))(_ + "\n" +  _)
 
       case None => wrongParameters("list backups <target id / number>")
     }
