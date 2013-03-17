@@ -127,7 +127,13 @@ class RescheduleTaskCommand extends Command {
     if(params.size < 2){
       wrongParameters("reschedule task <id> <crontab schedule>")
     }else{
-      management.rescheduleTask(params(0), params(1))
+      val builder = new StringBuilder
+      for (item <- params.tail) {
+        builder.append(item).append(" ")
+      }
+      val crontabSchedule = builder.toString().replaceAll("\"", "").trim
+
+      management.rescheduleTask(params(0), crontabSchedule)
       "Rescheduled"
     }
   }
