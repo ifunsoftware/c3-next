@@ -16,13 +16,19 @@ trait PlatformManagementService {
 
   def purgeStorageData()
 
-  def migrate(source: String, target: String)
+  def migrateStorage(source: String, target: String)
 
   def setStorageMode(id: String, mode: String)
+
+  def createStorageIndex(name: String, fields: Array[String], system: java.lang.Boolean, multi: java.lang.Boolean)
+
+  def removeStorageIndex(name: String)
+
 
   def setPlatformProperty(key: String, value: String)
 
   def platformProperties: Array[Pair]
+
 
   def listTasks: Array[RemoteTaskDescription]
 
@@ -46,13 +52,11 @@ trait PlatformManagementService {
 
   def deleteUser(name: String)
 
+
   def statistics: Array[Pair]
 
-  def createIndex(name: String, fields: Array[String], system: java.lang.Boolean, multi: java.lang.Boolean)
 
-  def removeIndex(name: String)
-
-  def establishReplication(host: String, port: java.lang.Integer, username: String, password: String)
+  def createReplicationTarget(host: String, port: java.lang.Integer, username: String, password: String)
 
   def removeReplicationTarget(id: String)
 
@@ -61,6 +65,10 @@ trait PlatformManagementService {
   def replayReplicationQueue()
 
   def copyDataToReplicationTarget(id: String)
+
+  def resetReplicationQueue()
+
+  def dumpReplicationQueue(path: String)
 
 
   def createDomain(name: String)
@@ -79,15 +87,18 @@ trait PlatformManagementService {
 
   def getDefaultDomain: String
 
-  def listFileSystemRoots: Array[Pair]
 
-  def importFileSystemRoot(domainId: String, address: String)
+  def listFilesystemRoots: Array[Pair]
+
+  def importFilesystemRoot(domainId: String, address: String)
 
   def startFilesystemCheck()
+
 
   def resetSearchIndex()
 
   def dumpSearchIndex(path: String)
+
 
   def createBackup()
 

@@ -55,6 +55,8 @@ trait ReplicationManager extends WatchedActor {
 
   def replayReplicationQueue()
 
+  def dumpReplicationQueue(path: String)
+
   def copyToTarget(targetId:String)
 }
 

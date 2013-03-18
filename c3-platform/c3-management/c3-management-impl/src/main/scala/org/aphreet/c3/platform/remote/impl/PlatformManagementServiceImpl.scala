@@ -199,7 +199,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def migrate(source:String, target:String) {
+  def migrateStorage(source:String, target:String) {
     try {
       managementEndpoint.migrateFromStorageToStorage(source, target)
     } catch {
@@ -377,7 +377,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
+  def createStorageIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
     try{
       val idx = new StorageIndex(name,
         fields.toList,
@@ -394,7 +394,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def removeIndex(name:String) {
+  def removeStorageIndex(name:String) {
     try{
       managementEndpoint.removeIndex(name)
     }catch{
@@ -405,7 +405,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def establishReplication(host:String, port:java.lang.Integer, username:String, password:String) {
+  def createReplicationTarget(host:String, port:java.lang.Integer, username:String, password:String) {
     try{
       replicationManager.establishReplication(host, port, username, password)
     }catch{
@@ -449,9 +449,32 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+
+  def resetReplicationQueue() {
+    try{
+      replicationManager.resetReplicationQueue()
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
   def copyDataToReplicationTarget(id:String) {
     try{
       replicationManager.copyToTarget(id)
+    }catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def dumpReplicationQueue(path: String) {
+    try{
+      replicationManager.dumpReplicationQueue(path)
     }catch {
       case e: Throwable => {
         e.printStackTrace()
@@ -551,7 +574,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def listFileSystemRoots:Array[Pair] = {
+  def listFilesystemRoots:Array[Pair] = {
     try{
       filesystemManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
     }catch{
@@ -562,7 +585,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def importFileSystemRoot(domainId:String, address:String) {
+  def importFilesystemRoot(domainId:String, address:String) {
     try{
       filesystemManager.importFileSystemRoot(domainId, address)
     }catch{

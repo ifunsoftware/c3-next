@@ -44,7 +44,7 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.config._
-import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
+import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
@@ -165,7 +165,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
 
         case StoragePurgedMsg(source) => {
-          replicationQueueStorage.deleteAll()
+          replicationQueueStorage.clear()
         }
 
         case SendConfigurationMsg => {
@@ -329,7 +329,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           if (replicationQueueStorage != null) {
             replicationQueueStorage.close()
           }
-          replicationQueueStorage = new ReplicationQueueStorage(replicationQueuePath)
+          replicationQueueStorage = new ReplicationQueueStorageImpl(replicationQueuePath)
         }
 
       case REPLICATION_SECURE_KEY =>
@@ -358,8 +358,13 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   override def resetReplicationQueue() {
     this.synchronized {
       log.info("Clearing replication queue")
-      replicationQueueStorage.deleteAll()
+      replicationQueueStorage.clear()
     }
+  }
+
+  def dumpReplicationQueue(path: String) {
+    log.info("Dumping replication queue to path: " + path)
+    taskManager.submitTask(new ReplicationQueueDumpTask(replicationQueueStorage, Path(path)))
   }
 }
 

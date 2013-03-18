@@ -119,13 +119,19 @@ case class UpdateAction(timestamp:Long) extends ReplicationAction {
     }
   }
 
+  override def toString = "UPDATE"
+
 }
 object AddAction extends ReplicationAction {
 
   def isStronger(action:ReplicationAction):Boolean = false
 
+  override def toString = "ADD"
+
 }
 object DeleteAction extends ReplicationAction{
 
   def isStronger(action:ReplicationAction):Boolean = true
+
+  override def toString = "UPDATE"
 }
