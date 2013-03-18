@@ -9,6 +9,6 @@ trait TagManager extends WatchedActor{
 
 }
 
-case class UpdateParentTagMsg(catalogPath: String, tags: List[String]) {
+case class UpdateParentTagMsg(catalogPath: Option[String], tags: List[String]) {
 
 }
