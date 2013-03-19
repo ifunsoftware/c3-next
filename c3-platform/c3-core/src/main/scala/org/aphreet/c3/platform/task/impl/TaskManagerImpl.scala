@@ -7,7 +7,7 @@ import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
 import org.springframework.stereotype.Component
 import scala.collection.mutable
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
-import org.springframework.scheduling.TaskScheduler
+import org.springframework.scheduling.{Trigger, TaskScheduler}
 import java.util.Date
 import org.springframework.scheduling.support.{CronTrigger, PeriodicTrigger}
 
@@ -89,13 +89,33 @@ class TaskManagerImpl extends TaskManager{
   def scheduleTask(task: Task, crontabSchedule: String) {
     task.setRestartable(true)
 
-    val scheduledFuture = scheduler.schedule(task, new CronTrigger(crontabSchedule))
+    scheduleTask(task, new CronTrigger(crontabSchedule))
 
     task.schedule = crontabSchedule
-    tasks.put(task.id, task)
-    tasksFutures.put(task.id, scheduledFuture)
 
     log.debug("Task " + task.id + " was scheduled: " + crontabSchedule)
+  }
+
+  def scheduleTask(task: Task, period: Long) {
+    scheduleTask(task, period, 0)
+  }
+
+  def scheduleTask(task: Task, period: Long, startDelay: Long) {
+    val trigger = new PeriodicTrigger(period)
+    trigger.setInitialDelay(startDelay)
+    trigger.setFixedRate(true)
+
+    scheduleTask(task, trigger)
+
+    log.debug("Task " + task.id + " was scheduled for execution every " + period
+      + " ms with initial delay " + startDelay + " ms")
+  }
+
+  private def scheduleTask(task: Task, trigger: Trigger) {
+    val scheduledFuture = scheduler.schedule(task, trigger)
+
+    tasks.put(task.id, task)
+    tasksFutures.put(task.id, scheduledFuture)
   }
 
   def rescheduleTask(id: String, crontabSchedule: String) {
