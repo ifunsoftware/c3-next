@@ -13,10 +13,11 @@ case class BackupLocation(
             @BeanProperty var host: String,
             @BeanProperty var user: String,
             @BeanProperty var folder: String,
-            @BeanProperty var privateKey: String
+            @BeanProperty var privateKey: String,
+            @BeanProperty var schedule: List[String]
         ) extends java.io.Serializable {
 
-  def this() = this(null, null, null, null, null, null)
+  def this() = this(null, null, null, null, null, null, null)
 }
 
 
@@ -37,7 +38,7 @@ object LocalBackupLocation {
       throw new IllegalStateException("Folder creation failed")
     }
 
-    new BackupLocation(id, "local", "", "", path, "")
+    new BackupLocation(id, "local", "", "", path, "", null)
   }
 }
 
@@ -72,6 +73,6 @@ object RemoteBackupLocation {
       connector.disconnect()
     }
 
-    new BackupLocation(id, "remote", host, user, path, key)
+    new BackupLocation(id, "remote", host, user, path, key, null)
   }
 }
