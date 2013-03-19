@@ -46,7 +46,7 @@ import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationExcept
 import org.aphreet.c3.platform.config._
 import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.task.TaskManager
+import org.aphreet.c3.platform.task.{Task, TaskManager}
 import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
@@ -305,9 +305,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   private def runQueueMaintainer() {
-    val thread = new Thread(new ProcessScheduler(this))
-    thread.setDaemon(true)
-    thread.start()
+    val processTask = new ProcessTask(this)
+    taskManager.scheduleTask(processTask, "0 */5 * * * *")
   }
 
   override def defaultValues:Map[String, String] =
@@ -356,56 +355,24 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 }
 
-class ProcessScheduler(manager:ReplicationManager) extends Runnable{
+class ProcessTask(manager:ReplicationManager) extends Task{
 
-  val log = LogFactory getLog getClass
+  override def step() {
+    triggerConfigExchange()
+    triggerQueueProcess()
 
-  val FIVE_MINUTES = 1000 * 60 * 5
-
-  var nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
-
-  var nextQueueProcessTime = System.currentTimeMillis + FIVE_MINUTES
-
-  override def run(){
-
-    ThreadWatcher + this
-    try{
-      log info "Starting replication background process scheduler"
-
-      while(!Thread.currentThread.isInterrupted){
-
-        while(!Thread.currentThread.isInterrupted){
-          triggerConfigExchange()
-          triggerQueueProcess()
-
-          Thread.sleep(60 * 1000)
-        }
-      }
-    }finally{
-      ThreadWatcher - this
-      log info "Stopping Replication background process scheduler"
-    }
+    shouldStopFlag = true
   }
 
   def triggerConfigExchange(){
-
-    if(nextConfigSendTime - System.currentTimeMillis < 0){
       log debug "Sending configuration to targets"
 
       manager ! SendConfigurationMsg
-
-      nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
-    }
   }
 
   def triggerQueueProcess(){
-
-    if(nextQueueProcessTime - System.currentTimeMillis < 0){
       log debug "Getting replication queue"
 
       manager ! QueuedTasks
-
-      nextQueueProcessTime = System.currentTimeMillis + FIVE_MINUTES
-    }
   }
 }
