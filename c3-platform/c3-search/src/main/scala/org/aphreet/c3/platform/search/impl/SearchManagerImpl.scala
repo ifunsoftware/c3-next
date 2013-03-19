@@ -62,6 +62,11 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val TIKA_HOST = "c3.search.index.tika_address"
 
+  val START_INDEX_DELAY : Long = 3 * 60 * 1000
+
+  val INDEX_PERIOD : Long = 60 * 60 * 1000
+
+
   var numberOfIndexers = 2
 
   val log = LogFactory.getLog(getClass)
@@ -149,7 +154,8 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
-      indexerTaskId = taskManager.submitTask(backgroundIndexTask)
+      taskManager.scheduleTask(backgroundIndexTask, INDEX_PERIOD, START_INDEX_DELAY)
+      indexerTaskId = backgroundIndexTask.id
 
       indexScheduler.start()
     }
