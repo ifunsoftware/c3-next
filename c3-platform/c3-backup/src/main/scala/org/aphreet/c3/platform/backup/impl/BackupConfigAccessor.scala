@@ -27,7 +27,7 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
 
   def defaultConfig:List[BackupLocation] = {
     List(BackupLocation("1", "remote", "backup-c3backup.rhcloud.com",
-      "d22b442f096243d499120ff44adfc76a", "app-root/data", ""))
+      "d22b442f096243d499120ff44adfc76a", "app-root/data", "", null))
   }
 
   def readConfig(node: Node): List[BackupLocation] = {
@@ -39,7 +39,8 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
         locationNode.getNode("host"),
         locationNode.getNode("user"),
         locationNode.getNode("folder"),
-        locationNode.getNode("key").toString().replaceAll("\\\\n", "\n").replaceAll("\"", "").trim)
+        locationNode.getNode("key").toString().replaceAll("\\\\n", "\n").replaceAll("\"", "").trim,
+        locationNode.getNode("schedule").getNodes.toList.map(e => e.toString.replaceAll("\"", "").trim) )
     ).toList
   }
 
@@ -66,6 +67,13 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
       writer.value(location.folder)
       writer.key("key")
       writer.value(location.privateKey)
+
+      writer.key("schedule")
+      writer.array()
+      for (s <- location.schedule) {
+        writer.value(s)
+      }
+      writer.endArray()
 
       writer.endObject
     }

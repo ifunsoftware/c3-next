@@ -38,17 +38,17 @@ import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyLis
 import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.access.{ResourceAddedMsg, AccessMediator}
+import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.filesystem.FSManager
 import java.io.File
-import collection.mutable.ListBuffer
-import javax.annotation.PostConstruct
+import scala.collection.mutable.ListBuffer
+import javax.annotation.{PreDestroy, PostConstruct}
 import org.apache.commons.logging.LogFactory
-import org.slf4j.LoggerFactory
+import scala._
+import ssh.SftpConnector
 import scala.Some
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.backup.BackupLocation
-import ssh.SftpConnector
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
@@ -81,6 +81,27 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   @PostConstruct
   def init(){
     targets = configAccessor.load
+
+    targets.foreach(target => target.schedule.foreach(s => scheduleBackup(target, s)))
+  }
+
+  @PreDestroy
+  def destroy() {
+    targets.foreach(t => t.schedule = List.empty[String])
+
+    taskManager.scheduledTaskList
+      .foreach(desc => {
+        val task = taskManager.getTaskById(desc.id)
+
+        if (task.isInstanceOf[BackupTask]) {
+          val backupTask = task.asInstanceOf[BackupTask]
+          val targetInTask = backupTask.target
+          targets.filter(t => t.id.equals(targetInTask.id))
+            .foreach(t => t.schedule ::= backupTask.schedule)
+        }
+      })
+
+    configAccessor.update(l => targets)
   }
 
   def createBackup(targetId : String) {
@@ -109,6 +130,13 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
   def scheduleBackup(targetId:String, crontabSchedule: String) {
     val target = getBackupLocation(targetId)
 
+    scheduleBackup(target, crontabSchedule)
+
+    target.schedule ::= crontabSchedule
+    configAccessor.update(l => targets)
+  }
+
+  private def scheduleBackup(target: BackupLocation, crontabSchedule: String){
     val task = new BackupTask(storageManager, filesystemManager, target)
 
     taskManager.scheduleTask(task, crontabSchedule)

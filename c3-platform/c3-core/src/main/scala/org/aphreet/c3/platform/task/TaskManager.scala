@@ -14,6 +14,8 @@ trait TaskManager {
   
   def submitTask(task:Task):String
 
+  def getTaskById(id: String) : Task
+
 
   def scheduleTask(task: Task, crontabSchedule: String)
 

@@ -79,6 +79,13 @@ class TaskManagerImpl extends TaskManager{
       task.id
     }
 
+  def getTaskById(id: String) : Task = {
+    tasks.get(id) match {
+      case Some(task) => task
+      case None => throw new IllegalStateException("Task " + id + " doesn't exist")
+    }
+  }
+
   def scheduleTask(task: Task, crontabSchedule: String) {
     task.setRestartable(true)
 

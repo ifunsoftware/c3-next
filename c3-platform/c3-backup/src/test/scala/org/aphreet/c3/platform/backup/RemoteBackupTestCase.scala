@@ -37,7 +37,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backupLocation = new BackupLocation("", "remote", LOCALHOST, USER, "backups", "")
+    val backupLocation = new BackupLocation("", "remote", LOCALHOST, USER, "backups", "", null)
 
     val backup = RemoteBackup.create(BACKUP_NAME, backupLocation, LOCAL_PORT, PASSWORD)
 
