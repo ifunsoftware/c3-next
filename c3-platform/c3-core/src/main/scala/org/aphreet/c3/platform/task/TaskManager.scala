@@ -23,6 +23,8 @@ trait TaskManager {
 
   def scheduleTask(task: Task, period: Long, startDelay: Long)
 
+  def scheduleTask(task: Task, period: Long, startDelay: Long, fixedPeriod: Boolean)
+
   def rescheduleTask(id: String, crontabSchedule: String)
 
   def removeScheduledTask(id: String)

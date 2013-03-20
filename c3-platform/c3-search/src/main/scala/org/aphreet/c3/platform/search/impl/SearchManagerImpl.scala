@@ -64,7 +64,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
   val START_INDEX_DELAY : Long = 3 * 60 * 1000
 
-  val INDEX_PERIOD : Long = 60 * 60 * 1000
+  val INDEX_DELAY : Long = 60 * 60 * 1000
 
 
   var numberOfIndexers = 2
@@ -154,7 +154,7 @@ class SearchManagerImpl extends SearchManager with SPlatformPropertyListener wit
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
-      taskManager.scheduleTask(backgroundIndexTask, INDEX_PERIOD, START_INDEX_DELAY)
+      taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, false)
       indexerTaskId = backgroundIndexTask.id
 
       indexScheduler.start()

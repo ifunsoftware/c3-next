@@ -101,9 +101,13 @@ class TaskManagerImpl extends TaskManager{
   }
 
   def scheduleTask(task: Task, period: Long, startDelay: Long) {
+    scheduleTask(task, period, startDelay, true)
+  }
+
+  def scheduleTask(task: Task, period: Long, startDelay: Long, fixedPeriod: Boolean) {
     val trigger = new PeriodicTrigger(period)
     trigger.setInitialDelay(startDelay)
-    trigger.setFixedRate(true)
+    trigger.setFixedRate(fixedPeriod)
 
     scheduleTask(task, trigger)
 
