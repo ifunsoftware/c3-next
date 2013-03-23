@@ -53,8 +53,8 @@ class DomainAccessTokenTestCase extends TestCase{
     try{
       token.checkAccess(resource)
     }catch{
-      case e:AccessControlException => //it's ok
-      case e => assertFalse(true)
+      case e: AccessControlException => //it's ok
+      case e: Throwable => assertFalse(true)
     }
   }
 

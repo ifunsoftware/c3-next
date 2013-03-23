@@ -4,7 +4,7 @@ import java.util.{Map => JMap}
 import java.util
 import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
-import org.aphreet.c3.platform.exception.StorageException
+import org.aphreet.c3.platform.exception.{PlatformException, StorageException}
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
@@ -97,6 +97,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint {
     state match {
       case PAUSED => taskManager.pauseTask(taskId)
       case RUNNING => taskManager.resumeTask(taskId)
+      case _ => throw new PlatformException("Can't set task state to " + state)
     }
   }
 

@@ -134,7 +134,7 @@ class ManagementClient(override val args:Array[String]) extends CLI(args) {
               }
               case e:RemoteException =>
                 printResult(e.getMessage, e)
-              case e =>{
+              case e: Throwable =>{
                 printResult("Failed to execute command: " + e.getClass.getSimpleName + " " + e.getMessage, e)
               }
             }

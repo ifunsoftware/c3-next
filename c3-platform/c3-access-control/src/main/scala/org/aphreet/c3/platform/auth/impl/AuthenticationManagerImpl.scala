@@ -95,7 +95,6 @@ class AuthenticationManagerImpl extends AuthenticationManager {
           users.put(username, user)
           configAccessor.store(users)
         }
-        user
       }
     }
 

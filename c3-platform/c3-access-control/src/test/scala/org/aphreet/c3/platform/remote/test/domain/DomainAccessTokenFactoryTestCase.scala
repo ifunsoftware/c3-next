@@ -82,7 +82,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
-      case e => e.printStackTrace(); assertTrue(false)
+      case e: Throwable => e.printStackTrace(); assertTrue(false)
     }
 
     verify(domainManager)
@@ -105,7 +105,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
-      case e => assertTrue(false)
+      case e: Throwable => assertTrue(false)
     }
 
     try{
@@ -114,7 +114,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:AccessControlException =>
-      case e => assertTrue(false)
+      case e: Throwable => assertTrue(false)
     }
 
     verify(domainManager)
@@ -167,7 +167,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:DomainException =>
-      case e => e.printStackTrace()
+      case e: Throwable => e.printStackTrace()
       assertTrue(false)
     }
 
@@ -194,7 +194,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
       assertTrue(false)
     }catch{
       case e:DomainException =>
-      case e => assertTrue(false)
+      case e: Throwable => assertTrue(false)
     }
 
     verify(domainManager)
