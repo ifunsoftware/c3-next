@@ -31,23 +31,22 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.filesystem.FSManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import com.thoughtworks.xstream.io.xml.DomDriver
 import com.thoughtworks.xstream.XStream
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.exception.ConfigurationException
-import org.aphreet.c3.platform.common.Constants
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.remote.api.management._
+import com.thoughtworks.xstream.io.xml.DomDriver
+import org.aphreet.c3.platform.common.{Logger, Constants}
+import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.domain.DomainManager
+import org.aphreet.c3.platform.exception.ConfigurationException
+import org.aphreet.c3.platform.filesystem.FSManager
+import org.aphreet.c3.platform.remote.api.management._
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 @Component
 class ConfigurationManager extends DtoConvertor{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var fsManager:FSManager = _

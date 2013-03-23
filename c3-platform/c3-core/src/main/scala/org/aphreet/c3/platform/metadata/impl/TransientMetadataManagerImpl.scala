@@ -1,12 +1,11 @@
 package org.aphreet.c3.platform.metadata.impl
 
 import org.aphreet.c3.platform.metadata.{RegisterTransientMDBuildStrategy, TransientMetadataBuildStrategy, TransientMetadataManager}
-import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.beans.factory.annotation.Autowired
 import collection.mutable
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.Logger
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 
@@ -17,7 +16,7 @@ import org.aphreet.c3.platform.common.msg.DestroyMsg
 @Component("transientMetadataManager")
 class TransientMetadataManagerImpl extends TransientMetadataManager{
 
-  private val logger = LogFactory.getLog(getClass)
+  private val logger = Logger(getClass)
 
   private val transientMetadataBuildStrategies = new mutable.HashMap[String, TransientMetadataBuildStrategy]()
 

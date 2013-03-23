@@ -29,9 +29,8 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.common.{WatchedActor, Path}
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
 import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
@@ -44,7 +43,7 @@ class Searcher(var indexPath: Path,
                val configurationManager: SearchConfigurationManager) extends WatchedActor {
 
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   var indexSearcher = createSearcher
 

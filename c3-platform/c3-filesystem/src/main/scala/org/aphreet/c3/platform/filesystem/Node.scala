@@ -32,10 +32,10 @@ package org.aphreet.c3.platform.filesystem
 
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
-import org.apache.commons.logging.LogFactory
 import collection.immutable.TreeMap
 import java.util.{UUID, Date}
 import scala.collection.mutable
+import org.aphreet.c3.platform.common.Logger
 
 abstract class Node(val resource:Resource){
 
@@ -47,7 +47,7 @@ abstract class Node(val resource:Resource){
 
 object Node{
 
-  val log = LogFactory.getLog(classOf[Node])
+  val log = Logger(classOf[Node])
 
   val NODE_FIELD_NAME = "c3.fs.nodename"
 

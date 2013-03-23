@@ -31,11 +31,11 @@
 package org.aphreet.c3.platform.search.impl.common
 
 import org.apache.lucene.misc.{TrigramLanguageGuesser, LanguageGuesser}
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 object LanguageGuesserUtil{
 
-  val log = LogFactory.getLog("org.aphreet.c3.search.impl.common.LanguageGuesserUtil")
+  val log = Logger("org.aphreet.c3.search.impl.common.LanguageGuesserUtil")
 
   val trigrams = Array("en.tri", "ru.tri")
 

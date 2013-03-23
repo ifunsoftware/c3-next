@@ -34,10 +34,9 @@ package org.aphreet.c3.platform.access.impl
 import actors.Actor
 import javax.annotation.{PreDestroy, PostConstruct}
 import net.sf.ehcache.{Element, Cache, CacheManager}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.ComponentGuard
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
@@ -54,7 +53,7 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
 
   var statisticsService:Actor = _
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   @Qualifier("AccessMediator")

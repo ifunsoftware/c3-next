@@ -29,9 +29,8 @@
  */
 package org.aphreet.c3.platform.storage.migration.impl
 
-import org.apache.commons.logging.LogFactory
 
-import org.aphreet.c3.platform.common.Constants
+import org.aphreet.c3.platform.common.{Logger, Constants}
 import org.aphreet.c3.platform.exception.MigrationException
 import org.aphreet.c3.platform.task.TaskManager
 
@@ -53,7 +52,7 @@ class MigrationManagerImpl extends MigrationManager{
   @Autowired
   var storageDispatcher: ZoneStorageDispatcher = null
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   def migrateStorageToStorage(sourceId: String, targetId: String) {
     val source = storageManager storageForId sourceId

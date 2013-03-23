@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.search.impl.search
 import collection.JavaConversions._
 import collection.mutable.ArrayBuffer
 import java.util
-import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -44,11 +43,12 @@ import highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
 import org.apache.lucene.util.Version.LUCENE_35
 import org.aphreet.c3.platform.search.{SearchQueryException, SearchResultElement, SearchResultFragment}
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.aphreet.c3.platform.common.Logger
 
 
 class MultiFieldSearchStrategy extends SearchStrategy{
 
-  val log = LogFactory.getLog(classOf[MultiFieldSearchStrategy])
+  val log = Logger(classOf[MultiFieldSearchStrategy])
 
   def search(searcher: IndexSearcher, configuration: SearchConfiguration, query: String,
              max: Int, offset: Int, domain: String): Array[SearchResultElement] = {

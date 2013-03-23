@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.remote.replication.impl.data
 
 import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
-import org.apache.commons.logging.LogFactory
 import actors.remote.{RemoteActor, Node}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
@@ -40,13 +39,13 @@ import org.aphreet.c3.platform.remote.replication._
 import collection.mutable.{HashSet, HashMap}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.AbstractActor
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 
 class ReplicationLink(val localSystemId:String,
                       val host:ReplicationHost,
                       val statisticsManager:StatisticsManager) extends WatchedActor{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   def isStarted:Boolean = started
 

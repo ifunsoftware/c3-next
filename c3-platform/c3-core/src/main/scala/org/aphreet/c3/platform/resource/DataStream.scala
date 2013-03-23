@@ -30,15 +30,14 @@
 
 package org.aphreet.c3.platform.resource
 
-import java.nio.ByteBuffer
-
-import org.apache.commons.logging.LogFactory
-
+import com.twmacinta.util.MD5
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
-import com.twmacinta.util.MD5
-import java.nio.channels.{FileChannel, Channels, WritableByteChannel}
+import java.nio.ByteBuffer
+import java.nio.channels.{Channels, WritableByteChannel}
 import java.nio.file.{Path, StandardCopyOption, StandardOpenOption, Files}
+import org.aphreet.c3.platform.common.Logger
+
 
 object DataStream{
   
@@ -61,7 +60,7 @@ object DataStream{
 
 abstract class DataStream {
 
-  val logger = LogFactory.getLog(DataStream.getClass)
+  val logger = Logger(DataStream.getClass)
 
   /**
    *

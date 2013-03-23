@@ -33,10 +33,9 @@ package org.aphreet.c3.platform.filesystem.impl
 import annotation.tailrec
 import java.lang.IllegalStateException
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access.{AccessMediator, ResourceOwner, AccessManager}
 import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
-import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.StatisticsManager
@@ -54,7 +53,7 @@ with ResourceOwner
 with ComponentGuard
 with WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var accessManager: AccessManager = _

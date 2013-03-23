@@ -30,8 +30,6 @@
 
 package org.aphreet.c3.platform.common
 
-import org.apache.commons.logging.LogFactory
-
 trait ComponentGuard{
 
   def letItFall(block: => Any) {
@@ -45,5 +43,5 @@ trait ComponentGuard{
 
 object ComponentGuard{
 
-  val log = LogFactory getLog classOf[ComponentGuard]
+  val log = Logger(classOf[ComponentGuard])
 }

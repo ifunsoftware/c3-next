@@ -30,11 +30,11 @@
 package org.aphreet.c3.platform.storage.updater.transformation
 
 import org.aphreet.c3.platform.resource.Resource
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 class UpdateTimestampTransformation {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   def apply(resource:Resource){
 

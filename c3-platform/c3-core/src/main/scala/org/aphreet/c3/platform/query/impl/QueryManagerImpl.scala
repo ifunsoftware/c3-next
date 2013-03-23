@@ -35,14 +35,14 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.query._
 import org.aphreet.c3.platform.common.Disposable._
-import org.aphreet.c3.platform.common.Tracer
 import scala.util.control.Exception._
+import org.aphreet.c3.platform.common.Logger
 
 
 @Component("queryManager")
-class QueryManagerImpl extends QueryManager with Tracer{
+class QueryManagerImpl extends QueryManager{
 
-  val log = logOfClass(classOf[QueryManagerImpl])
+  val log = Logger(getClass)
 
   @Autowired
   var storageManager: StorageManager = _
@@ -54,7 +54,7 @@ class QueryManagerImpl extends QueryManager with Tracer{
 
     log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
 
-    handling(classOf[Throwable]).by(e => warn("Exception while processing query", e))
+    handling(classOf[Throwable]).by(e => log.warn("Exception while processing query", e))
       .andFinally(consumer.close())
       .apply(
       storageManager.listStorages.filter(_.mode.allowRead).foreach(storage =>

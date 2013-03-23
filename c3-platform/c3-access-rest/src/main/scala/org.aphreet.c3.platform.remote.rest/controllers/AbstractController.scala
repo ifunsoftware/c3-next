@@ -31,22 +31,21 @@
 package org.aphreet.c3.platform.remote.rest.controllers
 
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
-import org.aphreet.c3.platform.exception.ResourceNotFoundException
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.remote.rest.response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
-import org.springframework.web.bind.annotation.ExceptionHandler
-import org.aphreet.c3.platform.auth.exception.AuthFailedException
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
-import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
-import org.aphreet.c3.platform.resource.ResourceException
+import org.aphreet.c3.platform.auth.exception.AuthFailedException
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
+import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
+import org.aphreet.c3.platform.remote.rest.response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
+import org.aphreet.c3.platform.resource.ResourceException
 import org.aphreet.c3.platform.search.SearchQueryException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.aphreet.c3.platform.common.Logger
 
 class AbstractController {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var writerSelector: ResultWriterSelector = _
 

@@ -30,25 +30,22 @@
 
 package org.aphreet.c3.platform.access.impl
 
+import collection.mutable
+import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
+import eu.medsea.util.EncodingGuesser
+import javax.annotation.{PostConstruct, PreDestroy}
+import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.{Logger, Constants}
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.config.{RegisterMsg, PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
 import org.aphreet.c3.platform.exception._
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
-
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelector
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-
-import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
-import org.apache.commons.logging.LogFactory
-import javax.annotation.{PostConstruct, PreDestroy}
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.config.{RegisterMsg, PlatformConfigManager, SPlatformPropertyListener, PropertyChangeEvent}
-import eu.medsea.util.EncodingGuesser
-import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
-import org.aphreet.c3.platform.common.Constants
-import collection.mutable
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelector
 
 @Component("accessManager")
 class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
@@ -71,7 +68,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   @Autowired
   var mimeStorageSelector :MimeTypeStorageSelector = _
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   val resourceOwners = new mutable.HashSet[ResourceOwner]
 

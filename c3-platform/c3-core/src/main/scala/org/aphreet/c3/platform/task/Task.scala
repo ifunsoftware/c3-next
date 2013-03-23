@@ -1,12 +1,11 @@
 package org.aphreet.c3.platform.task
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.{CloseableIterable, ThreadWatcher}
+import org.aphreet.c3.platform.common.{Logger, CloseableIterable, ThreadWatcher}
 import scala.util.control.Exception._
 
 abstract class Task extends Runnable{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   val id = name + "-" + System.currentTimeMillis
 
@@ -43,7 +42,7 @@ abstract class Task extends Runnable{
     }catch{
       case e: Throwable => {
         taskState = CRASHED
-        log error e
+        log.error("Task crashed", e)
         e.printStackTrace()
         postFailure()
       }
@@ -133,7 +132,7 @@ abstract class IterableTask[T](val iterable:CloseableIterable[T]) extends Task{
 }
 
 
-sealed class TaskState(val name:String, val isFinalState:Boolean);
+sealed class TaskState(val name:String, val isFinalState:Boolean)
 
 object RUNNING extends TaskState("Running", false)
 object PENDING extends TaskState("Pending", false)

@@ -34,13 +34,13 @@ import http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import com.sun.org.apache.xml.internal.security.utils.Base64
 import org.springframework.beans.factory.annotation.Autowired
-import org.apache.commons.logging.LogFactory
-import org.springframework.web.context.support.{SpringBeanAutowiringSupport}
+import org.springframework.web.context.support.SpringBeanAutowiringSupport
+import org.aphreet.c3.platform.common.Logger
 
 
 class WSAuthFilter extends Filter{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var authManager:AuthenticationManager = null
@@ -93,7 +93,7 @@ class WSAuthFilter extends Filter{
           authOk = authManager.auth(user, password) != null
         }
       }catch{
-        case e => e.printStackTrace()
+        case e: Throwable => e.printStackTrace()
       }
     }
 

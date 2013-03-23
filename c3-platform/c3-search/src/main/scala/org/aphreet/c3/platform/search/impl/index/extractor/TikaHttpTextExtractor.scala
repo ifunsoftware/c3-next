@@ -3,8 +3,7 @@ package org.aphreet.c3.platform.search.impl.index.extractor
 import java.io._
 import java.net.{HttpURLConnection, URL}
 import java.nio.file.{StandardCopyOption, Files}
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.Disposable
+import org.aphreet.c3.platform.common.{Logger, Disposable}
 import org.aphreet.c3.platform.common.Disposable._
 import org.aphreet.c3.platform.resource.{DataStream, Resource}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
@@ -13,7 +12,7 @@ import scala.collection.JavaConversions._
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   def extract(resource: Resource): Option[ExtractedDocument] = {
 

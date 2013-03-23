@@ -29,7 +29,6 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import org.apache.commons.logging.LogFactory
 import java.nio.channels.Channels
 import java.io._
 import org.apache.commons.httpclient.methods.GetMethod
@@ -40,6 +39,7 @@ import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpSt
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.aphreet.c3.platform.auth.HashUtil
+import org.aphreet.c3.platform.common.Logger
 
 class RemoteSystemDataStream(val host:ReplicationHost,
                               val secure:Boolean,
@@ -125,6 +125,6 @@ class RemoteSystemDataStream(val host:ReplicationHost,
 
 object RemoteSystemDataWrapper{
 
-  val log = LogFactory getLog classOf[RemoteSystemDataStream]
+  val log = Logger(getClass)
 
 }

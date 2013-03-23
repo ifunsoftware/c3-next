@@ -29,29 +29,36 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
+import actors.remote.{RemoteActor}
 import config._
+import config.NegotiateKeyExchangeMsg
+import config.NegotiateKeyExchangeMsgReply
+import config.NegotiateRegisterSourceMsg
+import config.NegotiateRegisterSourceMsgReply
 import data._
+import data.QueuedTasksReply
 import encryption.{DataEncryptor, AsymmetricDataEncryptor, AsymmetricKeyGenerator}
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Scope
-
+import java.io.File
 import javax.annotation.{PreDestroy, PostConstruct}
-
-import org.apache.commons.logging.LogFactory
-
 import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.remote.api.management._
-import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
+import org.aphreet.c3.platform.common._
+import msg.StoragePurgedMsg
 import org.aphreet.c3.platform.config._
+import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
+import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
-import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
-import actors.remote.{Node, RemoteActor}
-import java.io.File
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Scope
+import org.springframework.stereotype.Component
+import scala.Some
+import actors.remote.Node
+import org.aphreet.c3.platform.config.UnregisterMsg
+import org.aphreet.c3.platform.config.RegisterMsg
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -59,7 +66,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var localSystemId: String = ""
 
@@ -370,7 +377,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
 class ProcessScheduler(manager: ReplicationManager) extends Runnable {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   val FIVE_MINUTES = 1000 * 60 * 5
 

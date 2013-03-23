@@ -107,7 +107,8 @@ class Metadata(private val map: mutable.HashMap[String, String], private var del
 object MetadataHelper{
 
   private def isSequence(value: String): Boolean = {
-    value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
+    if(value.isEmpty) false
+    else value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
   }
 
   def parseSequence(value: String): TraversableOnce[String] = {

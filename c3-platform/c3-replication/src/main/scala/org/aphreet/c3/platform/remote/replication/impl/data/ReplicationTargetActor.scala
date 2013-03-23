@@ -31,28 +31,27 @@
 package org.aphreet.c3.platform.remote.replication.impl.data
 
 import actors.remote.RemoteActor._
-import org.springframework.stereotype.Component
+import actors.remote.{RemoteActor, Node}
+import actors.{Actor, AbstractActor}
 import javax.annotation.PreDestroy
+import org.aphreet.c3.platform.access.AccessMediator
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.springframework.context.annotation.Scope
+import org.aphreet.c3.platform.domain.DomainManager
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.remote.replication._
+import impl.config.ConfigurationManager
+import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.remote.replication._
-import actors.{Actor, AbstractActor}
-import actors.remote.{RemoteActor, Node}
-import impl.config.ConfigurationManager
-import org.aphreet.c3.platform.access.AccessMediator
-import org.aphreet.c3.platform.common.WatchedActor
-import org.aphreet.c3.platform.domain.DomainManager
-import org.aphreet.c3.platform.statistics.StatisticsManager
+import org.springframework.context.annotation.Scope
+import org.springframework.stereotype.Component
 
 @Component
 @Scope("singleton")
 class ReplicationTargetActor extends WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   val WORKERS_COUNT = 8
 

@@ -30,6 +30,6 @@ Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
  com.springsource.org.codehaus.jettison;version="[1.0.1,1.0.1]",
  com.springsource.org.joda.time;version="[1.6.0,1.6.2]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
- org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.slf4j;version="[1.6.4,2.0.0)",
  org.eclipse.virgo.web.dm
  

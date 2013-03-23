@@ -1,14 +1,13 @@
 package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
 import com.sleepycat.je._
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.remote.replication.ReplicationException
 import org.aphreet.c3.platform.remote.replication.impl.data.{ReplicationAction, ReplicationTask}
 
 class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorage {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   protected var env: Environment = null
 

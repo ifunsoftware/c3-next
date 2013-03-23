@@ -31,21 +31,20 @@ package org.aphreet.c3.platform.search.impl
 
 import background._
 import index._
-import org.aphreet.c3.platform.access._
-import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.config._
-import search._
-import org.aphreet.c3.platform.task.TaskManager
-import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import org.aphreet.c3.platform.common.{ComponentGuard, Path}
-import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
 import java.io.File
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard, Path}
+import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
+import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.task.TaskManager
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import search._
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SearchManagerInternal with SPlatformPropertyListener with ComponentGuard{
@@ -66,7 +65,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
   var numberOfIndexers = 2
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
 
   @Autowired
@@ -368,7 +367,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
 class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   {
     this.setDaemon(true)

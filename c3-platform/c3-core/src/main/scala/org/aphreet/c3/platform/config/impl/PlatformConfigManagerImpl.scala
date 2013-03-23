@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.config.impl
 import org.aphreet.c3.platform.exception.ConfigurationException
 import java.io.File
 import org.springframework.stereotype.Component
-import org.apache.commons.logging.LogFactory
 import collection.immutable.Map
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -41,13 +40,14 @@ import java.util.{Set => JSet}
 import org.aphreet.c3.platform.config._
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
-import org.aphreet.c3.platform.common.{Constants, Path}
+import org.aphreet.c3.platform.common.{Logger, Constants, Path}
 import org.aphreet.c3.platform.resource.IdGenerator
 import collection.mutable
 
 @Component("platformConfigManager")
 class PlatformConfigManagerImpl extends PlatformConfigManager{
-  val log = LogFactory getLog getClass
+
+  val log = Logger(getClass)
 
   var configDir: File = _
 

@@ -30,13 +30,12 @@
 package org.aphreet.c3.platform.common
 
 import collection.mutable
-import org.apache.commons.logging.LogFactory
 
 class ThreadWatcher
 
 object ThreadWatcher{
 
-  val log = LogFactory getLog classOf[ThreadWatcher]
+  val log = Logger(classOf[ThreadWatcher])
 
   val registeredThreads = new mutable.HashSet[AnyRef]
 

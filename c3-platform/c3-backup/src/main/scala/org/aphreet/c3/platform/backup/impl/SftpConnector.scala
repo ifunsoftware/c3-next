@@ -5,14 +5,14 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification
 import com.sshtools.j2ssh.authentication.{AuthenticationProtocolState, PublicKeyAuthenticationClient}
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
 import java.io.IOException
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 
 class SftpConnector(val host : String, val user : String, val privateKey : String) {
   var sshClient : SshClient = null
   var sftpClient : SftpClient = null
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
 
   def isConnected : Boolean = {

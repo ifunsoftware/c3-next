@@ -30,19 +30,18 @@
 package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
-import actors.Actor._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.Logger
 
 @Component
 class AccessCounter extends Actor{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   var accessMediator:AccessMediator = _
 

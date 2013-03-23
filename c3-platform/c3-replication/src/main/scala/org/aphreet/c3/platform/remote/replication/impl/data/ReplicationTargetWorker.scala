@@ -33,14 +33,13 @@ package org.aphreet.c3.platform.remote.replication.impl.data
 import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.{Actor, AbstractActor}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 import collection.mutable
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
@@ -54,7 +53,7 @@ class ReplicationTargetWorker(val localSystemId: String,
                               val statisticsManager: StatisticsManager,
                               val delayHistory: Actor) extends WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var config: Map[String, ReplicationHost] = Map()
 

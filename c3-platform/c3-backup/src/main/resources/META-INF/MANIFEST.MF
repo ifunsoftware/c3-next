@@ -17,7 +17,7 @@ Import-Bundle: com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  com.springsource.org.apache.commons.codec;version="[1.4.0,1.4.0]",
  com.sshtools.j2ssh.core;version="[1.0.0,1.0.0]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
- org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.slf4j;version="[1.6.4,2.0.0)",
  javax.crypto,
  javax.crypto.spec
 Export-Package: org.aphreet.c3.platform.backup

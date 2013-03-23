@@ -31,8 +31,7 @@ package org.aphreet.c3.platform.storage.common
 
 
 import javax.annotation.{PostConstruct, PreDestroy}
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.ComponentGuard
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
 import org.aphreet.c3.platform.storage._
 import org.springframework.beans.factory.annotation.Autowired
 import scala.collection.mutable
@@ -40,7 +39,7 @@ import scala.collection.mutable
 
 abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
   
   val createdStorages = new mutable.HashSet[Storage]
   

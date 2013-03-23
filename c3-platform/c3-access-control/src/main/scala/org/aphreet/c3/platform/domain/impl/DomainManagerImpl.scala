@@ -41,15 +41,14 @@ import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.auth.HashUtil
 import java.util.{Random, UUID}
 import java.lang.Integer
-import org.apache.commons.logging.LogFactory
 import scala.Some
-import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.common.Logger
 
 @Component("domainManager")
 @Scope("singleton")
 class DomainManagerImpl extends DomainManager {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var domainAccessor: DomainAccessor = _
