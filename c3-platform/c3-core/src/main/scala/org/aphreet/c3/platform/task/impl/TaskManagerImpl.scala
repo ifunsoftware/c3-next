@@ -91,7 +91,7 @@ class TaskManagerImpl extends TaskManager{
 
     scheduleTask(task, new CronTrigger(crontabSchedule))
 
-    task.schedule = crontabSchedule
+    task.setSchedule(crontabSchedule)
 
     log.debug("Task " + task.id + " was scheduled: " + crontabSchedule)
   }
@@ -131,7 +131,7 @@ class TaskManagerImpl extends TaskManager{
 
         val task = tasks.get(id).get
         val scheduledFuture = scheduler.schedule(task, new CronTrigger(crontabSchedule))
-        task.schedule = crontabSchedule
+        task.setSchedule(crontabSchedule)
         tasksFutures.put(task.id, scheduledFuture)
 
         log.debug("Task " + id + " was rescheduled: " + crontabSchedule)
@@ -145,11 +145,13 @@ class TaskManagerImpl extends TaskManager{
     tasksFutures.get(id) match {
 
       case Some(taskFuture) => {
-        taskFuture.cancel(false)  //remove from schedule, if task's runnning, dont't interrupt it
+        taskFuture.cancel(false)  //remove from schedule, if task's running, don't interrupt it
         tasksFutures.remove(id)
 
         if (tasks.contains(id)) {
+          val task = tasks.get(id).get
           tasks.remove(id)
+          task.setSchedule("")
         }
 
         log.debug("Task " + id + " was removed from the schedule")

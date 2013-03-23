@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
-import org.aphreet.c3.platform.task.{IterableTask, TaskManager, Task}
+import org.aphreet.c3.platform.task.{TaskScheduleObserver, IterableTask, TaskManager, Task}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.access.AccessMediator
@@ -49,9 +49,10 @@ import ssh.SftpConnector
 import scala.Some
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.backup.BackupLocation
+import org.apache.commons.codec.binary.StringUtils
 
 @Component("backupManager")
-class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
+class BackupManagerImpl extends BackupManager with SPlatformPropertyListener with TaskScheduleObserver {
 
   val BACKUP_LOCATION = "c3.platform.backup.location"
 
@@ -83,25 +84,6 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     targets = configAccessor.load
 
     targets.foreach(target => target.schedule.foreach(s => scheduleBackup(target, s)))
-  }
-
-  @PreDestroy
-  def destroy() {
-    targets.foreach(t => t.schedule = List.empty[String])
-
-    taskManager.scheduledTaskList
-      .foreach(desc => {
-        val task = taskManager.getTaskById(desc.id)
-
-        if (task.isInstanceOf[BackupTask]) {
-          val backupTask = task.asInstanceOf[BackupTask]
-          val targetInTask = backupTask.target
-          targets.filter(t => t.id.equals(targetInTask.id))
-            .foreach(t => t.schedule ::= backupTask.schedule)
-        }
-      })
-
-    configAccessor.update(l => targets)
   }
 
   def createBackup(targetId : String) {
@@ -140,6 +122,8 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     val task = new BackupTask(storageManager, filesystemManager, target)
 
     taskManager.scheduleTask(task, crontabSchedule)
+
+    task.addObserver(this)
   }
 
   def listBackups(targetId:String) : List[String] = {
@@ -248,6 +232,21 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener{
     }
 
     backupLocation
+  }
+
+  def updateSchedule(task: Task, newSchedule: String) {
+    if (task.isInstanceOf[BackupTask]) {
+      val backupTask = task.asInstanceOf[BackupTask]
+      val target = getBackupLocation(backupTask.target.id)
+      val oldSchedule = task.getSchedule
+
+      target.schedule = target.schedule.diff(List(oldSchedule))
+      if (newSchedule != null && !newSchedule.equals("")) {
+        target.schedule ::= newSchedule
+      }
+
+      configAccessor.update(l => targets)
+    }
   }
 
   def existsTargetId(targetId : String) : Boolean = {

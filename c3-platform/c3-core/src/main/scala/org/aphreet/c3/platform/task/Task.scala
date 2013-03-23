@@ -9,7 +9,7 @@ abstract class Task extends Runnable{
 
   val id = name + "-" + System.currentTimeMillis
 
-  var schedule = ""
+  private var schedule = ""
 
   protected var shouldStopFlag = false
 
@@ -19,7 +19,10 @@ abstract class Task extends Runnable{
 
   private var taskState:TaskState = PENDING
 
+  private var observers = List.empty[TaskScheduleObserver]
+
   def state:TaskState = taskState
+
 
   override def run() {
 
@@ -89,6 +92,22 @@ abstract class Task extends Runnable{
   def isRestartable: Boolean = restartableFlag
 
   def setRestartable(restartable: Boolean) { restartableFlag = restartable }
+
+  def getSchedule: String = schedule
+
+  def setSchedule(newSchedule: String) {
+    observers.foreach(observer => observer.updateSchedule(this, newSchedule))
+
+    schedule = newSchedule
+  }
+
+  def addObserver(observer: TaskScheduleObserver) {
+    observers ::= observer
+  }
+
+  def removeObserver(observer: TaskScheduleObserver) {
+    observers = observers diff List(observer)
+  }
 
   def stop() {
     Thread.currentThread.interrupt()
