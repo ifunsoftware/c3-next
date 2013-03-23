@@ -46,7 +46,7 @@ class FSCheckTask(val accessManager: AccessManager,
 
   var rootsToCheck = Map[String, String]()
 
-  override def preStart {
+  override def preStart() {
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.found")
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.failure")
     statisticsManager ! ResetStatisticsMsg("c3.filesystem.check.total")
@@ -56,7 +56,7 @@ class FSCheckTask(val accessManager: AccessManager,
     rootsToCheck = fsRoots
   }
 
-  override def step {
+  override def step() {
 
     rootsToCheck.headOption match {
       case Some(currentRoot) => {
@@ -130,7 +130,7 @@ class FSCheckTask(val accessManager: AccessManager,
           statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.found", 1)
         }
 
-        case e => {
+        case e: Throwable => {
           log warn "Failed to get resource " + address
           statisticsManager ! IncreaseStatisticsMsg("c3.filesystem.check.failure", 1)
         }

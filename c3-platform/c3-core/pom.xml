@@ -140,8 +140,14 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
+                                    <groupId>org.scala-lang</groupId>
                                     <artifactId>scala-library</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.scala-lang</groupId>
+                                    <artifactId>scala-actors</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>

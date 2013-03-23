@@ -59,7 +59,7 @@ class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorag
               database.put(null, key, value) match {
                 case OperationStatus.SUCCESS =>
                 case putStatus: OperationStatus =>
-                  log warn "Can't put task to queue " + task + " operation status is " + putStatus
+                  log.warn("Can't put task to queue {} operation status is {}", task, putStatus)
               }
             }
 
@@ -71,8 +71,12 @@ class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorag
             database.put(null, key, value) match {
               case OperationStatus.SUCCESS =>
               case putStatus: OperationStatus =>
-                log warn "Can't put task to queue " + task + " operation status is " + putStatus
+                log.warn("Can't put task to queue {} operation status is {}", task, putStatus)
             }
+          }
+
+          case _ => {
+            log.warn("Can't put task to queue {} operation status is {}", task, status)
           }
         }
       } catch {

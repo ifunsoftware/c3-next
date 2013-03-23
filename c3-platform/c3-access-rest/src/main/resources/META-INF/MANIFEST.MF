@@ -5,7 +5,8 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.access.rest
 Bundle-Classpath: WEB-INF/classes
 Web-ContextPath: /rest
-Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
+Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
+ org.scala-lang.scala-actors;version="[2.10.1,2.11)",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  org.springframework.core;version="[2.5.6.SEC01,3.1.0.RELEASE]",
  org.springframework.context;version="[2.5.6.SEC01,3.1.0.RELEASE]",

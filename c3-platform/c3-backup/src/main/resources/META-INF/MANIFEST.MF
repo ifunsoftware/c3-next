@@ -5,7 +5,8 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.backup
 Spring-Context: *
 Import-Bundle: com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
- scala-library;version="[2.8.0,2.9.2]",
+ org.scala-lang.scala-library;version="[2.10.1,2.11)",
+ org.scala-lang.scala-actors;version="[2.10.1,2.11)",
  org.aphreet.c3.platform.core;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.filesystem;version="[1.0.0,2.0.0)",
  org.springframework.core;version="[2.5.6.SEC01,3.1.0.RELEASE]",

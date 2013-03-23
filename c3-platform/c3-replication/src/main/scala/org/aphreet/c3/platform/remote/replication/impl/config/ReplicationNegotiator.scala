@@ -105,7 +105,7 @@ class ReplicationNegotiator extends WatchedActor{
             NegotiateKeyExchangeMsgReply(encryptedSharedKey)
           }
           }catch{
-            case e => {
+            case e: Throwable => {
               log.warn("Failed to esablish replication", e)
               reply{
                 None
@@ -175,7 +175,7 @@ class ReplicationNegotiator extends WatchedActor{
               
             }
           }catch{
-            case e => {
+            case e: Throwable => {
               log.warn("Failed to register replication source", e)
               reply{
                 NegotiateRegisterSourceMsgReply("ERROR", null)

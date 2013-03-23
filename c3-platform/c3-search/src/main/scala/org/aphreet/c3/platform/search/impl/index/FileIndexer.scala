@@ -88,7 +88,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             indexWriter.commit()
             searcher ! ReopenSearcherMsg
           }catch{
-            case e : Throwable => "Failed to delete search index"
+            case e : Throwable => log.warn("Failed to delete search index", e)
           }
         }
 
@@ -106,7 +106,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             searcher ! NewIndexPathMsg(path)
             sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
           }catch{
-            case e: Throwable => "Failed to create new indexWriter"
+            case e: Throwable => log.warn("Failed to create new indexWriter", e)
           }
         }
 

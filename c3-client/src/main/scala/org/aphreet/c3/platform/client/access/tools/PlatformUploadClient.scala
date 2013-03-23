@@ -81,7 +81,7 @@ class PlatformUploadClient(override val args:Array[String]) extends CLI(args){
       println("Done")
       ra
     }catch{
-      case e=> {
+      case e: Throwable=> {
         println("Error")
         null
       }

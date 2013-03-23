@@ -43,7 +43,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
+                                    <groupId>org.scala-lang</groupId>
                                     <artifactId>scala-library</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>

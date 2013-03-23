@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.management.impl
 
-import java.util.{HashMap, Map => JMap}
+import java.util.{Map => JMap}
+import java.util
 import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
 import org.aphreet.c3.platform.exception.StorageException
@@ -70,7 +71,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint {
 
   def getPlatformProperties: JMap[String, String] = {
 
-    val properties = new HashMap[String, String]
+    val properties = new util.HashMap[String, String]
 
     configManager.getPlatformProperties.foreach {
       e => properties.put(e._1, e._2)
@@ -96,7 +97,6 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint {
     state match {
       case PAUSED => taskManager.pauseTask(taskId)
       case RUNNING => taskManager.resumeTask(taskId)
-      case _ => null
     }
   }
 
