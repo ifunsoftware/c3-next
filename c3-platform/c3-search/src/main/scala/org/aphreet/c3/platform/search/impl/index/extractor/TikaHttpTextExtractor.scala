@@ -9,6 +9,8 @@ import org.aphreet.c3.platform.resource.{DataStream, Resource}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import scala.Some
 import scala.collection.JavaConversions._
+import scala.language.reflectiveCalls
+import scala.language.implicitConversions
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 

@@ -9,6 +9,7 @@ import org.aphreet.c3.platform.query.QueryConsumer
 import org.aphreet.c3.platform.query.impl.QueryManagerImpl
 import org.aphreet.c3.platform.storage.RW
 import org.aphreet.c3.platform.mock.StorageMock
+import scala.language.reflectiveCalls
 
 class QueryManagerTestCase extends TestCase
 {

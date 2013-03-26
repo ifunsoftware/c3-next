@@ -1,5 +1,8 @@
 package org.aphreet.c3.platform.common
 
+import scala.language.reflectiveCalls
+import scala.language.implicitConversions
+
 trait Disposable[S] {
 
   def dispose()
