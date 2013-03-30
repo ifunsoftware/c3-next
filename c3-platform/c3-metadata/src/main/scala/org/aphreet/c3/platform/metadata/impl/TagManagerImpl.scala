@@ -8,7 +8,7 @@
   import org.springframework.context.annotation.Scope
   import javax.annotation.PostConstruct
   import org.aphreet.c3.platform.common.msg.DestroyMsg
-  import org.aphreet.c3.platform.access.{ResourceOwner, AccessManager, ResourceDeletedMsg, ResourceAddedMsg}
+  import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceOwner, AccessManager, ResourceAddedMsg}
   import org.aphreet.c3.platform.metadata.{AddParentTagMsg, DeleteParentTagMsg, TagManager}
   import scala.None
   import scala.collection.Map
@@ -21,9 +21,6 @@
     val log = LogFactory getLog getClass
 
     @Autowired
-    var fsManager: FSManager = _
-
-    @Autowired
     var accessManager: AccessManager = _
 
     @PostConstruct
@@ -34,7 +31,7 @@
 
     override def deleteResource(resource:Resource) {
       val metadata = resource.metadata
-      val tagsString: Option[String] = metadata.get(Resource.MD_TAGS)
+      val tagsString: Option[String] = metadata(Resource.MD_TAGS)
       tagsString match {
         case Some(tagsString) =>
           val updatedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
@@ -52,12 +49,18 @@
 
             case ResourceAddedMsg(resource, source) => {
               val metadata = resource.metadata
-               val tagsString: Option[String] = metadata.get(Resource.MD_TAGS)
-               tagsString match {
+              val tagsString: Option[String] = metadata(Resource.MD_TAGS)
+              tagsString match {
                  case Some(tagsString) =>
                    val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
                    this ! AddParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), addedTags)
                }
+            }
+
+            case ResourceUpdatedMsg(resource, source) => {
+              val metadata = resource.metadata
+              val tagsString: Option[String] = metadata(Resource.MD_TAGS)
+              //TODO find difference between (parentTags - otherChildrenTags) and current resource tags
             }
 
             case DeleteParentTagMsg(resourceAddress, tags) => {
@@ -65,7 +68,6 @@
                 case None =>
                   log error "got empty resourceAddress"
                 case Some(resourceAddress) =>
-
                   val catalog = accessManager.get(resourceAddress)
                   val metadata = catalog.metadata
                   val tagsString: Option[String] = metadata(Resource.MD_TAGS)
@@ -81,7 +83,10 @@
                       metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags)
                       accessManager.update(catalog)
 
-                      this ! DeleteParentTagMsg(catalog.systemMetadata(Node.NODE_FIELD_PARENT), tags)
+                      catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
+                        address => this ! DeleteParentTagMsg(Some(address), tags)
+                      }
+
                     case None =>
                       log info "nothing to delete (" + resourceAddress + ")"
                   }
@@ -109,7 +114,10 @@
                        metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags)
                        accessManager.update(catalog)
 
-                       this ! AddParentTagMsg(catalog.systemMetadata(Node.NODE_FIELD_PARENT), tags)
+                       catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
+                          address => this ! AddParentTagMsg(Some(address), tags)
+                       }
+
                       case None =>
                         log info "nothing to add (" + resourceAddress + ")"
                     }
