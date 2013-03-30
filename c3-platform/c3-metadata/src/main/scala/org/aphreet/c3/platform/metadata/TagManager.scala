@@ -1,14 +1,15 @@
 package org.aphreet.c3.platform.metadata
 
 import org.aphreet.c3.platform.common.WatchedActor
-
+import scala.collection.Map
 
 trait TagManager extends WatchedActor{
 
-  def updateParentTag(catalogPath:String)
-
 }
 
-case class UpdateParentTagMsg(catalogPath: Option[String], tags: List[String]) {
+case class DeleteParentTagMsg(catalogPath: Option[String], tags: Map[String, Int]) {
+
+}
+case class AddParentTagMsg(catalogPath: Option[String], tags: Map[String, Int]) {
 
 }

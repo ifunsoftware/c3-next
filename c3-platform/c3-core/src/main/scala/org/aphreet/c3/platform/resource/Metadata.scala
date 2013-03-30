@@ -30,9 +30,9 @@
 
 package org.aphreet.c3.platform.resource
 
-import collection.Map
-import collection.mutable
+import collection.{Map, mutable}
 import scala.collection.mutable.ArrayBuffer
+import com.thoughtworks.xstream.XStream
 
 class Metadata(private val map: mutable.HashMap[String, String]) {
 
@@ -108,6 +108,14 @@ object MetadataHelper{
     value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
   }
 
+  def parseTagMap(values: String): Map[String, Int] = {
+    new XStream().fromXML(values).asInstanceOf[Map[String, Int]]
+  }
+
+  def writeTagMap(values: Map[String, Int]): String = {
+      new XStream().toXML(values)
+  }
+
   def parseSequence(value: String): TraversableOnce[String] = {
 
     if(!isSequence(value)){
@@ -130,5 +138,8 @@ object MetadataHelper{
       result
     }
   }
+
+
+
 
 }
