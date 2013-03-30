@@ -26,14 +26,18 @@ class SearchConfigurationAccessor extends ConfigAccessor[FieldConfiguration]{
     for(fieldValues <- node.getNodes){
       val array = fieldValues.asInstanceOf[ListNode]
 
-      val name = array.getNodes.get(0).getValue[String]
+      val name = array.getNodes.get(0).getValue[String].toLowerCase
       val weight = array.getNodes.get(1).getValue[String].toFloat
       val count = array.getNodes.get(2).getValue[String].toInt
 
       buffer.add(Field(name, weight, count))
     }
 
-    FieldConfiguration(buffer.toList)
+    val fields = buffer.toList.groupBy(_.name)
+      .map(entry => entry._2.reduceLeft((field0, field) => Field(field0.name, field0.weight, field0.count + field.count)))
+      .toList.sortWith(Field.gt)
+
+    FieldConfiguration(fields)
   }
 
   def writeConfig(data: FieldConfiguration, writer: JSONWriter) {

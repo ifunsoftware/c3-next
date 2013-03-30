@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.common.{Logger, ComponentGuard, Path}
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
-import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
+import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement, SearchManager}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
@@ -164,13 +164,13 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
     this ! DestroyMsg
   }
 
-  def search(domain:String, query: String): Array[SearchResultElement] = {
+  def search(domain:String, query: String): SearchResult = {
 
     log debug "Search called with query: " + query
 
     if(searcher == null){
       log debug "Searcher is null"
-      new Array[SearchResultElement](0)
+      SearchResult(query, new Array[SearchResultElement](0))
     }
     else searcher.search(domain, query)
   }
@@ -193,6 +193,9 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
         case ResourceIndexedMsg(address) =>
           accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString))
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
+
+        case ResourceIndexingFailed(address) =>
+          statisticsManager ! IncreaseStatisticsMsg("c3.search.failed", 1)
 
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
           configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, time.toString)

@@ -90,7 +90,10 @@ class RamIndexer(val fileIndexer: Actor,
     loop {
       react {
         case IndexMsg(resource) => {
-          handling(classOf[Throwable]).by(e => log.warn(num + ": Failed to index resource " + resource.address, e)).apply{
+          handling(classOf[Throwable]).by(e => {
+            log.warn(num + ": Failed to index resource " + resource.address, e)
+            sender ! ResourceIndexingFailed(resource.address)
+          }).apply{
             log.trace("Got request to index {}", resource.address)
 
             if(shouldIndexResource(resource)){
@@ -205,6 +208,7 @@ class RamIndexer(val fileIndexer: Actor,
   }
 }
 
+case class ResourceIndexingFailed(address: String)
 case class ResourceIndexedMsg(address: String)
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)

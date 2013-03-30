@@ -11,7 +11,7 @@ class SearchConfigurationAccessorTestCase extends AbstractTestWithFileSystem{
 
     val configAccessor = new SearchConfigurationAccessor
 
-    val config = FieldConfiguration(List(Field("f1", 1, 1), Field("f2", 2.0f, 2)))
+    val config = FieldConfiguration(List(Field("f2", 2.0f, 2), Field("f1", 1, 1)))
 
     val fileName = "config.json"
 

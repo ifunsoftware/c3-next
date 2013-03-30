@@ -57,8 +57,8 @@ case class FieldConfiguration(fields:List[Field]){
 
     for (name <- newFields){
       newConfiguration.get(name) match {
-        case Some(field) => newConfiguration = newConfiguration + ((name, field.incCount()))
-        case None => newConfiguration = newConfiguration + ((name, Field(name, 1, 1)))
+        case Some(field) => newConfiguration = newConfiguration + ((name.toLowerCase, field.incCount()))
+        case None => newConfiguration = newConfiguration + ((name.toLowerCase, Field(name, 1, 1)))
       }
     }
 

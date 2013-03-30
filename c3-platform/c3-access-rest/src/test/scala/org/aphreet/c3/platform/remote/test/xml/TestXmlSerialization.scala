@@ -94,7 +94,7 @@ class TestXmlSerialization extends TestCase{
 
     val xStream = new XStreamFactory().createXMLStream
 
-    val output = xStream.toXML(new SearchResult(result))
+    val output = xStream.toXML(new SearchResult("query", result))
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 

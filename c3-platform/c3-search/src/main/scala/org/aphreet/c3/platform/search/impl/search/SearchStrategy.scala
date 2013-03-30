@@ -31,12 +31,12 @@
 package org.aphreet.c3.platform.search.impl.search
 
 import org.apache.lucene.search.IndexSearcher
-import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.search.{SearchResult, SearchResultElement}
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 trait SearchStrategy {
 
   def search(searcher: IndexSearcher, configuration: SearchConfiguration, query: String,
-             max: Int, offset: Int, domain: String): Array[SearchResultElement]
+             max: Int, offset: Int, domain: String): SearchResult
 
 }

@@ -31,7 +31,7 @@ package org.aphreet.c3.platform.search.impl.search
 
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
-import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
+import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
 import org.apache.lucene.index.IndexReader
@@ -106,10 +106,10 @@ class Searcher(var indexPath: Path,
 
   def getSearcher: Option[IndexSearcher] = indexSearcher
 
-  def search(domain: String, sourceQuery: String): Array[SearchResultElement] = {
+  def search(domain: String, sourceQuery: String): SearchResult = {
 
     if (getSearcher.isEmpty) {
-      Array()
+      SearchResult(sourceQuery, Array())
     } else {
       new MultiFieldSearchStrategy().search(getSearcher.get,
         configurationManager.searchConfiguration,

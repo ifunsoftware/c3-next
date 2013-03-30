@@ -20,6 +20,7 @@
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="resource" type="p:resourceType" minOccurs="0"/>
+                <xs:element name="query" type="xs:string" minOccurs="0"/>
                 <xs:element name="searchResults" type="p:searchResultsType" minOccurs="0"/>
                 <xs:element name="directory" type="p:directoryType" minOccurs="0"/>
                 <xs:element name="error" minOccurs="0">

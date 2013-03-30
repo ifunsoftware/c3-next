@@ -39,7 +39,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
                                      if (field._1 != null
                                        && field._1.startsWith("x-tika-extracted_")
                                        && !field._2.isEmpty))
-              yield (field._1.replaceFirst("x-tika-extracted_", ""),
+              yield (field._1.replaceFirst("x-tika-extracted_", "").toLowerCase,
                   collectionAsScalaIterable(field._2).mkString(","))).filter(!_._2.isEmpty).toMap
 
               val path = Files.createTempFile("extracted", "tmp")
