@@ -392,9 +392,7 @@ with WatchedActor {
 
     for (directoryName <- pathComponents) {
 
-      if (log.isTraceEnabled) {
-        log.trace("Getting node: " + directoryName)
-      }
+      log.trace("Getting node: {}",directoryName)
 
       if (!resultNode.isDirectory) {
         throw new FSException("Found file, expected directory")
@@ -411,9 +409,7 @@ with WatchedActor {
 
     }
 
-    if (log.isDebugEnabled) {
-      log.debug("Found node for path: " + path)
-    }
+    log.debug("Found node for path: {}" + path)
 
     resultNode
 
