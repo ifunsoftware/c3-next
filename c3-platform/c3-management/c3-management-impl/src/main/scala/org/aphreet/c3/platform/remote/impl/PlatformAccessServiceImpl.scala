@@ -41,6 +41,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport
 import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.filesystem.{Directory, Node}
 
 @Component("platformAccessService")
 @WebService(serviceName="AccessService", targetNamespace="remote.c3.aphreet.org")
@@ -93,13 +94,21 @@ class PlatformAccessServiceImpl extends SpringBeanAutowiringSupport with Platfor
         case e:ResourceException => resultBuilder.append(e.getMessage)
       }
 
-      try{
 
-        val resource = accessManager get ra
+      accessManager.getOption(ra) match {
+        case Some(resource) => {
+          resultBuilder.append(ResourceSerializer.toJSON(resource, true)).append("\n\n")
 
-        resultBuilder.append(ResourceSerializer.toJSON(resource, true))
-      }catch{
-        case e:ResourceNotFoundException => resultBuilder.append("Resource not found")
+          if (Node.canBuildFromResource(resource)){
+
+            Node.fromResource(resource) match {
+              case d: Directory => resultBuilder.append(d.toJSON)
+              case _ =>
+            }
+          }
+
+        }
+        case None => "Resource not found"
       }
 
       resultBuilder.toString()

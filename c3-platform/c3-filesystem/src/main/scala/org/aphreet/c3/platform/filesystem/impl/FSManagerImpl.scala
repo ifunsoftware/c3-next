@@ -150,7 +150,7 @@ with WatchedActor {
 
     if (!newParent.isDirectory) throw new FSException("Current parent is not a directory")
 
-    val nodeRef = currentParent.asInstanceOf[Directory].getChild(oldPathAndName._2) match {
+    val nodeRef = currentParent.asInstanceOf[Directory].getAliveChild(oldPathAndName._2) match {
       case Some(n) => n
       case None => throw new FSException("Can't find specified node")
     }
@@ -368,7 +368,7 @@ with WatchedActor {
       throw new FSException("Can't add node to file")
     }
 
-    if (!directory.getChild(name).isEmpty) {
+    if (!directory.getAliveChild(name).isEmpty) {
       throw new FSWrongRequestException("Node with name: " + name + " already exists")
     }
 
@@ -400,7 +400,7 @@ with WatchedActor {
         throw new FSException("Found file, expected directory")
       }
 
-      val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
+      val nodeRef = resultNode.asInstanceOf[Directory].getAliveChild(directoryName) match {
         case Some(a) => a
         case None => throw new FSNotFoundException("Specified path " + path + " does not exists in the domain " + domainId)
       }
