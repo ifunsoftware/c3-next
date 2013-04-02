@@ -62,6 +62,9 @@ class RemoteSystemDataStream(val host:ReplicationHost,
 
     val getMethod = new GetMethod(host.httpServerString(secure) + requestUri)
 
+    val header = new Header("x-c3-domain", domainId)
+    getMethod.addRequestHeader(header)
+
     //Check if we work with anonymous domain
     if(!domainKey.isEmpty){
       addAuthHeader(getMethod, requestUri, domainId, domainKey)
@@ -98,9 +101,6 @@ class RemoteSystemDataStream(val host:ReplicationHost,
     val hashBase = resource + dateString + domainId
 
     val hash = HashUtil.hmac(domainKey, hashBase)
-
-    val header = new Header("x-c3-domain", domainId)
-    method.addRequestHeader(header)
 
     val dateHeader = new Header("x-c3-date", dateString)
     method.addRequestHeader(dateHeader)
