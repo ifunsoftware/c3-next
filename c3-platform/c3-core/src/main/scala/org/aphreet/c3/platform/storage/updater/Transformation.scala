@@ -1,6 +1,7 @@
 package org.aphreet.c3.platform.storage.updater
 
 import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.storage.Storage
 
 /**
  * Copyright iFunSoftware 2011
@@ -9,6 +10,6 @@ import org.aphreet.c3.platform.resource.Resource
 
 trait Transformation {
 
-  def apply(resource:Resource)
+  def apply(storage: Storage, resource: Resource)
 
 }

@@ -58,7 +58,7 @@ class DomainAccessor extends ConfigAccessor[DomainConfig]{
   def defaultConfig:DomainConfig = {
     val domainId = UUID.randomUUID.toString
 
-    DomainConfig(List(Domain(domainId, "anonymous", "", FullMode)), domainId)
+    DomainConfig(List(Domain(domainId, "anonymous", "", FullMode, deleted = false)), domainId)
   }
 
   def readConfig(node: Node): DomainConfig = {
@@ -68,7 +68,8 @@ class DomainAccessor extends ConfigAccessor[DomainConfig]{
         domainNode.getNode("id"),
         domainNode.getNode("name"),
         domainNode.getNode("key"),
-        DomainMode.byName(domainNode.getNode("mode"))
+        DomainMode.byName(domainNode.getNode("mode")),
+        if(domainNode.getNode("deleted") != null) domainNode.getNode("deleted") else false
       )
 
     val defaultDomainNode = node.getNode("defaultDomainId")
@@ -104,6 +105,8 @@ class DomainAccessor extends ConfigAccessor[DomainConfig]{
       writer.value(domain.key)
       writer.key("mode")
       writer.value(domain.mode.name)
+      writer.key("deleted")
+      writer.value(domain.deleted)
       writer.endObject
     }
     writer.endArray

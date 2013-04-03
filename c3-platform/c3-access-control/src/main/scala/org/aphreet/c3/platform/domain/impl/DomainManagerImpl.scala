@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.exception.PlatformException
-import collection.immutable.{HashMap}
+import collection.immutable.HashMap
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.auth.HashUtil
@@ -43,6 +43,7 @@ import java.util.{Random, UUID}
 import java.lang.Integer
 import scala.Some
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.access.CleanupManager
 
 @Component("domainManager")
 @Scope("singleton")
@@ -52,6 +53,9 @@ class DomainManagerImpl extends DomainManager {
 
   @Autowired
   var domainAccessor: DomainAccessor = _
+
+  @Autowired
+  var cleanupManager: CleanupManager = _
 
   private var domains: HashMap[String, Domain] = new HashMap()
 
@@ -94,7 +98,7 @@ class DomainManagerImpl extends DomainManager {
       case None =>
     }
 
-    val domain = Domain(UUID.randomUUID.toString, name, generateKey, FullMode)
+    val domain = Domain(UUID.randomUUID.toString, name, generateKey, FullMode, deleted = false)
 
     domainAccessor.update(config => DomainConfig(domain :: config.domains, config.defaultDomain))
 
@@ -143,6 +147,30 @@ class DomainManagerImpl extends DomainManager {
     }
   }
 
+
+  def deleteDomain(name: String) {
+    domains.get(name) match {
+      case Some(domain) => {
+        if (domain.deleted){
+          throw new PlatformException("Domain with such name has been already deleted")
+        }else if (defaultDomainId == domain.id){
+          throw new PlatformException("Default domain can't be deleted")
+        }else{
+          log.info("Deleting domain {} ({})", domain.id, domain.name)
+          domain.deleted = true
+          storeDomainConfig()
+          reloadDomainConfig()
+
+          cleanupManager.cleanupResources(resource => resource.systemMetadata(Domain.MD_FIELD) match {
+            case Some(value) => value == domain.id
+            case None => false
+          })
+        }
+      }
+      case None => throw new PlatformException("Domain with such name does not exists")
+    }
+  }
+
   def domainList: List[Domain] = {
     domains.values.toList
   }
@@ -154,7 +182,7 @@ class DomainManagerImpl extends DomainManager {
     }
   }
 
-  def setDefaultDomain(domainId: String) = {
+  def setDefaultDomain(domainId: String) {
     if (domainById.contains(domainId)){
       defaultDomainId = domainId
       storeDomainConfig()
@@ -184,7 +212,8 @@ class DomainManagerImpl extends DomainManager {
 
         if (domain.name != importedDomain.name
           || domain.key != importedDomain.key
-          || domain.mode != importedDomain.mode){
+          || domain.mode != importedDomain.mode
+          || domain.deleted != importedDomain.deleted){
 
           log.debug("Updating domain " + domain + " with imported domain: " + importedDomain)
 
@@ -193,6 +222,7 @@ class DomainManagerImpl extends DomainManager {
           domain.name = importedDomain.name
           domain.key = importedDomain.key
           domain.mode = importedDomain.mode
+          domain.deleted = importedDomain.deleted
         }
 
         domainList
@@ -227,6 +257,11 @@ class DomainManagerImpl extends DomainManager {
 
     domains.get(name) match {
       case Some(d) => {
+
+        if (d.deleted){
+          throw new DomainException("Domain not found")
+        }
+
         val key = d.key
 
         if (key.isEmpty) {
@@ -243,6 +278,11 @@ class DomainManagerImpl extends DomainManager {
       case None => {
         domainById.get(name) match {
           case Some(d) => {
+
+            if (d.deleted){
+              throw new DomainException("Domain not found")
+            }
+
             val key = d.key
             if (!key.isEmpty) {
               if (HashUtil.hmac(key, keyBase) == hash) {

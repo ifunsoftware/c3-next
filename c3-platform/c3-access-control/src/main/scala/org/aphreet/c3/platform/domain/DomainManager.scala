@@ -56,4 +56,6 @@ trait DomainManager {
   def getDefaultDomain: Domain
 
   def importDomain(domain: Domain, systemId: String)
+
+  def deleteDomain(name: String)
 }

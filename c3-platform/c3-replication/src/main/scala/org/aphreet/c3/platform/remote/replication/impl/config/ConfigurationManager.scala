@@ -94,7 +94,7 @@ class ConfigurationManager extends DtoConvertor{
 
   def getLocalConfiguration:PlatformInfo = {
 
-    val domains = domainManager.domainList.map(d => new DomainDescription(d.id, d.name, d.key, d.mode.name)).toSeq.toArray
+    val domains = domainManager.domainList.map(d => new DomainDescription(d.id, d.name, d.key, d.mode.name, d.deleted)).toSeq.toArray
 
     val fsRoots = fsManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
 

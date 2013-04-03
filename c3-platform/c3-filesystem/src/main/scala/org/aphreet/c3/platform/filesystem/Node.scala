@@ -36,7 +36,6 @@ import collection.immutable.TreeMap
 import java.util.{UUID, Date}
 import scala.collection.mutable
 import org.aphreet.c3.platform.common.{JSONFormatter, Logger}
-import org.aphreet.c3.platform.filesystem.NodeRef
 import scala.Some
 import com.springsource.json.writer.JSONWriterImpl
 

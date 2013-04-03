@@ -497,7 +497,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listDomains:Array[DomainDescription] = {
     try{
       (for(entry <- domainManager.domainList)
-      yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name)).toArray
+      yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name, entry.deleted)).toArray
     }catch{
       case e: Throwable => {
         e.printStackTrace()
@@ -566,6 +566,17 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def getDefaultDomain = {
     try{
       domainManager.getDefaultDomainId
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def deleteDomain(name: String) {
+    try{
+      domainManager.deleteDomain(name)
     }catch{
       case e: Throwable => {
         e.printStackTrace()

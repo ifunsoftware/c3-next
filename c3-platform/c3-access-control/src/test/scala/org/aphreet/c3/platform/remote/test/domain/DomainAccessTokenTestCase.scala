@@ -41,7 +41,7 @@ class DomainAccessTokenTestCase extends TestCase{
 
   def testCheckAccess(){
 
-    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode))
+    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode, deleted = false))
 
     val resource = new Resource
     resource.systemMetadata(Domain.MD_FIELD) = "domain-id"
@@ -60,7 +60,7 @@ class DomainAccessTokenTestCase extends TestCase{
 
   def testUpdateMetadata(){
 
-    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode))
+    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode, deleted = false))
 
     val resource = new Resource
 

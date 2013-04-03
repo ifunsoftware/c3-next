@@ -87,6 +87,8 @@ trait PlatformManagementService {
 
   def getDefaultDomain: String
 
+  def deleteDomain(name: String)
+
 
   def listFilesystemRoots: Array[Pair]
 

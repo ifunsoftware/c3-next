@@ -45,7 +45,8 @@ object DomainCommands extends Commands {
     new ListDomainsCommand,
     new SetDomainModeCommand,
     new ShowDomainCommand,
-    new SetDefaultDomain
+    new SetDefaultDomain,
+    new DeleteDomainCommand
   )
 }
 
@@ -172,7 +173,7 @@ class ListDomainsCommand extends Command {
 
     val defaultId = management.getDefaultDomain
 
-    management.listDomains.sortBy(_.getName).map(d => format(d, defaultId)).foldLeft(header)(_ + _) + footer
+    management.listDomains.filter(!_.deleted).sortBy(_.getName).map(d => format(d, defaultId)).foldLeft(header)(_ + _) + footer
   }
 
 
@@ -205,4 +206,22 @@ class ShowDomainCommand extends Command {
   }
 
   def name = List("show", "domain")
+}
+
+class DeleteDomainCommand extends Command {
+
+  override
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.length < 1) {
+      wrongParameters("delete domain <name>")
+    } else {
+
+      management.deleteDomain(params.head)
+
+      "Domain " + params.head + " has been deleted"
+    }
+  }
+
+  def name = List("delete", "domain")
+
 }

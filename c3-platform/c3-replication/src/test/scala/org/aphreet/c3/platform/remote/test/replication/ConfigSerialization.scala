@@ -44,8 +44,8 @@ class ConfigSerialization extends TestCase{
 
     val platformConfig = PlatformInfo("systemId",
       ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),
-      Array(new DomainDescription("id", "name", "key", "full"),
-            new DomainDescription("id2", "name2", "key2", "full")),
+      Array(new DomainDescription("id", "name", "key", "full", false),
+            new DomainDescription("id2", "name2", "key2", "full", false)),
       Array(new Pair("sdsd", "sfdsfdsfsdf"),
             new Pair("sds", "asdsad")))
 
