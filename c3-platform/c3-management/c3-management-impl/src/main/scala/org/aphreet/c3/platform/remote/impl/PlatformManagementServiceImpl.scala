@@ -693,19 +693,4 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
       }
     }
   }
-
-  def showTargetInfo(targetId: String) : String = {
-    try {
-      val target = backupManager.showTargetInfo(targetId)
-      val targetDescription = new TargetDescription(target.id, target.backupType, target.host, target.user,
-          target.folder, target.privateKey)
-
-      targetDescription
-    } catch {
-      case e: Throwable => {
-        e.printStackTrace()
-        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
-      }
-    }
-  }
 }

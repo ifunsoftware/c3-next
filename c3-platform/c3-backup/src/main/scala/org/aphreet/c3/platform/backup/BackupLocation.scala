@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.backup
 
-import impl.SftpConnector
+import ssh.SftpConnector
 import reflect.BeanProperty
 import org.aphreet.c3.platform.common.Disposable._
 import io.Source
