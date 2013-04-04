@@ -1,29 +1,38 @@
 package org.aphreet.c3.platform.task.impl
 
-import java.util.concurrent.{ThreadFactory, Executors}
+import java.util.concurrent.{ScheduledFuture, ThreadFactory, Executors}
 import javax.annotation.{PostConstruct, PreDestroy}
+import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
 import org.springframework.stereotype.Component
 import scala.collection.mutable
-import org.aphreet.c3.platform.common.Logger
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
+import org.springframework.scheduling.{Trigger, TaskScheduler}
+import java.util.Date
+import org.springframework.scheduling.support.{CronTrigger, PeriodicTrigger}
 
 
 @Component("taskManager")
 class TaskManagerImpl extends TaskManager{
 
-  val log = Logger(getClass)
+  val log = LogFactory getLog getClass
   
   var tasks = new mutable.HashMap[String, Task]
 
+  var tasksFutures = new mutable.HashMap[String, ScheduledFuture[_]]
+
   val threadGroup = new ThreadGroup("C3Tasks")
 
-  val executor = Executors.newCachedThreadPool(new ThreadFactory {
+  val executor = Executors.newScheduledThreadPool(10, new ThreadFactory {
     def newThread(r: Runnable) = {
       val thread = new Thread(threadGroup, r)
       thread.setDaemon(true)
       thread
     }
   })
+
+  val scheduler : TaskScheduler = new ConcurrentTaskScheduler(executor)
+
   
   @PostConstruct
   def init(){
@@ -69,7 +78,94 @@ class TaskManagerImpl extends TaskManager{
       log debug "Submitted task " + task.id
       task.id
     }
-  
+
+  def getTaskById(id: String) : Task = {
+    tasks.get(id) match {
+      case Some(task) => task
+      case None => throw new IllegalStateException("Task " + id + " doesn't exist")
+    }
+  }
+
+  def scheduleTask(task: Task, crontabSchedule: String) {
+    task.setRestartable(true)
+
+    scheduleTask(task, new CronTrigger(crontabSchedule))
+
+    task.setSchedule(crontabSchedule)
+
+    log.debug("Task " + task.id + " was scheduled: " + crontabSchedule)
+  }
+
+  def scheduleTask(task: Task, period: Long) {
+    scheduleTask(task, period, 0)
+  }
+
+  def scheduleTask(task: Task, period: Long, startDelay: Long) {
+    scheduleTask(task, period, startDelay, true)
+  }
+
+  def scheduleTask(task: Task, period: Long, startDelay: Long, fixedPeriod: Boolean) {
+    val trigger = new PeriodicTrigger(period)
+    trigger.setInitialDelay(startDelay)
+    trigger.setFixedRate(fixedPeriod)
+
+    scheduleTask(task, trigger)
+
+    log.debug("Task " + task.id + " was scheduled for execution every " + period
+      + " ms with initial delay " + startDelay + " ms")
+  }
+
+  private def scheduleTask(task: Task, trigger: Trigger) {
+    val scheduledFuture = scheduler.schedule(task, trigger)
+
+    tasks.put(task.id, task)
+    tasksFutures.put(task.id, scheduledFuture)
+  }
+
+  def rescheduleTask(id: String, crontabSchedule: String) {
+    tasksFutures.get(id) match {
+
+      case Some(taskFuture) => {
+        taskFuture.cancel(false)
+        tasksFutures.remove(id)
+
+        val task = tasks.get(id).get
+        val scheduledFuture = scheduler.schedule(task, new CronTrigger(crontabSchedule))
+        task.setSchedule(crontabSchedule)
+        tasksFutures.put(task.id, scheduledFuture)
+
+        log.debug("Task " + id + " was rescheduled: " + crontabSchedule)
+      }
+
+      case None => log warn "Can't reschedule task with id " + id + ": task was not scheduled before"
+    }
+  }
+
+  def removeScheduledTask(id: String) {
+    tasksFutures.get(id) match {
+
+      case Some(taskFuture) => {
+        taskFuture.cancel(false)  //remove from schedule, if task's running, don't interrupt it
+        tasksFutures.remove(id)
+
+        if (tasks.contains(id)) {
+          val task = tasks.get(id).get
+          tasks.remove(id)
+          task.setSchedule("")
+        }
+
+        log.debug("Task " + id + " was removed from the schedule")
+      }
+
+      case None => log warn "Can't remove task with id " + id + " from the schedule: task was not scheduled before"
+    }
+  }
+
+  def scheduledTaskList = {
+    (for((taskId, task) <- tasks if tasksFutures.contains(taskId))
+        yield task.description).toList
+  }
+
   @PreDestroy
   def destroy(){
 

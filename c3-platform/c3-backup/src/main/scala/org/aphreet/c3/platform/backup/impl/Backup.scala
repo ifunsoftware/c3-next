@@ -57,13 +57,16 @@ object Backup{
 
   def open(path:C3Path):Backup = {
     val zipFile = URI.create("jar:file:" + path)
-    new Backup(zipFile, false)
+
+    if (hasValidChecksum(path.stringValue)) {
+      new Backup(zipFile, false)
+    } else {
+      throw new IllegalStateException("Backup " + path + " doesn't have valid checksum")
+    }
   }
 
   def create(path:C3Path):Backup = {
-
-    val zipFile = URI.create("jar:file:" + path )
-
+    val zipFile = URI.create("jar:file:" + path)
     new Backup(zipFile, true)
   }
 

@@ -36,9 +36,8 @@ import org.aphreet.c3.platform.storage.{Storage, StorageIterator, StorageManager
 import org.aphreet.c3.platform.search.SearchManager
 import org.aphreet.c3.platform.resource.Resource
 import java.util.Date
-import org.aphreet.c3.platform.search.impl.SearchManagerInternal
 
-class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManagerInternal, var indexCreateTimestamp:Long) extends Task {
+class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager, var indexCreateTimestamp:Long) extends Task {
 
   //We suppose that it should take no more than hour for resource to be indexed
   val indexedTimeout: Long = 1000 * 60 * 60
@@ -50,15 +49,13 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   //Initial storage list is all storages in storageManager
   var storagesToIndex:List[Storage] = List()
 
-  val startTime = System.currentTimeMillis + 3 * 60 * 1000
-
   {
     log info "Creating BackgroundIndexTask"
     log info "Waiting for 3 minutes to get system in state"
   }
 
   override def canStart:Boolean = {
-    System.currentTimeMillis > startTime || shouldStop || Thread.currentThread.isInterrupted
+    shouldStop || Thread.currentThread.isInterrupted
   }
 
   override def preStart() {
@@ -95,9 +92,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       }
     }
 
-    if (searchManager.throttleBackgroundIndex){
-      Thread.sleep(1000)
-    }
+    Thread.sleep(1000)
   }
 
   override def postFailure() {
@@ -119,8 +114,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       }
     }
 
-    if(!resource.systemMetadata.has("c3.skip.index")){
-      resource.systemMetadata("indexed") match {
+    if(!resource.systemMetadata.contains("c3.skip.index")){
+      resource.systemMetadata.get("indexed") match {
         case Some(x) => isInPreviousIndex(x)
         case None => isOutOfTimeout(resource.versions.last.date)
       }
@@ -137,16 +132,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       iterator = currentStorage.iterator()
       log debug "Starting iteration over storage " + currentStorage.id
     } else {
-      log debug "All storages have been checked, sleeping for an hour"
-      storagesToIndex = storageManager.listStorages
-
-      val newStartTime = System.currentTimeMillis + 1000 * 60 * 60
-
-      searchManager ! BackgroundIndexRunCompletedMsg
-
-      while(System.currentTimeMillis < newStartTime){
-        Thread.sleep(10 * 1000)
-      }
+      log debug "All storages have been checked"
+      shouldStopFlag = true
     }
   }
 
@@ -154,4 +141,3 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 }
 
 case class BackgroundIndexMsg(resource:Resource)
-object BackgroundIndexRunCompletedMsg

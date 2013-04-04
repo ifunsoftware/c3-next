@@ -31,23 +31,24 @@ package org.aphreet.c3.platform.search.impl
 
 import background._
 import index._
-import java.io.File
-import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.common.{Logger, ComponentGuard, Path}
-import org.aphreet.c3.platform.config._
-import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
-import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement, SearchManager}
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.task.TaskManager
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.apache.commons.logging.LogFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.config._
 import search._
+import org.aphreet.c3.platform.task.TaskManager
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import org.aphreet.c3.platform.common.{ComponentGuard, Path}
+import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement, SearchManager}
+import java.io.File
+import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
 
 @Component("searchManager")
-class SearchManagerImpl extends SearchManager with SearchManagerInternal with SPlatformPropertyListener with ComponentGuard{
+class SearchManagerImpl extends SearchManager with SPlatformPropertyListener with ComponentGuard{
 
   val INDEX_PATH = "c3.search.index.path"
 
@@ -61,11 +62,14 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
   val TIKA_HOST = "c3.search.index.tika_address"
 
-  val THROTTLE_BACKGROUND_INDEX = "c3.search.index.throttle_background_index"
+  val START_INDEX_DELAY : Long = 3 * 60 * 1000
+
+  val INDEX_DELAY : Long = 60 * 60 * 1000
+
 
   var numberOfIndexers = 2
 
-  val log = Logger(getClass)
+  val log = LogFactory.getLog(getClass)
 
 
   @Autowired
@@ -102,7 +106,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
   val indexScheduler = new SearchIndexScheduler(this)
 
 
-  var indexerTaskId: String = null
+  var indexerTaskId:String = null
 
   var backgroundIndexTask:BackgroundIndexTask = null
 
@@ -110,7 +114,6 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
   var extractDocumentContent = false
 
-  var throttleBackgroundIndexer: Boolean = true
 
   var currentTikaAddress: String = null
 
@@ -151,7 +154,8 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
-      indexerTaskId = taskManager.submitTask(backgroundIndexTask)
+      taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, false)
+      indexerTaskId = backgroundIndexTask.id
 
       indexScheduler.start()
     }
@@ -164,13 +168,13 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
     this ! DestroyMsg
   }
 
-  def search(domain:String, query: String): SearchResult = {
+  def search(domain:String, query: String): Array[SearchResultElement] = {
 
     log debug "Search called with query: " + query
 
     if(searcher == null){
       log debug "Searcher is null"
-      SearchResult(query, new Array[SearchResultElement](0))
+      new Array[SearchResultElement](0)
     }
     else searcher.search(domain, query)
   }
@@ -194,14 +198,8 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
           accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString))
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
 
-        case ResourceIndexingFailed(address) =>
-          statisticsManager ! IncreaseStatisticsMsg("c3.search.failed", 1)
-
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task
           configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, time.toString)
-
-        case BackgroundIndexRunCompletedMsg =>
-          statisticsManager ! IncreaseStatisticsMsg("c3.search.background.runs", 1)
 
         case StoragePurgedMsg(source) => deleteIndexes()
 
@@ -242,17 +240,13 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
   }
 
   def deleteIndexes(){
-    log.info("Resetting search index")
+    log.info("Reseting search index")
     fileIndexer ! DeleteIndexMsg
     configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, System.currentTimeMillis().toString)
   }
 
   def flushIndexes() {
     ramIndexers.foreach(_ ! FlushIndex(force = true))
-  }
-
-  def dumpIndex(path: String) {
-    taskManager.submitTask(new DumpIndexTask(indexPath, path))
   }
 
   def selectIndexer: RamIndexer = {
@@ -267,13 +261,11 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
     INDEX_CREATE_TIMESTAMP -> "0",
     EXTRACT_DOCUMENT_CONTENT -> "false",
     INDEX_PATH -> new File(configManager.dataDir, "index").getAbsolutePath,
-    TIKA_HOST -> "https://tika-ifunsoftware.rhcloud.com",
-    THROTTLE_BACKGROUND_INDEX -> "true"
+    TIKA_HOST -> "https://tika-ifunsoftware.rhcloud.com"
   )
 
   override def listeningForProperties: Array[String] = Array(
-    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP,
-    EXTRACT_DOCUMENT_CONTENT, TIKA_HOST, THROTTLE_BACKGROUND_INDEX
+    INDEX_PATH, INDEXER_COUNT, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT, TIKA_HOST
   )
 
   def propertyChanged(event: PropertyChangeEvent) {
@@ -348,10 +340,6 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
         log info "Setting tika host to " + event.newValue
         currentTikaAddress = event.newValue
         ramIndexers.foreach(_ ! UpdateTextExtractor(new TikaHttpTextExtractor(event.newValue)))
-
-      case THROTTLE_BACKGROUND_INDEX =>
-        log info "Setting " + THROTTLE_BACKGROUND_INDEX + " to " + event.newValue
-        throttleBackgroundIndexer = event.newValue.toBoolean
     }
   }
 
@@ -362,15 +350,11 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
       extractDocumentContent,
       new TikaHttpTextExtractor(tikaHostAddress))
   }
-
-  def throttleBackgroundIndex = {
-    throttleBackgroundIndexer
-  }
 }
 
 class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 
-  val log = Logger(getClass)
+  val log = LogFactory.getLog(getClass)
 
   {
     this.setDaemon(true)
