@@ -32,10 +32,21 @@ package org.aphreet.c3.platform.backup
 
 trait BackupManager {
 
-  def createBackup()
+  def createBackup(targetId : String)
 
-  def restoreBackup(location:String)
+  def restoreBackup(targetId: String, name: String)
 
-  def listBackups(folderPath:String) : List[String]
+  def listBackups(targetId:String) : List[String]
 
+  def createLocalTarget(id : String, path : String)
+
+  def createRemoteTarget(id : String, host : String, user : String, path : String, privateKeyFile : String)
+
+  def removeTarget(id : String)
+
+  def listTargets() : List[BackupLocation]
+
+  def showTargetInfo(id : String) : BackupLocation
+
+  def scheduleBackup(targetId: String, crontabSchedule: String)
 }

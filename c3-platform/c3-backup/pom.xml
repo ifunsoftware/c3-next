@@ -47,6 +47,12 @@
         </dependency>
 
         <dependency>
+        	<groupId>sshtools</groupId>
+        	<artifactId>j2ssh-daemon</artifactId>
+        	<version>0.2.9</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>com.springsource.org.apache.commons.codec</artifactId>
             <version>1.4.0</version>

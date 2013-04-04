@@ -6,6 +6,7 @@ import org.aphreet.c3.platform.task.{TaskDescription, TaskState}
 import java.util.{Map => JMap}
 import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageMode}
 
+
 trait PlatformManagementEndpoint {
   
 
@@ -32,8 +33,15 @@ trait PlatformManagementEndpoint {
   def listTasks:List[TaskDescription]
 
   def listFinishedTasks:List[TaskDescription]
+
+  def listScheduledTasks: List[TaskDescription]
+
+  def rescheduleTask(id: String, crontabSchedule: String)
+
+  def removeScheduledTask(id: String)
  
   def setTaskMode(taskId:String, state:TaskState)
+
   
   def listTypeMappings:List[(String, Boolean)]
   
