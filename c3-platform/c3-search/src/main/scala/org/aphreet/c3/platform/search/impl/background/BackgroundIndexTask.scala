@@ -144,3 +144,4 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 }
 
 case class BackgroundIndexMsg(resource:Resource)
+object BackgroundIndexRunCompletedMsg
