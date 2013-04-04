@@ -36,8 +36,9 @@ import org.aphreet.c3.platform.storage.{Storage, StorageIterator, StorageManager
 import org.aphreet.c3.platform.search.SearchManager
 import org.aphreet.c3.platform.resource.Resource
 import java.util.Date
+import org.aphreet.c3.platform.search.impl.SearchManagerInternal
 
-class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManager, var indexCreateTimestamp:Long) extends Task {
+class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManagerInternal, var indexCreateTimestamp:Long) extends Task {
 
   //We suppose that it should take no more than hour for resource to be indexed
   val indexedTimeout: Long = 1000 * 60 * 60
@@ -92,7 +93,9 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       }
     }
 
-    Thread.sleep(1000)
+    if (searchManager.throttleBackgroundIndex) {
+      Thread.sleep(1000)
+    }
   }
 
   override def postFailure() {
