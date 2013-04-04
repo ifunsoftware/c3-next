@@ -31,23 +31,26 @@
 package org.aphreet.c3.platform.filesystem
 
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
-import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
-import org.apache.commons.logging.LogFactory
+import java.io._
 import collection.immutable.TreeMap
 import java.util.{UUID, Date}
 import scala.collection.mutable
+import org.aphreet.c3.platform.common.{JSONFormatter, Logger}
+import scala.Some
+import com.springsource.json.writer.JSONWriterImpl
 
 abstract class Node(val resource:Resource){
 
   def isDirectory:Boolean
 
-  def name:String = resource.systemMetadata.getOrElse(Node.NODE_FIELD_NAME, null)
+  def name:String = resource.systemMetadata.asMap.getOrElse(Node.NODE_FIELD_NAME, null)
+
 }
 
 
 object Node{
 
-  val log = LogFactory.getLog(classOf[Node])
+  val log = Logger(classOf[Node])
 
   val NODE_FIELD_NAME = "c3.fs.nodename"
 
@@ -62,7 +65,7 @@ object Node{
   val DIRECTORY_CONTENT_TYPE = "application/x-c3-directory"
 
   def fromResource(resource:Resource):Node = {
-    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
+    resource.systemMetadata(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => Directory(resource)
         case "file" => File(resource)
@@ -73,7 +76,7 @@ object Node{
   }
 
   def canBuildFromResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get(NODE_FIELD_TYPE) match {
+    resource.systemMetadata(NODE_FIELD_TYPE) match {
       case Some(value) => value match {
         case "directory" => true
         case "file" => true
@@ -95,15 +98,14 @@ case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, 
 case class File(override val resource:Resource) extends Node(resource){
 
   override def isDirectory = false
-
 }
 
 object File{
 
   def createFile(resource:Resource, domainId:String, name:String):File = {
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
-    resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
-    resource.systemMetadata.put("c3.domain.id", domainId)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
+    resource.systemMetadata(Node.NODE_FIELD_NAME) = name
+    resource.systemMetadata("c3.domain.id") = domainId
 
     File(resource)
   }
@@ -126,10 +128,14 @@ case class Directory(override val resource:Resource) extends Node(resource){
   override def isDirectory = true
 
   def getChild(name:String):Option[NodeRef] = {
-
-    Node.log debug childrenMap.toString
-
     childrenMap.get(name)
+  }
+
+  def getAliveChild(name: String): Option[NodeRef] = {
+    getChild(name) match {
+      case Some(ref) => if(ref.deleted) None else Some(ref)
+      case None => None
+    }
   }
 
   def addChild(name: String, address: String, leaf: Boolean) {
@@ -200,13 +206,24 @@ case class Directory(override val resource:Resource) extends Node(resource){
 
   private def writeData(children:Map[String, NodeRef]):DataStream = {
 
+    def isOldEntry(entry: NodeRef, ts: Long): Boolean = {
+      entry.deleted && (ts - entry.modified) > 10 * 24 * 60 * 60 * 1000L
+    }
+
+
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
     dataOs.writeShort(1)
-    dataOs.writeInt(children.size)
 
-    for((name, nodeRef) <- children){
+    val ts = System.currentTimeMillis()
+
+    val filterdChildren = children
+      .filter(c => !isOldEntry(c._2, ts))
+
+    dataOs.writeInt(filterdChildren.size)
+
+    for((name, nodeRef) <- filterdChildren){
       dataOs.writeUTF(nodeRef.address)
       dataOs.writeBoolean(nodeRef.leaf)
       dataOs.writeUTF(name)
@@ -261,6 +278,46 @@ case class Directory(override val resource:Resource) extends Node(resource){
       }
     }
   }
+
+  def toJSON: String = {
+    val swriter = new StringWriter()
+
+    try{
+      val writer = new JSONWriterImpl(swriter)
+
+      writer.`object`()
+
+      writer.key("directory")
+
+      writer.array()
+
+      this.allChildren.foreach(ref => {
+        writer.`object`()
+        writer.key("address")
+        writer.value(ref.address)
+        writer.key("name")
+        writer.value(ref.name)
+        writer.key("directory")
+        writer.value(!ref.leaf)
+        writer.key("modified")
+        writer.value(ref.modified)
+        writer.key("deleted")
+        writer.value(ref.deleted)
+        writer.endObject()
+      })
+
+      writer.endArray()
+
+      writer.endObject()
+
+      swriter.flush()
+
+      JSONFormatter.format(swriter.toString)
+
+    }finally{
+      swriter.close()
+    }
+  }
 }
 
 object Directory{
@@ -268,19 +325,19 @@ object Directory{
   def emptyDirectory(domainId:String, name:String, meta: Map[String, String] = Map()):Directory = {
     val resource = new Resource
     resource.isVersioned = false
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_DIR
 
     if(name != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
+      resource.systemMetadata(Node.NODE_FIELD_NAME) = name
     }
 
-    resource.systemMetadata.put("c3.skip.index", "true")
-    resource.systemMetadata.put("c3.domain.id", domainId)
+    resource.systemMetadata("c3.skip.index") = "true"
+    resource.systemMetadata("c3.domain.id") = domainId
 
-    resource.metadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
-    resource.systemMetadata.put(Resource.MD_CONTENT_TYPE, Node.DIRECTORY_CONTENT_TYPE)
+    resource.metadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
+    resource.systemMetadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
 
-    meta foreach { case (k,v) => resource.metadata.put(k,v) }
+    meta foreach { case (k,v) => resource.metadata(k) = v }
 
     val directory = Directory(resource)
 

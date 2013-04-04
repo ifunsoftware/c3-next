@@ -3,14 +3,15 @@ Bundle-Version: 9.9.9.TO_BE_REPLACED
 Bundle-Name: C3 Replication
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.replication
-Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
- com.springsource.com.sleepcat.je;version="[3.3.87,3.3.87]",
+Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
+ org.scala-lang.scala-actors;version="[2.10.1,2.11)",
+ com.springsource.com.sleepcat.je;version="[5.0.58,5.0.58]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
- org.springframework.core;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.context;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.beans;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.aop;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.context.support;version="[2.5.6.SEC01,3.0.6.RELEASE]",
+ org.springframework.core;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.context;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.beans;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.aop;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.context.support;version="[2.5.6.SEC01,3.1.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  com.springsource.org.apache.commons.io;version="[1.4.0,1.4.0]",
  com.springsource.org.apache.commons.codec;version="[1.4.0,1.4.0]",
@@ -26,5 +27,5 @@ Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  javax.crypto,
  javax.crypto.spec,
- org.apache.commons.logging;version="[1.1.1,1.1.1]"
+ org.slf4j;version="[1.6.4,2.0.0)"
 Export-Package: org.aphreet.c3.platform.remote.replication

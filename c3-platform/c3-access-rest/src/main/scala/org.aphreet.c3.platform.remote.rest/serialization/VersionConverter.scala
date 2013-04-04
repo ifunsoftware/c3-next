@@ -21,12 +21,12 @@ class VersionConverter extends Converter{
 
     writer.addAttribute("date", dateFormat.print(version.date.getTime))
 
-    version.systemMetadata.get("c3.data.length") match {
+    version.systemMetadata("c3.data.length") match {
       case Some(length) => writer.addAttribute("length", length)
       case None =>
     }
 
-    version.systemMetadata.get("c3.data.md5") match {
+    version.systemMetadata("c3.data.md5") match {
       case Some(md5) => writer.addAttribute("hash", md5)
       case None =>
     }

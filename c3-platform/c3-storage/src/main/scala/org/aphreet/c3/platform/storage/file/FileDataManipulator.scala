@@ -34,7 +34,6 @@ import java.io.{IOException, File}
 import org.aphreet.c3.platform.resource.{Resource, ResourceVersion, DataStream}
 import org.aphreet.c3.platform.exception.{StorageException, ResourceNotFoundException}
 import org.aphreet.c3.platform.storage.bdb.{BDBConfig, DatabaseProvider, DataManipulator}
-import java.nio.file.{StandardCopyOption, Files}
 
 trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
@@ -46,14 +45,14 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
       if(resource.isVersioned){
         for(version <- resource.versions if (version.persisted == false)){
           val fileName = resource.address + "-" + String.valueOf(System.currentTimeMillis) + "-" + version.data.hash
-          version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+          version.systemMetadata(Resource.MD_DATA_ADDRESS) = fileName
           storeVersionData(fileName, version)
         }
       }else{
         val version = resource.versions(0)
         if(!version.persisted){
           val fileName = resource.address
-          version.systemMetadata.put(Resource.MD_DATA_ADDRESS, fileName)
+          version.systemMetadata(Resource.MD_DATA_ADDRESS) = fileName
           storeVersionData(fileName, version)
         }
       }
@@ -68,7 +67,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
     if (!resource.embedData){
       for(version <- resource.versions){
 
-        val fileName = version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+        val fileName = version.systemMetadata(Resource.MD_DATA_ADDRESS) match {
           case Some(value:String) => value
           case None => throw new StorageException("Can't find data reference for version in resource: " + resource.address)
         }
@@ -90,7 +89,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
 
       if (!resource.embedData){
         for(version <- resource.versions){
-          version.systemMetadata.get(Resource.MD_DATA_ADDRESS) match {
+          version.systemMetadata(Resource.MD_DATA_ADDRESS) match {
             case Some(name) => {
               try{
                 findFileForName(name).delete
@@ -130,7 +129,7 @@ trait FileDataManipulator extends DataManipulator with DatabaseProvider{
       targetTempFile.renameTo(targetFile)
 
       version.data = DataStream.create(targetFile)
-      version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+      version.systemMetadata(Resource.MD_DATA_LENGTH) = version.data.length.toString
 
     }catch{
       case e:IOException => throw new StorageException("Failed to store data to file: " + targetFile.getAbsolutePath, e)

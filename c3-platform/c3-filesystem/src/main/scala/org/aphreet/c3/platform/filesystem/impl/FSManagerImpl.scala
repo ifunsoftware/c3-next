@@ -33,10 +33,9 @@ package org.aphreet.c3.platform.filesystem.impl
 import annotation.tailrec
 import java.lang.IllegalStateException
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access.{AccessMediator, ResourceOwner, AccessManager}
 import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
-import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.StatisticsManager
@@ -45,6 +44,8 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.metadata.{TransientMetadataBuildStrategy, RegisterTransientMDBuildStrategy, TransientMetadataManager}
+import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
+import org.aphreet.c3.platform.query.QueryManager
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -52,7 +53,7 @@ with ResourceOwner
 with ComponentGuard
 with WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var accessManager: AccessManager = _
@@ -73,7 +74,13 @@ with WatchedActor {
   var storageManager: StorageManager = _
 
   @Autowired
+  var queryManager: QueryManager = _
+
+  @Autowired
   var transientMetadataManager: TransientMetadataManager = _
+
+  @Autowired
+  var fsCleanupManager: FSCleanupManager = _
 
   var fsRoots: Map[String, String] = Map()
 
@@ -133,6 +140,7 @@ with WatchedActor {
 
     val newPathAndName = splitPath(newPath)
 
+    verifyName(newPathAndName._2)
 
     val currentParent = getFSNode(domainId, oldPathAndName._1)
 
@@ -142,7 +150,7 @@ with WatchedActor {
 
     if (!newParent.isDirectory) throw new FSException("Current parent is not a directory")
 
-    val nodeRef = currentParent.asInstanceOf[Directory].getChild(oldPathAndName._2) match {
+    val nodeRef = currentParent.asInstanceOf[Directory].getAliveChild(oldPathAndName._2) match {
       case Some(n) => n
       case None => throw new FSException("Can't find specified node")
     }
@@ -153,7 +161,7 @@ with WatchedActor {
 
     if (currentParent.resource.address == newParent.resource.address) {
 
-      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
+      node.resource.systemMetadata(Node.NODE_FIELD_NAME) = newPathAndName._2
       accessManager.update(node.resource)
 
       currentParent.asInstanceOf[Directory].updateChild(oldPathAndName._2, newPathAndName._2)
@@ -164,8 +172,8 @@ with WatchedActor {
       val oldDir = Directory(accessManager.get(currentParent.resource.address))
       val newDir = Directory(accessManager.get(newParent.resource.address))
 
-      node.resource.systemMetadata.put(Node.NODE_FIELD_NAME, newPathAndName._2)
-      node.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, newDir.resource.address)
+      node.resource.systemMetadata(Node.NODE_FIELD_NAME) = newPathAndName._2
+      node.resource.systemMetadata(Node.NODE_FIELD_PARENT) = newDir.resource.address
 
       accessManager.update(node.resource)
 
@@ -178,19 +186,14 @@ with WatchedActor {
   }
 
   override def resourceCanBeDeleted(resource: Resource): Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) => {
 
         var canDelete = false
 
         if (nodeType == Node.NODE_TYPE_DIR) {
-          val directory = Directory(resource)
-          if (directory.allChildren.filter(!_.deleted).isEmpty) {
-            canDelete = fsRoots.values.forall(_ != resource.address)
-          } else {
-            canDelete = false
-          }
+          canDelete = fsRoots.values.forall(_ != resource.address)
         } else {
           canDelete = true
         }
@@ -201,14 +204,21 @@ with WatchedActor {
   }
 
   override def resourceCanBeUpdated(resource: Resource): Boolean = {
-    resource.systemMetadata.get(Node.NODE_FIELD_TYPE) match {
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) match {
       case None => true
       case Some(nodeType) =>
         if (nodeType == Node.NODE_TYPE_DIR) {
           try {
-            //trying to create a directory from provided ByteStream
-            Directory(resource)
-            true
+            //Let's consider that we can't have directories with size more than 10MB
+            //As max file name limited to 512 chars, it is enough to have more than 10000 files in
+            // a directory
+            if(resource.versions.last.data.length > 10L * 1024 * 1024){
+              false
+            }else{
+              //trying to create a directory from provided ByteStream
+              Directory(resource)
+              true
+            }
           } catch {
             case e: Throwable => false
           }
@@ -220,17 +230,27 @@ with WatchedActor {
 
   override def deleteResource(resource: Resource) {
 
-    resource.systemMetadata.get(Node.NODE_FIELD_NAME) foreach {
-      name => resource.systemMetadata.get(Node.NODE_FIELD_PARENT).foreach{
+    resource.systemMetadata(Node.NODE_FIELD_NAME) foreach {
+      name => resource.systemMetadata(Node.NODE_FIELD_PARENT).foreach{
         parentAddress => {
-          val parent = accessManager.get(parentAddress)
+          accessManager.getOption(parentAddress) match {
+            case Some(parent) => {
+              val node = Node.fromResource(parent)
 
-          val node = Node.fromResource(parent)
+              if (node.isDirectory) {
+                val directory = node.asInstanceOf[Directory]
+                directory.removeChild(name)
+                accessManager.update(directory.resource)
+              }
+            }
+            case _ => // do nothing
+          }
 
-          if (node.isDirectory) {
-            val directory = node.asInstanceOf[Directory]
-            directory.removeChild(name)
-            accessManager.update(directory.resource)
+          val node = Node.fromResource(resource)
+
+          node match {
+            case d: Directory => fsCleanupManager ! CleanupDirectoryTask(d)
+            case f: File => // do nothing for file
           }
         }
       }
@@ -286,9 +306,9 @@ with WatchedActor {
 
     val resource = accessManager.get(address)
 
-    val name = resource.systemMetadata.get(Node.NODE_FIELD_NAME)
+    val name = resource.systemMetadata(Node.NODE_FIELD_NAME)
 
-    resource.systemMetadata.get(Node.NODE_FIELD_PARENT) match {
+    resource.systemMetadata(Node.NODE_FIELD_PARENT) match {
       case Some(value) => lookupResourcePath(value, name.get :: pathComponents)
       case None => pathComponents
     }
@@ -296,6 +316,16 @@ with WatchedActor {
   }
 
   def fileSystemRoots: Map[String, String] = fsRoots
+
+  def overrideFileSystemRoot(domainId: String, address: String) {
+    log info "Adding new root: " + domainId + " => " + address
+
+    val map: Map[String, String] = fsRoots + ((domainId, address))
+
+    configAccessor.store(map)
+
+    fsRoots = configAccessor.load
+  }
 
   def importFileSystemRoot(domainId: String, address: String) {
 
@@ -326,6 +356,8 @@ with WatchedActor {
 
   private def addNodeToDirectory(domainId: String, path: String, name: String, newNode: Node) {
 
+    verifyName(name)
+
     val node = getFSNode(domainId, path)
 
     var directory: Directory = null
@@ -336,11 +368,11 @@ with WatchedActor {
       throw new FSException("Can't add node to file")
     }
 
-    if (!directory.getChild(name).isEmpty) {
+    if (!directory.getAliveChild(name).isEmpty) {
       throw new FSWrongRequestException("Node with name: " + name + " already exists")
     }
 
-    newNode.resource.systemMetadata.put(Node.NODE_FIELD_PARENT, directory.resource.address)
+    newNode.resource.systemMetadata(Node.NODE_FIELD_PARENT) = directory.resource.address
     val newAddress = accessManager.add(newNode.resource)
 
     directory.addChild(name, newAddress, !newNode.isDirectory)
@@ -360,15 +392,13 @@ with WatchedActor {
 
     for (directoryName <- pathComponents) {
 
-      if (log.isTraceEnabled) {
-        log.trace("Getting node: " + directoryName)
-      }
+      log.trace("Getting node: {}",directoryName)
 
       if (!resultNode.isDirectory) {
         throw new FSException("Found file, expected directory")
       }
 
-      val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
+      val nodeRef = resultNode.asInstanceOf[Directory].getAliveChild(directoryName) match {
         case Some(a) => a
         case None => throw new FSNotFoundException("Specified path " + path + " does not exists in the domain " + domainId)
       }
@@ -379,9 +409,7 @@ with WatchedActor {
 
     }
 
-    if (log.isDebugEnabled) {
-      log.debug("Found node for path: " + path)
-    }
+    log.debug("Found node for path: {}" + path)
 
     resultNode
 
@@ -442,10 +470,16 @@ with WatchedActor {
   def startFilesystemCheck() {
 
     if (taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty) {
-      val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)
+      val task = new FSCheckTask(accessManager, statisticsManager, queryManager, this, fsRoots)
       taskManager.submitTask(task)
     } else {
       throw new IllegalStateException("Task already started")
+    }
+  }
+
+  protected def verifyName(name: String) {
+    if(name.length > 512){
+      throw new FSException("System does not support names with length more than 512 bytes")
     }
   }
 }

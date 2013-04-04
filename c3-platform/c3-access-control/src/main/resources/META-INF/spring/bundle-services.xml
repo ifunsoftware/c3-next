@@ -20,4 +20,6 @@
 
     <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
 
+    <reference id="cleanupService" interface="org.aphreet.c3.platform.access.CleanupManager"/>
+
 </beans:beans>

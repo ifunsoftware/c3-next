@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.remote.api.management
 
-import reflect.BeanProperty
+import scala.beans.BeanProperty
 
 class RemoteTaskDescription(
         @BeanProperty var id:String,

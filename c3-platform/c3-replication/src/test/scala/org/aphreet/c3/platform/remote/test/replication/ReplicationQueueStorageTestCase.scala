@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.remote.test.replication
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.remote.replication.impl.data.queue.ReplicationQueueStorage
+import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueStorageImpl, ReplicationQueueStorage}
 import java.io.File
 import org.aphreet.c3.platform.remote.replication.impl.data._
 
@@ -66,14 +66,14 @@ class ReplicationQueueStorageTestCase extends TestCase{
 
     storage.add(tasks)
 
-    //Small test to check behavoir with duplicate entries
+    //Small test to check behavior with duplicate entries
     storage.add(Set(ReplicationTask("1228249156", "0e6315ea-c2fd-4bef-936e-59cef7943841-6a40", AddAction)))
 
     val iterator = storage.iterator
 
     while(iterator.hasNext){
 
-      val task = iterator.next
+      val task = iterator.next()
       println("Enumerating: " + task)
 
       assertTrue(tasks.contains(task))
@@ -84,7 +84,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
     val iterator2 = storage.iterator
 
     while(iterator2.hasNext){
-      val task = iterator2.next
+      val task = iterator2.next()
 
       println("Deleting:" + task)
       iterator2.remove()
@@ -97,7 +97,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
     var taskCount = 0
 
     while(iterator3.hasNext){
-      println(iterator3.next)
+      println(iterator3.next())
       taskCount = taskCount + 1
     }
 
@@ -110,7 +110,7 @@ class ReplicationQueueStorageTestCase extends TestCase{
 
 
   def createStorage(dir:String):ReplicationQueueStorage = {
-    new ReplicationQueueStorage(new Path(new File(testDir, dir)))
+    new ReplicationQueueStorageImpl(new Path(new File(testDir, dir)))
   }
 
 }

@@ -38,14 +38,14 @@ class DomainAccessToken(override val action:Action,
 {
   override def checkAccess(resource:Resource){
 
-    resource.systemMetadata.get(Domain.MD_FIELD) match{
+    resource.systemMetadata(Domain.MD_FIELD) match{
       case Some(id) => if(id != domain.id) throw new DomainException("Requested resource does not belong to specified domain")
       case None =>
     }
   }
 
   override def updateResource(resource:Resource){
-    resource.systemMetadata.put(Domain.MD_FIELD, domain.id)
+    resource.systemMetadata(Domain.MD_FIELD) = domain.id
   }
 
   override def metadataRestrictions:Map[String, String] = Map(Domain.MD_FIELD -> domain.id)

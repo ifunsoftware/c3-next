@@ -29,18 +29,16 @@
  */
 package org.aphreet.c3.platform.search.impl.index.filter
 
-import org.aphreet.c3.platform.resource.Resource
-import org.apache.lucene.misc.TrigramLanguageGuesser
-import java.net.URL
 import collection.mutable.HashMap
-import org.apache.commons.logging.LogFactory
 import java.io.StringReader
-import org.aphreet.c3.platform.search.impl.common.{Fields, LanguageGuesserUtil}
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.impl.common.Fields._
+import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
+import org.aphreet.c3.platform.common.Logger
 
 class LanguageGuesserFilter extends ResourceFilter{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   val languageGuesser = LanguageGuesserUtil.createGuesser
 

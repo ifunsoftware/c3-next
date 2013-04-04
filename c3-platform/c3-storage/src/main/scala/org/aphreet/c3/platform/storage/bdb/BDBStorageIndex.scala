@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.storage.bdb
 import org.aphreet.c3.platform.storage.StorageIndex
 import com.sleepycat.je.DatabaseEntry
 import java.nio.ByteBuffer
+import scala.language.implicitConversions
 
 class BDBStorageIndex(val storageIndex: StorageIndex) {
 

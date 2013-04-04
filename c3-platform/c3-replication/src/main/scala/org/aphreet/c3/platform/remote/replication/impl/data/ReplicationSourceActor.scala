@@ -29,22 +29,20 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
-import org.springframework.beans.factory.annotation.Autowired
-
 import javax.annotation.PreDestroy
-
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
-import org.aphreet.c3.platform.statistics.StatisticsManager
-import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.common.{ComponentGuard, WatchedActor}
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
 import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard, WatchedActor}
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
+import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.Storage
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Scope
+import org.springframework.stereotype.Component
+
 
 @Component
 @Scope("singleton")
@@ -52,7 +50,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
   private var remoteReplicationActors = Map[String, ReplicationLink]()
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var accessMediator:AccessMediator = _
 
@@ -99,7 +97,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
         case ResourceUpdatedMsg(resource, source) => sendToAllLinks(ResourceUpdatedMsg(resource, source))
 
-        case ResourceDeletedMsg(address, source) => sendToAllLinks(ResourceDeletedMsg(address, source))
+        case ResourceDeletedMsg(address, source) if source != 'FSCleanupManager => sendToAllLinks(ResourceDeletedMsg(address, source))
 
         case StoragePurgedMsg(source) => manager ! StoragePurgedMsg(source)
 

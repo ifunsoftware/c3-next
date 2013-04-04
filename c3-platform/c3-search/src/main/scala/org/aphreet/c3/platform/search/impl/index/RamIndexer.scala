@@ -31,30 +31,29 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import actors.Actor
+import collection.JavaConversions._
+import java.io.{Reader, StringReader}
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.Document
 import org.apache.lucene.index.{IndexWriterConfig, IndexWriter}
 import org.apache.lucene.store.{RAMDirectory, Directory}
-import org.aphreet.c3.platform.resource.Resource
-import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.util.Version
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
-import java.io.{Reader, StringReader}
+import org.aphreet.c3.platform.resource.{Metadata, Resource}
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
-import org.aphreet.c3.platform.common.{Tracer, WatchedActor}
-import org.aphreet.c3.platform.search.ext.DocumentBuilderFactory
-import org.apache.lucene.util.Version
-import collection.JavaConversions._
-import org.apache.lucene.document.Document
+import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 import org.aphreet.c3.platform.search.{HandleFieldListMsg, SearchConfigurationManager}
 import scala.util.control.Exception._
-import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 
 
 class RamIndexer(val fileIndexer: Actor,
                  val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
-                 var textExtractor:TextExtractor) extends WatchedActor with Tracer {
+                 var textExtractor:TextExtractor) extends WatchedActor {
 
-  val log = logOfClass(getClass)
+  val log = Logger(getClass)
 
   var maxDocsCount: Int = 100
 
@@ -66,12 +65,8 @@ class RamIndexer(val fileIndexer: Actor,
 
   val languageGuesser = LanguageGuesserUtil.createGuesser
 
-  var documentBuilderFactory:DocumentBuilderFactory = _
-
   {
     createNewWriter()
-
-    documentBuilderFactory = new DocumentBuilderFactory()
   }
 
 
@@ -95,12 +90,15 @@ class RamIndexer(val fileIndexer: Actor,
     loop {
       react {
         case IndexMsg(resource) => {
-          handling(classOf[Throwable]).by(e => log.warn(num + ": Failed to index resource", e)).apply{
-            trace{"Got request to index " + resource.address}
+          handling(classOf[Throwable]).by(e => {
+            log.warn(num + ": Failed to index resource " + resource.address, e)
+            sender ! ResourceIndexingFailed(resource.address)
+          }).apply{
+            log.trace("Got request to index {}", resource.address)
 
             if(shouldIndexResource(resource)){
 
-              debug{"Indexing resource " + resource.address}
+              log.debug("Indexing resource {}", resource.address)
 
               indexResource(resource)
               sender ! ResourceIndexedMsg(resource.address)
@@ -109,7 +107,7 @@ class RamIndexer(val fileIndexer: Actor,
                 createNewWriter()
               }
             }else{
-              debug{"No need to index resource " + resource.address}
+              log.debug("No need to index resource {}", resource.address)
             }
           }
         }
@@ -150,25 +148,23 @@ class RamIndexer(val fileIndexer: Actor,
   }
 
   def indexResource(resource: Resource) {
-    debug{ num + ": Indexing resource " + resource.address}
+    log.debug("{}: Indexing resource {}", num,resource.address)
 
     val extractedDocument = if(extractDocumentContent){
       textExtractor.extract(resource)
     }else None
 
     try{
-      val metadata = Map[String, String]() ++ resource.metadata
-      val language = getLanguage(metadata, extractedDocument)
+      val language = getLanguage(resource.metadata, extractedDocument)
 
-      val resourceHandler = new ResourceHandler(documentBuilderFactory,
-        configurationManager.searchConfiguration, resource, metadata, extractedDocument, language)
+      val resourceHandler = new ResourceHandler(configurationManager.searchConfiguration, resource, resource.metadata, extractedDocument, language)
 
       val document = resourceHandler.document
       val analyzer = resourceHandler.analyzer
 
       captureDocumentFields(document)
 
-      debug{"Lucene document: " + document.toString}
+      log.debug("Lucene document: {}", document.toString)
 
       writer.addDocument(document, analyzer)
       writer.commit()
@@ -179,7 +175,7 @@ class RamIndexer(val fileIndexer: Actor,
       }
     }
 
-    debug{ "Resource writen to tmp index (" + resource.address + ")"}
+    log.debug("Resource writen to tmp index ({})", resource.address)
   }
 
   def captureDocumentFields(document:Document){
@@ -188,11 +184,11 @@ class RamIndexer(val fileIndexer: Actor,
     configurationManager ! HandleFieldListMsg(indexedFieldList)
   }
 
-  def getLanguage(metadata:Map[String, String], extracted: Option[ExtractedDocument]):String = {
+  def getLanguage(metadata: Metadata, extracted: Option[ExtractedDocument]):String = {
 
     val reader: Option[Reader] = extracted match {
       case Some(document) => Some(new StringReader(document.content))
-      case None => metadata.get(TITLE) match {
+      case None => metadata(TITLE) match {
         case Some(value) => Some(new StringReader(value))
         case None => None
       }
@@ -205,13 +201,14 @@ class RamIndexer(val fileIndexer: Actor,
   }
 
   def shouldIndexResource(resource:Resource):Boolean = {
-    resource.systemMetadata.get("c3.skip.index") match{
+    resource.systemMetadata("c3.skip.index") match{
       case Some(x) => false
       case None => true
     }
   }
 }
 
+case class ResourceIndexingFailed(address: String)
 case class ResourceIndexedMsg(address: String)
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)

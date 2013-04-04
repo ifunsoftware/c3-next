@@ -64,15 +64,15 @@ class TestXmlSerialization extends TestCase{
 
     val resource = new Resource
     resource.address = "my_resource_address"
-    resource.metadata.put("md_key", "sdsd")
-    resource.metadata.put("md_key2", "md\"value2")
+    resource.metadata("md_key") = "sdsd"
+    resource.metadata("md_key2") = "md\"value2"
 
     val version = new ResourceVersion
     version.data = DataStream.create("string")
     version.date = new Date()
-    version.systemMetadata.put("sys_key", "sys_value")
-    version.systemMetadata.put("c3.data.length", "10240")
-    version.systemMetadata.put("c3.data.md5", "42688c7115664cc2a14c73ef9af6d266")
+    version.systemMetadata("sys_key") = "sys_value"
+    version.systemMetadata("c3.data.length") = "10240"
+    version.systemMetadata("c3.data.md5") = "42688c7115664cc2a14c73ef9af6d266"
 
     resource.addVersion(version)
 
@@ -94,7 +94,7 @@ class TestXmlSerialization extends TestCase{
 
     val xStream = new XStreamFactory().createXMLStream
 
-    val output = xStream.toXML(new SearchResult(result))
+    val output = xStream.toXML(new SearchResult("query", result))
 
     val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + output
 

@@ -49,6 +49,7 @@ import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
 import org.aphreet.c3.platform.backup.BackupManager
+import org.aphreet.c3.platform.search.SearchManager
 
 @Component("platformManagementService")
 @WebService(serviceName="ManagementService", targetNamespace="remote.c3.aphreet.org")
@@ -65,6 +66,8 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   private var _filesystemManager:FSManager = _
 
   private var _backupManager:BackupManager = _
+
+  private var _searchManager: SearchManager = _
 
   @Autowired
   private def setManagementEndpoint(endPoint:PlatformManagementEndpoint) {
@@ -94,6 +97,11 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   @Autowired
   private def setBackupManager(manager:BackupManager) {
     _backupManager = manager
+  }
+
+  @Autowired
+  private def setSearchManager(manager: SearchManager) {
+    _searchManager = manager
   }
 
   private def managementEndpoint:PlatformManagementEndpoint = {
@@ -191,7 +199,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def migrate(source:String, target:String) {
+  def migrateStorage(source:String, target:String) {
     try {
       managementEndpoint.migrateFromStorageToStorage(source, target)
     } catch {
@@ -402,7 +410,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def createIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
+  def createStorageIndex(name:String, fields:Array[String], system:java.lang.Boolean, multi:java.lang.Boolean) {
     try{
       val idx = new StorageIndex(name,
         fields.toList,
@@ -419,7 +427,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def removeIndex(name:String) {
+  def removeStorageIndex(name:String) {
     try{
       managementEndpoint.removeIndex(name)
     }catch{
@@ -430,7 +438,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def establishReplication(host:String, port:java.lang.Integer, username:String, password:String) {
+  def createReplicationTarget(host:String, port:java.lang.Integer, username:String, password:String) {
     try{
       replicationManager.establishReplication(host, port, username, password)
     }catch{
@@ -474,9 +482,32 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+
+  def resetReplicationQueue() {
+    try{
+      replicationManager.resetReplicationQueue()
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
   def copyDataToReplicationTarget(id:String) {
     try{
       replicationManager.copyToTarget(id)
+    }catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def dumpReplicationQueue(path: String) {
+    try{
+      replicationManager.dumpReplicationQueue(path)
     }catch {
       case e: Throwable => {
         e.printStackTrace()
@@ -499,7 +530,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
   def listDomains:Array[DomainDescription] = {
     try{
       (for(entry <- domainManager.domainList)
-      yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name)).toArray
+      yield new DomainDescription(entry.id, entry.name, entry.key, entry.mode.name, entry.deleted)).toArray
     }catch{
       case e: Throwable => {
         e.printStackTrace()
@@ -541,7 +572,53 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def listFileSystemRoots:Array[Pair] = {
+
+  def setDefaultDomain(domainId: String) {
+    try{
+      domainManager.setDefaultDomain(domainId)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def removeDomainKey(name: String) {
+    try{
+      domainManager.removeKey(name)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+
+  def getDefaultDomain = {
+    try{
+      domainManager.getDefaultDomainId
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def deleteDomain(name: String) {
+    try{
+      domainManager.deleteDomain(name)
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def listFilesystemRoots:Array[Pair] = {
     try{
       filesystemManager.fileSystemRoots.map(e => new Pair(e._1, e._2)).toSeq.toArray
     }catch{
@@ -552,7 +629,7 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
-  def importFileSystemRoot(domainId:String, address:String) {
+  def importFilesystemRoot(domainId:String, address:String) {
     try{
       filesystemManager.importFileSystemRoot(domainId, address)
     }catch{
@@ -687,6 +764,17 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
 
       targetDescription
     } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+  def dumpSearchIndex(path: String) {
+    try{
+      _searchManager.dumpIndex(path)
+    }catch{
       case e: Throwable => {
         e.printStackTrace()
         throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)

@@ -35,6 +35,7 @@ import org.aphreet.c3.platform.client.access.http.{C3SearchAccessor, C3FileHttpA
 import org.aphreet.c3.platform.client.common.{VersionUtils, CLI}
 import org.aphreet.c3.platform.client.common.ArgumentType._
 import java.io.{FileOutputStream, File, InputStreamReader, BufferedReader}
+import scala.language.postfixOps
 
 class FSClient(override val args:Array[String]) extends CLI(args){
 

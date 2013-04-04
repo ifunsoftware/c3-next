@@ -97,7 +97,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       resp.setStatus(HttpServletResponse.SC_OK)
       resp.setContentLength(resourceVersion.data.length.toInt)
 
-      resource.metadata.get(Resource.MD_CONTENT_TYPE) match {
+      resource.metadata(Resource.MD_CONTENT_TYPE) match {
         case Some(x) => resp.setContentType(x)
         case None =>
       }
@@ -121,24 +121,31 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     val directory = node.asInstanceOf[Directory]
 
-    val fsDirectory = if(childMeta != null || needsData){
+    val metaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
 
-      val metaKeys = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty) else null
+    val fsDirectory = if(!metaKeys.isEmpty || needsData){
 
-      val children = directory.children.map((child:NodeRef) => {
+      val children:List[Option[FSNode]] = directory.children.map((child:NodeRef) => {
 
-          val dataAndMd = accessManager.getOption(child.address) match {
-            case Some(resource) => {
-              (if(metaKeys != null) resource.metadata.filterKeys(metaKeys.contains(_)) else null,
-              if(needsData) resource.versions.last else null)
-            }
-            case None => (null, null)
+        accessManager.getOption(child.address) match {
+          case Some(resource) => {
+            Some(new FSNode(child,
+              resource.metadata.asMap.filterKeys(metaKeys.contains(_)),
+
+              if(needsData){
+                resource.versions.last.systemMetadata("c3.data.length") match {
+                  case Some(value) => if(value.toLong < 10240) resource.versions.last else null
+                  case None => null
+                }
+              } else
+                null
+              ))
           }
+          case None => None
+        }
+      }).toList
 
-        new FSNode(child, dataAndMd._1, dataAndMd._2)
-      })
-
-      FSDirectory.fromNodeAndChildren(directory, children)
+      FSDirectory.fromNodeAndChildren(directory, children.flatten)
     }else{
       FSDirectory.fromNode(directory)
     }
@@ -190,7 +197,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       val keys = extMeta.split(",")
 
       transientMetadataManager.getTransientMetadata(resource.address, keys.toSet) foreach {
-        case (k, v) => resource.transientMetadata.put(k, v)
+        case (k, v) => resource.transientMetadata(k) = v
       }
     }
 
@@ -289,7 +296,10 @@ class DataController extends AbstractController with ServletContextAware with Re
         resource.addVersion(version)
       }
 
+      getMetadataToDelete(request).foreach(resource.metadata.remove(_))
+
       resource.metadata ++= metadata
+
       accessTokens.updateMetadata(resource)
       log debug "Executing callback"
       runResourceStore(resource, request, processStore)
@@ -345,5 +355,14 @@ class DataController extends AbstractController with ServletContextAware with Re
       key = keyValue(0)
       value = new String(Base64.decodeBase64(keyValue(1).getBytes("UTF-8")), "UTF-8")
     } yield (key, value)).toMap
+  }
+
+  protected def getMetadataToDelete(request: HttpServletRequest): List[String] = {
+    import scala.collection.JavaConversions._
+    val metadataHeaders = request.getHeaders("x-c3-metadata-delete")
+
+    (for {
+      header <- metadataHeaders
+    } yield header.toString).toList
   }
 }

@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -31,23 +31,31 @@
 
 package org.aphreet.c3.platform.domain
 
-trait DomainManager{
+trait DomainManager {
 
-  def addDomain(name:String)
+  def addDomain(name: String)
 
-  def generateKey(name:String):String
+  def generateKey(name: String): String
 
-  def setMode(name:String, mode:String)
+  def removeKey(name: String)
 
-  def updateName(name:String, newName:String)
+  def setMode(name: String, mode: String)
 
-  def domainList:List[Domain]
+  def updateName(name: String, newName: String)
 
-  def domainById(id:String):Option[Domain]
+  def domainList: List[Domain]
 
-  def checkDomainAccess(name:String, hash:String, keyBase:String):Domain
+  def getDefaultDomainId: String
 
-  def getAnonymousDomain:Domain
+  def setDefaultDomain(domainId: String)
 
-  def importDomain(domain:Domain, systemId:String)
+  def domainById(id: String): Option[Domain]
+
+  def checkDomainAccess(name: String, hash: String, keyBase: String): Domain
+
+  def getDefaultDomain: Domain
+
+  def importDomain(domain: Domain, systemId: String)
+
+  def deleteDomain(name: String)
 }

@@ -5,15 +5,16 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.access.rest
 Bundle-Classpath: WEB-INF/classes
 Web-ContextPath: /rest
-Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
+Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
+ org.scala-lang.scala-actors;version="[2.10.1,2.11)",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
- org.springframework.core;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.context;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.beans;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.aop;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.context.support;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.web;version="[2.5.6.SEC01,3.0.6.RELEASE]",
- org.springframework.web.servlet;version="[2.5.6.SEC01,3.0.6.RELEASE]",
+ org.springframework.core;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.context;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.beans;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.aop;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.context.support;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.web;version="[2.5.6.SEC01,3.1.0.RELEASE]",
+ org.springframework.web.servlet;version="[2.5.6.SEC01,3.1.0.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  javax.servlet;version="[2.5.0,3.1.0]",
  org.apache.commons.fileupload;version="[1.2.2,1.2.2]",
@@ -30,6 +31,6 @@ Import-Bundle: scala-library;version="[2.8.0,2.9.2]",
  com.springsource.org.codehaus.jettison;version="[1.0.1,1.0.1]",
  com.springsource.org.joda.time;version="[1.6.0,1.6.2]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
- org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.slf4j;version="[1.6.4,2.0.0)",
  org.eclipse.virgo.web.dm
  

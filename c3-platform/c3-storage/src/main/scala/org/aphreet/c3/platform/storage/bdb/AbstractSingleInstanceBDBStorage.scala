@@ -175,7 +175,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
       }
 
     }catch{
-      case e: Throwable => log.error(e)
+      case e: Throwable => log.error("Failed to close iterator: ", e)
     }
 
 

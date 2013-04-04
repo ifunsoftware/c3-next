@@ -29,11 +29,9 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.common.{WatchedActor, Path}
-import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
-import org.aphreet.c3.platform.search.ext.SearchStrategyFactory
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
+import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
 import org.apache.lucene.search._
 import org.apache.lucene.index.IndexReader
@@ -41,24 +39,18 @@ import org.apache.lucene.store.NIOFSDirectory
 
 
 class Searcher(var indexPath: Path,
-               var ramIndexers:List[RamIndexer],
-               val configurationManager:SearchConfigurationManager) extends WatchedActor{
-
-  var searchStrategyFactory:SearchStrategyFactory = _
-
-  {
-    searchStrategyFactory = new SearchStrategyFactory()
-  }
+               var ramIndexers: List[RamIndexer],
+               val configurationManager: SearchConfigurationManager) extends WatchedActor {
 
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   var indexSearcher = createSearcher
 
 
-  def act(){
-    loop{
-      react{
+  def act() {
+    loop {
+      react {
         case ReopenSearcherMsg => {
           log info "Reopening searcher"
           val oldSearcher = indexSearcher
@@ -81,12 +73,12 @@ class Searcher(var indexPath: Path,
 
         case DestroyMsg => {
           log info "Destroying searcher"
-          try{
+          try {
             indexSearcher match {
               case Some(value) => value.close()
               case None =>
             }
-          }finally{
+          } finally {
             this.exit()
           }
 
@@ -95,13 +87,13 @@ class Searcher(var indexPath: Path,
     }
   }
 
-  private def createSearcher:Option[IndexSearcher] = {
+  private def createSearcher: Option[IndexSearcher] = {
 
-    try{
+    try {
       val reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
 
       Some(new IndexSearcher(reader))
-    }catch{
+    } catch {
       case e: Throwable => {
         log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
         None
@@ -112,35 +104,16 @@ class Searcher(var indexPath: Path,
     //(reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
   }
 
-  def getSearcher:Option[IndexSearcher] = indexSearcher
+  def getSearcher: Option[IndexSearcher] = indexSearcher
 
-  def search(domain:String, sourceQuery: String): Array[SearchResultElement] = {
+  def search(domain: String, sourceQuery: String): SearchResult = {
 
-    if(getSearcher.isEmpty){
-      Array()
-    }else{
-
-      val searchStrategy = searchStrategyFactory.createSearchStrategy
-
-      val found = searchStrategy.search(getSearcher.get,
+    if (getSearcher.isEmpty) {
+      SearchResult(sourceQuery, Array())
+    } else {
+      new MultiFieldSearchStrategy().search(getSearcher.get,
         configurationManager.searchConfiguration,
         sourceQuery, 30, 0, domain)
-
-      val results = new Array[SearchResultElement](found.size)
-
-      var i = 0
-
-      for(e <- found){
-
-        results(i) = SearchResultElement.fromEntry(e)
-
-        i = i +1
-      }
-
-      if(log.isDebugEnabled)
-        log debug "results: " + results.toString
-
-      results
     }
   }
 
@@ -152,4 +125,5 @@ class Searcher(var indexPath: Path,
 }
 
 object ReopenSearcherMsg
-case class NewIndexPathMsg(path:Path)
+
+case class NewIndexPathMsg(path: Path)

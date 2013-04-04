@@ -32,12 +32,14 @@ package org.aphreet.c3.platform.search
 
 import org.aphreet.c3.platform.common.WatchedActor
 
-trait SearchManager extends WatchedActor{
+trait SearchManager extends WatchedActor {
 
-  def search(domain:String, query:String):Array[SearchResultElement]
+  def search(domain: String, query: String): SearchResult
 
   def flushIndexes()
 
   def deleteIndexes()
-  
+
+  def dumpIndex(path: String)
+
 }

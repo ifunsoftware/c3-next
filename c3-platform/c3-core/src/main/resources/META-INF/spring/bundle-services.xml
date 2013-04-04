@@ -24,6 +24,9 @@
     <service id="accessService" ref="accessManager"
        interface="org.aphreet.c3.platform.access.AccessManager"/>
 
+    <service id="cleanupService" ref="cleanupManager"
+       interface="org.aphreet.c3.platform.access.CleanupManager"/>
+
     <service id="accessMediatorService" ref="accessMediator"
        interface="org.aphreet.c3.platform.access.AccessMediator"/>
        

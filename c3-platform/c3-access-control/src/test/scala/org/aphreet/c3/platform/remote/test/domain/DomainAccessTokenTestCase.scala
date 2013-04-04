@@ -41,31 +41,31 @@ class DomainAccessTokenTestCase extends TestCase{
 
   def testCheckAccess(){
 
-    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode))
+    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode, deleted = false))
 
     val resource = new Resource
-    resource.systemMetadata.put(Domain.MD_FIELD, "domain-id")
+    resource.systemMetadata(Domain.MD_FIELD) = "domain-id"
     token.checkAccess(resource)
 
 
-    resource.systemMetadata.put(Domain.MD_FIELD, "domain2-id")
+    resource.systemMetadata(Domain.MD_FIELD) = "domain2-id"
 
     try{
       token.checkAccess(resource)
     }catch{
-      case e:AccessControlException => //it's ok
-      case e => assertFalse(true)
+      case e: AccessControlException => //it's ok
+      case e: Throwable => assertFalse(true)
     }
   }
 
   def testUpdateMetadata(){
 
-    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode))
+    val token = new DomainAccessToken(READ, Domain("domain-id", "domain-name", "domain-key", FullMode, deleted = false))
 
     val resource = new Resource
 
     token.updateResource(resource)
 
-    assertEquals("domain-id", resource.systemMetadata.getOrElse(Domain.MD_FIELD, ""))
+    assertEquals("domain-id", resource.systemMetadata.asMap.getOrElse(Domain.MD_FIELD, ""))
   }
 }

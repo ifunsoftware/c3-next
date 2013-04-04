@@ -4,7 +4,6 @@ import org.aphreet.c3.platform.storage.ConflictResolver
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.filesystem.{NodeRef, Node, Directory}
 import scala.collection.mutable
-import org.apache.commons.logging.LogFactory
 
 class DirectoryConflictResolver extends ConflictResolver{
 
@@ -21,6 +20,7 @@ class DirectoryConflictResolver extends ConflictResolver{
     filterUpdatedDeletedNodes(resultNodes)
 
     savedDirectory.importChildren(resultNodes)
+    savedResource.calculateCheckSums
   }
 
   private def filterUpdatedDeletedNodes(resultNodes: mutable.HashMap[String, NodeRef]){

@@ -54,7 +54,7 @@ object ResourceSerializer {
 
       writer.`object`
 
-      resource.metadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+      resource.metadata.asMap.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
 
       writer.endObject
 
@@ -63,7 +63,7 @@ object ResourceSerializer {
 
         writer.`object`
 
-        resource.systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+        resource.systemMetadata.asMap.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
 
         writer.endObject
       }
@@ -72,7 +72,7 @@ object ResourceSerializer {
 
       writer.`object`
 
-      resource.transientMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+      resource.transientMetadata.asMap.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
 
       writer.endObject
 
@@ -94,7 +94,7 @@ object ResourceSerializer {
 
           writer.`object`
 
-          v.systemMetadata.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
+          v.systemMetadata.asMap.foreach((e:(String, String)) => writer.key(e._1).value(e._2))
 
           writer.endObject
         }

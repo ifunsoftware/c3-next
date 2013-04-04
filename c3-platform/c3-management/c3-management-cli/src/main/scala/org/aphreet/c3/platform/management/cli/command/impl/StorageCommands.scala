@@ -213,7 +213,7 @@ class CreateStorageIndexCommand extends Command {
       val multi = indexParams(2) == "true"
       val fields = params.drop(3).toArray
 
-      management.createIndex(name, fields, system, multi)
+      management.createStorageIndex(name, fields, system, multi)
 
       "Index created"
     }
@@ -230,7 +230,7 @@ class RemoveStorageIndexCommand extends Command {
     if(params.length < 1){
       "Not enough arguments.\nUsage: remove storage index <index name>"
     }else{
-      management.removeIndex(params.head)
+      management.removeStorageIndex(params.head)
       "Index removed"
     }
   }

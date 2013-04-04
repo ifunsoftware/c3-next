@@ -4,7 +4,7 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 import org.springframework.web.context.ContextLoader
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
-import org.aphreet.c3.platform.remote.api.CLIEvaluator
+import org.aphreet.c3.platform.remote.api.{RemoteException, CLIEvaluator}
 
 class CLIServlet extends HttpServlet{
 
@@ -32,9 +32,11 @@ class CLIServlet extends HttpServlet{
       val command = request.getParameter("command")
 
       if (command != null) {
-
-        response.getWriter.println(escapeHtml(evaluator.evaluate(command, accessService, managementService)))
-
+        try{
+          response.getWriter.println(escapeHtml(evaluator.evaluate(command, accessService, managementService)))
+        }catch{
+          case e: RemoteException => response.getWriter.println(e.getMessage)
+        }
       }else{
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
       }

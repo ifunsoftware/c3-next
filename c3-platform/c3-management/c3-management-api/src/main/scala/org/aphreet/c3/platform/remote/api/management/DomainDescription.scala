@@ -31,14 +31,15 @@
 
 package org.aphreet.c3.platform.remote.api.management
 
-import reflect.BeanProperty
+import scala.beans.BeanProperty
 
 class DomainDescription(
   @BeanProperty var id:String,
   @BeanProperty var name:String,
   @BeanProperty var key:String,
-  @BeanProperty var mode:String) extends java.io.Serializable{
+  @BeanProperty var mode:String,
+  @BeanProperty var deleted: java.lang.Boolean) extends java.io.Serializable{
 
-  def this() = this(null, null, null, null)
+  def this() = this(null, null, null, null, null)
 
 }

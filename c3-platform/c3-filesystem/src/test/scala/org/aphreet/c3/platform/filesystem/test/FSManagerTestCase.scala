@@ -39,7 +39,7 @@ import org.easymock.EasyMock._
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 
-class FSManagerTestCase extends TestCase{
+class FSManagerTestCase extends TestCase with FSTestHelpers{
 
   def testDeletePermission() {
 
@@ -52,7 +52,7 @@ class FSManagerTestCase extends TestCase{
     assertTrue(fsManager.resourceCanBeDeleted(resource))
 
 
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
     assertTrue(fsManager.resourceCanBeDeleted(resource))
 
@@ -77,7 +77,7 @@ class FSManagerTestCase extends TestCase{
     directory.resource.address = "some other address"
 
     //non-empty non-root directory
-    assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
+    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
 
     directory.removeChild("name")
 
@@ -101,7 +101,7 @@ class FSManagerTestCase extends TestCase{
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
-    resource.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_FILE)
+    resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
     assertTrue(fsManager.resourceCanBeUpdated(resource))
 
@@ -148,7 +148,7 @@ class FSManagerTestCase extends TestCase{
 
     assertTrue(fsManager.resourceCanBeUpdated(resource0))
 
-    resource0.systemMetadata.put(Node.NODE_FIELD_TYPE, Node.NODE_TYPE_DIR)
+    resource0.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_DIR
 
     assertFalse(fsManager.resourceCanBeUpdated(resource0))
 
@@ -194,23 +194,7 @@ class FSManagerTestCase extends TestCase{
     assertEquals(None, fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals(None, fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
-
-
     verify(accessManager)
-  }
-
-  def resourceStub(name:String, parentAddress:String):Resource = {
-    val resource = new Resource
-
-    if(name != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_NAME, name)
-    }
-
-    if(parentAddress != null){
-      resource.systemMetadata.put(Node.NODE_FIELD_PARENT, parentAddress)
-    }
-
-    resource
   }
 
   def testSplitPath() {

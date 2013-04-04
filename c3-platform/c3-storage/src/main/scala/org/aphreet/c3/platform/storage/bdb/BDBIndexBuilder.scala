@@ -69,13 +69,13 @@ class BDBIndexBuilder(val index: StorageIndex) {
         index.fields.head match {
           case "created" => createKey(resource.createDate.getTime)
           case "updated" => createKey(resource.lastUpdateDate.getTime)
-          case _ => createKey(resource.systemMetadata)
+          case _ => createKey(resource.systemMetadata.asMap)
         }
       }else{
-        createKey(resource.systemMetadata)
+        createKey(resource.systemMetadata.asMap)
       }
     } else {
-      createKey(resource.metadata)
+      createKey(resource.metadata.asMap)
     }
   }
 

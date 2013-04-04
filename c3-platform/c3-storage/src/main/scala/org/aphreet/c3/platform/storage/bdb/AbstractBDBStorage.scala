@@ -34,7 +34,7 @@ import com.sleepycat.je._
 import java.io.File
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.resource.{ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{ResourceSerializer, ResourceVersion, Resource}
 import org.aphreet.c3.platform.storage.common.AbstractStorage
 import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams, StorageIterator}
 import scala.collection.mutable
@@ -237,6 +237,7 @@ with DatabaseProvider{
   protected def doUpdate(tx: Transaction, resource: Resource, savedResource: Resource){
     //Appending metadata
     savedResource.metadata ++= resource.metadata
+    resource.metadata.removed.foreach(savedResource.metadata.remove(_))
 
     //Appending system metadata
     savedResource.systemMetadata ++= resource.systemMetadata
@@ -302,8 +303,8 @@ with DatabaseProvider{
             previousVersion = version
             mergedVersions += version
           }else{
-            if (version.systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH)
-            != previousVersion.systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH)){
+            if (version.systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH)
+            != previousVersion.systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH)){
               previousVersion = version
               mergedVersions += version
             }

@@ -65,7 +65,7 @@ class MigrationTask(val source:Storage, val target:Storage, val manager:StorageM
       iterator.close()
       iterator = null
     }catch{
-      case e: Throwable => log error e
+      case e: Throwable => log.error("Task failed", e)
     }
     
     target.mode = new RW

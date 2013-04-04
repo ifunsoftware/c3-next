@@ -1,13 +1,12 @@
 package org.aphreet.c3.platform.backup
 
 import impl.Backup
-import org.aphreet.c3.platform.common.{CloseableIterator, CloseableIterable}
+import org.aphreet.c3.platform.common.{Logger, CloseableIterator, CloseableIterable}
 import org.aphreet.c3.platform.resource.{PathDataStream, ResourceSerializer, Resource}
 import java.nio.file._
 import collection.JavaConversions._
 import java.io._
 import java.nio.charset.Charset
-import org.apache.commons.logging.LogFactory
 import org.apache.commons.codec.digest.DigestUtils
 import java.nio.file.FileSystem
 import org.aphreet.c3.platform.common.Disposable._
@@ -19,7 +18,7 @@ abstract class AbstractBackup extends CloseableIterable[Resource] {
   var zipFilePath : String = null
   var md5FilePath : String = null
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
 
   def addResource(resource:Resource){

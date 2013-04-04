@@ -34,8 +34,7 @@ import com.sleepycat.je._
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageIterator}
-import org.aphreet.c3.platform.common.ComponentGuard
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
 import BDBStorageIndex._
 
 class BDBStorageIterator(val storage: AbstractBDBStorage,
@@ -44,7 +43,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
                          val filter:(Resource) => Boolean,
                          val disableFunctionFilter: Boolean) extends StorageIterator with ComponentGuard{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var cursor: Cursor = null
   var joinCursor : JoinCursor = null
@@ -161,7 +160,7 @@ class BDBStorageIterator(val storage: AbstractBDBStorage,
         var result = true
 
         for((key, value) <- fieldsToCheck){
-          (if(isSystem) res.systemMetadata else res.metadata).get(key) match{
+          (if(isSystem) res.systemMetadata else res.metadata)(key) match{
             case Some(x) =>
               if(x != value) result = false
             case None =>

@@ -1,23 +1,22 @@
 package org.aphreet.c3.platform.storage.dispatcher.impl
 
+import org.aphreet.c3.platform.zone.impl.ZoneConfigAccessor
+import javax.annotation.PostConstruct
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.storage.StorageParams
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
-import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.storage.{StorageParams, Storage}
-import org.aphreet.c3.platform.zone._
-import impl.ZoneConfigAccessor
 import org.aphreet.c3.platform.zone.ZoneConfig
-import scala.Some
 import org.aphreet.c3.platform.zone.ZoneSet
+import org.aphreet.c3.platform.zone._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
-import org.aphreet.c3.platform.exception.StorageNotFoundException
-import org.apache.commons.logging.LogFactory
+import scala.Some
 
 @Component
 class ZoneStorageDispatcher extends StorageDispatcher{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   @Autowired
   var configAccessor:ZoneConfigAccessor = null

@@ -34,7 +34,7 @@ import org.aphreet.c3.platform.task.Task
 import org.aphreet.c3.platform.storage.StorageIterator
 import org.aphreet.c3.platform.storage.Storage
 
-class StorageUpdateTask(val storages:List[Storage], val transformations:List[Transformation]) extends Task{
+class StorageTransformTask(val storages:List[Storage], val transformations:List[Transformation]) extends Task{
 
   var storagesToProcess = storages
   var currentStorage:Storage = null
@@ -88,8 +88,11 @@ class StorageUpdateTask(val storages:List[Storage], val transformations:List[Tra
 
     if(currentIterator.hasNext){
       val resource = currentIterator.next
-      transformations.foreach(t => t(resource))
-      currentStorage.update(resource)
+      try{
+        transformations.foreach(t => t(currentStorage, resource))
+      }catch{
+        case e: Throwable => log.warn("Failed to transform resource " + resource.address + " in storage " + currentStorage.id, e)
+      }
     }else{
 
       log.info("Storage " + currentStorage.id + " processing complete")

@@ -46,7 +46,7 @@ import org.aphreet.c3.platform.domain.{FullMode, DomainMode, Domain}
 
 @Component
 @Scope("singleton")
-class DomainAccessor extends ConfigAccessor[List[Domain]]{
+class DomainAccessor extends ConfigAccessor[DomainConfig]{
 
   @Autowired
   var configManager: PlatformConfigManager = _
@@ -55,30 +55,46 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
 
   def configFileName: String = "c3-domain-config.json"
 
-  def defaultConfig:List[Domain] = {
-    List(Domain(UUID.randomUUID.toString, "anonymous", "", FullMode))
+  def defaultConfig:DomainConfig = {
+    val domainId = UUID.randomUUID.toString
+
+    DomainConfig(List(Domain(domainId, "anonymous", "", FullMode, deleted = false)), domainId)
   }
 
-  def readConfig(node: Node): List[Domain] = {
-    (
-      for (domainNode <- node.getNode("domains").getNodes)
-      yield new Domain(
+  def readConfig(node: Node): DomainConfig = {
+
+    val domains = for (domainNode <- node.getNode("domains").getNodes)
+    yield new Domain(
         domainNode.getNode("id"),
         domainNode.getNode("name"),
         domainNode.getNode("key"),
-        DomainMode.byName(domainNode.getNode("mode")))
-      ).toList
+        DomainMode.byName(domainNode.getNode("mode")),
+        if(domainNode.getNode("deleted") != null) domainNode.getNode("deleted") else false
+      )
+
+    val defaultDomainNode = node.getNode("defaultDomainId")
+
+    val defaultDomain = if (defaultDomainNode != null){
+      defaultDomainNode.asInstanceOf[ScalarNode].getValue[String]
+    }else{
+      domains.filter(d => d.name == "anonymous").head.id
+    }
+
+    DomainConfig(domains.toList, defaultDomain)
   }
 
-  def writeConfig(list: List[Domain], writer: JSONWriter) {
+  def writeConfig(config: DomainConfig, writer: JSONWriter) {
 
     writer.`object`
+
+    writer.key("defaultDomainId")
+    writer.value(config.defaultDomain)
 
     writer.key("domains")
 
     writer.array
 
-    for (domain <- list) {
+    for (domain <- config.domains) {
       writer.`object`
 
       writer.key("id")
@@ -89,6 +105,8 @@ class DomainAccessor extends ConfigAccessor[List[Domain]]{
       writer.value(domain.key)
       writer.key("mode")
       writer.value(domain.mode.name)
+      writer.key("deleted")
+      writer.value(domain.deleted)
       writer.endObject
     }
     writer.endArray

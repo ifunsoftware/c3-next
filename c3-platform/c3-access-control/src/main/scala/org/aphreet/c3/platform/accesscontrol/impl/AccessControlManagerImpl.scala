@@ -31,15 +31,15 @@
 package org.aphreet.c3.platform.accesscontrol.impl
 
 import org.springframework.stereotype.Component
-import org.apache.commons.logging.LogFactory
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.accesscontrol._
 import collection.mutable
+import org.aphreet.c3.platform.common.Logger
 
 @Component("accessControlManager")
 class AccessControlManagerImpl extends AccessControlManager {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   val factories = new mutable.HashSet[AccessTokenFactory]
 

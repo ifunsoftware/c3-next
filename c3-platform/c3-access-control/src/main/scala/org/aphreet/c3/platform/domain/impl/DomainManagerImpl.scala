@@ -35,32 +35,33 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.exception.PlatformException
-import collection.immutable.{HashMap}
+import collection.immutable.HashMap
 import org.springframework.context.annotation.Scope
 import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.auth.HashUtil
 import java.util.{Random, UUID}
 import java.lang.Integer
-import org.apache.commons.logging.LogFactory
 import scala.Some
-import org.aphreet.c3.platform.config.PlatformConfigManager
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.access.CleanupManager
 
 @Component("domainManager")
 @Scope("singleton")
 class DomainManagerImpl extends DomainManager {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var domainAccessor: DomainAccessor = _
 
   @Autowired
-  var platformConfigManager: PlatformConfigManager = _
+  var cleanupManager: CleanupManager = _
 
   private var domains: HashMap[String, Domain] = new HashMap()
 
   private var domainById: HashMap[String, Domain] = new HashMap()
 
+  private var defaultDomainId: String = _
 
   @PostConstruct
   def init() {
@@ -73,17 +74,21 @@ class DomainManagerImpl extends DomainManager {
 
     var idMap = new HashMap[String, Domain]
 
-    for (domain <- domainAccessor.load) {
+    val config = domainAccessor.load
+
+    for (domain <- config.domains) {
       map += ((domain.name, domain))
       idMap += ((domain.id, domain))
     }
 
     domains = map
     domainById = idMap
+
+    defaultDomainId = config.defaultDomain
   }
 
   private def storeDomainConfig() {
-    domainAccessor.store(domains.values.toList)
+    domainAccessor.store(DomainConfig(domains.values.toList, defaultDomainId))
   }
 
   def addDomain(name: String) {
@@ -93,9 +98,9 @@ class DomainManagerImpl extends DomainManager {
       case None =>
     }
 
-    val domain = Domain(UUID.randomUUID.toString, name, generateKey, FullMode)
+    val domain = Domain(UUID.randomUUID.toString, name, generateKey, FullMode, deleted = false)
 
-    domainAccessor.update(l => domain :: l)
+    domainAccessor.update(config => DomainConfig(domain :: config.domains, config.defaultDomain))
 
     reloadDomainConfig()
   }
@@ -107,6 +112,17 @@ class DomainManagerImpl extends DomainManager {
         storeDomainConfig()
         reloadDomainConfig()
         d.key
+      case None => throw new PlatformException("Domain with such name does not exists")
+    }
+  }
+
+
+  def removeKey(name: String) {
+    domains.get(name) match {
+      case Some(d) =>
+        d.key = ""
+        storeDomainConfig()
+        reloadDomainConfig()
       case None => throw new PlatformException("Domain with such name does not exists")
     }
   }
@@ -131,24 +147,61 @@ class DomainManagerImpl extends DomainManager {
     }
   }
 
+
+  def deleteDomain(name: String) {
+    domains.get(name) match {
+      case Some(domain) => {
+        if (domain.deleted){
+          throw new PlatformException("Domain with such name has been already deleted")
+        }else if (defaultDomainId == domain.id){
+          throw new PlatformException("Default domain can't be deleted")
+        }else{
+          log.info("Deleting domain {} ({})", domain.id, domain.name)
+          domain.deleted = true
+          storeDomainConfig()
+          reloadDomainConfig()
+
+          cleanupManager.cleanupResources(resource => resource.systemMetadata(Domain.MD_FIELD) match {
+            case Some(value) => value == domain.id
+            case None => false
+          })
+        }
+      }
+      case None => throw new PlatformException("Domain with such name does not exists")
+    }
+  }
+
   def domainList: List[Domain] = {
     domains.values.toList
   }
 
-  def getAnonymousDomain: Domain = {
-    domains.get("anonymous") match {
+  def getDefaultDomain: Domain = {
+    domainById.get(defaultDomainId) match {
       case Some(d) => d
-      case None => throw new DomainException("Can't find anonymous domain")
+      case None => throw new DomainException("Can't find default domain with id " + defaultDomainId)
     }
   }
 
+  def setDefaultDomain(domainId: String) {
+    if (domainById.contains(domainId)){
+      defaultDomainId = domainId
+      storeDomainConfig()
+    }else{
+      throw new DomainException("Can't find domain with id " + domainId)
+    }
+  }
+
+  def getDefaultDomainId: String = defaultDomainId
+
   def importDomain(importedDomain: Domain, remoteSystemId: String) {
 
-    val domainList = domainAccessor.load
+    val domainConfig = domainAccessor.load
+
+    val domainList = domainConfig.domains
 
     val newDomainList = addDomainToList(importedDomain, remoteSystemId, domainList)
 
-    domainAccessor.store(newDomainList)
+    domainAccessor.store(DomainConfig(newDomainList, domainConfig.defaultDomain))
 
     reloadDomainConfig()
   }
@@ -157,12 +210,20 @@ class DomainManagerImpl extends DomainManager {
     domainList.filter(d => d.id == importedDomain.id).headOption match {
       case Some(domain) =>
 
-        log.info("Updating domain " + domain + " with imported domian: " + importedDomain)
-        //Found domain with the same id
-        //Overriding name of the domain
-        domain.name = importedDomain.name
-        domain.key = importedDomain.key
-        domain.mode = importedDomain.mode
+        if (domain.name != importedDomain.name
+          || domain.key != importedDomain.key
+          || domain.mode != importedDomain.mode
+          || domain.deleted != importedDomain.deleted){
+
+          log.debug("Updating domain " + domain + " with imported domain: " + importedDomain)
+
+          //Found domain with the same id
+          //Overriding name of the domain
+          domain.name = importedDomain.name
+          domain.key = importedDomain.key
+          domain.mode = importedDomain.mode
+          domain.deleted = importedDomain.deleted
+        }
 
         domainList
 
@@ -196,6 +257,11 @@ class DomainManagerImpl extends DomainManager {
 
     domains.get(name) match {
       case Some(d) => {
+
+        if (d.deleted){
+          throw new DomainException("Domain not found")
+        }
+
         val key = d.key
 
         if (key.isEmpty) {
@@ -204,21 +270,26 @@ class DomainManagerImpl extends DomainManager {
           if (HashUtil.hmac(key, keyBase) == hash) {
             d
           } else {
-            log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
-            throw new DomainException("Incorrect signature")
+            log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
+            throw new DomainException("Incorrect signature for signature base " + keyBase)
           }
         }
       }
       case None => {
         domainById.get(name) match {
           case Some(d) => {
+
+            if (d.deleted){
+              throw new DomainException("Domain not found")
+            }
+
             val key = d.key
             if (!key.isEmpty) {
               if (HashUtil.hmac(key, keyBase) == hash) {
                 d
               } else {
-                log.warn("Incorect access attempt for keybase '" + keyBase + "' and key '" + key + "'")
-                throw new DomainException("Incorrect signature")
+                log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
+                throw new DomainException("Incorrect signature for signature base " + keyBase)
               }
             } else {
               d

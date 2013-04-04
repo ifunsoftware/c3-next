@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.search
 
-import ext.SearchConfiguration
 import impl.index.extractor.SimpleTextExtractor
 import impl.index.{IndexMsg, MergeIndexMsg, RamIndexer}
 import junit.framework.TestCase
@@ -12,6 +11,7 @@ import org.apache.lucene.queryParser.QueryParser
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
 import org.apache.lucene.index.IndexReader
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
 class RamIndexerTestCase extends TestCase{
 
@@ -40,7 +40,7 @@ class RamIndexerTestCase extends TestCase{
 
     val resource = new Resource
     resource.address = "aaaaaaaaaaaaaaaaaaaa-13a34a715e9-bbbbbbbb"
-    resource.systemMetadata.put("c3.domain.id", "qweqweqwe")
+    resource.systemMetadata("c3.domain.id") = "qweqweqwe"
     resource.addVersion(ResourceVersion(DataStream.create("Hello, for all c3 users!")))
 
     ramIndexer ! IndexMsg(resource)

@@ -37,6 +37,7 @@ import java.util.Date
 import com.twmacinta.util.{MD5, MD5InputStream}
 import java.io._
 import collection.mutable
+import SerializationUtil._
 
 /**
  * Resource is an object that can be stored in the system.
@@ -57,17 +58,17 @@ class Resource {
   /**
    * Map with user metadata
    */
-  var metadata = new mutable.HashMap[String, String]
+  var metadata = new Metadata()
 
   /**
    * Map with system metadata
    */
-  var systemMetadata = new mutable.HashMap[String, String]
+  var systemMetadata = new Metadata()
 
   /**
    * Map with transient (non-persitent) metadata
    */
-  var transientMetadata = new mutable.HashMap[String, String]
+  var transientMetadata = new Metadata()
 
   /**
    * Array of versions
@@ -86,7 +87,7 @@ class Resource {
    */
   def mimeType:String = {
     if(metadata != null){
-      metadata.get(Resource.MD_CONTENT_TYPE) match{
+      metadata(Resource.MD_CONTENT_TYPE) match{
         case Some(t) => return t
         case None => null
       }
@@ -118,8 +119,8 @@ class Resource {
 
     val os = new DataOutputStream(bos)
 
-    writeMap(metadata, os)
-    writeMap(systemMetadata, os)
+    writeMetadata(metadata, os)
+    writeMetadata(systemMetadata, os)
 
     val md5 = new MD5()
 
@@ -164,26 +165,6 @@ class Resource {
     }
   }
 
-  private def writeString(value:String, dataOs:DataOutputStream) {
-
-    var string:String = ""
-
-    if(value != null) string = value
-
-    val bytes = string.getBytes(Resource.MD_ENCODING)
-    dataOs.writeInt(bytes.length)
-    dataOs.write(bytes)
-  }
-
-  private def writeMap(map:mutable.Map[String, String], dataOs:DataOutputStream) {
-    dataOs.writeInt(map.size)
-
-    for(key <- map.keySet){
-      writeString(key, dataOs)
-      writeString(map(key), dataOs)
-    }
-  }
-
   /**
    * Serialize resource to byte array
    * Method simply writes all fields, metadata, system metadata to byte array.
@@ -207,10 +188,10 @@ class Resource {
         dataOs.writeLong(version.basedOnVersion)
 
         if (embedData){
-          version.systemMetadata.put(Resource.MD_DATA_LENGTH, version.data.length.toString)
+          version.systemMetadata(Resource.MD_DATA_LENGTH) = version.data.length.toString
         }
 
-        writeMap(version.systemMetadata, dataOs)
+        writeMetadata(version.systemMetadata, dataOs)
         if (embedData){
           dataOs.writeLong(version.data.length)
           version.data.writeTo(dataOs)
@@ -229,9 +210,8 @@ class Resource {
     writeString(address, dataOs)
     writeDate(createDate, dataOs)
 
-
-    writeMap(metadata, dataOs)
-    writeMap(systemMetadata, dataOs)
+    writeMetadata(metadata, dataOs)
+    writeMetadata(systemMetadata, dataOs)
 
     dataOs.writeBoolean(embedData)
 
@@ -253,7 +233,7 @@ class Resource {
 
     resource.metadata = this.metadata.clone()
     resource.systemMetadata = this.systemMetadata.clone()
-    resource.transientMetadata = this.systemMetadata.clone()
+    resource.transientMetadata = this.transientMetadata.clone()
 
     resource.isVersioned = this.isVersioned
     resource.embedData = this.embedData
@@ -297,31 +277,6 @@ object Resource {
    */
   def fromByteArray(bytes:Array[Byte]):Resource = {
 
-    def readString(dataIs:DataInputStream, version:Int):String = {
-      val strSize = dataIs.readInt
-      val strArray = new Array[Byte](strSize)
-      dataIs.read(strArray)
-      if(version <= 1){
-        new String(strArray)
-      }else{
-        new String(strArray, MD_ENCODING)
-      }
-
-    }
-
-    def readMap(dataIs:DataInputStream, version:Int):mutable.HashMap[String, String] = {
-      val map = new mutable.HashMap[String, String]
-
-      val mapSize = dataIs.readInt
-
-      for(i <- 1 to mapSize){
-        val key = readString(dataIs, version)
-        val value = readString(dataIs, version)
-        map.put(key, value)
-      }
-      map
-    }
-
     def readVersions(dataIs:DataInputStream, serializeVersion:Int, embedData:Boolean):mutable.Buffer[ResourceVersion] = {
 
       val result = new ArrayBuffer[ResourceVersion]
@@ -341,7 +296,7 @@ object Resource {
           version.basedOnVersion = dataIs.readLong
         }
 
-        version.systemMetadata = readMap(dataIs, serializeVersion)
+        readMetadata(dataIs, version.systemMetadata)
         version.persisted = true
 
         if (embedData){
@@ -371,11 +326,11 @@ object Resource {
 
     resource.isVersioned = dataIn.readBoolean
 
-    resource.address = readString(dataIn, serializeVersion)
+    resource.address = readString(dataIn)
     resource.createDate = new Date(dataIn.readLong)
 
-    resource.metadata ++= readMap(dataIn, serializeVersion)
-    resource.systemMetadata ++= readMap(dataIn, serializeVersion)
+    readMetadata(dataIn, resource.metadata)
+    readMetadata(dataIn, resource.systemMetadata)
 
     if(serializeVersion >= 3){
       resource.embedData = dataIn.readBoolean()

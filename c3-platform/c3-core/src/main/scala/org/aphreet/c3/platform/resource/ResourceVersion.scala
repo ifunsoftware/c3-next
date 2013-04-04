@@ -31,8 +31,6 @@ package org.aphreet.c3.platform.resource
 
 import java.util.Date
 
-import collection.mutable
-
 /**
  * Representation of the resource version
  *
@@ -52,7 +50,7 @@ class ResourceVersion{
   /**
    * System metadata of the version
    */
-  var systemMetadata = new mutable.HashMap[String, String]
+  var systemMetadata = new Metadata()
 
   /**
    * Version's data
@@ -75,7 +73,7 @@ class ResourceVersion{
     builder.append(date.toString).append(" ").append(data.length).append(" ").append(revision)
     builder.append("\n\tMetadata:")
 
-    for((key, value) <- systemMetadata){
+    for((key, value) <- systemMetadata.asMap){
       builder.append("\n\t\t").append(key).append(" => ").append(value)
     }
 
@@ -85,15 +83,15 @@ class ResourceVersion{
   def setData(_data:DataStream) {data = _data}
 
   def calculateHash = {
-    systemMetadata.put(ResourceVersion.RESOURCE_VERSION_HASH, data.hash)
+    systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH) = data.hash
   }
 
   def verifyCheckSum() {
-    systemMetadata.get(ResourceVersion.RESOURCE_VERSION_HASH) match {
+    systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH) match {
       case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
+        if(value != data.hash) throw new ResourceException("Checksum verification failed: expected " + value + ", actual " + data.hash)
       }
-      case None => throw new ResourceException("Checksum verification failed")
+      case None => throw new ResourceException("Checksum verification failed: no checksum stored in the resource metadata")
     }
   }
 

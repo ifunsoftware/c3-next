@@ -30,24 +30,27 @@
 package org.aphreet.c3.platform.storage.updater.transformation
 
 import org.aphreet.c3.platform.resource.Resource
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.storage.Storage
 
 class UpdateTimestampTransformation {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
-  def apply(resource:Resource){
+  def apply(storage: Storage, resource:Resource){
 
-    resource.systemMetadata.get(Resource.MD_UPDATED) match {
+    resource.systemMetadata(Resource.MD_UPDATED) match {
       case Some(value) => log.debug("Resource " + resource.address + " already have c3.updated md field")
       case None => {
         val lastVersion = resource.versions.last
 
         val createVersionTime = lastVersion.date.getTime
 
-        resource.systemMetadata.put(Resource.MD_UPDATED, createVersionTime.toString)
+        resource.systemMetadata(Resource.MD_UPDATED) = createVersionTime.toString
 
         log.debug("Resource " + resource.address + " does not have c3.updated md field, setting from version")
+
+        storage.update(resource)
       }
     }
   }

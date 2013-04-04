@@ -40,21 +40,6 @@
         </encoder>
     </appender>
 
-    <appender name="C3_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>serviceability/logs/c3/log.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <FileNamePattern>serviceability/logs/c3/log_%i.log</FileNamePattern>
-            <MinIndex>1</MinIndex>
-            <MaxIndex>4</MaxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <MaxFileSize>10MB</MaxFileSize>
-        </triggeringPolicy>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
-        </encoder>
-    </appender>
-
     <appender name="C3_DATA_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>serviceability/logs/c3/data.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
@@ -101,26 +86,26 @@
         <appender-ref ref="LOG_FILE" />
     </logger>
 
-    <logger level="INFO" additivity="false" name="org.aphreet.c3">
-        <appender-ref ref="C3_LOG_FILE"/>
+    <logger level="WARN" additivity="false" name="org.eclipse.virgo.kernel">
         <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
+    </logger>
+
+    <logger level="WARN" additivity="false" name="org.osgi.service.log">
+        <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
+    </logger>
+
+    <logger level="WARN" additivity="false" name="net.liftweb.util.TimeHelpers">
+        <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
     </logger>
 
     <logger level="DEBUG" additivity="false" name="c3.data">
         <appender-ref ref="C3_DATA_LOG_FILE"/>
     </logger>
 
-    <logger level="INFO" additivity="false" name="System.err">
-        <appender-ref ref="SIFTED_LOG_FILE" />
-        <appender-ref ref="LOG_FILE" />
-    </logger>
-
-    <logger level="INFO" additivity="false" name="com.ifunsoftware">
-        <appender-ref ref="SIFTED_LOG_FILE" />
-        <appender-ref ref="LOG_FILE" />
-    </logger>
-
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="SIFTED_LOG_FILE" />
         <appender-ref ref="LOG_FILE" />
     </root>

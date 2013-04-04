@@ -1,51 +1,31 @@
 package org.aphreet.c3.platform.search.impl.index.extractor
 
+import java.io._
 import java.net.{HttpURLConnection, URL}
-import org.aphreet.c3.platform.common.Disposable
+import java.nio.file.{StandardCopyOption, Files}
+import org.aphreet.c3.platform.common.{Logger, Disposable}
 import org.aphreet.c3.platform.common.Disposable._
 import org.aphreet.c3.platform.resource.{DataStream, Resource}
-import scala.collection.JavaConversions._
-import java.io._
-import java.nio.file.{StandardCopyOption, Files}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import scala.Some
-import org.apache.commons.logging.LogFactory
-import java.nio.charset.Charset
+import scala.collection.JavaConversions._
+import scala.language.reflectiveCalls
+import scala.language.implicitConversions
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   def extract(resource: Resource): Option[ExtractedDocument] = {
 
-    val contentType = resource.metadata.getOrElse("content.type", "application/octet-stream")
+    val contentType = resource.metadata.asMap.getOrElse("content.type", "application/octet-stream")
 
-    val lastVersion = resource.versions.last
-
-    if(contentType.startsWith("text/plain;charset=")){
-      val encoding = contentType.replaceFirst("text/plain;charset=", "")
-
-      if(Charset.isSupported(encoding)){
-
-        if(isSmallEnough(lastVersion.data.length)){
-          val content = new String(lastVersion.data.getBytes, encoding)
-          Some(new TikaPlainTextDocument(content))
-        }else{
-          log.info("Content of the resource " + resource.address + " was skipped due to too long length: " + lastVersion.data.length)
-          None
-        }
-      }else{
-        log.warn("Charset " + encoding + " is not supported")
-        None
-      }
-    }else{
-      callTika(resource.address, lastVersion.data, contentType)
-    }
+    callTika(resource.address, resource.versions.last.data, contentType)
   }
 
   def callTika(address:String, data: DataStream, contentType: String): Option[ExtractedDocument] = {
 
-    using(openConnection())(connection => {
+    using(openConnection(address))(connection => {
 
       using(connection.getOutputStream)(os => {
 
@@ -59,7 +39,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
                                      if (field._1 != null
                                        && field._1.startsWith("x-tika-extracted_")
                                        && !field._2.isEmpty))
-              yield (field._1.replaceFirst("x-tika-extracted_", ""),
+              yield (field._1.replaceFirst("x-tika-extracted_", "").toLowerCase,
                   collectionAsScalaIterable(field._2).mkString(","))).filter(!_._2.isEmpty).toMap
 
               val path = Files.createTempFile("extracted", "tmp")
@@ -81,12 +61,13 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
     })
   }
 
-  def openConnection(): HttpURLConnection = {
+  def openConnection(address: String): HttpURLConnection = {
     val connection = new URL(tikaHostName).openConnection().asInstanceOf[HttpURLConnection]
 
     connection.setDoInput(true)
     connection.setDoOutput(true)
     connection.setRequestMethod("POST")
+    connection.setRequestProperty("c3.address", address)
 
     connection.connect()
 

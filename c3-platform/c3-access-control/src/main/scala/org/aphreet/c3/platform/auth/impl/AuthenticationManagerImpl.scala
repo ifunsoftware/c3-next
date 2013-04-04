@@ -34,18 +34,17 @@ import org.aphreet.c3.platform.auth._
 import org.aphreet.c3.platform.auth.exception._
 
 import javax.annotation.PostConstruct
-import java.security.MessageDigest
 
 import collection.mutable.HashMap
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 @Component("authenticationManager")
 class AuthenticationManagerImpl extends AuthenticationManager {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   val users = new HashMap[String, User]
 
@@ -96,7 +95,6 @@ class AuthenticationManagerImpl extends AuthenticationManager {
           users.put(username, user)
           configAccessor.store(users)
         }
-        user
       }
     }
 
