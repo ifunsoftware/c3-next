@@ -1,9 +1,8 @@
 package org.aphreet.c3.platform.backup.ssh
 
-import com.sshtools.daemon.platform.NativeAuthenticationProvider
-import java.lang.String
 import java.io.File
-import org.apache.commons.logging.{LogFactory, Log}
+import java.lang.String
+import com.sshtools.daemon.platform.NativeAuthenticationProvider
 
 
 /**

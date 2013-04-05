@@ -1,11 +1,11 @@
 package org.aphreet.c3.platform.backup
 
 import ssh.SftpConnector
-import reflect.BeanProperty
+import scala.beans.BeanProperty
 import org.aphreet.c3.platform.common.Disposable._
 import io.Source
 import java.io.File
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 case class BackupLocation(
             @BeanProperty var id: String,
@@ -23,7 +23,7 @@ case class BackupLocation(
 
 object LocalBackupLocation {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   def create(id: String, path: String) : BackupLocation =  {
 
@@ -45,7 +45,7 @@ object LocalBackupLocation {
 
 object RemoteBackupLocation {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   def create(id: String, host: String, user: String, path: String, privateKeyFile: String) : BackupLocation=  {
 

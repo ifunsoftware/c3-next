@@ -84,14 +84,14 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
   	super.setUp()
 
     server = new SSHServerMock()
-    server.start
+    server.start()
 
     Thread.sleep(2000)
   }
 
   override def tearDown() {
     if (server != null) {
-      server.stop
+      server.stop()
     }
 
     super.tearDown()

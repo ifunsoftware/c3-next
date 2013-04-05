@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ServerConfiguration>
     <!-- this key needs generating by the provided keygen tool -->
-    <ServerHostKey PrivateKeyFile="ssh-server/hostkey.key"/>
+    <ServerHostKey PrivateKeyFile="test-classes/ssh-server/hostkey.key"/>
 
     <Port>2022</Port>
 

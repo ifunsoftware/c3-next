@@ -46,7 +46,7 @@ class CLIServlet extends HttpServlet{
   }
 
   def escapeHtml(text: String): String = {
-    //We can do this more optimal however for management this is enough
+    //We can do this some another nice way however it is enough for management
     text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
   }
 }

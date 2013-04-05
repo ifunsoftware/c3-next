@@ -88,9 +88,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>com.springsource.slf4j.org.apache.commons.logging</artifactId>
-            <version>1.5.10</version>
+        	<groupId>org.slf4j</groupId>
+        	<artifactId>jcl-over-slf4j</artifactId>
+        	<version>1.6.4</version>
             <scope>test</scope>
         </dependency>
 
@@ -127,13 +127,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>org.slf4j</groupId>-->
-        <!--<artifactId>com.springsource.slf4j.simple</artifactId>-->
-        <!--<version>1.5.10</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -326,6 +319,7 @@
                 <version>2.10</version>
                 <configuration>
                     <testFailureIgnore>false</testFailureIgnore>
+                    <workingDirectory>${basedir}</workingDirectory>
                 </configuration>
             </plugin>
 

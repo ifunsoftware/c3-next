@@ -1,15 +1,15 @@
 package org.aphreet.c3.platform.backup.ssh
 
-import java.util.concurrent.{Callable, Executors}
-import java.lang.{String, Object}
-import com.sshtools.daemon.configuration.{ServerConfiguration, XmlServerConfigurationContext}
 import com.sshtools.j2ssh.configuration.ConfigurationLoader
+import com.sshtools.j2ssh.connection.ConnectionProtocol
+import java.lang.String
+import java.net.{InetAddress, Socket}
+import java.util.concurrent.{TimeoutException, TimeUnit, Callable, Executors}
+import org.aphreet.c3.platform.common.Logger
+import com.sshtools.daemon.configuration.{ServerConfiguration, XmlServerConfigurationContext}
 import com.sshtools.daemon.SshServer
 import com.sshtools.daemon.session.SessionChannelFactory
 import com.sshtools.daemon.forwarding.ForwardingServer
-import java.net.{InetAddress, Socket}
-import com.sshtools.j2ssh.connection.ConnectionProtocol
-import org.apache.commons.logging.LogFactory
 import java.io.File
 
 
@@ -20,23 +20,43 @@ import java.io.File
  */
 class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRelativePath: String = null) {
 
-  private val DEFAULT_SERVER_XML_RELATIVE_PATH = "ssh-server/server.xml"
-  private val PLATFORM_XML_RELATIVE_PATH = "ssh-server/platform.xml"
+  private val DEFAULT_SERVER_XML_RELATIVE_PATH = "test-classes/ssh-server/server.xml"
+  private val PLATFORM_XML_RELATIVE_PATH = "test-classes/ssh-server/platform.xml"
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
 
   {
     if (serverXmlRelativePath == null) {
-      serverXmlRelativePath = DEFAULT_SERVER_XML_RELATIVE_PATH
+      serverXmlRelativePath = selectConfigDir(DEFAULT_SERVER_XML_RELATIVE_PATH)
     }
     if (platformXmlRelativePath == null) {
-      platformXmlRelativePath = PLATFORM_XML_RELATIVE_PATH
+      platformXmlRelativePath = selectConfigDir(PLATFORM_XML_RELATIVE_PATH)
     }
   }
 
-  def start {
-    Executors.newSingleThreadExecutor.submit(new Callable[AnyRef] {
+  private def selectConfigDir(baseDir: String): String = {
+    val dirsToCheck = List(baseDir, "c3-backup/" + baseDir, "c3-platform/c3-backup/" + baseDir)
+
+    for(dir <- dirsToCheck){
+      if(checkDirectory(dir)){
+        return dir
+      }
+    }
+
+    ""
+  }
+
+  private def checkDirectory(dir: String):Boolean = {
+    val file = new File(dir)
+
+    log.info("Checking directory " + file.getAbsolutePath)
+
+    file.exists()
+  }
+
+  def start() {
+    val future = Executors.newSingleThreadExecutor.submit(new Callable[AnyRef] {
       override def call: AnyRef = {
         val context: XmlServerConfigurationContext = new XmlServerConfigurationContext
 
@@ -62,13 +82,19 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
         }
 
         log.info("SSH server is starting...")
-        server.startServer
-        return null
+        server.startServer()
+        null
       }
     })
+
+    try{
+      future.get(2, TimeUnit.SECONDS)
+    }catch{
+      case e: TimeoutException => //no errors in startup so far
+    }
   }
 
-  def stop {
+  def stop() {
     log.info("SSH server is shutting down...")
 
     val socket: Socket =
@@ -80,6 +106,6 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
     if (len > 0) {
       socket.getOutputStream.write(msg.substring(0, len).getBytes)
     }
-    socket.close
+    socket.close()
   }
 }

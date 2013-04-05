@@ -45,11 +45,12 @@
         	<artifactId>com.ifunsoftware.j2ssh-core</artifactId>
         	<version>0.2.9</version>
         </dependency>
-
+        
         <dependency>
         	<groupId>sshtools</groupId>
         	<artifactId>j2ssh-daemon</artifactId>
         	<version>0.2.9</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -87,6 +88,14 @@
 
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <workingDirectory>${basedir}/target/</workingDirectory>
+                </configuration>
             </plugin>
 
             <plugin>

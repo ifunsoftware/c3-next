@@ -34,7 +34,6 @@ import index._
 import org.aphreet.c3.platform.access._
 import org.springframework.stereotype.Component
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config._
@@ -42,7 +41,7 @@ import search._
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import org.aphreet.c3.platform.common.{ComponentGuard, Path}
+import org.aphreet.c3.platform.common.{Logger, ComponentGuard, Path}
 import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement, SearchManager}
 import java.io.File
 import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
@@ -71,7 +70,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
   var numberOfIndexers = 2
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
 
   @Autowired
@@ -158,7 +157,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
       backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
-      taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, false)
+      taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, fixedPeriod = false)
       indexerTaskId = backgroundIndexTask.id
 
       indexScheduler.start()
@@ -377,7 +376,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
 
 class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   {
     this.setDaemon(true)

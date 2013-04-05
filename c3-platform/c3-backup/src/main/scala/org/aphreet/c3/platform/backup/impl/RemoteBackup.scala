@@ -1,16 +1,14 @@
 package org.aphreet.c3.platform.backup.impl
 
-import java.net.URI
 import java.io.{FileReader, BufferedReader, FileInputStream, File}
-import org.aphreet.c3.platform.common.{Path => C3Path}
+import java.net.URI
 import java.nio.file._
 import java.util
-import org.aphreet.c3.platform.backup.{BackupLocation, AbstractBackup}
 import org.apache.commons.codec.digest.DigestUtils
-import org.aphreet.c3.platform.common.Disposable._
-import io.Source
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.backup.ssh.SftpConnector
+import org.aphreet.c3.platform.backup.{BackupLocation, AbstractBackup}
+import org.aphreet.c3.platform.common.Disposable._
+import org.aphreet.c3.platform.common.Logger
 
 class RemoteBackup(val name: String, val create: Boolean, val config: BackupLocation,
                    val port: Int = -1, val password: String = null) extends AbstractBackup {
@@ -76,7 +74,7 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
 
 object RemoteBackup {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   def open(name: String, config: BackupLocation): RemoteBackup = {
     new RemoteBackup(name, false, config)

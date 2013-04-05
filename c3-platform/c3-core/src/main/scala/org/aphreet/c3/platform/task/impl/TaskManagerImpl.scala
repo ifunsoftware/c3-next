@@ -2,20 +2,19 @@ package org.aphreet.c3.platform.task.impl
 
 import java.util.concurrent.{ScheduledFuture, ThreadFactory, Executors}
 import javax.annotation.{PostConstruct, PreDestroy}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.task.{TaskManager, Task, TaskDescription}
 import org.springframework.stereotype.Component
 import scala.collection.mutable
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
 import org.springframework.scheduling.{Trigger, TaskScheduler}
-import java.util.Date
 import org.springframework.scheduling.support.{CronTrigger, PeriodicTrigger}
+import org.aphreet.c3.platform.common.Logger
 
 
 @Component("taskManager")
 class TaskManagerImpl extends TaskManager{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
   
   var tasks = new mutable.HashMap[String, Task]
 

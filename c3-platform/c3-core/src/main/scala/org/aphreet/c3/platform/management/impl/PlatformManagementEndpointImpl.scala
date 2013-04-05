@@ -1,8 +1,6 @@
 package org.aphreet.c3.platform.management.impl
 
-import org.apache.commons.logging.LogFactory
-
-import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.task._
@@ -21,7 +19,7 @@ import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, S
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass())
 
   @Autowired
   var storageManager:StorageManager = null
@@ -98,7 +96,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
     state match {
       case PAUSED => taskManager.pauseTask(taskId)
       case RUNNING => taskManager.resumeTask(taskId)
-      case _ => null
+      case _ =>
     }
   }
 

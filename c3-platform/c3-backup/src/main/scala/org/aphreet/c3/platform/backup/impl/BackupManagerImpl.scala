@@ -30,26 +30,22 @@
 
 package org.aphreet.c3.platform.backup.impl
 
+import java.io.File
+import javax.annotation.PostConstruct
+import org.aphreet.c3.platform.access.AccessMediator
+import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.backup._
+import org.aphreet.c3.platform.common.{Logger, Path}
+import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
+import org.aphreet.c3.platform.filesystem.FSManager
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.{StorageIterator, Storage, StorageManager}
+import org.aphreet.c3.platform.task.{TaskScheduleObserver, IterableTask, TaskManager, Task}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener, PlatformConfigManager}
-import org.aphreet.c3.platform.task.{TaskScheduleObserver, IterableTask, TaskManager, Task}
-import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.access.AccessMediator
-import org.aphreet.c3.platform.filesystem.FSManager
-import java.io.File
-import scala.collection.mutable.ListBuffer
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import scala._
+import scala.collection.mutable.ListBuffer
 import ssh.SftpConnector
-import scala.Some
-import org.aphreet.c3.platform.access.ResourceAddedMsg
-import org.aphreet.c3.platform.backup.BackupLocation
-import org.apache.commons.codec.binary.StringUtils
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener with TaskScheduleObserver {
@@ -76,7 +72,7 @@ class BackupManagerImpl extends BackupManager with SPlatformPropertyListener wit
 
   var targets : List[BackupLocation] = null
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
 
   @PostConstruct
