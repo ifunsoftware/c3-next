@@ -25,10 +25,7 @@ class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
   val log = Logger(getClass)
 
 
-  def defaultConfig:List[BackupLocation] = {
-    List(BackupLocation("1", "remote", "backup-c3backup.rhcloud.com",
-      "d22b442f096243d499120ff44adfc76a", "app-root/data", "", Nil))
-  }
+  def defaultConfig:List[BackupLocation] = Nil
 
   def readConfig(node: Node): List[BackupLocation] = {
     (

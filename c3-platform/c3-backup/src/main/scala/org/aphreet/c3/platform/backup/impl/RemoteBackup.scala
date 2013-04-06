@@ -59,15 +59,8 @@ class RemoteBackup(val name: String, val create: Boolean, val config: BackupLoca
     connector.putFile(md5FilePath, REMOTE_FOLDER)
     connector.disconnect()
 
-    checkAndDelete(zipFilePath)
-    checkAndDelete(md5FilePath)
-  }
-
-  def checkAndDelete(fileName : String) {
-    val file = new File(fileName)
-    if (file != null && file.exists()) {
-      file.delete()
-    }
+    Files.deleteIfExists(new File(zipFilePath).toPath)
+    Files.deleteIfExists(new File(md5FilePath).toPath)
   }
 }
 

@@ -73,6 +73,6 @@ object RemoteBackupLocation {
       connector.disconnect()
     }
 
-    new BackupLocation(id, "remote", host, user, path, key, null)
+    new BackupLocation(id, "remote", host, user, path, key, Nil)
   }
 }

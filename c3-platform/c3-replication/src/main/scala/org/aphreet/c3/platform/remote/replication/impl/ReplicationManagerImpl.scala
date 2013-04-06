@@ -309,8 +309,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   private def runQueueMaintainer() {
-    val processTask = new ProcessTask(this)
-    taskManager.scheduleTask(processTask, "0 */5 * * * *")
+    (new ReplicationMaintainThread(this)).start()
   }
 
   override def defaultValues:Map[String, String] =
@@ -373,13 +372,27 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 }
 
-class ProcessTask(manager:ReplicationManager) extends Task{
+class ReplicationMaintainThread(val manager: ReplicationManager) extends Thread{
 
-  override def step() {
-    triggerConfigExchange()
-    triggerQueueProcess()
+  val log = Logger(getClass)
 
-    shouldStopFlag = true
+  {
+    setDaemon(true)
+  }
+
+  override def run() {
+
+    log.info("Starting replication maintain thread")
+
+    while(!isInterrupted){
+
+      Thread.sleep(5 * 60 * 1000l)
+
+      triggerConfigExchange()
+      triggerQueueProcess()
+    }
+
+    log.info("Replication maintain thread has completed")
   }
 
   def triggerConfigExchange(){

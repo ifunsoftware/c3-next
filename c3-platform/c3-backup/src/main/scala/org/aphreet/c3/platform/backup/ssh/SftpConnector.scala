@@ -6,7 +6,7 @@ import com.sshtools.j2ssh.session.SessionChannelClient
 import com.sshtools.j2ssh.sftp.SftpFile
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile
-import com.sshtools.j2ssh.{SshException, SftpClient, SshClient}
+import com.sshtools.j2ssh.{FileTransferProgress, SshException, SftpClient, SshClient}
 import java.io.{InputStreamReader, BufferedReader, IOException}
 import java.lang.String
 import org.aphreet.c3.platform.common.Disposable._
@@ -105,6 +105,23 @@ class SftpConnector(val host: String, val user: String, val privateKey: String, 
 
      val oldDir = sftpClient.pwd()
      sftpClient.cd(remoteFolder)
+
+     sftpClient.put(localFilePath, new FileTransferProgress {
+       def isCancelled = false
+
+       def progressed(progress: Long) {
+         log.info("{} bytes has been written", progress)
+       }
+
+       def completed() {
+         log.info("File uploaded")
+       }
+
+       def started(total: Long, path: String) {
+         log.info("Going to write {} bytes to {}", total, path)
+       }
+     })
+
      sftpClient.put(localFilePath)
      sftpClient.cd(oldDir)
    }
