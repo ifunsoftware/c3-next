@@ -135,17 +135,17 @@ class RemoveTargetCommand extends Command {
 
 class ListTargetsCommand extends Command {
 
-  val header = "| No |       ID       |          Host          |                   Folder                   |\n" +
-               "|----|----------------|------------------------|--------------------------------------------|\n"
-  val footer = "|----|----------------|------------------------|--------------------------------------------|\n"
+  val header = "| No |       ID       |               Host               |                   Folder                   |\n" +
+               "|----|----------------|----------------------------------|--------------------------------------------|\n"
+  val footer = "|----|----------------|----------------------------------|--------------------------------------------|\n"
 
   def format(counter: Int, desc: TargetDescription):String =
-        String.format("| %2s | %14s | %-22s | %42s |\n",
+        String.format("| %2s | %14s | %-32s | %42s |\n",
           counter.toString,
           desc.id,
           desc.backupType match {
-            case "local" => "localhosst"
-            case "remote" => desc.folder
+            case "local" => "localhost"
+            case "remote" => desc.host
             case _ => ""
           },
           desc.folder)
