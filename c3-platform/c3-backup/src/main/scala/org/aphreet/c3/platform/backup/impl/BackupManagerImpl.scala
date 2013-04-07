@@ -368,7 +368,7 @@ class RestoreTask(val storageManager: StorageManager, val accessMediator: Access
       log.debug("Importing resource " + resource.address)
 
     storageManager.storageForAddress(ResourceAddress(resource.address)).update(resource)
-    accessMediator ! ResourceAddedMsg(resource, 'BackupManager)
+    accessMediator ! ResourceAddedMsg (resource, 'BackupManager)
   }
 
   override protected def preStart(){
@@ -380,6 +380,18 @@ class RestoreTask(val storageManager: StorageManager, val accessMediator: Access
       } catch {
         case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
       }
+    }
+  }
+
+  override def postComplete() {
+    if (backup != null) {
+      backup.close()
+    }
+  }
+
+  override def postFailure() {
+    if (backup != null) {
+      backup.close()
     }
   }
 }
