@@ -323,7 +323,7 @@ class PathDataStream(val path:Path) extends AbstractFileDataStream{
   def getFile:File = {
     if (tmpFile == null){
       tmpFile = Files.createTempFile("Pathds", "" + System.currentTimeMillis()).toFile
-      Files.copy(path, tmpFile.toPath)
+      Files.copy(path, tmpFile.toPath, StandardCopyOption.REPLACE_EXISTING)
       tmpFileCreated = true
     }
     tmpFile
