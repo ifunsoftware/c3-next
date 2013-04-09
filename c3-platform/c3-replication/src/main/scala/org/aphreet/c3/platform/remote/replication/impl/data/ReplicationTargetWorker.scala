@@ -230,7 +230,7 @@ class ReplicationTargetWorker(val localSystemId: String,
   private def processConfiguration(configuration: String, signature: ReplicationSignature) {
 
     if (checkSignature(configuration, signature) != null) {
-      log info "Processing configuration"
+      log debug "Processing configuration"
       configurationManager.processSerializedRemoteConfiguration(configuration)
     } else {
       log info "Ignorring configuration due to incorrect message"

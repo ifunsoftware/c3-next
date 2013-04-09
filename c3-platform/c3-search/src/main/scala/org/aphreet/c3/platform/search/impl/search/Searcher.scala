@@ -29,13 +29,13 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
+import org.apache.lucene.index.IndexReader
+import org.apache.lucene.search._
+import org.apache.lucene.store.NIOFSDirectory
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
-import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement}
 import org.aphreet.c3.platform.search.impl.index.RamIndexer
-import org.apache.lucene.search._
-import org.apache.lucene.index.IndexReader
-import org.apache.lucene.store.NIOFSDirectory
+import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager}
 
 
 class Searcher(var indexPath: Path,
@@ -45,7 +45,7 @@ class Searcher(var indexPath: Path,
 
   val log = Logger(getClass)
 
-  var indexSearcher = createSearcher
+  var indexSearcher = createSearcher()
 
 
   def act() {
@@ -55,13 +55,16 @@ class Searcher(var indexPath: Path,
           log info "Reopening searcher"
           val oldSearcher = indexSearcher
 
-          indexSearcher = createSearcher
+          try{
+            indexSearcher = createSearcher()
 
-          Thread.sleep(1000 * 5) //May be some threads are still using old searcher
+            Thread.sleep(1000 * 5) //May be some threads are still using old searcher
 
-          oldSearcher match {
-            case Some(value) => value.close()
-            case None =>
+          }finally{
+            oldSearcher match {
+              case Some(value) => value.close()
+              case None =>
+            }
           }
         }
 
@@ -87,15 +90,22 @@ class Searcher(var indexPath: Path,
     }
   }
 
-  private def createSearcher: Option[IndexSearcher] = {
+  private def createSearcher(): Option[IndexSearcher] = {
+
+    var reader: IndexReader = null
 
     try {
-      val reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
+      reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
 
       Some(new IndexSearcher(reader))
     } catch {
       case e: Throwable => {
         log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
+
+        if(reader != null){
+          reader.close()
+        }
+
         None
       }
     }

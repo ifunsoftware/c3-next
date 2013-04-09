@@ -52,7 +52,6 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
 
   {
     log info "Creating BackgroundIndexTask"
-    log info "Waiting for 3 minutes to get system in state"
   }
 
   override def canStart:Boolean = {

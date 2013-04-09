@@ -6,7 +6,7 @@ import org.aphreet.c3.platform.access.AccessManager
 import org.springframework.beans.factory.annotation.Autowired
 import collection.mutable
 import org.aphreet.c3.platform.common.Logger
-import javax.annotation.PostConstruct
+import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 
 /**
@@ -25,8 +25,14 @@ class TransientMetadataManagerImpl extends TransientMetadataManager{
 
   @PostConstruct
   def init() {
-    logger info "Starting Transient metadata manager"
+    logger.info("Starting Transient metadata manager")
     this.start()
+  }
+
+  @PreDestroy
+  def destroy() {
+    logger.info("Stopping Transient metadata manager")
+    this ! DestroyMsg
   }
 
   override def act() {
