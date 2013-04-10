@@ -85,6 +85,7 @@ class Searcher(var indexPath: Path,
     try{
       searcherOption.foreach(searcher => {
         searcher.close()
+        searcher.getIndexReader.close()
         searcher.getIndexReader.directory().close()
       })
     }catch{
