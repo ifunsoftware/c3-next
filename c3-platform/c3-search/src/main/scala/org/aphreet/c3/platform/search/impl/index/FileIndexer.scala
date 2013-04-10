@@ -34,7 +34,7 @@ import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search._
-import org.apache.lucene.index.{IndexWriterConfig, Term, IndexWriter}
+import org.apache.lucene.index.{IndexReader, IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
 import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
 import org.apache.lucene.util.Version
@@ -69,10 +69,14 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
       react{
         case MergeIndexMsg(directory) =>
           try{
+            val reader = IndexReader.open(directory)
 
-            indexWriter.addIndexes(directory)
+            indexWriter.addIndexes(reader)
             indexWriter.commit()
+
+            reader.close()
             directory.close()
+
             log debug "Index merged"
             searcher ! ReopenSearcherMsg
           }catch{
@@ -101,6 +105,8 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             log info "Changing index path to " + path
             indexPath = path
             indexWriter.close()
+            indexWriter.getDirectory.close()
+
             indexWriter = createWriter(indexPath)
             log info "Index path changed"
             searcher ! NewIndexPathMsg(path)
@@ -113,6 +119,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
         case DestroyMsg => {
           try{
             indexWriter.close()
+            indexWriter.getDirectory.close()
           }catch{
             case e: Throwable => log.warn("Failed to close index", e)
             throw e

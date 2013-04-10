@@ -61,10 +61,7 @@ class Searcher(var indexPath: Path,
             Thread.sleep(1000 * 5) //May be some threads are still using old searcher
 
           }finally{
-            oldSearcher match {
-              case Some(value) => value.close()
-              case None =>
-            }
+            closeSearcher(oldSearcher)
           }
         }
 
@@ -76,17 +73,22 @@ class Searcher(var indexPath: Path,
 
         case DestroyMsg => {
           log info "Destroying searcher"
-          try {
-            indexSearcher match {
-              case Some(value) => value.close()
-              case None =>
-            }
-          } finally {
-            this.exit()
-          }
-
+          closeSearcher(indexSearcher)
+          this.exit()
         }
       }
+    }
+  }
+
+  private def closeSearcher(searcherOption: Option[IndexSearcher]){
+
+    try{
+      searcherOption.foreach(searcher => {
+        searcher.close()
+        searcher.getIndexReader.directory().close()
+      })
+    }catch{
+      case e: Throwable => log.warn("Failed to close searcher", e)
     }
   }
 
