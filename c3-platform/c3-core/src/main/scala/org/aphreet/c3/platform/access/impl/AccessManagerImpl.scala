@@ -279,6 +279,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
             val storage = storageManager.storageForAddress(ResourceAddress(address))
             if(storage != null){
               storage.appendMetadata(address, metadata, isSystem)
+              accessCache.remove(address)
             }
           }catch{
             case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
