@@ -97,10 +97,7 @@ class DataController extends AbstractController with ServletContextAware with Re
       resp.setStatus(HttpServletResponse.SC_OK)
       resp.setContentLength(resourceVersion.data.length.toInt)
 
-      resource.metadata(Resource.MD_CONTENT_TYPE) match {
-        case Some(x) => resp.setContentType(x)
-        case None =>
-      }
+      resp.setContentType(resource.contentType)
 
       val os = new BufferedOutputStream(resp.getOutputStream)
 

@@ -18,7 +18,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
   def extract(resource: Resource): Option[ExtractedDocument] = {
 
-    val contentType = resource.metadata.asMap.getOrElse("content.type", "application/octet-stream")
+    val contentType = resource.contentType
 
     callTika(resource.address, resource.versions.last.data, contentType)
   }

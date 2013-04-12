@@ -265,7 +265,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
 
   def conflictResolverFor(resource: Resource) = {
-    val contentType = resource.metadata(Resource.MD_CONTENT_TYPE).getOrElse("")
+    val contentType = resource.contentType
     conflictResolvers.get(contentType) match {
       case Some(resolver) => resolver
       case None => new DefaultConflictResolver

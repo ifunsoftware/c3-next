@@ -245,6 +245,13 @@ class Resource {
     resource
   }
 
+  def contentType: String = {
+    metadata(Resource.MD_CONTENT_TYPE) match {
+      case Some(value) => value
+      case None => metadata("content.type").getOrElse(Resource.MD_CONTENT_TYPE_DEFAULT)
+    }
+  }
+
 }
 
 object Resource {
@@ -256,13 +263,10 @@ object Resource {
    */
   val STOP_SEQ : Long = 107533894376158093L
 
-  val MD_CONTENT_TYPE = "content.type"
+  val MD_CONTENT_TYPE = "content-type"
   val MD_DATA_ADDRESS = "c3.data.address"
   val MD_DATA_LENGTH = "c3.data.length"
   val MD_CONTENT_TYPE_DEFAULT = "application/octet-stream"
-  val MD_TAGS = "c3.tags"
-  val MD_USER = "c3.user"
-  val SMD_LOCK = "c3.lock"
   val MD_UPDATED = "c3.updated"
 
   /**
