@@ -203,8 +203,13 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
         case BackgroundIndexRunCompletedMsg =>
                   statisticsManager ! IncreaseStatisticsMsg("c3.search.background.runs", 1)
 
-        case ResourceIndexedMsg(address) =>
-          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString))
+        case ResourceIndexedMsg(address, extractedMetadata) =>
+          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString), system=true)
+
+          if(!extractedMetadata.isEmpty){
+            accessManager ! UpdateMetadataMsg(address, extractedMetadata, system=false)
+          }
+
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
 
         case UpdateIndexCreationTimestamp(time) => //Update timestamp in the background indexer task

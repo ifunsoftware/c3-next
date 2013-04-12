@@ -108,7 +108,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       storage = createStorage("1000")
 
-      storage.appendSystemMetadata(ra, Map("sysmd1"->"sysvalue1"))
+      storage.appendMetadata(ra, Map("sysmd1"->"sysvalue1"), system=true)
 
       readResource = storage.get(ra) match {
         case Some(r) => r

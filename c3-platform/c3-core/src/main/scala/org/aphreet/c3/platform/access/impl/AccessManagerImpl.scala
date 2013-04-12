@@ -274,11 +274,11 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   def act(){
     loop{
       react{
-        case UpdateMetadataMsg(address, metadata) =>{
+        case UpdateMetadataMsg(address, metadata, isSystem) =>{
           try{
             val storage = storageManager.storageForAddress(ResourceAddress(address))
             if(storage != null){
-              storage.appendSystemMetadata(address, metadata)
+              storage.appendMetadata(address, metadata, isSystem)
             }
           }catch{
             case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)

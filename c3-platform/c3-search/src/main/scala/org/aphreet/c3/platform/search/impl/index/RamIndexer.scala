@@ -100,8 +100,7 @@ class RamIndexer(val fileIndexer: Actor,
 
               log.debug("Indexing resource {}", resource.address)
 
-              indexResource(resource)
-              sender ! ResourceIndexedMsg(resource.address)
+              sender ! ResourceIndexedMsg(resource.address, indexResource(resource))
               lastDocumentTime = System.currentTimeMillis
               if (writer.numDocs > maxDocsCount) {
                 createNewWriter()
@@ -147,12 +146,17 @@ class RamIndexer(val fileIndexer: Actor,
     }
   }
 
-  def indexResource(resource: Resource) {
+  def indexResource(resource: Resource): Map[String, String] = {
     log.debug("{}: Indexing resource {}", num,resource.address)
 
     val extractedDocument = if(extractDocumentContent){
       textExtractor.extract(resource)
     }else None
+
+    val metadata: Map[String, String] = extractedDocument match {
+      case Some(document) => document.metadata
+      case None => Map()
+    }
 
     try{
       val language = getLanguage(resource.metadata, extractedDocument)
@@ -176,6 +180,7 @@ class RamIndexer(val fileIndexer: Actor,
     }
 
     log.debug("Resource writen to tmp index ({})", resource.address)
+    metadata
   }
 
   def captureDocumentFields(document:Document){
@@ -209,7 +214,7 @@ class RamIndexer(val fileIndexer: Actor,
 }
 
 case class ResourceIndexingFailed(address: String)
-case class ResourceIndexedMsg(address: String)
+case class ResourceIndexedMsg(address: String, extractedMetadata: Map[String, String])
 case class IndexMsg(resource: Resource)
 case class SetMaxDocsCountMsg(count: Int)
 case class FlushIndex(force: Boolean)

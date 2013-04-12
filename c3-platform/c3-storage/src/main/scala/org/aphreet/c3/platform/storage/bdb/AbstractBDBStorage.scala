@@ -165,7 +165,7 @@ with DatabaseProvider{
     }
   }
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]){
+  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean){
 
     val tx = environment.beginTransaction(null, null)
 
@@ -184,8 +184,13 @@ with DatabaseProvider{
         }else throw new ResourceNotFoundException(
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
-      //Appending system metadata
-      savedResource.systemMetadata ++= metadata
+
+      if(system){
+        //Appending system metadata
+        savedResource.systemMetadata ++= metadata
+      }else{
+        savedResource.metadata ++= metadata
+      }
 
       val key = new DatabaseEntry(ra.getBytes)
       val value = new DatabaseEntry(savedResource.toByteArray)
