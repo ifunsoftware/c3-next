@@ -54,10 +54,6 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
     log info "Creating BackgroundIndexTask"
   }
 
-  override def canStart:Boolean = {
-    shouldStop || Thread.currentThread.isInterrupted
-  }
-
   override def preStart() {
     log info "Starting BackgroundIndexTask"
     storagesToIndex = storageManager.listStorages
@@ -100,6 +96,10 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   override def postFailure() {
     if (iterator != null)
       iterator.close()
+  }
+
+  override def postComplete(){
+    searchManager ! BackgroundIndexRunCompletedMsg
   }
 
   private def shouldIndex(resource: Resource): Boolean = {
