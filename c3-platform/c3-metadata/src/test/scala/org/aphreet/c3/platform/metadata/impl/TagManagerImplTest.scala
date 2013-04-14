@@ -4,7 +4,7 @@ import junit.framework.TestCase
 import org.easymock.EasyMock._
 import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
-import org.aphreet.c3.platform.access.{AccessMediator, ResourceAddedMsg, AccessManager}
+import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, AccessMediator, ResourceAddedMsg, AccessManager}
 import collection.mutable
 import junit.framework.Assert._
 
@@ -50,10 +50,11 @@ class TagManagerImplTest extends TestCase {
       tagManager.accessManager = createMock(classOf[AccessManager])
       tagManager.accessMediator = createMock(classOf[AccessMediator])
 
+      expect(tagManager.accessManager.get(resource.address)).andReturn(resource).anyTimes
       expect(tagManager.accessManager.update(parent)).andReturn("").anyTimes
       expect(tagManager.accessManager.update(parent2)).andReturn("").anyTimes
-      expect(tagManager.accessManager.get(parentPath)).andReturn(parent).once()
-      expect(tagManager.accessManager.get(parent2Path)).andReturn(parent2).once()
+      expect(tagManager.accessManager.get(parentPath)).andReturn(parent).anyTimes()
+      expect(tagManager.accessManager.get(parent2Path)).andReturn(parent2).anyTimes()
 
       replay(tagManager.accessManager)
       tagManager.init()
@@ -63,6 +64,12 @@ class TagManagerImplTest extends TestCase {
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
        assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)))), parent.metadata(Resource.MD_TAGS))
+    }
+
+    def testUpdateResource() {
+       tagManager ! ResourceUpdatedMsg(resource, Symbol("source"))
+       Thread.sleep(1000)
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",1), ("scala",1), ("cycling", 1)))), parent.metadata(Resource.MD_TAGS))
     }
 
     def testDeleteResource() {
