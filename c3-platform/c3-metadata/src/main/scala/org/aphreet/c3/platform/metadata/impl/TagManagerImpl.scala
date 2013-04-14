@@ -18,6 +18,21 @@ import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.metadata.DeleteParentTagMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import scala.Some
+import scala.Predef._
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.metadata.DeleteParentTagMsg
+import org.aphreet.c3.platform.metadata.RebuildParentTagMsg
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import scala.Some
+import org.aphreet.c3.platform.metadata.AddParentTagMsg
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.metadata.DeleteParentTagMsg
+import org.aphreet.c3.platform.metadata.RebuildParentTagMsg
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import scala.Some
+import org.aphreet.c3.platform.metadata.AddParentTagMsg
 
 @Component("TagManager")
 @Scope("singleton")
@@ -131,7 +146,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                    }
                   }
 
-                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags)
+                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags.toMap[String, Int])
                   accessManager.update(catalog)
                 }
               } catch {
