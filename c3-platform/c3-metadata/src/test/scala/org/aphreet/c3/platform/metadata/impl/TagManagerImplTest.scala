@@ -18,28 +18,34 @@ class TagManagerImplTest extends TestCase {
     val parent2Path:String = "parent2Path"
 
     override def setUp() {
-      val tagsInDeletedResource: Map[String, Int] = Map(("cats",1), ("scala",3), ("cycling", 2))
+      val resourceMetadata:Map[String, String] = Map((Resource.MD_TAGS, "[cats,scala,cycling]"))
 
-      val deletedTags: String = MetadataHelper.writeTagMap(tagsInDeletedResource)
-      val metadata:Map[String, String] = Map((Resource.MD_TAGS, deletedTags))
-      resource.metadata = new Metadata(new mutable.HashMap() ++= metadata)
+      val tagsInResource: Map[String, Int] = Map(("cats",1), ("scala",1), ("cycling", 1))
+      val deletedTags: String = MetadataHelper.writeTagMap(tagsInResource)
+      val dirMetadata:Map[String, String] = Map((Resource.MD_TAGS, deletedTags))
+
+      resource.metadata = new Metadata(new mutable.HashMap() ++= resourceMetadata)
       resource.address = "someAddress"
-      resource.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parentPath)))
-      val dir = Directory.emptyDirectory("someDir1", "")
-      dir.addChild("dir1", resource.address, true)
+      resource.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parentPath),(Node.NODE_FIELD_TYPE, "file")))
+
+      parent.metadata = new Metadata(new mutable.HashMap() ++= dirMetadata)
+      parent.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parent2Path),(Node.NODE_FIELD_TYPE, "directory")))
+      parent.address = "parent1Address"
+
+      parent2.metadata = new Metadata(new mutable.HashMap() ++= dirMetadata)
+      parent2.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_TYPE, "directory")))
+      parent2.address = "parent2Address"
 
       val dir2 = Directory.emptyDirectory("someDir2", "")
-      parent.address = "parent1Address"
-      dir2.addChild("dir2", parent.address, true)
+      dir2.addChild("dir2", parent2.address, true)
 
-      val dir3 = Directory.emptyDirectory("someDir3", "")
-      parent2.address = "parent2Address"
-      dir3.addChild("dir3", parent2.address, true)
+      val parent2Node = Node.fromResource(parent2)
+      val parent2Dir = parent2Node.asInstanceOf[Directory]
+      parent2Dir.addChild("dir1", parent.address, true)
 
-      parent.metadata = new Metadata(new mutable.HashMap() ++= metadata)
-      parent.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parent2Path)))
-
-      parent2.metadata = new Metadata(new mutable.HashMap() ++= metadata)
+      val parentNode = Node.fromResource(parent)
+      val parentDir = parentNode.asInstanceOf[Directory]
+      parentDir.addChild("file", resource.address, true)
 
       tagManager.accessManager = createMock(classOf[AccessManager])
       tagManager.accessMediator = createMock(classOf[AccessMediator])
@@ -49,7 +55,6 @@ class TagManagerImplTest extends TestCase {
       expect(tagManager.accessManager.get(parentPath)).andReturn(parent).once()
       expect(tagManager.accessManager.get(parent2Path)).andReturn(parent2).once()
 
-
       replay(tagManager.accessManager)
       tagManager.init()
     }
@@ -57,7 +62,7 @@ class TagManagerImplTest extends TestCase {
     def testAddResource() {
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",6), ("cycling", 4)))), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)))), parent.metadata(Resource.MD_TAGS))
     }
 
     def testDeleteResource() {

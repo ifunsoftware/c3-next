@@ -118,9 +118,9 @@ object MetadataHelper{
 
   def parseSequence(value: String): TraversableOnce[String] = {
 
-    if(!isSequence(value)){
+    if (!isSequence(value)){
       Some(value)
-    }else{
+    } else {
 
       var valueStart = 1
 

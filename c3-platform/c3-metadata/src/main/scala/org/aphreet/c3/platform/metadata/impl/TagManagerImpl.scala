@@ -44,14 +44,14 @@
 
       metadata(Resource.MD_TAGS) match {
         case Some(tagsString) =>
-          val node:Node = resource.asInstanceOf[Node]
+          val node:Node = Node.fromResource(resource)
 
           if (node.isDirectory) {
               val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
               this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), deletedTags)
            } else {
              val tagMap = new mutable.HashMap[String, Int]
-             val tagCollection = metadata.collectionValue(tagsString)
+             val tagCollection = metadata.collectionValue(Resource.MD_TAGS)
 
              tagCollection.foreach(childTag => {
                 tagMap.put(childTag, 1)})
@@ -74,14 +74,15 @@
               val tagsString: Option[String] = metadata(Resource.MD_TAGS)
               tagsString match {
                  case Some(tagsS) =>
-                   val node = resource.asInstanceOf[Node]
+                   log info "ResourceAddedMsg: " + resource.address
+                   val node:Node = Node.fromResource(resource)
 
                    if (node.isDirectory) {
                       val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsS)
                       this ! AddParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), addedTags)
                    } else {
                      val tagMap = new mutable.HashMap[String, Int]
-                     val tagCollection = metadata.collectionValue(tagsS)
+                     val tagCollection = metadata.collectionValue(Resource.MD_TAGS)
 
                      tagCollection.foreach(childTag => {
                         tagMap.put(childTag, 1)})
@@ -174,7 +175,6 @@
 
                     metadata(Resource.MD_TAGS) match {
                       case Some(tagsString) =>
-
                        //collect statistics
                        val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
                       //delete tags
