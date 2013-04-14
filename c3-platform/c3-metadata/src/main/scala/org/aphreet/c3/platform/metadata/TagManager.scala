@@ -13,4 +13,7 @@ case class DeleteParentTagMsg(catalogPath: Option[String], tags: Map[String, Int
 case class AddParentTagMsg(catalogPath: Option[String], tags: Map[String, Int]) {
 
 }
+case class RebuildParentTagMsg(catalogPath: Option[String]) {
+
+}
 //TODO: remove option for address; listen to updateResource
