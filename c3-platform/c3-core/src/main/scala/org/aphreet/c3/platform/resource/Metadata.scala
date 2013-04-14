@@ -108,8 +108,17 @@ object MetadataHelper{
     value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
   }
 
-  def parseTagMap(values: String): Map[String, Int] = {
-    new XStream().fromXML(values).asInstanceOf[Map[String, Int]]
+  //[key1:count1,key2:count2]
+  def parseTagMap[T](values: String, converter: String => T): TraversableOnce[T] = {
+    values match {
+      case None => None
+      case Some(valueString) =>
+        val tags = new mutable.HashMap[String, String]
+        parseSequence(valueString).map(tagInfo => {
+          val parts:Array[String] = tagInfo.split(":")
+          tags.put(parts(0), parts(1))
+        })
+    }
   }
 
   def writeTagMap(values: Map[String, Int]): String = {
