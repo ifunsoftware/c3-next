@@ -245,7 +245,7 @@ class StorageSummaryCommand extends Command {
 
     val resourceNumber = management.listStorages.foldLeft(0l)(_ + _.getCount.longValue())
 
-    "C3 is happily keeping " + resourceNumber + " resources"
+    "The system is happily keeping " + resourceNumber + " resources"
   }
 
   def name = List("show", "system", "summary")

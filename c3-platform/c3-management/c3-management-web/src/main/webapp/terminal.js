@@ -7,14 +7,28 @@ var Terminal = new Class({
     commandHistoryIndex: -1,
     inCopyPaste: false,
 
+    supportsStorage: supports_html5_storage(),
+
     initialize: function(container) {
         this.terminal = container;
-        this.out('Welcome to C3 management console');
-        this.out('Type \'help\' for a list of available commands.');
-        this.out('&nbsp;');
-        this.prompt();
 
-        //$('welcomelink').focus();
+        this.loadCommandHistory();
+
+        this.executeCommand('show system summary', this, function(console, response){
+
+            if(response == null){
+                console.out('Failed to establish connection to server')
+            }else{
+                console.out('Welcome to C3 management console');
+
+                console.out(response);
+
+                console.out('\nType \'help\' for a list of available commands.');
+                console.out('&nbsp;');
+                console.prompt()
+            }
+        });
+
 
         this.path = '.';
 
@@ -25,16 +39,16 @@ var Terminal = new Class({
 
     // Process keystrokes
     keydown: function(event) {
-        dbg('keydown> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
+        //dbg('keydown> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
 
         var command = this.currentCommand.get('html');
 
         if(event.control){
             if(event.code == 86){
-                $('paste-block').style.visibility = 'visible'
+                $('paste-block').style.visibility = 'visible';
 
-                $('paste-block-input').value = ''
-                $('paste-block-input').focus()
+                $('paste-block-input').value = '';
+                $('paste-block-input').focus();
                 this.inCopyPaste = true
             }
         }
@@ -44,9 +58,9 @@ var Terminal = new Class({
 
         if(event.key == 'esc') {
             if(this.inCopyPaste){
-                this.inCopyPaste = false
-                $('paste-block').style.visibility = 'hidden'
-                $('paste-block-input').value = ''
+                this.inCopyPaste = false;
+                $('paste-block').style.visibility = 'hidden';
+                $('paste-block-input').value = '';
                 return;
             }
         }
@@ -56,11 +70,13 @@ var Terminal = new Class({
                 event.preventDefault();
                 if(command != ''){
                     this.run();
+                }else{
+                    this.prompt();
                 }
                 return;
             }else{
-                this.inCopyPaste = false
-                $('paste-block').style.visibility = 'hidden'
+                this.inCopyPaste = false;
+                $('paste-block').style.visibility = 'hidden';
                 this.currentCommand.set('html', command + $('paste-block-input').value);
             }
         }
@@ -99,7 +115,10 @@ var Terminal = new Class({
     },
 
     keypress: function(event) {
-        dbg('keypress> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
+        //dbg('keypress> ' + event.key + '(' + event.code + ') ' + event.control + ' - ' + event.shift + ' - ' + event.alt + ' - ' + event.meta);
+
+        if(this.inCopyPaste) return;
+
         if (event.control /*|| event.shift*/ || event.alt || event.meta) return;
         var command = this.currentCommand.get('html');
 
@@ -123,7 +142,6 @@ var Terminal = new Class({
                 }
             }
             this.currentCommand.set('html', command);
-            return;
         }
     },
 
@@ -159,21 +177,64 @@ var Terminal = new Class({
         this.commandHistory.push(command);
         this.commandHistoryIndex = this.commandHistory.length;
 
+        this.storeCommandHistory();
 
-        var request = new Request.HTML().get('/ws/cli?command=' + encodeURIComponent(command));
-        request.addEvent('complete', function() {
-            if (request.isSuccess()) {
-                this.out(request.response.text);
-            } else {
-                this.out('Error: server request failed.');
+        this.executeCommand(command, this, function(context, response){
+
+            if(response == null){
+                context.out('Error: server request failed.')
+            }else{
+                context.out(response)
             }
-            this.prompt();
+
+            context.prompt()
+        })
+    },
+
+    executeCommand: function(cliCommand, context, onComplete) {
+        var request = new Request.HTML().get('/ws/cli?command=' + encodeURIComponent(cliCommand));
+        request.addEvent('complete', function() {
+
+            var response = null;
+
+            if (request.isSuccess()) {
+                response = request.response.text;
+            }
+
+            onComplete(context, response)
         }.bind(this));
 
         request.send();
+    },
 
+    storeCommandHistory: function() {
+        if(this.supportsStorage){
+            window['localStorage'].setItem("c3.command.history", JSON.encode(this.commandHistory));
+        }
+    },
+
+    loadCommandHistory: function() {
+        if(this.supportsStorage){
+            var savedCommandHistory = window['localStorage'].getItem("c3.command.history");
+
+            if(savedCommandHistory != null){
+                this.commandHistory = JSON.decode(savedCommandHistory);
+                this.commandHistoryIndex = this.commandHistory.length;
+            }else{
+                this.commandHistory = [];
+            }
+
+        }
     }
 });
+
+function supports_html5_storage() {
+    try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+    } catch (e) {
+        return false;
+    }
+}
 
 $(window).addEvent('domready', function() {
     window.terminal = new Terminal($('terminal'));
