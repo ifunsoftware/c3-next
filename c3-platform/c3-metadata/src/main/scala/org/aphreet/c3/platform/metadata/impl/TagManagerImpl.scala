@@ -62,7 +62,10 @@ class TagManagerImpl extends TagManager with ResourceOwner {
         val node:Node = Node.fromResource(resource)
 
         if (node.isDirectory) {
-          val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
+          val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
+            (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+          }).toMap[String, Int]
+
           this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), deletedTags)
         } else {
           val tagMap = new mutable.HashMap[String, Int]
@@ -93,7 +96,9 @@ class TagManagerImpl extends TagManager with ResourceOwner {
               val node:Node = Node.fromResource(resource)
 
               if (node.isDirectory) {
-                val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsS)
+                val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsS, (tagInfo: String) => {
+                            (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                          }).toMap[String, Int]
                 this ! AddParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), addedTags)
               } else {
                 val tagMap = new mutable.HashMap[String, Int]
@@ -146,7 +151,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                    }
                   }
 
-                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (String, Int):entry => {entry._1 + ":" + entry._2})
+                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
                   accessManager.update(catalog)
                 }
               } catch {
@@ -167,13 +172,16 @@ class TagManagerImpl extends TagManager with ResourceOwner {
               tagsString match {
                 case Some(tagsString) =>
                   //collect statistics
-                  val tagsBeforeDelete:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
+                  val tagsBeforeDelete:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
+                              (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                            }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeDelete.map(tagInfo => {
                     if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 - tags.get(tagInfo._1).get)
                     else tagInfo}).filter(tagInfo => tagInfo._2 > 0)
 
-                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags)
+                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
+
                   accessManager.update(catalog)
 
                   catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
@@ -197,13 +205,16 @@ class TagManagerImpl extends TagManager with ResourceOwner {
               metadata(Resource.MD_TAGS) match {
                 case Some(tagsString) =>
                   //collect statistics
-                  val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString)
+                  val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
+                              (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                            }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeAdd.map(tagInfo => {
                     if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 + tags.get(tagInfo._1).get)
                     else tagInfo})
 
-                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags)
+                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(updatedTags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
+
                   accessManager.update(catalog)
 
                   catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {

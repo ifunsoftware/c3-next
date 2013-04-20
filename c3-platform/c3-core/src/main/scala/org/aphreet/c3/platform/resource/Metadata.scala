@@ -112,17 +112,14 @@ object MetadataHelper{
    //  val parts:Array[String] = tagInfo.split(":")
   def parseTagMap[T](values: String, converter: String => T): TraversableOnce[T] = {
     values match {
-      case None => None
+      case None => new ArrayBuffer[T]
       case Some(valueString) =>
         val result = new ArrayBuffer[T]
         parseSequence(valueString.toString).map(tagInfo =>
           result += converter(tagInfo))
 
         result
-  }
-
-  def convert(key:String, count:Int): String = {
-     key + ":" + count
+    }
   }
 
   def writeTagMap[T,B](values: Map[T,B], converter: (T,B) => String): String = {

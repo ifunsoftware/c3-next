@@ -21,7 +21,8 @@ class TagManagerImplTest extends TestCase {
       val resourceMetadata:Map[String, String] = Map((Resource.MD_TAGS, "[cats,scala,cycling]"))
 
       val tagsInResource: Map[String, Int] = Map(("cats",1), ("scala",1), ("cycling", 1))
-      val deletedTags: String = MetadataHelper.writeTagMap(tagsInResource)
+      val deletedTags: String = MetadataHelper.writeTagMap(tagsInResource.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
+
       val dirMetadata:Map[String, String] = Map((Resource.MD_TAGS, deletedTags))
 
       resource.metadata = new Metadata(new mutable.HashMap() ++= resourceMetadata)
@@ -63,18 +64,18 @@ class TagManagerImplTest extends TestCase {
     def testAddResource() {
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)))), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(Resource.MD_TAGS))
     }
 
     def testUpdateResource() {
        tagManager ! ResourceUpdatedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",1), ("scala",1), ("cycling", 1)))), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",1), ("scala",1), ("cycling", 1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(Resource.MD_TAGS))
     }
 
     def testDeleteResource() {
        tagManager.deleteResource(resource)
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap((Map.empty[String, Int]))), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(""), parent.metadata(Resource.MD_TAGS))
     }
 }
