@@ -109,20 +109,31 @@ object MetadataHelper{
   }
 
   //[key1:count1,key2:count2]
+   //  val parts:Array[String] = tagInfo.split(":")
   def parseTagMap[T](values: String, converter: String => T): TraversableOnce[T] = {
     values match {
       case None => None
       case Some(valueString) =>
-        val tags = new mutable.HashMap[String, String]
-        parseSequence(valueString).map(tagInfo => {
-          val parts:Array[String] = tagInfo.split(":")
-          tags.put(parts(0), parts(1))
-        })
-    }
+        val result = new ArrayBuffer[T]
+        parseSequence(valueString.toString).map(tagInfo =>
+          result += converter(tagInfo))
+
+        result
   }
 
-  def writeTagMap(values: Map[String, Int]): String = {
-      new XStream().toXML(values)
+  def convert(key:String, count:Int): String = {
+     key + ":" + count
+  }
+
+  def writeTagMap[T,B](values: Map[T,B], converter: (T,B) => String): String = {
+      values match {
+         case None => ""
+         case Some(value) =>
+          var result = ""
+          values.map(tagInfo =>
+             result += converter.apply(tagInfo._1, tagInfo._2))
+          result
+      }
   }
 
   def parseSequence(value: String): TraversableOnce[String] = {

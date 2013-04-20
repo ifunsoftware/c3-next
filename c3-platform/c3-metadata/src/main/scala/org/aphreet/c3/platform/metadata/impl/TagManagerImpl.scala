@@ -146,7 +146,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                    }
                   }
 
-                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags.toMap[String, Int])
+                  metadata(Resource.MD_TAGS) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (String, Int):entry => {entry._1 + ":" + entry._2})
                   accessManager.update(catalog)
                 }
               } catch {
