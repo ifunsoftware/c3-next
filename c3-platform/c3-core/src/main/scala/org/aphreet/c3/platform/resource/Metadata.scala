@@ -115,7 +115,7 @@ object MetadataHelper{
       case None => new ArrayBuffer[T]
       case Some(valueString) =>
         val result = new ArrayBuffer[T]
-        parseSequence(valueString.toString).map(tagInfo =>
+        parseSequence(values.toString).map(tagInfo =>
           result += converter(tagInfo))
 
         result
