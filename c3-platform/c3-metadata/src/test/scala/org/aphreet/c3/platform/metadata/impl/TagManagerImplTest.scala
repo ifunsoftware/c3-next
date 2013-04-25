@@ -5,8 +5,13 @@ import org.easymock.EasyMock._
 import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, AccessMediator, ResourceAddedMsg, AccessManager}
-import collection.mutable
+import scala.collection.{Map, mutable}
 import junit.framework.Assert._
+import scala.Predef._
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import scala.collection.Map
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import scala.Some
 
 class TagManagerImplTest extends TestCase {
 
@@ -67,6 +72,16 @@ class TagManagerImplTest extends TestCase {
        assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(Resource.MD_TAGS))
     }
 
+    def testTagParsing() {
+      val map: Map[String, Int] = Map(("cats",10), ("scala",1), ("cycling", 1))
+      val mapString = MetadataHelper.writeTagMap(map, (key: String, value: Int) => {key + ":" + value})
+      val parsedMap = MetadataHelper.parseTagMap(mapString, (tagInfo: String) => {
+        println(tagInfo + " " +  (tagInfo.split(":")(0),tagInfo.split(":")(1).toInt))
+        (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+      }).toMap[String, Int]
+      assertEquals(map, parsedMap)
+    }
+
     def testUpdateResource() {
        tagManager ! ResourceUpdatedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
@@ -76,6 +91,6 @@ class TagManagerImplTest extends TestCase {
     def testDeleteResource() {
        tagManager.deleteResource(resource)
        Thread.sleep(1000)
-       assertEquals(Some(""), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some("[]"), parent.metadata(Resource.MD_TAGS))
     }
 }

@@ -63,7 +63,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
 
         if (node.isDirectory) {
           val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-            (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+            (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
           }).toMap[String, Int]
 
           this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), deletedTags)
@@ -97,7 +97,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
 
               if (node.isDirectory) {
                 val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsS, (tagInfo: String) => {
-                            (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                            (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
                           }).toMap[String, Int]
                 this ! AddParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), addedTags)
               } else {
@@ -173,7 +173,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                 case Some(tagsString) =>
                   //collect statistics
                   val tagsBeforeDelete:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-                              (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                              (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
                             }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeDelete.map(tagInfo => {
@@ -206,7 +206,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                 case Some(tagsString) =>
                   //collect statistics
                   val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-                              (tagInfo.split(":")(0), Int.unbox(tagInfo.split(":")(1)))
+                              (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
                             }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeAdd.map(tagInfo => {
