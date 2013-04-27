@@ -7,6 +7,11 @@ trait TagManager extends WatchedActor{
 
 }
 
+object TagManager {
+
+  val TAGS_FIELD = "tags"
+}
+
 case class DeleteParentTagMsg(catalogPath: Option[String], tags: Map[String, Int]) {
 
 }

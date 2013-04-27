@@ -1,17 +1,17 @@
 package org.aphreet.c3.platform.metadata.impl
 
-import junit.framework.TestCase
-import org.easymock.EasyMock._
-import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
-import org.aphreet.c3.platform.filesystem.{Directory, Node}
-import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, AccessMediator, ResourceAddedMsg, AccessManager}
-import scala.collection.{Map, mutable}
 import junit.framework.Assert._
-import scala.Predef._
-import org.aphreet.c3.platform.access.ResourceUpdatedMsg
-import scala.collection.Map
+import junit.framework.TestCase
 import org.aphreet.c3.platform.access.ResourceAddedMsg
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.access.{AccessMediator, AccessManager}
+import org.aphreet.c3.platform.filesystem.{Directory, Node}
+import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
+import org.easymock.EasyMock._
 import scala.Some
+import scala.collection.Map
+import scala.collection.mutable
+import org.aphreet.c3.platform.metadata.TagManager
 
 class TagManagerImplTest extends TestCase {
 
@@ -23,12 +23,12 @@ class TagManagerImplTest extends TestCase {
     val parent2Path:String = "parent2Path"
 
     override def setUp() {
-      val resourceMetadata:Map[String, String] = Map((Resource.MD_TAGS, "[cats,scala,cycling]"))
+      val resourceMetadata:Map[String, String] = Map((TagManager.TAGS_FIELD, "[cats,scala,cycling]"))
 
-      val tagsInResource: Map[String, Int] = Map(("cats",1), ("scala",1), ("cycling", 1))
+      val tagsInResource: Map[String, Int] = Map("cats" -> 1, "scala" -> 1, "cycling" -> 1)
       val deletedTags: String = MetadataHelper.writeTagMap(tagsInResource.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
 
-      val dirMetadata:Map[String, String] = Map((Resource.MD_TAGS, deletedTags))
+      val dirMetadata:Map[String, String] = Map((TagManager.TAGS_FIELD, deletedTags))
 
       resource.metadata = new Metadata(new mutable.HashMap() ++= resourceMetadata)
       resource.address = "someAddress"
@@ -43,15 +43,15 @@ class TagManagerImplTest extends TestCase {
       parent2.address = "parent2Address"
 
       val dir2 = Directory.emptyDirectory("someDir2", "")
-      dir2.addChild("dir2", parent2.address, true)
+      dir2.addChild("dir2", parent2.address, leaf = true)
 
       val parent2Node = Node.fromResource(parent2)
       val parent2Dir = parent2Node.asInstanceOf[Directory]
-      parent2Dir.addChild("dir1", parent.address, true)
+      parent2Dir.addChild("dir1", parent.address, leaf = true)
 
       val parentNode = Node.fromResource(parent)
       val parentDir = parentNode.asInstanceOf[Directory]
-      parentDir.addChild("file", resource.address, true)
+      parentDir.addChild("file", resource.address, leaf = true)
 
       tagManager.accessManager = createMock(classOf[AccessManager])
       tagManager.accessMediator = createMock(classOf[AccessMediator])
@@ -69,7 +69,7 @@ class TagManagerImplTest extends TestCase {
     def testAddResource() {
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
     }
 
     def testTagParsing() {
@@ -85,12 +85,12 @@ class TagManagerImplTest extends TestCase {
     def testUpdateResource() {
        tagManager ! ResourceUpdatedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",1), ("scala",1), ("cycling", 1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map("scala" -> 1, "cycling" -> 1, "cats" -> 1).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
     }
 
     def testDeleteResource() {
        tagManager.deleteResource(resource)
        Thread.sleep(1000)
-       assertEquals(Some("[]"), parent.metadata(Resource.MD_TAGS))
+       assertEquals(Some("[]"), parent.metadata(TagManager.TAGS_FIELD))
     }
 }
