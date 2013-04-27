@@ -1,22 +1,28 @@
 package org.aphreet.c3.platform.task
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.{CloseableIterable, ThreadWatcher}
+import org.aphreet.c3.platform.common.{Logger, CloseableIterable, ThreadWatcher}
 import scala.util.control.Exception._
 
 abstract class Task extends Runnable{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   val id = name + "-" + System.currentTimeMillis
 
+  private var schedule = ""
+
   protected var shouldStopFlag = false
+
+  protected var restartableFlag = false
 
   val SLEEP_ON_PAUSE_INTERVAL = 5000
 
   private var taskState:TaskState = PENDING
 
+  private var observers = List.empty[TaskScheduleObserver]
+
   def state:TaskState = taskState
+
 
   override def run() {
 
@@ -43,11 +49,14 @@ abstract class Task extends Runnable{
     }catch{
       case e: Throwable => {
         taskState = CRASHED
-        log error e
+        log.error("Task crashed", e)
         e.printStackTrace()
         postFailure()
       }
     }finally {
+      if (isRestartable) {
+        shouldStopFlag = false
+      }
       ThreadWatcher - this
 
       handling(classOf[Throwable])
@@ -82,9 +91,29 @@ abstract class Task extends Runnable{
 
   def progress:Int = -1
 
-  def description:TaskDescription = new TaskDescription(id, name, state, progress)
+  def description:TaskDescription = new TaskDescription(id, name, state, progress, schedule)
 
   protected def isPaused:Boolean = {taskState == PAUSED}
+
+  def isRestartable: Boolean = restartableFlag
+
+  def setRestartable(restartable: Boolean) { restartableFlag = restartable }
+
+  def getSchedule: String = schedule
+
+  def setSchedule(newSchedule: String) {
+    observers.foreach(observer => observer.updateSchedule(this, newSchedule))
+
+    schedule = newSchedule
+  }
+
+  def addObserver(observer: TaskScheduleObserver) {
+    observers ::= observer
+  }
+
+  def removeObserver(observer: TaskScheduleObserver) {
+    observers = observers diff List(observer)
+  }
 
   def stop() {
     Thread.currentThread.interrupt()
@@ -133,7 +162,7 @@ abstract class IterableTask[T](val iterable:CloseableIterable[T]) extends Task{
 }
 
 
-sealed class TaskState(val name:String, val isFinalState:Boolean);
+sealed class TaskState(val name:String, val isFinalState:Boolean)
 
 object RUNNING extends TaskState("Running", false)
 object PENDING extends TaskState("Pending", false)

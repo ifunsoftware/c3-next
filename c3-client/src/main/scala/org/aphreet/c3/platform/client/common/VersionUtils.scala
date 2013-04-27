@@ -47,17 +47,17 @@ object VersionUtils{
       val pathToThisClass = clazz.getResource(classFileName).toString
 
       val mark = pathToThisClass.indexOf("!")
-      val pathToManifest = pathToThisClass.toString().substring(0,mark+1) + "/META-INF/MANIFEST.MF"
+      val pathToManifest = pathToThisClass.substring(0,mark+1) + "/META-INF/MANIFEST.MF"
 
       val manifest = new Manifest(new URL(pathToManifest).openStream)
 
       val attributes = manifest.getMainAttributes
 
-      val version = attributes.getValue("Implementation-Version").asInstanceOf[String]
+      val version = attributes.getValue("Implementation-Version")
 
       version
     }catch{
-      case e => "Unknown"
+      case e: Throwable => "Unknown"
     }
   }
 

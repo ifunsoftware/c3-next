@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>c3-next</artifactId>
-        <version>1.3.7.SNAPSHOT</version>
+        <version>1.3.10-SNAPSHOT</version>
     </parent>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.weiglewilczek.scala-lang-osgi</groupId>
+            <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
         </dependency>
@@ -37,19 +37,19 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>org.springframework.core</artifactId>
-            <version>3.0.6.RELEASE</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>org.springframework.context</artifactId>
-            <version>3.0.6.RELEASE</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>org.springframework.web</artifactId>
-            <version>3.0.6.RELEASE</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>

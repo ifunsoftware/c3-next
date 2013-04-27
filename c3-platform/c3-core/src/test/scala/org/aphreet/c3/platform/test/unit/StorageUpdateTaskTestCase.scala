@@ -36,7 +36,7 @@ import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.{RW, StorageMode, StorageIterator}
 import org.aphreet.c3.platform.mock.StorageMock
 import org.aphreet.c3.platform.storage.updater.Transformation
-import org.aphreet.c3.platform.storage.updater.impl.StorageUpdateTask
+import org.aphreet.c3.platform.storage.updater.impl.StorageTransformTask
 
 class StorageUpdateTaskTestCase extends TestCase{
 
@@ -70,13 +70,13 @@ class StorageUpdateTaskTestCase extends TestCase{
     }
 
     val transofrmation = createMock(classOf[Transformation])
-    expect(transofrmation.apply(resources(0)))
-    expect(transofrmation.apply(resources(1)))
-    expect(transofrmation.apply(resources(2)))
+    expect(transofrmation.apply(storage, resources(0)))
+    expect(transofrmation.apply(storage, resources(1)))
+    expect(transofrmation.apply(storage, resources(2)))
 
     replay(transofrmation)
 
-    val task = new StorageUpdateTask(List(storage), List(transofrmation))
+    val task = new StorageTransformTask(List(storage), List(transofrmation))
     task.run()
 
     verify(transofrmation)

@@ -49,7 +49,7 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def put(resource:Resource) {}
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]) {}
+  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean) {}
 
   def params:StorageParams = StorageParams(mockId, path, "StorageMock", mode, List(), new HashMap[String, String])
 

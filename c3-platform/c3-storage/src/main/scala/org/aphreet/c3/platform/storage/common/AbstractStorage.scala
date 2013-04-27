@@ -30,14 +30,13 @@
 package org.aphreet.c3.platform.storage.common
 
 import org.aphreet.c3.platform.storage.{Storage, StorageParams}
-import org.aphreet.c3.platform.common.{ThreadWatcher, Path}
+import org.aphreet.c3.platform.common.{Logger, ThreadWatcher, Path}
 import collection.mutable
 import org.aphreet.c3.platform.resource.Resource
-import org.apache.commons.logging.LogFactory
 
 abstract class AbstractStorage(val parameters:StorageParams, val systemId:String) extends Storage{
 
-  val dataLog = LogFactory.getLog("c3.data")
+  val dataLog = Logger("c3.data")
 
   protected var counter:Thread = null
 
@@ -55,7 +54,7 @@ abstract class AbstractStorage(val parameters:StorageParams, val systemId:String
     counter = new Thread(new ObjectCounter(this))
     counter.setDaemon(true)
     counter.start()
-    log info "Started object counter for storage " + this.id
+    log.info("Started object counter for storage {}", this.id)
   }
 
   protected def updateObjectCount()

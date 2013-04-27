@@ -30,26 +30,25 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.aphreet.c3.platform.common.WatchedActor
-import org.aphreet.c3.platform.remote.replication._
-import impl.data.encryption.{DataEncryptor, SymmetricKeyGenerator, AsymmetricDataEncryptor}
-import impl.ReplicationPortRetriever
-import scala.actors.remote.RemoteActor._
-import org.apache.commons.logging.LogFactory
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import collection.mutable.HashMap
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationPortRetriever
+import org.aphreet.c3.platform.remote.replication.impl.data.encryption.{DataEncryptor, SymmetricKeyGenerator, AsymmetricDataEncryptor}
+import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.auth.AuthenticationManager
-import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
+import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.resource.IdGenerator
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import scala.None
+import scala.actors.remote.RemoteActor._
 
 //TODO clear sharedKeys map after unsuccessful negotiations
 @Component
 class ReplicationNegotiator extends WatchedActor{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   val sharedKeys = new HashMap[String, String]
 
@@ -106,7 +105,7 @@ class ReplicationNegotiator extends WatchedActor{
             NegotiateKeyExchangeMsgReply(encryptedSharedKey)
           }
           }catch{
-            case e => {
+            case e: Throwable => {
               log.warn("Failed to esablish replication", e)
               reply{
                 None
@@ -176,7 +175,7 @@ class ReplicationNegotiator extends WatchedActor{
               
             }
           }catch{
-            case e => {
+            case e: Throwable => {
               log.warn("Failed to register replication source", e)
               reply{
                 NegotiateRegisterSourceMsgReply("ERROR", null)

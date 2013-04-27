@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.zone
 
 import annotation.tailrec
-import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.common.Logger
 
 class Range[E](val start:Long, val end:Long, val value:E) {
 
@@ -9,11 +9,17 @@ class Range[E](val start:Long, val end:Long, val value:E) {
 
 }
 
+object RangeSet{
+
+  val log = Logger(getClass)
+
+}
+
 case class RangeSet[E](ranges:List[Range[E]]){
 
-  val rangeArray = ranges.toArray
+  import RangeSet.log
 
-  val log = LogFactory.getLog(getClass)
+  val rangeArray = ranges.toArray
 
   def findMappedValue(value:Long):Option[E] = {
 

@@ -89,9 +89,9 @@ class ResourceVersion{
   def verifyCheckSum() {
     systemMetadata(ResourceVersion.RESOURCE_VERSION_HASH) match {
       case Some(value) => {
-        if(value != data.hash) throw new ResourceException("Checksum verification failed")
+        if(value != data.hash) throw new ResourceException("Checksum verification failed: expected " + value + ", actual " + data.hash)
       }
-      case None => throw new ResourceException("Checksum verification failed")
+      case None => throw new ResourceException("Checksum verification failed: no checksum stored in the resource metadata")
     }
   }
 

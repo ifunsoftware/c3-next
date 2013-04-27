@@ -34,8 +34,7 @@ import java.io.IOException
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.{SimpleCloseableIterable, Path, Constants}
+import org.aphreet.c3.platform.common.{Logger, SimpleCloseableIterable, Path, Constants}
 import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
@@ -51,7 +50,7 @@ import scala.actors.Actor
 @Component("storageManager")
 class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   private val storages = new mutable.HashMap[String, Storage]
 
@@ -266,7 +265,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
 
   def conflictResolverFor(resource: Resource) = {
-    val contentType = resource.metadata(Resource.MD_CONTENT_TYPE).getOrElse("")
+    val contentType = resource.contentType
     conflictResolvers.get(contentType) match {
       case Some(resolver) => resolver
       case None => new DefaultConflictResolver

@@ -3,21 +3,22 @@ package org.aphreet.c3.platform.search.impl.index.extractor
 import java.io._
 import java.net.{HttpURLConnection, URL}
 import java.nio.file.{StandardCopyOption, Files}
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.Disposable
+import org.aphreet.c3.platform.common.{Logger, Disposable}
 import org.aphreet.c3.platform.common.Disposable._
 import org.aphreet.c3.platform.resource.{DataStream, Resource}
 import org.aphreet.c3.platform.search.impl.index.TextExtractor
 import scala.Some
 import scala.collection.JavaConversions._
+import scala.language.reflectiveCalls
+import scala.language.implicitConversions
 
 class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   def extract(resource: Resource): Option[ExtractedDocument] = {
 
-    val contentType = resource.metadata.asMap.getOrElse("content.type", "application/octet-stream")
+    val contentType = resource.contentType
 
     callTika(resource.address, resource.versions.last.data, contentType)
   }
@@ -38,7 +39,7 @@ class TikaHttpTextExtractor(val tikaHostName: String) extends TextExtractor {
                                      if (field._1 != null
                                        && field._1.startsWith("x-tika-extracted_")
                                        && !field._2.isEmpty))
-              yield (field._1.replaceFirst("x-tika-extracted_", ""),
+              yield (field._1.replaceFirst("x-tika-extracted_", "").toLowerCase,
                   collectionAsScalaIterable(field._2).mkString(","))).filter(!_._2.isEmpty).toMap
 
               val path = Files.createTempFile("extracted", "tmp")

@@ -29,14 +29,13 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
-import org.apache.commons.logging.LogFactory
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.common.{WatchedActor, Path}
-import org.aphreet.c3.platform.search.{SearchConfigurationManager, SearchResultElement}
-import org.aphreet.c3.platform.search.impl.index.RamIndexer
-import org.apache.lucene.search._
 import org.apache.lucene.index.IndexReader
+import org.apache.lucene.search._
 import org.apache.lucene.store.NIOFSDirectory
+import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
+import org.aphreet.c3.platform.search.impl.index.RamIndexer
+import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager}
 
 
 class Searcher(var indexPath: Path,
@@ -44,9 +43,9 @@ class Searcher(var indexPath: Path,
                val configurationManager: SearchConfigurationManager) extends WatchedActor {
 
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
-  var indexSearcher = createSearcher
+  var indexSearcher = createSearcher()
 
 
   def act() {
@@ -56,13 +55,13 @@ class Searcher(var indexPath: Path,
           log info "Reopening searcher"
           val oldSearcher = indexSearcher
 
-          indexSearcher = createSearcher
+          try{
+            indexSearcher = createSearcher()
 
-          Thread.sleep(1000 * 5) //May be some threads are still using old searcher
+            Thread.sleep(1000 * 5) //May be some threads are still using old searcher
 
-          oldSearcher match {
-            case Some(value) => value.close()
-            case None =>
+          }finally{
+            closeSearcher(oldSearcher)
           }
         }
 
@@ -74,29 +73,42 @@ class Searcher(var indexPath: Path,
 
         case DestroyMsg => {
           log info "Destroying searcher"
-          try {
-            indexSearcher match {
-              case Some(value) => value.close()
-              case None =>
-            }
-          } finally {
-            this.exit()
-          }
-
+          closeSearcher(indexSearcher)
+          this.exit()
         }
       }
     }
   }
 
-  private def createSearcher: Option[IndexSearcher] = {
+  private def closeSearcher(searcherOption: Option[IndexSearcher]){
+
+    try{
+      searcherOption.foreach(searcher => {
+        searcher.close()
+        searcher.getIndexReader.close()
+        searcher.getIndexReader.directory().close()
+      })
+    }catch{
+      case e: Throwable => log.warn("Failed to close searcher", e)
+    }
+  }
+
+  private def createSearcher(): Option[IndexSearcher] = {
+
+    var reader: IndexReader = null
 
     try {
-      val reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
+      reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
 
       Some(new IndexSearcher(reader))
     } catch {
       case e: Throwable => {
         log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
+
+        if(reader != null){
+          reader.close()
+        }
+
         None
       }
     }
@@ -107,10 +119,10 @@ class Searcher(var indexPath: Path,
 
   def getSearcher: Option[IndexSearcher] = indexSearcher
 
-  def search(domain: String, sourceQuery: String): Array[SearchResultElement] = {
+  def search(domain: String, sourceQuery: String): SearchResult = {
 
     if (getSearcher.isEmpty) {
-      Array()
+      SearchResult(sourceQuery, Array())
     } else {
       new MultiFieldSearchStrategy().search(getSearcher.get,
         configurationManager.searchConfiguration,

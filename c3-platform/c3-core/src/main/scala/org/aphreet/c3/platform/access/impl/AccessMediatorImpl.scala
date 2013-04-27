@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.access.impl
 
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import actors.Actor
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.access._
@@ -44,13 +43,14 @@ import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
 import org.aphreet.c3.platform.access.ResourceDeletedMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import scala.collection.mutable
+import org.aphreet.c3.platform.common.Logger
 
 @Component("accessMediator")
 @Scope("singleton")
 @Qualifier("AccessMediator")
 class AccessMediatorImpl extends AccessMediator {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var accessListeners = new mutable.HashMap[Actor, Symbol]
 

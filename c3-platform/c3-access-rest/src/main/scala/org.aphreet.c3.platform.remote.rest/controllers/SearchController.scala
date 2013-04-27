@@ -59,7 +59,9 @@ class SearchController extends DataController {
     val accessTokens = getAccessTokens(READ, req)
     val domain = getCurrentDomainId(accessTokens)
 
-    val results = searchManager.search(domain, query).map(e => {
+    val result = searchManager.search(domain, query)
+
+    val elements = result.elements.map(e => {
       fsManager.lookupResourcePath(e.address) match {
         case Some(value) => e.setPath(value)
         case None => e
@@ -68,6 +70,6 @@ class SearchController extends DataController {
 
     resp.setStatus(HttpServletResponse.SC_OK)
 
-    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(results), resp)
+    writerSelector.selectWriterForType(contentType).writeResponse(new SearchResult(result.query, elements), resp)
   }
 }

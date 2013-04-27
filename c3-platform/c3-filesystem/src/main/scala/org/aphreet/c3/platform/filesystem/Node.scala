@@ -31,23 +31,26 @@
 package org.aphreet.c3.platform.filesystem
 
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
-import java.io.{DataInputStream, ByteArrayInputStream, DataOutputStream, ByteArrayOutputStream}
-import org.apache.commons.logging.LogFactory
+import java.io._
 import collection.immutable.TreeMap
 import java.util.{UUID, Date}
 import scala.collection.mutable
+import org.aphreet.c3.platform.common.{JSONFormatter, Logger}
+import scala.Some
+import com.springsource.json.writer.JSONWriterImpl
 
 abstract class Node(val resource:Resource){
 
   def isDirectory:Boolean
 
   def name:String = resource.systemMetadata.asMap.getOrElse(Node.NODE_FIELD_NAME, null)
+
 }
 
 
 object Node{
 
-  val log = LogFactory.getLog(classOf[Node])
+  val log = Logger(classOf[Node])
 
   val NODE_FIELD_NAME = "c3.fs.nodename"
 
@@ -95,7 +98,6 @@ case class NodeRef(name:String, address:String, leaf:Boolean, deleted: Boolean, 
 case class File(override val resource:Resource) extends Node(resource){
 
   override def isDirectory = false
-
 }
 
 object File{
@@ -126,10 +128,14 @@ case class Directory(override val resource:Resource) extends Node(resource){
   override def isDirectory = true
 
   def getChild(name:String):Option[NodeRef] = {
-
-    Node.log debug childrenMap.toString
-
     childrenMap.get(name)
+  }
+
+  def getAliveChild(name: String): Option[NodeRef] = {
+    getChild(name) match {
+      case Some(ref) => if(ref.deleted) None else Some(ref)
+      case None => None
+    }
   }
 
   def addChild(name: String, address: String, leaf: Boolean) {
@@ -201,7 +207,7 @@ case class Directory(override val resource:Resource) extends Node(resource){
   private def writeData(children:Map[String, NodeRef]):DataStream = {
 
     def isOldEntry(entry: NodeRef, ts: Long): Boolean = {
-      entry.deleted && ts - entry.modified > 24 * 60 * 60 * 10 * 1000L
+      entry.deleted && (ts - entry.modified) > 10 * 24 * 60 * 60 * 1000L
     }
 
 
@@ -270,6 +276,46 @@ case class Directory(override val resource:Resource) extends Node(resource){
           childrenMap += (name -> NodeRef(name, address, leaf, deleted = false, modified = version.date.getTime))
         }
       }
+    }
+  }
+
+  def toJSON: String = {
+    val swriter = new StringWriter()
+
+    try{
+      val writer = new JSONWriterImpl(swriter)
+
+      writer.`object`()
+
+      writer.key("directory")
+
+      writer.array()
+
+      this.allChildren.foreach(ref => {
+        writer.`object`()
+        writer.key("address")
+        writer.value(ref.address)
+        writer.key("name")
+        writer.value(ref.name)
+        writer.key("directory")
+        writer.value(!ref.leaf)
+        writer.key("modified")
+        writer.value(ref.modified)
+        writer.key("deleted")
+        writer.value(ref.deleted)
+        writer.endObject()
+      })
+
+      writer.endArray()
+
+      writer.endObject()
+
+      swriter.flush()
+
+      JSONFormatter.format(swriter.toString)
+
+    }finally{
+      swriter.close()
     }
   }
 }

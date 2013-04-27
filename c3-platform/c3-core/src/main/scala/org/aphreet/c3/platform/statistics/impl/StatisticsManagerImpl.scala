@@ -29,21 +29,19 @@
  */
 package org.aphreet.c3.platform.statistics.impl
 
-import actors.Actor._
-import collection.mutable.HashMap
-import org.aphreet.c3.platform.statistics._
-import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.apache.commons.logging.LogFactory
-import org.springframework.beans.factory.annotation.Qualifier
 import collection.mutable
+import javax.annotation.PreDestroy
+import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.statistics._
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.common.Logger
 
 @Component("statisticsManager")
 @Qualifier("StatisticsService")
 class StatisticsManagerImpl extends StatisticsManager{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   val statistics = new mutable.HashMap[String, Any]
 

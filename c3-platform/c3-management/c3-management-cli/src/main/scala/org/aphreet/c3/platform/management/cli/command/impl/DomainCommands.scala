@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Command, Commands}
 import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, DomainDescription}
+import java.lang.management
 
 object DomainCommands extends Commands {
 
@@ -40,10 +41,32 @@ object DomainCommands extends Commands {
     new CreateDomainCommand,
     new UpdateDomainNameCommand,
     new ResetDomainKeyCommand,
+    new RemoveDomainKeyCommand,
     new ListDomainsCommand,
     new SetDomainModeCommand,
-    new ShowDomainCommand
+    new ShowDomainCommand,
+    new SetDefaultDomain,
+    new DeleteDomainCommand
   )
+}
+
+class SetDefaultDomain extends Command {
+  override
+   def execute(params: List[String], management: PlatformManagementService): String = {
+
+     if (params.size < 1) {
+       wrongParameters("update domain set default <name>")
+     } else {
+
+       val domain = management.listDomains.filter(description  => description.getName == params.head).head
+
+       management.setDefaultDomain(domain.getId)
+
+       "Default domain has been updated"
+     }
+   }
+
+   def name = List("update", "domain", "set", "default")
 }
 
 class CreateDomainCommand extends Command {
@@ -96,6 +119,23 @@ class ResetDomainKeyCommand extends Command {
 
 }
 
+class RemoveDomainKeyCommand extends Command {
+
+  override
+  def execute(params: List[String], management: PlatformManagementService): String = {
+
+    if (params.size < 1) {
+      wrongParameters("update domain remove key <name>")
+    } else {
+      management.removeDomainKey(params.head)
+      "Domain key has been removed"
+    }
+  }
+
+  def name = List("update", "domain", "remove", "key")
+
+}
+
 class SetDomainModeCommand extends Command {
 
   override
@@ -116,18 +156,26 @@ class SetDomainModeCommand extends Command {
 class ListDomainsCommand extends Command {
 
 
-  def format(desc: DomainDescription): String =
-    String.format("| %-20s | %-10s |\n",
+  def format(desc: DomainDescription, defaultId:String): String =
+    String.format("| %-20s | %-10s | %s |\n",
       desc.name,
-      desc.mode)
+      desc.mode,
+      if(desc.getId == defaultId) "   *   "
+      else "       "
+    )
 
-  val header = "|         Name         |    Mode    |\n" +
-    "|----------------------|------------|\n"
-  val footer = "|----------------------|------------|\n"
+  val header = "|         Name         |    Mode    | Default |\n" +
+               "|----------------------|------------|---------|\n"
+  val footer = "|----------------------|------------|---------|\n"
 
   override
-  def execute(management: PlatformManagementService): String =
-    management.listDomains.map(d => format(d)).foldLeft(header)(_ + _) + footer
+  def execute(management: PlatformManagementService): String ={
+
+    val defaultId = management.getDefaultDomain
+
+    management.listDomains.filter(!_.deleted).sortBy(_.getName).map(d => format(d, defaultId)).foldLeft(header)(_ + _) + footer
+  }
+
 
 
   def name = List("list", "domains")
@@ -158,4 +206,22 @@ class ShowDomainCommand extends Command {
   }
 
   def name = List("show", "domain")
+}
+
+class DeleteDomainCommand extends Command {
+
+  override
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.length < 1) {
+      wrongParameters("delete domain <name>")
+    } else {
+
+      management.deleteDomain(params.head)
+
+      "Domain " + params.head + " has been deleted"
+    }
+  }
+
+  def name = List("delete", "domain")
+
 }

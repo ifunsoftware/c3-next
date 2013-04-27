@@ -30,11 +30,10 @@
 
 package org.aphreet.c3.platform.storage
 
-import org.aphreet.c3.platform.common.{CloseableIterable, Constants, Path}
+import org.aphreet.c3.platform.common.{Logger, CloseableIterable, Constants, Path}
 import org.aphreet.c3.platform.resource.Resource
 
 import org.aphreet.c3.platform.exception.StorageException
-import org.apache.commons.logging.LogFactory
 
 
 /**
@@ -42,7 +41,7 @@ import org.apache.commons.logging.LogFactory
  */
 abstract class Storage extends StorageLike with CloseableIterable[Resource]{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   protected var storageMode:StorageMode = new RW
 

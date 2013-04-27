@@ -86,7 +86,7 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
       }catch{
         case e:StorageNotFoundException => log.error("Failed to get resource, storage not found " + task, e)
-        case e => log.error("Failed to read resource, " + task, e)
+        case e: Throwable => log.error("Failed to read resource, " + task, e)
       }
     }
 

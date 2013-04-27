@@ -30,19 +30,7 @@
 
 package org.aphreet.c3.platform.query
 
-import org.aphreet.c3.platform.resource.Resource
+trait QueryConsumer extends GenericQueryConsumer[AnyRef]{
 
-trait QueryConsumer{
-
-  /**
-   * @param resource to be consumed
-   * @return value indicating if we need more resources
-   */
-  def consume(resource: Resource): Boolean
-
-  /**
-   * Closes consumer
-   */
-  def close()
-
+  def result: AnyRef = null
 }

@@ -3,7 +3,7 @@ Bundle-Version: 9.9.9.TO_BE_REPLACED
 Bundle-Name: C3 Management API
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.management.api
-Import-Bundle: scala-library;version="[2.8.0,2.9.2]"
+Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
  javax.jws
 Export-Package: org.aphreet.c3.platform.remote.api.management,

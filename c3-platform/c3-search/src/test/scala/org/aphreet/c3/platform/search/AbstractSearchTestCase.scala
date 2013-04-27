@@ -56,7 +56,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
 
-    verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).toList)
+    verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).elements.toList)
 
   }
 

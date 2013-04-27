@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>c3-management</artifactId>
-        <version>1.3.7.SNAPSHOT</version>
+        <version>1.3.10-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -63,8 +63,8 @@
                             <tasks>
                                 <echo message="Updating manifest file with current build number" />
                                 <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
-                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9.TO_BE_REPLACED" value="Bundle-Version: ${project.version}" />
-                                <replace file="target/MANIFEST.MF" token="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;1.0.0&quot;" value="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;${project.version}&quot;" />
+                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9.TO_BE_REPLACED" value="Bundle-Version: ${parsedVersion.osgiVersion}" />
+                                <replace file="target/MANIFEST.MF" token="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;1.0.0&quot;" value="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;${parsedVersion.osgiVersion}&quot;" />
                             </tasks>
                         </configuration>
                         <goals>

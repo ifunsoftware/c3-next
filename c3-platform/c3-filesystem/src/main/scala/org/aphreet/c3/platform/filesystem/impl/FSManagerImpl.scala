@@ -33,10 +33,9 @@ package org.aphreet.c3.platform.filesystem.impl
 import annotation.tailrec
 import java.lang.IllegalStateException
 import javax.annotation.{PreDestroy, PostConstruct}
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.access.{AccessMediator, ResourceOwner, AccessManager}
 import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
-import org.aphreet.c3.platform.common.{WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, ComponentGuard}
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.StatisticsManager
@@ -46,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.metadata.{TransientMetadataBuildStrategy, RegisterTransientMDBuildStrategy, TransientMetadataManager}
 import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
+import org.aphreet.c3.platform.query.QueryManager
 
 @Component("fsManager")
 class FSManagerImpl extends FSManager
@@ -53,7 +53,7 @@ with ResourceOwner
 with ComponentGuard
 with WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var accessManager: AccessManager = _
@@ -72,6 +72,9 @@ with WatchedActor {
 
   @Autowired
   var storageManager: StorageManager = _
+
+  @Autowired
+  var queryManager: QueryManager = _
 
   @Autowired
   var transientMetadataManager: TransientMetadataManager = _
@@ -147,7 +150,7 @@ with WatchedActor {
 
     if (!newParent.isDirectory) throw new FSException("Current parent is not a directory")
 
-    val nodeRef = currentParent.asInstanceOf[Directory].getChild(oldPathAndName._2) match {
+    val nodeRef = currentParent.asInstanceOf[Directory].getAliveChild(oldPathAndName._2) match {
       case Some(n) => n
       case None => throw new FSException("Can't find specified node")
     }
@@ -314,6 +317,16 @@ with WatchedActor {
 
   def fileSystemRoots: Map[String, String] = fsRoots
 
+  def overrideFileSystemRoot(domainId: String, address: String) {
+    log info "Adding new root: " + domainId + " => " + address
+
+    val map: Map[String, String] = fsRoots + ((domainId, address))
+
+    configAccessor.store(map)
+
+    fsRoots = configAccessor.load
+  }
+
   def importFileSystemRoot(domainId: String, address: String) {
 
     fsRoots.get(domainId) match {
@@ -355,7 +368,7 @@ with WatchedActor {
       throw new FSException("Can't add node to file")
     }
 
-    if (!directory.getChild(name).isEmpty) {
+    if (!directory.getAliveChild(name).isEmpty) {
       throw new FSWrongRequestException("Node with name: " + name + " already exists")
     }
 
@@ -379,15 +392,13 @@ with WatchedActor {
 
     for (directoryName <- pathComponents) {
 
-      if (log.isTraceEnabled) {
-        log.trace("Getting node: " + directoryName)
-      }
+      log.trace("Getting node: {}",directoryName)
 
       if (!resultNode.isDirectory) {
         throw new FSException("Found file, expected directory")
       }
 
-      val nodeRef = resultNode.asInstanceOf[Directory].getChild(directoryName) match {
+      val nodeRef = resultNode.asInstanceOf[Directory].getAliveChild(directoryName) match {
         case Some(a) => a
         case None => throw new FSNotFoundException("Specified path " + path + " does not exists in the domain " + domainId)
       }
@@ -398,9 +409,7 @@ with WatchedActor {
 
     }
 
-    if (log.isDebugEnabled) {
-      log.debug("Found node for path: " + path)
-    }
+    log.debug("Found node for path: {}" + path)
 
     resultNode
 
@@ -461,7 +470,7 @@ with WatchedActor {
   def startFilesystemCheck() {
 
     if (taskManager.taskList.filter(_.name == classOf[FSCheckTask].getSimpleName).isEmpty) {
-      val task = new FSCheckTask(accessManager, statisticsManager, fsRoots)
+      val task = new FSCheckTask(accessManager, statisticsManager, queryManager, this, fsRoots)
       taskManager.submitTask(task)
     } else {
       throw new IllegalStateException("Task already started")

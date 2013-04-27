@@ -51,9 +51,9 @@ class ResourceResult(override val info:ResultInfo, val resource:Resource) extend
 
 }
 
-class SearchResult(override val info:ResultInfo, val searchResults:Array[SearchResultElement]) extends Result(info){
+class SearchResult(override val info:ResultInfo, val query: String,  val searchResults:Array[SearchResultElement]) extends Result(info){
 
-  def this(searchResults:Array[SearchResultElement]) = this(new ResultInfo("1.0", "OK"), searchResults)
+  def this(query: String, searchResults:Array[SearchResultElement]) = this(new ResultInfo("1.0", "OK"), query, searchResults)
 
 }
 

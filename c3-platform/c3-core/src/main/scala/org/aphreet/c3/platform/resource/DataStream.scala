@@ -30,15 +30,16 @@
 
 package org.aphreet.c3.platform.resource
 
-import java.nio.ByteBuffer
-
-import org.apache.commons.logging.LogFactory
-
+import com.twmacinta.util.MD5
 import eu.medsea.mimeutil.{MimeUtil, MimeType}
 import java.io._
-import com.twmacinta.util.MD5
-import java.nio.channels.{FileChannel, Channels, WritableByteChannel}
+import java.nio.ByteBuffer
+import java.nio.channels.{Channels, WritableByteChannel}
 import java.nio.file.{Path, StandardCopyOption, StandardOpenOption, Files}
+import org.aphreet.c3.platform.common.Logger
+import java.util
+import scala.collection.JavaConversions
+
 
 object DataStream{
   
@@ -61,7 +62,7 @@ object DataStream{
 
 abstract class DataStream {
 
-  val logger = LogFactory.getLog(DataStream.getClass)
+  val logger = Logger(DataStream.getClass)
 
   /**
    *
@@ -141,11 +142,14 @@ abstract class DataStream {
 
   def copy:DataStream
 
-  
-  protected def top(types:java.util.Collection[_]):String = {
-    types.iterator.next.asInstanceOf[MimeType].toString
+  protected def selectType(types: util.Collection[_]): String = {
+    val list = JavaConversions.collectionAsScalaIterable(types).map(_.toString).toList
+
+    list.filter(!_.startsWith("text/plain")).headOption match {
+      case Some(value) => value
+      case None => list.head
+    }
   }
-  
 }
 
 abstract class AbstractFileDataStream extends DataStream{
@@ -188,7 +192,7 @@ abstract class AbstractFileDataStream extends DataStream{
 
   def length:Long = file.length
 
-  def mimeType:String = top(MimeUtil.getMimeTypes(file))
+  def mimeType:String = selectType(MimeUtil.getMimeTypes(file))
 
 }
 
@@ -238,7 +242,7 @@ abstract class AbstractBytesDataStream extends DataStream {
 
   def length:Long = loadBytes.length
 
-  def mimeType:String = top(MimeUtil.getMimeTypes(loadBytes))
+  def mimeType:String = selectType(MimeUtil.getMimeTypes(loadBytes))
 }
 
 /**
@@ -278,7 +282,7 @@ class StringDataStream(val value:String) extends DataStream {
     md5.Final
   }
   
-  def mimeType:String = top(MimeUtil.getMimeTypes(value))
+  def mimeType:String = selectType(MimeUtil.getMimeTypes(value))
 
   def copy:DataStream = new StringDataStream(value)
 
@@ -324,7 +328,7 @@ class PathDataStream(val path:Path) extends AbstractFileDataStream{
   def getFile:File = {
     if (tmpFile == null){
       tmpFile = Files.createTempFile("Pathds", "" + System.currentTimeMillis()).toFile
-      Files.copy(path, tmpFile.toPath)
+      Files.copy(path, tmpFile.toPath, StandardCopyOption.REPLACE_EXISTING)
       tmpFileCreated = true
     }
     tmpFile

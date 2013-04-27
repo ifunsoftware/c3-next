@@ -30,23 +30,24 @@
 
 package org.aphreet.c3.platform.search.impl.background
 
-import org.aphreet.c3.platform.task.IterableTask
-import org.aphreet.c3.platform.common.{CloseableIterator, CloseableIterable, Path}
-import org.apache.lucene.document.{Fieldable, Document}
-import org.apache.lucene.index.IndexReader
-import org.apache.lucene.store.NIOFSDirectory
+import collection.JavaConversions._
+import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
 import java.io.{File, FileOutputStream, BufferedOutputStream}
 import javax.xml.stream.XMLOutputFactory
-import collection.JavaConversions
+import org.apache.lucene.document.Document
+import org.apache.lucene.index.IndexReader
+import org.apache.lucene.store.NIOFSDirectory
+import org.aphreet.c3.platform.common.{CloseableIterator, CloseableIterable, Path}
+import org.aphreet.c3.platform.task.IterableTask
 
 class DumpIndexTask(val indexPath: Path, val dumpPath: String) extends IterableTask[Document](new IterableIndex(indexPath)){
 
-  val out = XMLOutputFactory.newInstance()
-    .createXMLStreamWriter(new BufferedOutputStream(new FileOutputStream(new File(dumpPath))))
+  val out = new IndentingXMLStreamWriter(XMLOutputFactory.newInstance()
+    .createXMLStreamWriter(new BufferedOutputStream(new FileOutputStream(new File(dumpPath)))))
 
   override def processElement(document: Document) {
     out.writeStartElement("document")
-    for (field <- JavaConversions.iterableAsScalaIterable(document.getFields)) {
+    for (field <- iterableAsScalaIterable(document.getFields)) {
       out.writeStartElement("field")
       out.writeAttribute("name", field.name)
       out.writeAttribute("value", field.stringValue())

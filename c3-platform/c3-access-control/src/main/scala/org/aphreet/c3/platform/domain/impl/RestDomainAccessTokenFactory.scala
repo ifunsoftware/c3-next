@@ -17,29 +17,17 @@ class RestDomainAccessTokenFactory extends DomainAccessTokenFactory{
   def retrieveDomain(accessParams: Map[String, String]):Domain = {
     import RestDomainAccessTokenFactory._
 
-    accessParams.get(DOMAIN_HEADER) match {
-      case None => domainManager.getAnonymousDomain
-      case Some(requestedDomain) => {
+    val requestedDomain = accessParams.getOrElse(DOMAIN_HEADER, domainManager.getDefaultDomainId)
 
-        val requestUri = accessParams.getOrElse(REQUEST_KEY, "")
+    val requestUri = accessParams.getOrElse(REQUEST_KEY, "")
 
-        val date = accessParams.getOrElse(DATE_HEADER, "")
+    val date = accessParams.getOrElse(DATE_HEADER, "")
 
-        if(date == ""){
-          throw new DomainException("x-c3-date is empty")
-        }
+    val hashBase = requestUri + date + requestedDomain
 
-        val hashBase = requestUri + date + requestedDomain
+    val hash = accessParams.getOrElse(SIGN_HEADER, "")
 
-        val hash = accessParams.getOrElse(SIGN_HEADER, "")
-
-        if(hash == ""){
-          throw new DomainException("x-c3-sign is empty")
-        }
-
-        domainManager.checkDomainAccess(requestedDomain, hash, hashBase)
-      }
-    }
+    domainManager.checkDomainAccess(requestedDomain, hash, hashBase)
   }
 }
 

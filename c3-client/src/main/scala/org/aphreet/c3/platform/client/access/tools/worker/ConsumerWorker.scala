@@ -51,7 +51,7 @@ class ConsumerWorker(val host:String, val user:String, val key:String, val queue
         bytesRead = bytesRead + bytes
         processed = processed + 1
       }catch{
-        case e => {
+        case e: Throwable => {
           errors = errors + 1
           System.err.println("Error: " + e.getMessage)
         }

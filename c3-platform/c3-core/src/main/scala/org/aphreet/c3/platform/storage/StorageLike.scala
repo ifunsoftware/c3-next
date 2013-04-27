@@ -19,7 +19,7 @@ trait StorageLike {
 
   /**
    * Update resource that already exists in this storage
-   * If there is no such resource throws ResourceNotFoundException
+   * If there is no such resource resource gets created
    */
   def update(resource:Resource):String
 
@@ -33,7 +33,7 @@ trait StorageLike {
   /**
    * Append specified map to system metadata of the specified resource
    */
-  def appendSystemMetadata(ra:String, metadata:Map[String, String])
+  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean)
 
   /**
    * Get current mode

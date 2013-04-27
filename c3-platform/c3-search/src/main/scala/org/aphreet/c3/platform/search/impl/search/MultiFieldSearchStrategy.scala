@@ -33,25 +33,25 @@ package org.aphreet.c3.platform.search.impl.search
 import collection.JavaConversions._
 import collection.mutable.ArrayBuffer
 import java.util
-import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.Term
-import org.apache.lucene.queryParser.MultiFieldQueryParser
+import org.apache.lucene.queryParser.{ParseException, MultiFieldQueryParser}
 import org.apache.lucene.search._
 import highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
 import org.apache.lucene.util.Version.LUCENE_35
-import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
+import org.aphreet.c3.platform.search.{SearchResult, SearchQueryException, SearchResultElement, SearchResultFragment}
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.aphreet.c3.platform.common.Logger
 
 
 class MultiFieldSearchStrategy extends SearchStrategy{
 
-  val log = LogFactory.getLog(classOf[MultiFieldSearchStrategy])
+  val log = Logger(classOf[MultiFieldSearchStrategy])
 
   def search(searcher: IndexSearcher, configuration: SearchConfiguration, query: String,
-             max: Int, offset: Int, domain: String): Array[SearchResultElement] = {
+             max: Int, offset: Int, domain: String): SearchResult = {
 
     val analyzer = new StandardAnalyzer(LUCENE_35)
 
@@ -115,11 +115,14 @@ class MultiFieldSearchStrategy extends SearchStrategy{
         result += new SearchResultElement(address, null, score, fieldFragments.toArray)
       }
 
-      result.toArray
+      SearchResult(topQuery.toString, result.toArray)
     }catch{
+      case e: ParseException =>
+        log.warn("Incorrect search query: ", e)
+        throw new SearchQueryException(e.getMessage, e)
       case e: Throwable => {
         log.error("Failed to execute query", e)
-        Array()
+        SearchResult(query, Array())
       }
     }
   }

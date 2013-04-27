@@ -29,13 +29,10 @@
  */
 package org.aphreet.c3.platform.remote.rest.interceptors
 
-import org.apache.commons.logging.LogFactory
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.web.servlet.{ModelAndView, HandlerInterceptor}
 
 class CharacterSetInterceptor extends HandlerInterceptor{
-
-  val log = LogFactory.getLog(getClass)
 
   def preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any) = {
 

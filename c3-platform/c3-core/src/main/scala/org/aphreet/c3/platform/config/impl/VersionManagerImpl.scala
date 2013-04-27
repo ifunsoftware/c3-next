@@ -33,14 +33,14 @@ import org.osgi.framework.BundleContext
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.config.VersionManager
 import org.springframework.beans.factory.annotation.Autowired
-import org.apache.commons.logging.LogFactory
 import org.eclipse.gemini.blueprint.context.BundleContextAware
 import collection.mutable
+import org.aphreet.c3.platform.common.Logger
 
 @Component("versionManager")
 class VersionManagerImpl extends VersionManager with BundleContextAware{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   var bundleContext:BundleContext = null;
 

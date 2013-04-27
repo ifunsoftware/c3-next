@@ -35,6 +35,7 @@ import java.nio.file.{StandardOpenOption, Files}
 import com.springsource.json.parser._
 import com.springsource.json.writer._
 import org.aphreet.c3.platform.common.JSONFormatter
+import scala.language.implicitConversions
 
 
 trait ConfigAccessor[T] {

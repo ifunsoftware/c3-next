@@ -11,27 +11,4 @@
 
     <context:component-scan base-package="org.aphreet.c3.platform.remote.impl" />
 
-    <!--<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">-->
-        <!--<property name="properties">-->
-            <!--<props>-->
-                <!--<prop key="rmi.port">1299</prop>-->
-            <!--</props>-->
-        <!--</property>-->
-        <!--<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>-->
-    <!--</bean>-->
-
-    <!--<bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">-->
-        <!--<property name="serviceName" value="PlatformRmiManagementEndPoint" />-->
-        <!--<property name="service" ref="platformManagementService" />-->
-        <!--<property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.management.PlatformManagementService" />-->
-        <!--<property name="registryPort" value="${rmi.port}" />-->
-    <!--</bean>-->
-
-    <!--<bean class="org.aphreet.c3.platform.remote.rmi.MacRmiServiceExporter">-->
-        <!--<property name="serviceName" value="PlatformRmiAccessEndPoint" />-->
-        <!--<property name="service" ref="platformAccessService" />-->
-        <!--<property name="serviceInterface" value="org.aphreet.c3.platform.remote.api.access.PlatformAccessService" />-->
-        <!--<property name="registryPort" value="${rmi.port}" />-->
-    <!--</bean>-->
-    
 </beans>

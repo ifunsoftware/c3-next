@@ -29,29 +29,33 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
+import actors.remote.RemoteActor
 import config._
 import data._
 import encryption.{DataEncryptor, AsymmetricDataEncryptor, AsymmetricKeyGenerator}
-import org.springframework.stereotype.Component
+import java.io.File
+import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.common._
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.config._
+import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
+import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
+import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsg
+import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsgReply
+import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterSourceMsg
+import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterSourceMsgReply
+import org.aphreet.c3.platform.remote.replication.impl.data.QueuedTasksReply
+import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
+import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.task.{Task, TaskManager}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
+import org.springframework.stereotype.Component
+import scala.Some
+import scala.actors.remote.Node
 
-import javax.annotation.{PreDestroy, PostConstruct}
-
-import org.apache.commons.logging.LogFactory
-
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.remote.api.management._
-import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
-import org.aphreet.c3.platform.config._
-import queue.{ReplicationQueueReplayTask, ReplicationQueueStorage}
-import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.task.TaskManager
-import org.aphreet.c3.platform.common.{ComponentGuard, ThreadWatcher, Path, Constants}
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
-import actors.remote.{Node, RemoteActor}
-import java.io.File
 
 @Component("replicationManager")
 @Scope("singleton")
@@ -59,7 +63,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var localSystemId:String = ""
 
@@ -165,7 +169,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         }
 
         case StoragePurgedMsg(source) => {
-          replicationQueueStorage.deleteAll()
+          replicationQueueStorage.clear()
         }
 
         case SendConfigurationMsg => {
@@ -273,8 +277,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     sourceReplicationActor
       .createCopyTasks(targetId, storageManager.listStorages) match {
-        case Some(tasks) => tasks.foreach(taskManager.submitTask(_))
-        case None => throw new ReplicationException("Can't find target with id " + targetId)
+      case Some(tasks) => tasks.foreach(taskManager.submitTask(_))
+      case None => throw new ReplicationException("Can't find target with id " + targetId)
     }
   }
 
@@ -305,9 +309,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   private def runQueueMaintainer() {
-    val thread = new Thread(new ProcessScheduler(this))
-    thread.setDaemon(true)
-    thread.start()
+    (new ReplicationMaintainThread(this)).start()
   }
 
   override def defaultValues:Map[String, String] =
@@ -329,7 +331,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           if(replicationQueueStorage != null){
             replicationQueueStorage.close()
           }
-          replicationQueueStorage = new ReplicationQueueStorage(replicationQueuePath)
+          replicationQueueStorage = new ReplicationQueueStorageImpl(replicationQueuePath)
         }
 
       case REPLICATION_SECURE_KEY =>
@@ -339,6 +341,8 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
         log warn "To get new port config working system restart is required"
     }
   }
+
+
 
   override def replayReplicationQueue() {
     this.synchronized{
@@ -354,58 +358,52 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
       }
     }
   }
+
+  override def resetReplicationQueue() {
+    this.synchronized {
+      log.info("Clearing replication queue")
+      replicationQueueStorage.clear()
+    }
+  }
+
+  def dumpReplicationQueue(path: String) {
+    log.info("Dumping replication queue to path: " + path)
+    taskManager.submitTask(new ReplicationQueueDumpTask(replicationQueueStorage, Path(path)))
+  }
 }
 
-class ProcessScheduler(manager:ReplicationManager) extends Runnable{
+class ReplicationMaintainThread(val manager: ReplicationManager) extends Thread{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
-  val FIVE_MINUTES = 1000 * 60 * 5
+  {
+    setDaemon(true)
+  }
 
-  var nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
+  override def run() {
 
-  var nextQueueProcessTime = System.currentTimeMillis + FIVE_MINUTES
+    log.info("Starting replication maintain thread")
 
-  override def run(){
+    while(!isInterrupted){
 
-    ThreadWatcher + this
-    try{
-      log info "Starting replication background process scheduler"
+      Thread.sleep(5 * 60 * 1000l)
 
-      while(!Thread.currentThread.isInterrupted){
-
-        while(!Thread.currentThread.isInterrupted){
-          triggerConfigExchange()
-          triggerQueueProcess()
-
-          Thread.sleep(60 * 1000)
-        }
-      }
-    }finally{
-      ThreadWatcher - this
-      log info "Stopping Replication background process scheduler"
+      triggerConfigExchange()
+      triggerQueueProcess()
     }
+
+    log.info("Replication maintain thread has completed")
   }
 
   def triggerConfigExchange(){
+    log debug "Sending configuration to targets"
 
-    if(nextConfigSendTime - System.currentTimeMillis < 0){
-      log debug "Sending configuration to targets"
-
-      manager ! SendConfigurationMsg
-
-      nextConfigSendTime = System.currentTimeMillis + FIVE_MINUTES
-    }
+    manager ! SendConfigurationMsg
   }
 
   def triggerQueueProcess(){
+    log debug "Getting replication queue"
 
-    if(nextQueueProcessTime - System.currentTimeMillis < 0){
-      log debug "Getting replication queue"
-
-      manager ! QueuedTasks
-
-      nextQueueProcessTime = System.currentTimeMillis + FIVE_MINUTES
-    }
+    manager ! QueuedTasks
   }
 }

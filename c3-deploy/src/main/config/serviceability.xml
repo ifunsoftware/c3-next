@@ -105,6 +105,11 @@
         <appender-ref ref="C3_DATA_LOG_FILE"/>
     </logger>
 
+    <logger level="WARN" additivity="false" name="com.sshtools.j2ssh">
+        <appender-ref ref="SIFTED_LOG_FILE" />
+        <appender-ref ref="LOG_FILE" />
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="SIFTED_LOG_FILE" />
         <appender-ref ref="LOG_FILE" />

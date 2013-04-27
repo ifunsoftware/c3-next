@@ -31,6 +31,7 @@
 package org.aphreet.c3.platform.client.common
 
 import org.apache.commons.cli._
+import scala.language.implicitConversions
 
 object ArgumentType extends Enumeration{
     type ArgumentType = Value

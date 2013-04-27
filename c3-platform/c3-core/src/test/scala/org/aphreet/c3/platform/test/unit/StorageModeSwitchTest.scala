@@ -140,7 +140,7 @@ class StorageStub extends Storage{
 
   def removeIndex(index:StorageIndex) {}
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]) {}
+  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean) {}
   
   def allowMoveFromModeToModes(initial:StorageMode, targetModes:List[StorageMode]){
     

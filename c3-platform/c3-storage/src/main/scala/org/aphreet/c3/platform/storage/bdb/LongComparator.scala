@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.storage.bdb
 import java.nio.ByteBuffer
 import java.util.Comparator
 
+@SerialVersionUID(3957561537384881962l)
 class LongComparator extends Comparator[Array[Byte]] with Serializable{
 
   def compare(o1: Array[Byte], o2: Array[Byte]) = {

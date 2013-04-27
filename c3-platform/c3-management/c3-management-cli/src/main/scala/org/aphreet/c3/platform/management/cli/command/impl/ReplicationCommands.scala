@@ -36,56 +36,58 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 object ReplicationCommands extends Commands {
 
   def instances = List(
-      new AddReplicationTarget,
-      new RemoveReplicationTarget,
-      new ListReplicationTargets,
-      new ReplayReplicationQueueCommand,
-      new CopyDataToTargetCommand
+    new AddReplicationTarget,
+    new RemoveReplicationTarget,
+    new ListReplicationTargets,
+    new ReplayReplicationQueueCommand,
+    new CopyDataToTargetCommand,
+    new ResetReplicationQueueCommand,
+    new DumpReplicationQueueCommand
   )
-  
+
 }
 
 class AddReplicationTarget extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 4){
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 4) {
       wrongParameters("create replication target <hostname> <port> <username> <password>")
-    }else{
+    } else {
 
       val paramsArray = params.toArray
 
-      management.establishReplication(paramsArray(0), paramsArray(1).toInt, paramsArray(2), paramsArray(3))
+      management.createReplicationTarget(paramsArray(0), paramsArray(1).toInt, paramsArray(2), paramsArray(3))
       "Done"
     }
   }
 
-  def name:List[String] = List("create", "replication", "target")
+  def name: List[String] = List("create", "replication", "target")
 }
 
 class RemoveReplicationTarget extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 1){
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 1) {
       "Not enough params.\nUsage: remove replication target <systemid>"
-    }else{
+    } else {
       management.removeReplicationTarget(params.head)
       "Done"
     }
   }
 
-  def name:List[String] = List("remove", "replication", "target")
+  def name: List[String] = List("remove", "replication", "target")
 }
 
 class ListReplicationTargets extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
+  def execute(management: PlatformManagementService): String = {
     val targets = management.listReplicationTargets
 
     val header = "|        ID       |              Host              |\n" +
-                 "|-----------------|--------------------------------|\n"
+      "|-----------------|--------------------------------|\n"
 
     val footer = "|-----------------|--------------------------------|\n"
 
@@ -93,30 +95,61 @@ class ListReplicationTargets extends Command {
 
   }
 
-  def name:List[String] = List("list", "replication", "targets")
+  def name: List[String] = List("list", "replication", "targets")
 }
 
 class ReplayReplicationQueueCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
+  def execute(management: PlatformManagementService): String = {
     management.replayReplicationQueue()
     "Retry started"
   }
 
-  def name:List[String] = List("start", "replication", "retry")
+  def name: List[String] = List("start", "replication", "retry")
 
 }
 
-class CopyDataToTargetCommand extends Command{
+class ResetReplicationQueueCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(management: PlatformManagementService): String = {
+    management.resetReplicationQueue()
+    "Queue has been reset"
+  }
+
+  def name: List[String] = List("reset", "replication", "queue")
+
+}
+
+class DumpReplicationQueueCommand extends Command {
+
+  override
+  def execute(params: List[String], management: PlatformManagementService): String = {
+
     params.headOption match {
-      case Some(id) => management.copyDataToReplicationTarget(id); "Copy task submitted"
-      case None => "Not enough params.\nUsage: copy data to target <systemid>"
+      case Some(path) => {
+        management.dumpReplicationQueue(path)
+        "Task has been submitted"
+      }
+
+      case None => wrongParameters("dump replication queue <path>")
     }
   }
 
-  def name:List[String] = List("copy", "data", "to", "target")
+  def name: List[String] = List("dump", "replication", "queue")
+
+}
+
+class CopyDataToTargetCommand extends Command {
+
+  override
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    params.headOption match {
+      case Some(id) => management.copyDataToReplicationTarget(id); "Copy task submitted"
+      case None => wrongParameters("copy data to target <systemid>")
+    }
+  }
+
+  def name: List[String] = List("copy", "data", "to", "target")
 }

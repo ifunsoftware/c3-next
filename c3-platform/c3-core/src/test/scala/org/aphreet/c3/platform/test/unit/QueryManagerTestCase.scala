@@ -9,6 +9,7 @@ import org.aphreet.c3.platform.query.QueryConsumer
 import org.aphreet.c3.platform.query.impl.QueryManagerImpl
 import org.aphreet.c3.platform.storage.RW
 import org.aphreet.c3.platform.mock.StorageMock
+import scala.language.reflectiveCalls
 
 class QueryManagerTestCase extends TestCase
 {
@@ -56,6 +57,7 @@ class QueryManagerTestCase extends TestCase
     expect(queryConsumer.consume(resources(1))).andReturn(true)
     expect(queryConsumer.consume(resources(2))).andReturn(true)
     expect(queryConsumer.close())
+    expect(queryConsumer.result).andReturn(null)
 
     replay(storageManager, queryConsumer)
 

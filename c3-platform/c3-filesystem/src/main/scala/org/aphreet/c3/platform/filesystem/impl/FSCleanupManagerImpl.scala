@@ -3,12 +3,12 @@ package org.aphreet.c3.platform.filesystem.impl
 import org.aphreet.c3.platform.filesystem.{Node, Directory, FSCleanupManager}
 import org.aphreet.c3.platform.filesystem.lib.FSNodeBFSTreeTraversal
 import org.springframework.stereotype.Component
-import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.access.{ResourceDeletedMsg, AccessManager, AccessMediator}
 import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
 import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.common.Logger
 
 /**
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
@@ -17,7 +17,7 @@ import org.aphreet.c3.platform.resource.ResourceAddress
 @Component
 class FSCleanupManagerImpl extends FSNodeBFSTreeTraversal with FSCleanupManager{
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   @Autowired
   var storageManager: StorageManager = _

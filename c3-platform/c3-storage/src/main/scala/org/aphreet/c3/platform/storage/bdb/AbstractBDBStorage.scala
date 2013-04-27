@@ -34,7 +34,7 @@ import com.sleepycat.je._
 import java.io.File
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.exception.{ResourceNotFoundException, StorageException}
-import org.aphreet.c3.platform.resource.{ResourceVersion, Resource}
+import org.aphreet.c3.platform.resource.{ResourceSerializer, ResourceVersion, Resource}
 import org.aphreet.c3.platform.storage.common.AbstractStorage
 import org.aphreet.c3.platform.storage.{ConflictResolverProvider, StorageParams, StorageIterator}
 import scala.collection.mutable
@@ -165,7 +165,7 @@ with DatabaseProvider{
     }
   }
 
-  def appendSystemMetadata(ra:String, metadata:Map[String, String]){
+  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean){
 
     val tx = environment.beginTransaction(null, null)
 
@@ -184,8 +184,13 @@ with DatabaseProvider{
         }else throw new ResourceNotFoundException(
           "Failed to get resource with address " + ra + " Operation status " + status.toString)
       }
-      //Appending system metadata
-      savedResource.systemMetadata ++= metadata
+
+      if(system){
+        //Appending system metadata
+        savedResource.systemMetadata ++= metadata
+      }else{
+        savedResource.metadata ++= metadata
+      }
 
       val key = new DatabaseEntry(ra.getBytes)
       val value = new DatabaseEntry(savedResource.toByteArray)
@@ -237,6 +242,7 @@ with DatabaseProvider{
   protected def doUpdate(tx: Transaction, resource: Resource, savedResource: Resource){
     //Appending metadata
     savedResource.metadata ++= resource.metadata
+    resource.metadata.removed.foreach(savedResource.metadata.remove(_))
 
     //Appending system metadata
     savedResource.systemMetadata ++= resource.systemMetadata

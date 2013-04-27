@@ -40,8 +40,8 @@ class DomainManagerTestCase extends TestCase{
 
   def testDomainAdd() {
 
-    val domain1 = Domain("1", "name", "key", FullMode)
-    val domain2 = Domain("2", "name2", "key2", FullMode)
+    val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
+    val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
 
     val domainManager = new DomainManagerImpl
@@ -49,7 +49,7 @@ class DomainManagerTestCase extends TestCase{
     val existentDomains = List(domain1,
                                domain2)
 
-    val newDomain = Domain("3", "name3", "key3", FullMode)
+    val newDomain = Domain("3", "name3", "key3", FullMode, deleted = false)
 
     val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
 
@@ -61,8 +61,8 @@ class DomainManagerTestCase extends TestCase{
 
   def testDomainAddWithRename() {
 
-    val domain1 = Domain("1", "name", "key", FullMode)
-    val domain2 = Domain("2", "name2", "key2", FullMode)
+    val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
+    val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
 
     val domainManager = new DomainManagerImpl
@@ -70,7 +70,7 @@ class DomainManagerTestCase extends TestCase{
     val existentDomains = List(domain1,
                                domain2)
 
-    val newDomain = Domain("3", "name", "key3", FullMode)
+    val newDomain = Domain("3", "name", "key3", FullMode, deleted = false)
 
     val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
 
@@ -82,8 +82,8 @@ class DomainManagerTestCase extends TestCase{
 
   def testDomainUpdate() {
 
-    val domain1 = Domain("1", "name", "key", FullMode)
-    val domain2 = Domain("2", "name2", "key2", FullMode)
+    val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
+    val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
 
     val domainManager = new DomainManagerImpl
@@ -91,7 +91,7 @@ class DomainManagerTestCase extends TestCase{
     val existentDomains = List(domain1,
                                domain2)
 
-    val newDomain = Domain("1", "name3", "key3", ReadOnlyMode)
+    val newDomain = Domain("1", "name3", "key3", ReadOnlyMode, deleted = false)
 
     val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
 
@@ -109,8 +109,8 @@ class DomainManagerTestCase extends TestCase{
 
   def testDomainUpdateWithoutRename() {
 
-    val domain1 = Domain("1", "name-systemId", "key", FullMode)
-    val domain2 = Domain("2", "name2", "key2", FullMode)
+    val domain1 = Domain("1", "name-systemId", "key", FullMode, deleted = false)
+    val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
 
     val domainManager = new DomainManagerImpl
@@ -118,7 +118,7 @@ class DomainManagerTestCase extends TestCase{
     val existentDomains = List(domain1,
                                domain2)
 
-    val newDomain = Domain("1", "name", "key3", ReadOnlyMode)
+    val newDomain = Domain("1", "name", "key3", ReadOnlyMode, deleted = false)
 
     val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
 

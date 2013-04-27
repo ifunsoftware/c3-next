@@ -33,14 +33,13 @@ package org.aphreet.c3.platform.remote.replication.impl.data
 import encryption.DataEncryptor
 import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.apache.commons.logging.LogFactory
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
 import actors.{Actor, AbstractActor}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 import collection.mutable
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
@@ -54,7 +53,7 @@ class ReplicationTargetWorker(val localSystemId: String,
                               val statisticsManager: StatisticsManager,
                               val delayHistory: Actor) extends WatchedActor {
 
-  val log = LogFactory getLog getClass
+  val log = Logger(getClass)
 
   var config: Map[String, ReplicationHost] = Map()
 
@@ -136,7 +135,10 @@ class ReplicationTargetWorker(val localSystemId: String,
       handleDelay(resource)
 
     } catch {
-      case e: Throwable => log.error("Failed to replicate add", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate add", e)
+      }
     }
   }
 
@@ -181,7 +183,10 @@ class ReplicationTargetWorker(val localSystemId: String,
       target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
 
     } catch {
-      case e: Throwable => log.error("Failed to replicate update", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate update", e)
+      }
     }
   }
 
@@ -215,14 +220,17 @@ class ReplicationTargetWorker(val localSystemId: String,
         log warn "Failed to replicate delete, storage is not writable"
       }
     } catch {
-      case e: Throwable => log.error("Failed to replicate update", e)
+      case e: Throwable => {
+        statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
+        log.error("Failed to replicate update", e)
+      }
     }
   }
 
   private def processConfiguration(configuration: String, signature: ReplicationSignature) {
 
     if (checkSignature(configuration, signature) != null) {
-      log info "Processing configuration"
+      log debug "Processing configuration"
       configurationManager.processSerializedRemoteConfiguration(configuration)
     } else {
       log info "Ignorring configuration due to incorrect message"

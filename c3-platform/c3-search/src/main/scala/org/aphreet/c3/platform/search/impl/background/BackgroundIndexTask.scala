@@ -50,15 +50,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   //Initial storage list is all storages in storageManager
   var storagesToIndex:List[Storage] = List()
 
-  val startTime = System.currentTimeMillis + 3 * 60 * 1000
-
   {
     log info "Creating BackgroundIndexTask"
-    log info "Waiting for 3 minutes to get system in state"
-  }
-
-  override def canStart:Boolean = {
-    System.currentTimeMillis > startTime || shouldStop || Thread.currentThread.isInterrupted
   }
 
   override def preStart() {
@@ -95,7 +88,7 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       }
     }
 
-    if (searchManager.throttleBackgroundIndex){
+    if (searchManager.throttleBackgroundIndex) {
       Thread.sleep(1000)
     }
   }
@@ -103,6 +96,10 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
   override def postFailure() {
     if (iterator != null)
       iterator.close()
+  }
+
+  override def postComplete(){
+    searchManager ! BackgroundIndexRunCompletedMsg
   }
 
   private def shouldIndex(resource: Resource): Boolean = {
@@ -137,16 +134,8 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       iterator = currentStorage.iterator()
       log debug "Starting iteration over storage " + currentStorage.id
     } else {
-      log debug "All storages have been checked, sleeping for an hour"
-      storagesToIndex = storageManager.listStorages
-
-      val newStartTime = System.currentTimeMillis + 1000 * 60 * 60
-
-      searchManager ! BackgroundIndexRunCompletedMsg
-
-      while(System.currentTimeMillis < newStartTime){
-        Thread.sleep(10 * 1000)
-      }
+      log debug "All storages have been checked"
+      shouldStopFlag = true
     }
   }
 

@@ -55,7 +55,7 @@ object PlatformManagementServiceUtil{
   }
 
   def domainFromDescription(domainDescription:DomainDescription):Domain = {
-    Domain(domainDescription.id, domainDescription.name, domainDescription.key, DomainMode.byName(domainDescription.mode))
+    Domain(domainDescription.id, domainDescription.name, domainDescription.key, DomainMode.byName(domainDescription.mode), domainDescription.deleted)
   }
 
 }

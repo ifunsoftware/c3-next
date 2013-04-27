@@ -29,21 +29,20 @@
  */
 package org.aphreet.c3.platform.search.impl.index
 
-import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search._
-import org.apache.lucene.index.{IndexWriterConfig, Term, IndexWriter}
+import org.apache.lucene.index.{IndexReader, IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.common.{WatchedActor, Path}
+import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
 import org.apache.lucene.util.Version
 import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 
 class FileIndexer(var indexPath:Path) extends WatchedActor{
 
-  val log = LogFactory.getLog(getClass)
+  val log = Logger(getClass)
 
   var searcher:Searcher = null
 
@@ -70,10 +69,14 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
       react{
         case MergeIndexMsg(directory) =>
           try{
+            val reader = IndexReader.open(directory)
 
-            indexWriter.addIndexes(directory)
+            indexWriter.addIndexes(reader)
             indexWriter.commit()
+
+            reader.close()
             directory.close()
+
             log debug "Index merged"
             searcher ! ReopenSearcherMsg
           }catch{
@@ -89,7 +92,7 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             indexWriter.commit()
             searcher ! ReopenSearcherMsg
           }catch{
-            case e : Throwable => "Failed to delete search index"
+            case e : Throwable => log.warn("Failed to delete search index", e)
           }
         }
 
@@ -102,18 +105,21 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
             log info "Changing index path to " + path
             indexPath = path
             indexWriter.close()
+            indexWriter.getDirectory.close()
+
             indexWriter = createWriter(indexPath)
             log info "Index path changed"
             searcher ! NewIndexPathMsg(path)
             sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
           }catch{
-            case e: Throwable => "Failed to create new indexWriter"
+            case e: Throwable => log.warn("Failed to create new indexWriter", e)
           }
         }
 
         case DestroyMsg => {
           try{
             indexWriter.close()
+            indexWriter.getDirectory.close()
           }catch{
             case e: Throwable => log.warn("Failed to close index", e)
             throw e
