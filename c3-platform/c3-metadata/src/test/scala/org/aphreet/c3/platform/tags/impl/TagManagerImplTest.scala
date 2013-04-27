@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.metadata.impl
+package org.aphreet.c3.platform.tags.impl
 
 import junit.framework.Assert._
 import junit.framework.TestCase
@@ -11,7 +11,7 @@ import org.easymock.EasyMock._
 import scala.Some
 import scala.collection.Map
 import scala.collection.mutable
-import org.aphreet.c3.platform.metadata.TagManager
+import org.aphreet.c3.platform.tags.TagManager
 
 class TagManagerImplTest extends TestCase {
 

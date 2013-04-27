@@ -8,22 +8,8 @@
        http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-
-    <service id="filesystemService" ref="fsManager"
-       interface="org.aphreet.c3.platform.filesystem.FSManager" />
-
     <reference id="accessService" interface="org.aphreet.c3.platform.access.AccessManager"/>
 
-    <reference id="storageService" interface="org.aphreet.c3.platform.storage.StorageManager"/>
-
-    <reference id="configService" interface="org.aphreet.c3.platform.config.PlatformConfigManager"/>
-
-    <reference id="taskService" interface="org.aphreet.c3.platform.task.TaskManager"/>
-
-    <reference id="statisticsService" interface="org.aphreet.c3.platform.statistics.StatisticsManager"/>
-
     <reference id="accessMediatorService" interface="org.aphreet.c3.platform.access.AccessMediator"/>
-
-    <reference id="transientMetadataService" interface="org.aphreet.c3.platform.metadata.TransientMetadataManager"/>
 
 </beans:beans>

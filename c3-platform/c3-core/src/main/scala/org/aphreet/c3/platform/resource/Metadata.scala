@@ -113,8 +113,6 @@ object MetadataHelper{
     else value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
   }
 
-  //[key1:count1,key2:count2]
-   //  val parts:Array[String] = tagInfo.split(":")
   def parseTagMap[T](values: String, converter: String => T): TraversableOnce[T] = {
       parseSequence(values.toString).map(converter)
   }

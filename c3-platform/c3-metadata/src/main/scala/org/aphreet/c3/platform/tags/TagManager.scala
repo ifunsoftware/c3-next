@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.metadata
+package org.aphreet.c3.platform.tags
 
 import org.aphreet.c3.platform.common.WatchedActor
 import scala.collection.Map

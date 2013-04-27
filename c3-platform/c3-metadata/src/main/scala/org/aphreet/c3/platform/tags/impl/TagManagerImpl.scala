@@ -1,4 +1,4 @@
-package org.aphreet.c3.platform.metadata.impl
+package org.aphreet.c3.platform.tags.impl
 
 import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.access._
@@ -6,16 +6,13 @@ import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
-import org.aphreet.c3.platform.metadata._
+import org.aphreet.c3.platform.tags._
 import org.aphreet.c3.platform.resource.{MetadataHelper, Resource}
-import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import org.springframework.context.annotation.Scope
+import org.springframework.beans.factory.annotation.{Autowired}
 import org.springframework.stereotype.Component
 import scala.collection.{mutable, Map}
 
 @Component("TagManager")
-@Scope("singleton")
-@Qualifier("TagManager")
 class TagManagerImpl extends TagManager with ResourceOwner {
 
   val log = Logger (getClass)
@@ -24,7 +21,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
   var accessManager: AccessManager = _
 
   @Autowired
-  var accessMediator: AccessMediator =_
+  var accessMediator: AccessMediator = _
 
   @PostConstruct
   def init() {
@@ -35,21 +32,21 @@ class TagManagerImpl extends TagManager with ResourceOwner {
 
   override def deleteResource(resource:Resource) {
     resource.metadata(TagManager.TAGS_FIELD).foreach(tagsString => {
-        val node:Node = Node.fromResource(resource)
+      val node:Node = Node.fromResource(resource)
 
-        if (node.isDirectory) {
-          val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-            (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-          }).toMap[String, Int]
+      if (node.isDirectory) {
+        val deletedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
+          (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+        }).toMap[String, Int]
 
-          this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), deletedTags)
-        } else {
-          val tagCollection = resource.metadata.collectionValue(TagManager.TAGS_FIELD)
+        this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), deletedTags)
+      } else {
+        val tagCollection = resource.metadata.collectionValue(TagManager.TAGS_FIELD)
 
-          val tagMap = tagCollection.map(childTag => (childTag , 1)).toMap
+        val tagMap = tagCollection.map(childTag => (childTag , 1)).toMap
 
-          this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), tagMap)
-        }
+        this ! DeleteParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), tagMap)
+      }
     })
   }
 
@@ -65,14 +62,15 @@ class TagManagerImpl extends TagManager with ResourceOwner {
           val metadata = resource.metadata
           val tagsString: Option[String] = metadata(TagManager.TAGS_FIELD)
           tagsString match {
+            case None => log info "no tags to proccess"
             case Some(tagsS) =>
               log info "ResourceAddedMsg: " + resource.address
               val node:Node = Node.fromResource(resource)
 
               if (node.isDirectory) {
                 val addedTags:Map[String, Int] = MetadataHelper.parseTagMap(tagsS, (tagInfo: String) => {
-                            (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-                          }).toMap[String, Int]
+                  (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+                }).toMap[String, Int]
                 this ! AddParentTagMsg(resource.systemMetadata(Node.NODE_FIELD_PARENT), addedTags)
               } else {
                 val tagMap = new mutable.HashMap[String, Int]
@@ -88,6 +86,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
 
         case ResourceUpdatedMsg(resource, source) => {
           resource.systemMetadata(Node.NODE_FIELD_PARENT) match {
+            case None =>
             case Some(parentAddress) =>
               this ! RebuildParentTagMsg(Option(parentAddress))
           }
@@ -121,7 +120,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                       }}
                     )
 
-                   }
+                  }
                   }
 
                   metadata(TagManager.TAGS_FIELD) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
@@ -146,8 +145,8 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                 case Some(tagsString) =>
                   //collect statistics
                   val tagsBeforeDelete:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-                              (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-                            }).toMap[String, Int]
+                    (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+                  }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeDelete.map(tagInfo => {
                     if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 - tags.get(tagInfo._1).get)
@@ -168,19 +167,17 @@ class TagManagerImpl extends TagManager with ResourceOwner {
         }
 
         case AddParentTagMsg(resourceAddress, tags) => {
-          resourceAddress match {
-            case None =>
-              log error "got empty resourceAddress"
-            case Some(address) =>
+          resourceAddress.foreach (
+            address => {
               val catalog = accessManager.get(address)
               val metadata = catalog.metadata
 
-              metadata(TagManager.TAGS_FIELD) match {
-                case Some(tagsString) =>
+              metadata(TagManager.TAGS_FIELD).foreach(
+                tagsString => {
                   //collect statistics
                   val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-                              (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-                            }).toMap[String, Int]
+                    (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+                  }).toMap[String, Int]
                   //delete tags
                   val updatedTags = tagsBeforeAdd.map(tagInfo => {
                     if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 + tags.get(tagInfo._1).get)
@@ -193,16 +190,12 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                   catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
                     address => this ! AddParentTagMsg(Some(address), tags)
                   }
-
-                case None =>
-                  log info "nothing to add (" + resourceAddress + ")"
-              }
-          }
-
+                }
+              )
+            }
+          )
         }
       }
-
     }
-
   }
 }
