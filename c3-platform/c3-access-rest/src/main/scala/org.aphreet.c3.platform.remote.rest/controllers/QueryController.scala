@@ -39,7 +39,7 @@ class QueryController extends DataController with QueryRunner {
 
   @RequestMapping(value = Array("/query"),
     method = Array(RequestMethod.GET),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def executeQuery(request: HttpServletRequest,
                    response: HttpServletResponse) {
 

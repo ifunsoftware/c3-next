@@ -42,7 +42,8 @@ import org.springframework.web.bind.annotation._
 @RequestMapping(Array("/resource"))
 class ResourceController extends DataController with QueryRunner {
 
-  @RequestMapping(method = Array(RequestMethod.GET), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  @RequestMapping(method = Array(RequestMethod.GET),
+    produces = Array("application/json", "application/xml"))
   def listResources(request: HttpServletRequest,
                     response: HttpServletResponse) {
 
@@ -51,7 +52,7 @@ class ResourceController extends DataController with QueryRunner {
 
   @RequestMapping(value = Array("/{address}"),
     method = Array(RequestMethod.GET),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def resource(@PathVariable address: String,
                   @RequestParam(value = "metadata", required = false) metadata: String,
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
@@ -86,7 +87,7 @@ class ResourceController extends DataController with QueryRunner {
 
   @RequestMapping(value = Array("/{address}/{version}"),
     method = Array(RequestMethod.GET),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def resourceVersion(@PathVariable("address") address: String,
                          @PathVariable("version") version: Int,
                          @RequestParam(value = "metadata", required = false) metadata: String,
@@ -110,7 +111,7 @@ class ResourceController extends DataController with QueryRunner {
 
 
   @RequestMapping(method = Array(RequestMethod.POST),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def saveResource(request: HttpServletRequest,
                    response: HttpServletResponse) {
 
@@ -129,7 +130,7 @@ class ResourceController extends DataController with QueryRunner {
 
   @RequestMapping(value = Array("/{address}"),
     method = Array(RequestMethod.PUT),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def updateResource(@PathVariable address: String,
                      request: HttpServletRequest,
                      response: HttpServletResponse) {
@@ -151,7 +152,7 @@ class ResourceController extends DataController with QueryRunner {
 
   @RequestMapping(value = Array("/{address}"),
     method = Array(RequestMethod.DELETE),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def deleteResource(@PathVariable address: String,
                      request: HttpServletRequest,
                      response: HttpServletResponse) {

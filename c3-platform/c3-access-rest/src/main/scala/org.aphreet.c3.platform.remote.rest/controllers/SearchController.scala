@@ -51,7 +51,7 @@ class SearchController extends DataController {
 
   @RequestMapping(value = Array("/{query}"),
     method = Array(RequestMethod.GET),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def search(@PathVariable query: String,
              @RequestHeader(value = "Accept", required = false) contentType: String,
              req: HttpServletRequest,

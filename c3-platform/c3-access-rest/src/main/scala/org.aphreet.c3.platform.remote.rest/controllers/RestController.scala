@@ -14,8 +14,3 @@ trait RestController {
 
 }
 
-object RestController {
-
-  val SUPPORTED_CONTENT_TYPES = Array("application/json", "application/xml")
-
-}

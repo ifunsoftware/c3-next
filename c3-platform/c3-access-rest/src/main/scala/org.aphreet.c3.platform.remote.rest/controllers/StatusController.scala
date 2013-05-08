@@ -19,7 +19,7 @@ class StatusController extends DataController {
 
   @RequestMapping(value = Array("/version"),
     method = Array(RequestMethod.GET),
-    produces = RestController.SUPPORTED_CONTENT_TYPES)
+    produces = Array("application/json", "application/xml"))
   def executeQuery(req: HttpServletRequest,
                    resp: HttpServletResponse) {
 

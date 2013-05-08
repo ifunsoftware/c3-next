@@ -44,7 +44,7 @@ class FSController extends DataController {
 
   val baseUrl = "/rest/fs"
 
-  @RequestMapping(method = Array(RequestMethod.GET), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  @RequestMapping(method = Array(RequestMethod.GET), produces = Array("application/json", "application/xml"))
   def getNode(@RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
               @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
               @RequestHeader(value = "x-c3-data", required = false) childData:String,
@@ -74,7 +74,7 @@ class FSController extends DataController {
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.POST), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  @RequestMapping(method = Array(RequestMethod.POST), produces = Array("application/json", "application/xml"))
   def makeNode(@RequestHeader(value = "x-c3-nodetype", required = false) nodetype: String,
                request: HttpServletRequest,
                response: HttpServletResponse) {
@@ -105,7 +105,7 @@ class FSController extends DataController {
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.PUT), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  @RequestMapping(method = Array(RequestMethod.PUT), produces = Array("application/json", "application/xml"))
   def updateNode(@RequestHeader(value = "x-c3-op", required = false) operation: String,
                  request: HttpServletRequest,
                  response: HttpServletResponse) {
@@ -139,7 +139,7 @@ class FSController extends DataController {
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.DELETE), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  @RequestMapping(method = Array(RequestMethod.DELETE), produces = Array("application/json", "application/xml"))
   def deleteNode(request: HttpServletRequest,
                  response: HttpServletResponse) {
 

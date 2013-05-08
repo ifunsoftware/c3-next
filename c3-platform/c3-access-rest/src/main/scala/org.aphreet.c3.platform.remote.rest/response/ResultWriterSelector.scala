@@ -51,7 +51,7 @@ class ResultWriterSelector{
     }else if(contentType.contains("application/json")){
       jsonResultWriter
     }else{
-      throw new WrongRequestException("Unknown type")
+      xmlResultWriter
     }
 
   }
