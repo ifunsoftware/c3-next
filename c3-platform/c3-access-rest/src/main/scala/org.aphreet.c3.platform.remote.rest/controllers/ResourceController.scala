@@ -42,21 +42,20 @@ import org.springframework.web.bind.annotation._
 @RequestMapping(Array("/resource"))
 class ResourceController extends DataController with QueryRunner {
 
-  @RequestMapping(method = Array(RequestMethod.GET))
-  def listResources(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-                          req: HttpServletRequest,
-                          resp: HttpServletResponse) {
+  @RequestMapping(method = Array(RequestMethod.GET), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def listResources(request: HttpServletRequest,
+                    response: HttpServletResponse) {
 
-    executeQuery(req, resp, contentType, Some(100), 0)
+    executeQuery(request, response, Some(100), 0)
   }
 
   @RequestMapping(value = Array("/{address}"),
-    method = Array(RequestMethod.GET))
+    method = Array(RequestMethod.GET),
+    produces = RestController.SUPPORTED_CONTENT_TYPES)
   def resource(@PathVariable address: String,
                   @RequestParam(value = "metadata", required = false) metadata: String,
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
                   @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
-                  @RequestHeader(value = "x-c3-type", required = false) contentType: String,
                   @RequestHeader(value = "x-c3-data", required = false) childData:String,
                   request: HttpServletRequest,
                   response: HttpServletResponse) {
@@ -67,7 +66,7 @@ class ResourceController extends DataController with QueryRunner {
 
     if (metadata != null) {
       addNonPersistentMetadata(resource, extMeta)
-      sendMetadata(resource, contentType, accessTokens, response)
+      sendMetadata(resource, accessTokens, request, response)
     } else {
 
       val directoryNode: Node =
@@ -78,7 +77,7 @@ class ResourceController extends DataController with QueryRunner {
         } else null
 
       if (directoryNode != null) {
-        sendDirectoryContents(directoryNode, childMeta, (childData != null), contentType, accessTokens, response)
+        sendDirectoryContents(directoryNode, childMeta, (childData != null), accessTokens, request, response)
       } else {
         sendResourceData(resource, -1, accessTokens, response)
       }
@@ -86,11 +85,11 @@ class ResourceController extends DataController with QueryRunner {
   }
 
   @RequestMapping(value = Array("/{address}/{version}"),
-    method = Array(RequestMethod.GET))
+    method = Array(RequestMethod.GET),
+    produces = RestController.SUPPORTED_CONTENT_TYPES)
   def resourceVersion(@PathVariable("address") address: String,
                          @PathVariable("version") version: Int,
                          @RequestParam(value = "metadata", required = false) metadata: String,
-                         @RequestHeader(value = "x-c3-type", required = false) contentType: String,
                          @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
                          request: HttpServletRequest,
                          response: HttpServletResponse) {
@@ -102,7 +101,7 @@ class ResourceController extends DataController with QueryRunner {
     if (metadata != null) {
 
       addNonPersistentMetadata(resource, extMeta)
-      sendMetadata(resource, contentType, accessTokens, response)
+      sendMetadata(resource, accessTokens, request, response)
 
     } else {
       sendResourceData(resource, version, accessTokens, response)
@@ -110,9 +109,9 @@ class ResourceController extends DataController with QueryRunner {
   }
 
 
-  @RequestMapping(method = Array(RequestMethod.POST))
-  def saveResource(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-                   request: HttpServletRequest,
+  @RequestMapping(method = Array(RequestMethod.POST),
+    produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def saveResource(request: HttpServletRequest,
                    response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(CREATE, request)
@@ -123,15 +122,15 @@ class ResourceController extends DataController with QueryRunner {
 
       val ra = accessManager.add(resource)
       response.setStatus(HttpServletResponse.SC_CREATED)
-      getResultWriter(contentType).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
+      getResultWriter(request).writeResponse(new UploadResult(new ResourceAddress(ra, 1)), response)
 
     })
-
   }
 
-  @RequestMapping(value = Array("/{address}"), method = Array(RequestMethod.PUT))
+  @RequestMapping(value = Array("/{address}"),
+    method = Array(RequestMethod.PUT),
+    produces = RestController.SUPPORTED_CONTENT_TYPES)
   def updateResource(@PathVariable address: String,
-                     @RequestHeader(value = "x-c3-type", required = false) contentType: String,
                      request: HttpServletRequest,
                      response: HttpServletResponse) {
 
@@ -143,16 +142,17 @@ class ResourceController extends DataController with QueryRunner {
 
     executeDataUpload(resource, accessTokens, request, response, () => {
       val ra = accessManager.update(resource)
-      getResultWriter(contentType)
+      getResultWriter(request)
         .writeResponse(new UploadResult(new ResourceAddress(ra, resource.versions.length)), response)
     })
 
   }
 
 
-  @RequestMapping(value = Array("/{address}"), method = Array(RequestMethod.DELETE))
+  @RequestMapping(value = Array("/{address}"),
+    method = Array(RequestMethod.DELETE),
+    produces = RestController.SUPPORTED_CONTENT_TYPES)
   def deleteResource(@PathVariable address: String,
-                     @RequestHeader(value = "x-c3-type", required = false) contentType: String,
                      request: HttpServletRequest,
                      response: HttpServletResponse) {
 
@@ -164,8 +164,6 @@ class ResourceController extends DataController with QueryRunner {
 
     accessManager.delete(address)
 
-    getResultWriter(contentType).writeResponse(new Result, response)
+    getResultWriter(request).writeResponse(new Result, response)
   }
-
-
 }

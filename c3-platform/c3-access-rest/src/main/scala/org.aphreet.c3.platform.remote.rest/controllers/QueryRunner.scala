@@ -12,12 +12,11 @@ trait QueryRunner extends RestController {
 
   def queryManager: QueryManager
 
-  def executeQuery(req: HttpServletRequest,
-                               resp: HttpServletResponse,
-                               contentType: String,
-                               limit: Option[Int],
-                               offset: Int) {
-      val accessTokens = getAccessTokens(READ, req)
+  def executeQuery(request: HttpServletRequest,
+                   response: HttpServletResponse,
+                   limit: Option[Int],
+                   offset: Int) {
+      val accessTokens = getAccessTokens(READ, request)
 
       var actualLimit = limit
       var actualOffset = offset
@@ -25,11 +24,11 @@ trait QueryRunner extends RestController {
       val userMetaMap = new mutable.HashMap[String, String]
       val systemMetaMap = new mutable.HashMap[String, String]
 
-      val enum = req.getParameterNames
+      val enum = request.getParameterNames
 
       while (enum.hasMoreElements) {
         val key: String = enum.nextElement.asInstanceOf[String]
-        val value: String = req.getParameter(key)
+        val value: String = request.getParameter(key)
 
         key match {
           case "limit" => actualLimit = Some(value.toInt)
@@ -43,10 +42,10 @@ trait QueryRunner extends RestController {
         }
       }
 
-      val consumer = new RestQueryConsumer(resp.getWriter, getResultWriter(contentType), actualOffset, actualLimit)
+      val consumer = new RestQueryConsumer(response.getWriter, getResultWriter(request), actualOffset, actualLimit)
 
       queryManager.executeQuery(userMetaMap.toMap, accessTokens.metadataRestrictions ++ systemMetaMap.toMap, consumer)
 
-      resp.flushBuffer()
+      response.flushBuffer()
     }
 }

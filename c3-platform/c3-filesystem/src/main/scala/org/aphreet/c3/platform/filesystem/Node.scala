@@ -335,7 +335,6 @@ object Directory{
     resource.systemMetadata("c3.domain.id") = domainId
 
     resource.metadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
-    resource.systemMetadata(Resource.MD_CONTENT_TYPE) = Node.DIRECTORY_CONTENT_TYPE
 
     meta foreach { case (k,v) => resource.metadata(k) = v }
 

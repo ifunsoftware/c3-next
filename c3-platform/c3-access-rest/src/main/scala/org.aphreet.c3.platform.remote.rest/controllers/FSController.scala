@@ -37,7 +37,6 @@ import org.aphreet.c3.platform.remote.rest.response.Result
 import org.apache.commons.httpclient.util.URIUtil
 import java.io.BufferedReader
 import org.aphreet.c3.platform.accesscontrol._
-import org.apache.commons.codec.binary.Base64
 
 @Controller
 @RequestMapping(Array("/fs/**"))
@@ -45,9 +44,8 @@ class FSController extends DataController {
 
   val baseUrl = "/rest/fs"
 
-  @RequestMapping(method = Array(RequestMethod.GET))
-  def getNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-              @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
+  @RequestMapping(method = Array(RequestMethod.GET), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def getNode(@RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
               @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
               @RequestHeader(value = "x-c3-data", required = false) childData:String,
               @RequestParam(value = "metadata", required = false) metadata: String,
@@ -65,20 +63,19 @@ class FSController extends DataController {
     if (metadata == null) {
 
       if (node.isDirectory) {
-        sendDirectoryContents(node, childMeta, (childData != null), contentType, accessTokens, response)
+        sendDirectoryContents(node, childMeta, (childData != null), accessTokens, request, response)
       } else {
         sendResourceData(node.resource, -1, accessTokens, response)
       }
 
     } else {
       addNonPersistentMetadata(node.resource, extMeta)
-      sendMetadata(node.resource, contentType, accessTokens, response)
+      sendMetadata(node.resource, accessTokens, request, response)
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.POST))
-  def makeNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-               @RequestHeader(value = "x-c3-nodetype", required = false) nodetype: String,
+  @RequestMapping(method = Array(RequestMethod.POST), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def makeNode(@RequestHeader(value = "x-c3-nodetype", required = false) nodetype: String,
                request: HttpServletRequest,
                response: HttpServletResponse) {
 
@@ -94,7 +91,7 @@ class FSController extends DataController {
 
       filesystemManager.createDirectory(domain, fsPath, metadata.toMap)
 
-      reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
+      reportSuccess(HttpServletResponse.SC_CREATED, request, response)
     } else {
 
       val resource = new Resource
@@ -103,14 +100,13 @@ class FSController extends DataController {
 
         filesystemManager.createFile(domain, fsPath, resource)
 
-        reportSuccess(HttpServletResponse.SC_CREATED, contentType, response)
+        reportSuccess(HttpServletResponse.SC_CREATED, request, response)
       })
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.PUT))
-  def updateNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-                 @RequestHeader(value = "x-c3-op", required = false) operation: String,
+  @RequestMapping(method = Array(RequestMethod.PUT), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def updateNode(@RequestHeader(value = "x-c3-op", required = false) operation: String,
                  request: HttpServletRequest,
                  response: HttpServletResponse) {
 
@@ -133,19 +129,18 @@ class FSController extends DataController {
 
       filesystemManager.moveNode(domain, fsPath, newPath)
 
-      reportSuccess(HttpServletResponse.SC_OK, contentType, response)
+      reportSuccess(HttpServletResponse.SC_OK, request, response)
 
     } else {
       executeDataUpload(resource, accessTokens, request, response, () => {
         accessManager.update(resource)
-        reportSuccess(HttpServletResponse.SC_OK, contentType, response)
+        reportSuccess(HttpServletResponse.SC_OK, request, response)
       })
     }
   }
 
-  @RequestMapping(method = Array(RequestMethod.DELETE))
-  def deleteNode(@RequestHeader(value = "x-c3-type", required = false) contentType: String,
-                 request: HttpServletRequest,
+  @RequestMapping(method = Array(RequestMethod.DELETE), produces = RestController.SUPPORTED_CONTENT_TYPES)
+  def deleteNode(request: HttpServletRequest,
                  response: HttpServletResponse) {
 
     val accessTokens = getAccessTokens(DELETE, request)
@@ -155,12 +150,12 @@ class FSController extends DataController {
 
     filesystemManager.deleteNode(domain, fsPath)
 
-    reportSuccess(HttpServletResponse.SC_OK, contentType, response)
+    reportSuccess(HttpServletResponse.SC_OK, request, response)
   }
 
-  private def reportSuccess(code: Int, contentType: String, response: HttpServletResponse) {
+  private def reportSuccess(code: Int, request: HttpServletRequest, response: HttpServletResponse) {
     response.setStatus(code)
-    getResultWriter(contentType).writeResponse(new Result, response)
+    getResultWriter(request).writeResponse(new Result, response)
   }
 
   private def getFilesystemPath(request: HttpServletRequest): String = {

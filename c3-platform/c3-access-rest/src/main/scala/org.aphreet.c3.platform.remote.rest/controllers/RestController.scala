@@ -10,4 +10,12 @@ trait RestController {
 
   def getResultWriter(expectedType: String): ResultWriter
 
+  def getResultWriter(request: HttpServletRequest): ResultWriter
+
+}
+
+object RestController {
+
+  val SUPPORTED_CONTENT_TYPES = Array("application/json", "application/xml")
+
 }

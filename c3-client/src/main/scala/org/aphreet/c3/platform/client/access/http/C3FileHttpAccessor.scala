@@ -31,12 +31,11 @@
 
 package org.aphreet.c3.platform.client.access.http
 
-import com.twmacinta.util.MD5
-import org.apache.commons.httpclient.methods.multipart._
-import java.io.{InputStream, File, FileOutputStream}
-import xml.{XML, Elem}
-import org.apache.commons.httpclient.methods._
+import java.io.File
 import org.apache.commons.httpclient._
+import org.apache.commons.httpclient.methods._
+import org.apache.commons.httpclient.methods.multipart._
+import xml.{XML, Elem}
 
 class C3FileHttpAccessor(val host:String, override val domain:String, override val secret:String)
           extends AbstractHttpAccessor(domain, secret){
@@ -60,10 +59,10 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
 
@@ -81,10 +80,10 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
 
@@ -113,7 +112,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         case HttpStatus.SC_OK =>
         case _ =>
           println(putMethod.getResponseBodyAsString)
-          throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Filed to put resource, code " + status))
       }
     }finally {
       putMethod.releaseConnection()
@@ -136,7 +135,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         case HttpStatus.SC_OK =>
         case _ =>
           println(putMethod.getResponseBodyAsString)
-          throw new Exception(("Filed to put resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Filed to put resource, code " + status))
       }
     }finally {
       putMethod.releaseConnection()
@@ -160,7 +159,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(postMethod.getResponseBodyAsString)
-          throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Filed to post resource, code " + status))
       }
     }finally {
       postMethod.releaseConnection()
@@ -200,10 +199,10 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
 
@@ -220,10 +219,10 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
 
@@ -240,7 +239,7 @@ class C3FileHttpAccessor(val host:String, override val domain:String, override v
         }
         case _ =>
           println(deleteMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to delete file, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to delete file, code " + status))
       }
     }
   }

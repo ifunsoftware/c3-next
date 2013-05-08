@@ -42,6 +42,7 @@ import org.aphreet.c3.platform.search.SearchQueryException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.aphreet.c3.platform.common.Logger
+import org.springframework.web.HttpRequestMethodNotSupportedException
 
 class AbstractController {
 
@@ -59,32 +60,25 @@ class AbstractController {
                       request: HttpServletRequest,
                       response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("Internal Server Error", e)), response)
   }
 
-//  @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
-//  def handleUnsupportedMethodException(e: HttpRequestMethodNotSupportedException,
-//                                       request: HttpServletRequest,
-//                                       response: HttpServletResponse) {
-//
-//    val contentType = request.getHeader("x-c3-type")
-//
-//    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
-//    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
-//  }
+  @ExceptionHandler(Array(classOf[HttpRequestMethodNotSupportedException]))
+  def handleUnsupportedMethodException(e: HttpRequestMethodNotSupportedException,
+                                       request: HttpServletRequest,
+                                       response: HttpServletResponse) {
+
+    response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("Method not allowed")), response)
+  }
 
   @ExceptionHandler(Array(classOf[SearchQueryException]))
   def handleIncorrectSearchQueryException(e: SearchQueryException,
                                            request: HttpServletRequest,
                                            response: HttpServletResponse) {
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   @ExceptionHandler(Array(classOf[ResourceNotFoundException]))
@@ -92,10 +86,8 @@ class AbstractController {
                                       request: HttpServletRequest,
                                       response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_NOT_FOUND)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Resource not found")), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("Resource not found")), response)
   }
 
   @ExceptionHandler(Array(classOf[AuthFailedException]))
@@ -103,10 +95,8 @@ class AbstractController {
                                 request: HttpServletRequest,
                                 response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("Authentication failed")), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("Authentication failed")), response)
   }
 
   @ExceptionHandler(Array(classOf[AccessControlException]))
@@ -114,10 +104,8 @@ class AbstractController {
                             request: HttpServletRequest,
                             response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   @ExceptionHandler(Array(classOf[FSNotFoundException]))
@@ -125,10 +113,8 @@ class AbstractController {
                             request: HttpServletRequest,
                             response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_NOT_FOUND)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription("File not found")), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("File not found")), response)
   }
 
   @ExceptionHandler(Array(classOf[FSWrongRequestException]))
@@ -136,30 +122,30 @@ class AbstractController {
                             request: HttpServletRequest,
                             response: HttpServletResponse) {
 
-    val contentType = request.getHeader("x-c3-type")
-
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   @ExceptionHandler(Array(classOf[ResourceException]))
   def handleIncorrectResourceFormat(e:ResourceException, request:HttpServletRequest, response:HttpServletResponse) {
-    val contentType = request.getHeader("x-c3-type")
 
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
   @ExceptionHandler(Array(classOf[WrongRequestException]))
   def handleWrongRequestException(e:WrongRequestException, request:HttpServletRequest, response:HttpServletResponse) {
-    val contentType = request.getHeader("x-c3-type")
 
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
-    getResultWriter(contentType).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
 
   def getResultWriter(expectedType: String): ResultWriter = {
     writerSelector.selectWriterForType(expectedType)
+  }
+
+  def getResultWriter(request: HttpServletRequest): ResultWriter = {
+    getResultWriter(request.getHeader("Accept"))
   }
 }
