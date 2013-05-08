@@ -17,7 +17,7 @@ class StatusController extends DataController {
   @Autowired
   var versionManager: VersionManager = _
 
-  @RequestMapping(value = Array("/version"),
+  @RequestMapping(value = Array("/status"),
     method = Array(RequestMethod.GET),
     produces = Array("application/json", "application/xml"))
   def executeQuery(req: HttpServletRequest,
