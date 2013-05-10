@@ -6,6 +6,7 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.VersionManager
 import org.aphreet.c3.platform.remote.rest.response.StatusResult
+import org.aphreet.c3.platform.accesscontrol.READ
 
 /**
  * Copyright iFunSoftware 2013
@@ -22,6 +23,8 @@ class StatusController extends DataController {
     produces = Array("application/json", "application/xml"))
   def executeQuery(req: HttpServletRequest,
                    resp: HttpServletResponse) {
+
+    getAccessTokens(READ, req)
 
     getResultWriter(req).writeResponse(new StatusResult(
       SystemStatus(versionManager.listC3Modules.map{case (name, version) => SystemModule(name, version)}.toArray.sortBy(_.name))
