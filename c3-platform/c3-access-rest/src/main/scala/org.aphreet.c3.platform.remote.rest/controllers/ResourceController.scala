@@ -51,8 +51,7 @@ class ResourceController extends DataController with QueryRunner {
   }
 
   @RequestMapping(value = Array("/{address}"),
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json", "application/xml"))
+    method = Array(RequestMethod.GET))
   def resource(@PathVariable address: String,
                   @RequestParam(value = "metadata", required = false) metadata: String,
                   @RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
@@ -86,8 +85,7 @@ class ResourceController extends DataController with QueryRunner {
   }
 
   @RequestMapping(value = Array("/{address}/{version}"),
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json", "application/xml"))
+    method = Array(RequestMethod.GET))
   def resourceVersion(@PathVariable("address") address: String,
                          @PathVariable("version") version: Int,
                          @RequestParam(value = "metadata", required = false) metadata: String,

@@ -190,7 +190,7 @@
 	<xsd:simpleType name="contentType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="application/json" />
-			<xsd:enumeration value="text/xml" />
+			<xsd:enumeration value="application/xml" />
 			<xsd:enumeration value="text/plain" />
 			<xsd:enumeration value="n/a" />
 			<xsd:enumeration value="application/atom+xml" />

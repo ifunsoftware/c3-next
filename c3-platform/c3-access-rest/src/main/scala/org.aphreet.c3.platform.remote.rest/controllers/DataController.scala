@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.remote.rest.controllers
 
-import collection.mutable
+import scala.collection.mutable
 import java.io.{FileOutputStream, File, BufferedOutputStream}
 import java.util.UUID
 import javax.servlet.ServletContext
@@ -118,17 +118,19 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     val directory = node.asInstanceOf[Directory]
 
-    val metaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
+    val allMetaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
 
-    val fsDirectory = if(!metaKeys.isEmpty || needsData){
+    val sysMetaKeys = allMetaKeys.filter(_.startsWith("system.")).map(_.replaceFirst("system\\.", ""))
+    val metaKeys = allMetaKeys.filter(!_.startsWith("system."))
+
+    val fsDirectory = if(!allMetaKeys.isEmpty || needsData){
 
       val children:List[Option[FSNode]] = directory.children.map((child:NodeRef) => {
 
         accessManager.getOption(child.address) match {
           case Some(resource) => {
             Some(new FSNode(child,
-              resource.metadata.asMap.filterKeys(metaKeys.contains(_)),
-
+              buildMetadataMap(resource, metaKeys, sysMetaKeys),
               if(needsData){
                 resource.versions.last.systemMetadata("c3.data.length") match {
                   case Some(value) => if(value.toLong < 10240) resource.versions.last else null
@@ -149,6 +151,34 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     getResultWriter(request).writeResponse(
       new DirectoryResult(fsDirectory), response)
+  }
+
+  private def buildMetadataMap(resource: Resource, metaKeys: Set[String], sysMetaKeys: Set[String]): collection.Map[String, String] = {
+
+    val map = new mutable.HashMap[String, String]
+
+    map ++= resource.metadata.asMap.filterKeys(metaKeys.contains(_))
+
+    map ++= resource.systemMetadata.asMap.filterKeys(sysMetaKeys.contains(_))
+
+    //This is actually a hack, but we don't have a created field in metadata
+    if(sysMetaKeys.contains("c3.created")){
+      map.put("c3.created", resource.createDate.getTime.toString)
+    }
+
+    if(sysMetaKeys.contains("c3.data.length")){
+      map.put("c3.data.length", resource.versions.last.systemMetadata.asMap.getOrElse(Resource.MD_DATA_LENGTH, "-1").toString)
+    }
+
+    if(sysMetaKeys.contains("c3.versions.number")){
+      map.put("c3.versions.number", resource.versions.size.toString)
+    }
+
+    if(sysMetaKeys.contains("c3.data.hash")){
+      map.put("c3.data.hash", resource.versions.last.systemMetadata.asMap.getOrElse(ResourceVersion.RESOURCE_VERSION_HASH, ""))
+    }
+
+    map
   }
 
   def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {

@@ -44,7 +44,7 @@ class FSController extends DataController {
 
   val baseUrl = "/rest/fs"
 
-  @RequestMapping(method = Array(RequestMethod.GET), produces = Array("application/json", "application/xml"))
+  @RequestMapping(method = Array(RequestMethod.GET))
   def getNode(@RequestHeader(value = "x-c3-extmeta", required = false) extMeta: String,
               @RequestHeader(value = "x-c3-meta", required = false) childMeta:String,
               @RequestHeader(value = "x-c3-data", required = false) childData:String,
