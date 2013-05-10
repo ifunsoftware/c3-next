@@ -72,6 +72,7 @@ class XStreamFactory{
     xStream.alias("p:response", classOf[UploadResult])
     xStream.alias("p:response", classOf[DirectoryResult])
     xStream.alias("p:response", classOf[StatusResult])
+    xStream.alias("p:response", classOf[TempLinkResult])
     xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("info", classOf[ResultInfo])
 
@@ -113,7 +114,6 @@ class XStreamFactory{
 
     xStream.useAttributeFor(classOf[SystemModule], "name")
     xStream.useAttributeFor(classOf[SystemModule], "version")
-
 
     xStream.aliasField("xmlns:p", classOf[Result], "namespace")
     xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")

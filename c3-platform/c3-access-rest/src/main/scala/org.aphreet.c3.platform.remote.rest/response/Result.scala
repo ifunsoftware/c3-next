@@ -76,3 +76,9 @@ class StatusResult(override val info: ResultInfo, val status: SystemStatus) exte
 
 }
 
+class TempLinkResult(override val info:ResultInfo, val uri: String) extends Result(info){
+
+  def this(uri: String) = this(new ResultInfo("1.0", "OK"), uri)
+
+}
+
