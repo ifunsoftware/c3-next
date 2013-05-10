@@ -91,9 +91,9 @@ class OneTimeLinkController extends DataController{
     val code = HashUtil.sha256hash(address + version + time)
 
     synchronized{
-      temporaryLinks = temporaryLinks.filter{case (linkCode, info) => !info.expired && (time - info.time) < 60000}
+      temporaryLinks = temporaryLinks.filter{case (linkCode, info) => (time - info.time) < 60000}
 
-      temporaryLinks += ((code, LinkInfo(address, version, System.currentTimeMillis(), expired = false)))
+      temporaryLinks += ((code, LinkInfo(address, version, System.currentTimeMillis())))
     }
 
     getResultWriter(request).writeResponse(new TempLinkResult("/once/" + code), response)
@@ -107,20 +107,15 @@ class OneTimeLinkController extends DataController{
 
     temporaryLinks.get(code) match {
       case Some(link) => {
-        if(!link.expired){
-          link.expired = true
           val resource = accessManager.get(link.address)
           sendResourceData(resource, link.version, NullAccessToken, response)
-        }else{
-          throw new ResourceNotFoundException("Incorrect access code")
-        }
       }
       case None => throw new ResourceNotFoundException("Incorrect access code")
     }
   }
 }
 
-case class LinkInfo(address: String, version: Int, time: Long, var expired: Boolean)
+case class LinkInfo(address: String, version: Int, time: Long)
 
 object NullAccessToken extends AccessTokens{
   def checkAccess(resource: Resource) {}
