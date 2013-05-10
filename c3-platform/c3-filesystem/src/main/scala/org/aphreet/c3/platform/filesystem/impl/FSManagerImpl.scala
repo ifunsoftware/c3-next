@@ -274,6 +274,10 @@ with WatchedActor {
 
   def createDirectory(domainId: String, fullPath: String, meta: Map[String, String]) {
 
+    if(fullPath == "/"){
+      throw new FSWrongRequestException("Node with name: " + fullPath + " already exists")
+    }
+
     val pathAndName = splitPath(fullPath)
 
     val path = pathAndName._1
