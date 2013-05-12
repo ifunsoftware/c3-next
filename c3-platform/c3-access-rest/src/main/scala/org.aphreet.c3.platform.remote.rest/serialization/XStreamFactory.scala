@@ -39,6 +39,7 @@ import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement
 import org.aphreet.c3.platform.filesystem.NodeRef
 import org.aphreet.c3.platform.remote.rest.response._
 import fs.{FSNode, FSDirectory}
+import org.aphreet.c3.platform.remote.rest.controllers.SystemModule
 
 class XStreamFactory{
 
@@ -70,12 +71,16 @@ class XStreamFactory{
     xStream.alias("p:response", classOf[SearchResult])
     xStream.alias("p:response", classOf[UploadResult])
     xStream.alias("p:response", classOf[DirectoryResult])
+    xStream.alias("p:response", classOf[StatusResult])
+    xStream.alias("p:response", classOf[TempLinkResult])
     xStream.alias("entry", classOf[SearchResultElement])
     xStream.alias("info", classOf[ResultInfo])
 
     xStream.alias("node", classOf[FSNode])
 
     xStream.alias("fragment", classOf[SearchResultFragment])
+
+    xStream.alias("module", classOf[SystemModule])
 
     xStream.aliasField("uploaded", classOf[UploadResult], "address")
     xStream.aliasField("trackVersions", classOf[Resource], "isVersioned")
@@ -107,7 +112,8 @@ class XStreamFactory{
     xStream.useAttributeFor(classOf[FSDirectory], "name")
     xStream.useAttributeFor(classOf[FSDirectory], "address")
 
-
+    xStream.useAttributeFor(classOf[SystemModule], "name")
+    xStream.useAttributeFor(classOf[SystemModule], "version")
 
     xStream.aliasField("xmlns:p", classOf[Result], "namespace")
     xStream.aliasField("xsi:schemaLocation", classOf[Result], "schemeLocation")

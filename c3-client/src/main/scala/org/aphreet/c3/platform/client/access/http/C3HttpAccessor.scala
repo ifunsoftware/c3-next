@@ -36,11 +36,12 @@ import java.nio.channels.Channels
 import java.io._
 import java.nio.ByteBuffer
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpStatus, HttpClient}
-import com.twmacinta.util.MD5
 import xml.XML
+import java.text.SimpleDateFormat
+import java.util.{Date, Locale}
+import org.aphreet.c3.platform.client.common.HashUtil
 
-class C3HttpAccessor(val host:String, override val domain:String, override val secret:String)
-    extends AbstractHttpAccessor(domain, secret){
+class C3HttpAccessor(val host:String, val domain:String, val secret:String){
 
   val requestUri = "/rest/resource/"
   val url = host + requestUri
@@ -65,8 +66,6 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
               part
             }).toList).toArray
 
-    val entity = new MultipartRequestEntity(parts, postMethod.getParams)
-
     postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
 
     try{
@@ -81,7 +80,7 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
         }
         case _ =>
           println(postMethod.getResponseBodyAsString)
-          throw new Exception(("Filed to post resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Filed to post resource, code " + status))
       }
     }finally {
       postMethod.releaseConnection()
@@ -108,10 +107,10 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
     }
   }
 
@@ -152,7 +151,25 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
       val status = httpClient.executeMethod(deleteMethod)
       status match{
         case HttpStatus.SC_OK => null
-        case _ => throw new Exception(("Failed to delete resource, code " + status).asInstanceOf[String])
+        case _ => throw new Exception(("Failed to delete resource, code " + status))
+      }
+    }
+  }
+
+  def makeDir(path:String) {
+
+    val postMethod = new PostMethod(url + path)
+
+    addAuthHeader(postMethod, "/rest/fs" + path)
+    postMethod.addRequestHeader("x-c3-nodetype", "directory")
+
+    try{
+      val status = httpClient.executeMethod(postMethod)
+      status match {
+        case HttpStatus.SC_CREATED => {
+
+        }
+        case _ => throw new Exception(("Failed to make directory, message: " + postMethod.getResponseBodyAsString))
       }
     }
   }
@@ -173,10 +190,32 @@ class C3HttpAccessor(val host:String, override val domain:String, override val s
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status).asInstanceOf[String])
+          throw new Exception(("Failed to get resource, code " + status))
       }
     }finally{
-      getMethod.releaseConnection();
+      getMethod.releaseConnection()
+    }
+  }
+
+  def addAuthHeader(method:HttpMethodBase, resource:String) {
+    if(domain != "anonymous"){
+
+      val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z", new Locale("en_US"))
+
+      val dateString = dateFormat.format(new Date())
+
+      val hashBase = resource + dateString + domain
+
+      val hash = HashUtil.hmac(secret, hashBase)
+
+      val header = new Header("x-c3-sign", hash)
+      method.addRequestHeader(header)
+
+      val domainHeader = new Header("x-c3-domain", domain)
+      method.addRequestHeader(domainHeader)
+
+      val dateHeader = new Header("x-c3-date", dateString)
+      method.addRequestHeader(dateHeader)
     }
   }
 }

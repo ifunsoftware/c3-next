@@ -50,9 +50,10 @@ class SearchController extends DataController {
   var fsManager: FSManager = _
 
   @RequestMapping(value = Array("/{query}"),
-    method = Array(RequestMethod.GET))
+    method = Array(RequestMethod.GET),
+    produces = Array("application/json", "application/xml"))
   def search(@PathVariable query: String,
-             @RequestHeader(value = "x-c3-type", required = false) contentType: String,
+             @RequestHeader(value = "Accept", required = false) contentType: String,
              req: HttpServletRequest,
              resp: HttpServletResponse) {
 

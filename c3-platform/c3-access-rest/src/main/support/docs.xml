@@ -72,7 +72,7 @@
                 <path omitResourcePath="false">?metadata</path>
                 <formats>
                     <format>application/json</format>
-                    <format>text/xml</format>
+                    <format>application/xml</format>
                 </formats>
                 <request>
                     <method>GET</method>
@@ -83,12 +83,6 @@
                                 x-c3-extmeta
                             </code>
                             <description>Optional HTTP header indicating that extended resource metadata required. All required metadata fields must be put as a comma-separated string to the header value. For now only one key supported: 'c3.ext.fs.path'.</description>
-                        </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
                         </entity>
                     </entities>
                 </request>
@@ -102,115 +96,103 @@
                         <entity>
                             <code language="js">
                                 <![CDATA[{
-   "p:response":{
-      "info":{
-         "version":1,
-         "status":"OK"
-      },
-      "resource":{
-         "address":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2",
-         "createDate":"2012-09-18T20:25:57.488+04:00",
-         "metadata":{
-            "element":{
-               "@key":"content.type",
-               "value":"application\/x-c3-directory"
-            }
-         },
-         "systemMetadata":{
-            "element":[
-               {
-                  "@key":"c3.skip.index",
-                  "value":true
-               },
-               {
-                  "@key":"content.type",
-                  "value":"application\/x-c3-directory"
-               },
-               {
-                  "@key":"c3.updated",
-                  "value":1347986736447
-               },
-               {
-                  "@key":"c3.domain.id",
-                  "value":"f504fd45-e8e3-48c3-b653-b6074f645976"
-               },
-               {
-                  "@key":"c3.fs.nodetype",
-                  "value":"directory"
-               }
-            ]
-         },
-         "versions":{
-            "version":{
-               "date":"2012-09-18T20:45:36.446+04:00",
-               "systemMetadata":{
-                  "element":[
-                     {
-                        "@key":"c3.data.address",
-                        "value":"Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data"
-                     },
-                     {
-                        "@key":"c3.data.md5",
-                        "value":"c32f063baee781203ea49d37aef00806"
-                     },
-                     {
-                        "@key":"c3.data.length",
-                        "value":53899
-                     }
-                  ]
-               }
-            }
-         },
-         "trackVersions":false
-      }
-   }
-}]]></code>
+                                    "p:response": {
+                                        "info": {
+                                            "version": 1,
+                                            "status": "OK"
+                                        },
+                                        "resource": {
+                                            "address": "sNp6y4TnIq~A3rvtSmP9-13a119f4d6b-5S5NJXgv",
+                                            "createDate": "2012-09-29T14:43:03.641+04:00",
+                                            "metadata": {
+                                                "element": [{
+                                                    "@key": "x-s4-meta-processed",
+                                                    "value": true
+                                                }, {
+                                                    "@key": "content.type",
+                                                    "value": "application\/x-c3-directory"
+                                                }, {
+                                                    "@key": "x-c3-tags",
+                                                    "value": ""
+                                                }]
+                                            },
+                                            "systemMetadata": {
+                                                "element": [{
+                                                    "@key": "c3.blob.store",
+                                                    "value": "bdb"
+                                                }, {
+                                                    "@key": "content.type",
+                                                    "value": "application\/x-c3-directory"
+                                                }, {
+                                                    "@key": "c3.updated",
+                                                    "value": 1366465165022
+                                                }, {
+                                                    "@key": "c3.skip.index",
+                                                    "value": true
+                                                }, {
+                                                    "@key": "c3.domain.id",
+                                                    "value": "bde057c9-7d48-4219-88c4-fdd3d67bf8be"
+                                                }, {
+                                                    "@key": "c3.fs.nodetype",
+                                                    "value": "directory"
+                                                }]
+                                            },
+                                            "transientMetadata": "",
+                                            "versions": {
+                                                "version": {
+                                                    "@date": "2013-04-20T17:39:25.021+04:00",
+                                                    "@length": "905",
+                                                    "@hash": "6b50ce6136f31d0120938f5c40d41b59"
+                                                }
+                                            },
+                                            "trackVersions": false
+                                        }
+                                    }
+                                }]]></code>
                             <description>Metadata in the JSON format</description>
                         </entity>
                         <entity>
                             <code language="xml">
                                 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <info version="1.0" status="OK"/>
-  <resource address="Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2" createDate="2012-09-18T20:25:57.488+04:00" trackVersions="false">
-    <metadata>
-      <element key="content.type">
-        <value>application/x-c3-directory</value>
-      </element>
-    </metadata>
-    <systemMetadata>
-      <element key="c3.skip.index">
-        <value>true</value>
-      </element>
-      <element key="content.type">
-        <value>application/x-c3-directory</value>
-      </element>
-      <element key="c3.updated">
-        <value>1347986736447</value>
-      </element>
-      <element key="c3.domain.id">
-        <value>f504fd45-e8e3-48c3-b653-b6074f645976</value>
-      </element>
-      <element key="c3.fs.nodetype">
-        <value>directory</value>
-      </element>
-    </systemMetadata>
-    <versions>
-      <version date="2012-09-18T20:45:36.446+04:00">
+<p:response xmlns:p="http://c3.aphreet.org/rest/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://c3.aphreet.org/rest/1.0 http://c3-system.googlecode.com/files/rest.xsd">
+    <info version="1.0" status="OK"/>
+    <resource address="sNp6y4TnIq~A3rvtSmP9-13a119f4d6b-5S5NJXgv" createDate="2012-09-29T14:43:03.641+04:00" trackVersions="false">
+        <metadata>
+            <element key="x-s4-meta-processed">
+                <value>true</value>
+            </element>
+            <element key="content.type">
+                <value>application/x-c3-directory</value>
+            </element>
+            <element key="x-c3-tags">
+                <value/>
+            </element>
+        </metadata>
         <systemMetadata>
-          <element key="c3.data.address">
-            <value>Cf74CTJj-2f8U-yM4p-ZZ0bvG6q-n402zbng-LhS2-data</value>
-          </element>
-          <element key="c3.data.md5">
-            <value>c32f063baee781203ea49d37aef00806</value>
-          </element>
-          <element key="c3.data.length">
-            <value>53899</value>
-          </element>
+            <element key="c3.blob.store">
+                <value>bdb</value>
+            </element>
+            <element key="content.type">
+                <value>application/x-c3-directory</value>
+            </element>
+            <element key="c3.updated">
+                <value>1366465165022</value>
+            </element>
+            <element key="c3.skip.index">
+                <value>true</value>
+            </element>
+            <element key="c3.domain.id">
+                <value>bde057c9-7d48-4219-88c4-fdd3d67bf8be</value>
+            </element>
+            <element key="c3.fs.nodetype">
+                <value>directory</value>
+            </element>
         </systemMetadata>
-      </version>
-    </versions>
-  </resource>
+        <transientMetadata/>
+        <versions>
+            <version date="2013-04-20T17:39:25.021+04:00" length="905" hash="6b50ce6136f31d0120938f5c40d41b59"/>
+        </versions>
+    </resource>
 </p:response>]]></code>
                             <description>Metadata in the XML format</description>
                         </entity>
@@ -231,12 +213,6 @@
                     <entities>
                         <entity>
                             <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'</description>
-                        </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
                         </entity>
                     </entities>
                 </request>
@@ -287,12 +263,6 @@
                     <entities>
                         <entity>
                             <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'</description>
-                        </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
                         </entity>
                     </entities>
                 </request>
@@ -359,7 +329,7 @@
                 <description>Search for resources in the C3 system</description>
                 <formats>
                     <format>application/json</format>
-                    <format>text/xml</format>
+                    <format>application/xml</format>
                 </formats>
                 <request>
                     <method>GET</method>
@@ -509,7 +479,7 @@
                 <name>Get a directory content</name>
                 <description>Get a directory content</description>
                 <formats>
-                    <format>text/xml</format>
+                    <format>application/xml</format>
                     <format>application/json</format>
                 </formats>
                 <request>
@@ -528,12 +498,7 @@
                             </code>
                             <description>Optional HTTP header indicates that output should contain base64 encoded children data</description>
                         </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
-                        </entity>
+
                     </entities>
                 </request>
                 <response>
@@ -674,7 +639,7 @@
                 <path omitResourcePath="false">?metadata</path>
                 <formats>
                     <format>application/json</format>
-                    <format>text/xml</format>
+                    <format>application/xml</format>
                 </formats>
                 <request>
                     <method>GET</method>
@@ -685,12 +650,6 @@
                                 x-c3-extmeta
                             </code>
                             <description>Optional HTTP header indicating that extended resource metadata required. All required metadata fields must be put as a comma-separated string to the header value. For now only one key supported: 'c3.ext.fs.path'.</description>
-                        </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
                         </entity>
                     </entities>
                 </request>
@@ -838,12 +797,6 @@
                         </entity>
                         <entity>
                             <description>If request type is multipart/form-data each part with form-field type is treated as user metadata entry and part with type file named 'data' treated as resource content. Otherwise all request body is treated as resource data. Metadata may be set by adding 'x-c3-metadata' headers with metadata contents in the format 'key:Base64(value)'. This is applicable only to file creation</description>
-                        </entity>
-                        <entity>
-                            <code language="plain">
-                                x-c3-type
-                            </code>
-                            <description>Optional HTTP header indicating expected result type. Supported values: 'xml', 'json'. Default - 'xml'</description>
                         </entity>
                     </entities>
                 </request>

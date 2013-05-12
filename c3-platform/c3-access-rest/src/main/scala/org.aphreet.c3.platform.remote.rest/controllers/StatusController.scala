@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, Re
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.VersionManager
+import org.aphreet.c3.platform.remote.rest.response.StatusResult
+import org.aphreet.c3.platform.accesscontrol.READ
 
 /**
  * Copyright iFunSoftware 2013
@@ -16,19 +18,22 @@ class StatusController extends DataController {
   @Autowired
   var versionManager: VersionManager = _
 
-  @RequestMapping(value = Array("/version"), method = Array(RequestMethod.GET))
+  @RequestMapping(value = Array("/status"),
+    method = Array(RequestMethod.GET),
+    produces = Array("application/json", "application/xml"))
   def executeQuery(req: HttpServletRequest,
-                   resp: HttpServletResponse,
-                   @RequestHeader(value = "x-c3-type", required = false) contentType: String) {
-    val writer = resp.getWriter
+                   resp: HttpServletResponse) {
 
-    writer.println("{")
-    val versionLines = versionManager.listC3Modules.map {
-      case (module, version) => "\"" + module + "\" : \"" + version + "\""
-    }
-    writer.println(versionLines.mkString(",\n"))
-    writer.println("}")
+    getAccessTokens(READ, req)
 
-    resp.flushBuffer()
+    getResultWriter(req).writeResponse(new StatusResult(
+      SystemStatus(versionManager.listC3Modules.map{case (name, version) => SystemModule(name, version)}.toArray.sortBy(_.name))
+    ), resp)
   }
 }
+
+case class SystemModule(name: String, version: String)
+
+case class SystemStatus(modules: Array[SystemModule])
+
+

@@ -33,6 +33,7 @@ package org.aphreet.c3.platform.remote.rest.response
 import fs.FSDirectory
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.remote.rest.controllers.SystemStatus
 
 class Result(val info:ResultInfo){
 
@@ -68,3 +69,16 @@ class DirectoryResult(override val info:ResultInfo, val directory:FSDirectory) e
 }
 
 case class ResourceAddress(address:String, version:Int)
+
+class StatusResult(override val info: ResultInfo, val status: SystemStatus) extends Result(info){
+
+  def this(status: SystemStatus) = this(new ResultInfo("1.0", "OK"), status)
+
+}
+
+class TempLinkResult(override val info:ResultInfo, val uri: String) extends Result(info){
+
+  def this(uri: String) = this(new ResultInfo("1.0", "OK"), uri)
+
+}
+

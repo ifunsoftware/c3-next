@@ -10,4 +10,7 @@ trait RestController {
 
   def getResultWriter(expectedType: String): ResultWriter
 
+  def getResultWriter(request: HttpServletRequest): ResultWriter
+
 }
+

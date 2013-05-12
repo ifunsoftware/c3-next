@@ -37,14 +37,12 @@ import org.springframework.web.bind.annotation.{RequestHeader, RequestMethod, Re
 @Controller
 class QueryController extends DataController with QueryRunner {
 
-
-
   @RequestMapping(value = Array("/query"),
-    method = Array(RequestMethod.GET))
-  def executeQuery(req: HttpServletRequest,
-                   resp: HttpServletResponse,
-                   @RequestHeader(value = "x-c3-type", required = false) contentType: String) {
+    method = Array(RequestMethod.GET),
+    produces = Array("application/json", "application/xml"))
+  def executeQuery(request: HttpServletRequest,
+                   response: HttpServletResponse) {
 
-    executeQuery(req, resp, contentType, None, 0)
+    executeQuery(request, response, None, 0)
   }
 }

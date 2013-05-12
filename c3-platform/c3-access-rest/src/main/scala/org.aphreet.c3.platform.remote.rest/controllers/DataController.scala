@@ -30,31 +30,31 @@
 
 package org.aphreet.c3.platform.remote.rest.controllers
 
-import org.springframework.web.context.ServletContextAware
-import javax.servlet.ServletContext
-import org.aphreet.c3.platform.access.AccessManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.exception.ResourceNotFoundException
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import scala.collection.mutable
 import java.io.{FileOutputStream, File, BufferedOutputStream}
-import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.io.{IOUtils, FileCleaningTracker}
-import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import java.util.UUID
-import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
-import org.apache.commons.fileupload.FileItem
-import org.aphreet.c3.platform.remote.rest.response.fs.{FSNodeData, FSNode, FSDirectory}
-import org.aphreet.c3.platform.remote.rest.response.{DirectoryResult, ResourceResult}
-import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
-import org.aphreet.c3.platform.domain.Domain
-import org.aphreet.c3.platform.accesscontrol._
-import org.aphreet.c3.platform.remote.rest.WrongRequestException
-import collection.mutable
+import javax.servlet.ServletContext
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.commons.codec.binary.Base64
+import org.apache.commons.fileupload.FileItem
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.commons.fileupload.servlet.{FileCleanerCleanup, ServletFileUpload}
+import org.apache.commons.io.{IOUtils, FileCleaningTracker}
+import org.aphreet.c3.platform.access.AccessManager
+import org.aphreet.c3.platform.accesscontrol._
+import org.aphreet.c3.platform.domain.Domain
+import org.aphreet.c3.platform.exception.ResourceNotFoundException
 import org.aphreet.c3.platform.filesystem.NodeRef
-import scala.Some
-import org.aphreet.c3.platform.query.QueryManager
+import org.aphreet.c3.platform.filesystem.{FSManager, Directory, Node}
 import org.aphreet.c3.platform.metadata.TransientMetadataManager
+import org.aphreet.c3.platform.query.QueryManager
+import org.aphreet.c3.platform.remote.rest.WrongRequestException
+import org.aphreet.c3.platform.remote.rest.response.fs.{FSNode, FSDirectory}
+import org.aphreet.c3.platform.remote.rest.response.{DirectoryResult, ResourceResult}
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.context.ServletContextAware
+import scala.Some
 
 class DataController extends AbstractController with ServletContextAware with RestController{
 
@@ -94,6 +94,11 @@ class DataController extends AbstractController with ServletContextAware with Re
       val resourceVersion = resource.versions(version - 1)
 
       resp.reset()
+
+      resource.systemMetadata(Node.NODE_FIELD_NAME).foreach{value =>
+        resp.setHeader("Content-Disposition", "inline; filename=\"" + value + "\"")
+      }
+
       resp.setStatus(HttpServletResponse.SC_OK)
       resp.setContentLength(resourceVersion.data.length.toInt)
 
@@ -113,22 +118,24 @@ class DataController extends AbstractController with ServletContextAware with Re
     }
   }
 
-  protected def sendDirectoryContents(node: Node, childMeta:String, needsData:Boolean, contentType: String, accessTokens: AccessTokens, response: HttpServletResponse) {
+  protected def sendDirectoryContents(node: Node, childMeta:String, needsData:Boolean, accessTokens: AccessTokens, request: HttpServletRequest, response: HttpServletResponse) {
     accessTokens.checkAccess(node.resource)
 
     val directory = node.asInstanceOf[Directory]
 
-    val metaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
+    val allMetaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
 
-    val fsDirectory = if(!metaKeys.isEmpty || needsData){
+    val sysMetaKeys = allMetaKeys.filter(_.startsWith("system.")).map(_.replaceFirst("system\\.", ""))
+    val metaKeys = allMetaKeys.filter(!_.startsWith("system."))
+
+    val fsDirectory = if(!allMetaKeys.isEmpty || needsData){
 
       val children:List[Option[FSNode]] = directory.children.map((child:NodeRef) => {
 
         accessManager.getOption(child.address) match {
           case Some(resource) => {
             Some(new FSNode(child,
-              resource.metadata.asMap.filterKeys(metaKeys.contains(_)),
-
+              buildMetadataMap(resource, metaKeys, sysMetaKeys),
               if(needsData){
                 resource.versions.last.systemMetadata("c3.data.length") match {
                   case Some(value) => if(value.toLong < 10240) resource.versions.last else null
@@ -147,8 +154,36 @@ class DataController extends AbstractController with ServletContextAware with Re
       FSDirectory.fromNode(directory)
     }
 
-    getResultWriter(contentType).writeResponse(
+    getResultWriter(request).writeResponse(
       new DirectoryResult(fsDirectory), response)
+  }
+
+  private def buildMetadataMap(resource: Resource, metaKeys: Set[String], sysMetaKeys: Set[String]): collection.Map[String, String] = {
+
+    val map = new mutable.HashMap[String, String]
+
+    map ++= resource.metadata.asMap.filterKeys(metaKeys.contains(_))
+
+    map ++= resource.systemMetadata.asMap.filterKeys(sysMetaKeys.contains(_))
+
+    //This is actually a hack, but we don't have a created field in metadata
+    if(sysMetaKeys.contains("c3.created")){
+      map.put("c3.created", resource.createDate.getTime.toString)
+    }
+
+    if(sysMetaKeys.contains("c3.data.length")){
+      map.put("c3.data.length", resource.versions.last.systemMetadata.asMap.getOrElse(Resource.MD_DATA_LENGTH, "-1").toString)
+    }
+
+    if(sysMetaKeys.contains("c3.versions.number")){
+      map.put("c3.versions.number", resource.versions.size.toString)
+    }
+
+    if(sysMetaKeys.contains("c3.data.hash")){
+      map.put("c3.data.hash", resource.versions.last.systemMetadata.asMap.getOrElse(ResourceVersion.RESOURCE_VERSION_HASH, ""))
+    }
+
+    map
   }
 
   def getAccessTokens(action: Action, request: HttpServletRequest): AccessTokens = {
@@ -170,21 +205,13 @@ class DataController extends AbstractController with ServletContextAware with Re
     accessControlManager.retrieveAccessTokens(RemoteAccess, action, map.toMap)
   }
 
-  protected def sendResourceMetadata(address: String, contentType: String, accessTokens: AccessTokens, system: Boolean, resp: HttpServletResponse) {
-
-    val resource = accessManager.get(address)
-
-    sendMetadata(resource, contentType, accessTokens, resp)
-
-  }
-
-  protected def sendMetadata(resource: Resource, contentType: String, accessTokens: AccessTokens, resp: HttpServletResponse) {
+  protected def sendMetadata(resource: Resource, accessTokens: AccessTokens, request: HttpServletRequest, resp: HttpServletResponse) {
 
     accessTokens.checkAccess(resource)
 
     resp.setStatus(HttpServletResponse.SC_OK)
 
-    getResultWriter(contentType).writeResponse(new ResourceResult(resource), resp)
+    getResultWriter(request).writeResponse(new ResourceResult(resource), resp)
   }
 
   protected def addNonPersistentMetadata(resource: Resource, extMeta: String) {
