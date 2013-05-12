@@ -30,9 +30,9 @@
 
 package org.aphreet.c3.platform.resource
 
-import collection.Map
-import collection.mutable
+import collection.{Map, mutable}
 import scala.collection.mutable.ArrayBuffer
+import com.thoughtworks.xstream.XStream
 
 class Metadata(private val map: mutable.HashMap[String, String], private var deletedKeys: List[String]) {
 
@@ -51,6 +51,8 @@ class Metadata(private val map: mutable.HashMap[String, String], private var del
   def apply(key: String): Option[String] = map.get(key)
 
   def update(key: String, value: String) = map.put(key, value)
+
+  def update(key: String, values: TraversableOnce[String]) = map.put(key, "[" + values.map(s => s.replaceAll(",", "\\,")).mkString(",") + "]")
 
   def update(key: String, value: Long) = map.put(key, value.toString)
 
@@ -111,11 +113,19 @@ object MetadataHelper{
     else value.charAt(0) == '[' && value.charAt(value.length - 1) == ']'
   }
 
+  def parseTagMap[T](values: String, converter: String => T): TraversableOnce[T] = {
+      parseSequence(values.toString).map(converter)
+  }
+
+  def writeTagMap[T,B](values: Map[T,B], converter: (T,B) => String): String = {
+     "[" + (values.map(tagInfo => (converter.apply(tagInfo._1, tagInfo._2)))).mkString(",") + "]"
+  }
+
   def parseSequence(value: String): TraversableOnce[String] = {
 
-    if(!isSequence(value)){
+    if (!isSequence(value)){
       Some(value)
-    }else{
+    } else {
 
       var valueStart = 1
 
@@ -133,5 +143,8 @@ object MetadataHelper{
       result
     }
   }
+
+
+
 
 }
