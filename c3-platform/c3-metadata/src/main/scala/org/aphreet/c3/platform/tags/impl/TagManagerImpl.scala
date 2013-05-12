@@ -172,26 +172,28 @@ class TagManagerImpl extends TagManager with ResourceOwner {
               val catalog = accessManager.get(address)
               val metadata = catalog.metadata
 
-              metadata(TagManager.TAGS_FIELD).foreach(
-                tagsString => {
-                  //collect statistics
-                  val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
-                    (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-                  }).toMap[String, Int]
-                  //delete tags
-                  val updatedTags = tagsBeforeAdd.map(tagInfo => {
-                    if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 + tags.get(tagInfo._1).get)
-                    else tagInfo})
+              if (metadata(TagManager.TAGS_FIELD) isEmpty) {
+                metadata(TagManager.TAGS_FIELD) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
+              } else {
+                metadata(TagManager.TAGS_FIELD).foreach(
+                    tagsString => {
+                      //collect statistics
+                      val tagsBeforeAdd:Map[String, Int] = MetadataHelper.parseTagMap(tagsString, (tagInfo: String) => {
+                        (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+                      }).toMap[String, Int]
+                      //delete tags
+                      val updatedTags = tagsBeforeAdd.map(tagInfo => {
+                        if (tags.contains(tagInfo._1)) (tagInfo._1, tagInfo._2 + tags.get(tagInfo._1).get)
+                        else tagInfo})
 
-                  metadata(TagManager.TAGS_FIELD) = MetadataHelper.writeTagMap(updatedTags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
-
-                  accessManager.update(catalog)
-
-                  catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
-                    address => this ! AddParentTagMsg(Some(address), tags)
-                  }
-                }
-              )
+                      metadata(TagManager.TAGS_FIELD) = MetadataHelper.writeTagMap(updatedTags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
+                    }
+                )
+              }
+              accessManager.update(catalog)
+              catalog.systemMetadata(Node.NODE_FIELD_PARENT) foreach {
+                address => this ! AddParentTagMsg(Some(address), tags)
+              }
             }
           )
         }

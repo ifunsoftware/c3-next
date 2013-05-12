@@ -34,7 +34,7 @@ class TagManagerImplTest extends TestCase {
       resource.address = "someAddress"
       resource.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parentPath),(Node.NODE_FIELD_TYPE, "file")))
 
-      parent.metadata = new Metadata(new mutable.HashMap() ++= dirMetadata)
+      parent.metadata = new Metadata(new mutable.HashMap())
       parent.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map((Node.NODE_FIELD_PARENT, parent2Path),(Node.NODE_FIELD_TYPE, "directory")))
       parent.address = "parent1Address"
 
@@ -67,9 +67,16 @@ class TagManagerImplTest extends TestCase {
     }
 
     def testAddResource() {
+       val initialMap = Map(("cats",2), ("scala",2), ("cycling", 2))
+       val mapString = MetadataHelper.writeTagMap(initialMap, (key: String, value: Int) => {key + ":" + value})
+
+       val map =  MetadataHelper.parseTagMap(mapString, (tagInfo: String) => {
+                                     (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
+                                   }).toMap[String, Int]
+       assertEquals(initialMap, map)
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",2), ("scala",2), ("cycling", 2)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("scala",1),("cycling", 1),("cats",1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
     }
 
     def testTagParsing() {
@@ -91,6 +98,6 @@ class TagManagerImplTest extends TestCase {
     def testDeleteResource() {
        tagManager.deleteResource(resource)
        Thread.sleep(1000)
-       assertEquals(Some("[]"), parent.metadata(TagManager.TAGS_FIELD))
+       assertEquals(None, parent.metadata(TagManager.TAGS_FIELD))
     }
 }
