@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.client.access.tools
 
 import org.aphreet.c3.platform.client.common.CLI
-import org.aphreet.c3.platform.client.access.http.C3FileHttpAccessor
+import org.aphreet.c3.platform.client.access.http.{C3HttpAccessor}
 
 class ConcurrentDirectoryChangeTest(override val args: Array[String]) extends CLI(args) {
 
@@ -72,12 +72,12 @@ class ConcurrentDirectoryChangeTest(override val args: Array[String]) extends CL
     val thread = new Thread(new Runnable {
       def run() {
 
-        val fsAccessor = new C3FileHttpAccessor(host, domain, key)
+        val c3Accessor = new C3HttpAccessor(host, domain, key)
 
         for (dirNumber <- 1 to count){
           val dirName = "/" + String.format("%03d", Integer.valueOf(dirNumber)) + "-" + directoryBaseName
           println(dirName)
-          fsAccessor.makeDir(dirName)
+          c3Accessor.makeDir(dirName)
         }
       }
     })

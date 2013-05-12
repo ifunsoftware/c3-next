@@ -94,6 +94,11 @@ class DataController extends AbstractController with ServletContextAware with Re
       val resourceVersion = resource.versions(version - 1)
 
       resp.reset()
+
+      resource.systemMetadata(Node.NODE_FIELD_NAME).foreach{value =>
+        resp.setHeader("Content-Disposition", "inline; filename=\"" + value + "\"")
+      }
+
       resp.setStatus(HttpServletResponse.SC_OK)
       resp.setContentLength(resourceVersion.data.length.toInt)
 
