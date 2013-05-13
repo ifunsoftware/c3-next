@@ -59,10 +59,19 @@ class DirectoryConflictResolver extends ConflictResolver{
               resultNodes.put(node.name, node)
             }
           }else{
-            //We have two files or directories with the same name but with different content
-            resultNodes.remove(node.name)
-            resultNodes.put(node.name + "-" + node.modified, NodeRef(node.name + "-" + node.modified, node.address, node.leaf, node.deleted, node.modified))
-            resultNodes.put(nodeRef.name + "-" + nodeRef.modified, NodeRef(nodeRef.name + "-" + nodeRef.modified, nodeRef.address, nodeRef.leaf, nodeRef.deleted, nodeRef.modified))
+
+            if((node.deleted && nodeRef.deleted) || (!node.deleted && !nodeRef.deleted)){
+              //We have two files or directories with the same name but with different content
+              resultNodes.remove(node.name)
+              resultNodes.put(node.name + "-" + node.modified, NodeRef(node.name + "-" + node.modified, node.address, node.leaf, node.deleted, node.modified))
+              resultNodes.put(nodeRef.name + "-" + nodeRef.modified, NodeRef(nodeRef.name + "-" + nodeRef.modified, nodeRef.address, nodeRef.leaf, nodeRef.deleted, nodeRef.modified))
+            }else if(node.deleted){
+              resultNodes.put(node.name + "-" + node.modified, NodeRef(node.name + "-" + node.modified, node.address, node.leaf, node.deleted, node.modified))
+            }else{
+              resultNodes.remove(node.name)
+              resultNodes.put(node.name, node)
+              resultNodes.put(nodeRef.name + "-" + nodeRef.modified, NodeRef(nodeRef.name + "-" + nodeRef.modified, nodeRef.address, nodeRef.leaf, nodeRef.deleted, nodeRef.modified))
+            }
           }
         }
         case None => resultNodes.put(node.name, node)
