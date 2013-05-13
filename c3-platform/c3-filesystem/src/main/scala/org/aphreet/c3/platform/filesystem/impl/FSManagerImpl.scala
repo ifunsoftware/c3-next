@@ -164,9 +164,15 @@ with WatchedActor {
       node.resource.systemMetadata(Node.NODE_FIELD_NAME) = newPathAndName._2
       accessManager.update(node.resource)
 
+      log.info("Directory resource before update: {}, {}", currentParent.resource.versions.last.date.getTime, currentParent.resource.versions.last.basedOnVersion)
+
       currentParent.asInstanceOf[Directory].updateChild(oldPathAndName._2, newPathAndName._2)
 
+      log.info("Directory resource after update: {}, {}", currentParent.resource.versions.last.date.getTime, currentParent.resource.versions.last.basedOnVersion)
+
       accessManager.update(currentParent.resource)
+
+      log.info("Directory resource after save: {}, {}", currentParent.resource.versions.last.date.getTime, currentParent.resource.versions.last.basedOnVersion)
     } else {
 
       val oldDir = Directory(accessManager.get(currentParent.resource.address))

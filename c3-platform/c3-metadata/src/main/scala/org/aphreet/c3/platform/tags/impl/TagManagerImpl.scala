@@ -105,10 +105,16 @@ class TagManagerImpl extends TagManager with ResourceOwner {
                 if (node.isDirectory) {
                   val tags = new mutable.HashMap[String, Int]
                   val dir = node.asInstanceOf[Directory]
-                  log info "dir children : " + dir.children.toList
+
+                  if(log.isDebugEnabled){
+                    log.debug("dir children : {}", dir.children.toList)
+                  }
 
                   dir.children.foreach {  child => {
-                    log info "child: " + child
+
+
+                    log.debug("child: {}", child)
+
                     val childResource = accessManager.get(child.address)
                     val childTags = childResource.metadata.collectionValue(TagManager.TAGS_FIELD)
 
@@ -172,7 +178,7 @@ class TagManagerImpl extends TagManager with ResourceOwner {
               val catalog = accessManager.get(address)
               val metadata = catalog.metadata
 
-              if (metadata(TagManager.TAGS_FIELD) isEmpty) {
+              if (metadata(TagManager.TAGS_FIELD).isEmpty) {
                 metadata(TagManager.TAGS_FIELD) = MetadataHelper.writeTagMap(tags.toMap[String, Int], (key: String, value: Int) => {key + ":" + value})
               } else {
                 metadata(TagManager.TAGS_FIELD).foreach(
