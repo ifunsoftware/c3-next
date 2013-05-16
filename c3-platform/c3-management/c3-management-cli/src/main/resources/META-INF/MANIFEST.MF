@@ -4,4 +4,4 @@ Bundle-Name: C3 Management CLI
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.management.cli
 Fragment-Host: org.aphreet.c3.platform.management;bundle-version="1.0.0"
-
+Import-Bundle: com.springsource.org.apache.commons.codec;version="[1.4.0,1.4.0]"

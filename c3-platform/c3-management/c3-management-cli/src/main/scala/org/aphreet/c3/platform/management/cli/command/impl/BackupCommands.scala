@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.{TargetDescription, PlatformManagementService}
+import org.apache.commons.codec.binary.Base64
 
 object BackupCommands extends Commands{
   def instances = List(new RestoreBackupCommand, new CreateBackupCommand,
@@ -17,7 +18,7 @@ class RestoreBackupCommand extends Command{
     if (params.size < 2) {
       wrongParameters("restore backup <target id / number> <name>")
     } else {
-      management.restoreBackup(params(0), params(1));
+      management.restoreBackup(params(0), params(1))
       ""
     }
   }
@@ -107,7 +108,12 @@ class CreateRemoteTargetCommand extends Command {
       wrongParameters("create target remote <id> <host> <user> <path> <private key file path>")
     } else {
       val paramsArray = params.toArray
-      management.createRemoteBackupTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), paramsArray(4))
+
+      val encodedKey = paramsArray(4)
+
+      val key = new String(Base64.decodeBase64(encodedKey), "UTF-8")
+
+      management.createRemoteBackupTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), key)
       "Remote target created"
     }
   }
