@@ -114,6 +114,40 @@ class DirectoryConflictResolverTestCase extends TestCase{
     compareRefsWithoutTime(NodeRef("name2", "aaaabbbb", leaf = true, deleted = true, 0L), children(2))
   }
 
+  def testRenameCollisionDirectoryMerge(){
+
+      val initialDirectory = Directory.emptyDirectory("domain0", "name")
+      initialDirectory.addChild("name0", "aaaaaaaa", leaf = true)
+      initialDirectory.addChild("name1", "aaaabbbb", leaf = true)
+
+      val resource = initialDirectory.resource
+
+      Thread.sleep(10)
+
+      val directory0 = Node.fromResource(resource.clone).asInstanceOf[Directory]
+      directory0.updateChild("name1", "name2")
+
+      Thread.sleep(10)
+
+      val directory1 = Node.fromResource(resource.clone).asInstanceOf[Directory]
+      directory1.removeChild("name0")
+
+      val resource0 = directory0.resource
+      val resource1 = directory1.resource
+
+      new DirectoryConflictResolver().resolve(resource0, resource1)
+
+      val mergedDirectory = Node.fromResource(resource0).asInstanceOf[Directory]
+
+      val children = mergedDirectory.allChildren
+
+      assertEquals(3, children.length)
+
+      compareRefsWithoutTime(NodeRef("name0", "aaaaaaaa", leaf = true, deleted = true, 0L), children(0))
+      compareRefsWithoutTime(NodeRef("name1", "aaaabbbb", leaf = true, deleted = true, 0L), children(1))
+      compareRefsWithoutTime(NodeRef("name2", "aaaabbbb", leaf = true, deleted = false, 0L), children(2))
+    }
+
   private def compareRefsWithoutTime(nodeRef1: NodeRef, nodeRef2: NodeRef){
     assertEquals(nodeRef1.name, nodeRef2.name)
     assertEquals(nodeRef1.address, nodeRef2.address)

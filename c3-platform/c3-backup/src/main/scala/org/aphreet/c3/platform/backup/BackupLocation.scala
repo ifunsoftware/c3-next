@@ -2,8 +2,6 @@ package org.aphreet.c3.platform.backup
 
 import ssh.SftpConnector
 import scala.beans.BeanProperty
-import org.aphreet.c3.platform.common.Disposable._
-import io.Source
 import java.io.File
 import org.aphreet.c3.platform.common.Logger
 
@@ -29,7 +27,7 @@ object LocalBackupLocation {
 
     val folder = new File(path)
     if (folder.exists()) {
-      if (!folder.isDirectory()) {
+      if (!folder.isDirectory) {
         throw new IllegalStateException("Path is not a folder")
       }
     } else if (folder.mkdirs()) {
@@ -58,9 +56,7 @@ object RemoteBackupLocation {
       throw new IllegalArgumentException("Private key file isn't a real file")
     }
 
-    val key = using(Source.fromFile(file)) (source => source.mkString )
-
-    val connector = new SftpConnector(host, user, key)
+    val connector = new SftpConnector(host, user, privateKeyFile)
     try {
       connector.connect()
       if (!connector.isConnected) {
@@ -73,6 +69,6 @@ object RemoteBackupLocation {
       connector.disconnect()
     }
 
-    new BackupLocation(id, "remote", host, user, path, key, Nil)
+    new BackupLocation(id, "remote", host, user, path, privateKeyFile, Nil)
   }
 }
