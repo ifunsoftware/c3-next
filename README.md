@@ -34,4 +34,4 @@ http://localhost:8080/rest/fs/
 
 ### C3 api doc
 
-http://localhost:8080/rest/static/api.html
+[docs](http://localhost:8080/rest/static/api.html)
