@@ -42,9 +42,32 @@ import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.common.{Logger, ComponentGuard, Path}
-import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager, SearchResultElement, SearchManager}
+import org.aphreet.c3.platform.search._
 import java.io.File
 import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
+import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
+import org.aphreet.c3.platform.search.impl.index.UpdateTextExtractor
+import org.aphreet.c3.platform.search.impl.index.UpdateIndexCreationTimestamp
+import org.aphreet.c3.platform.config.UnregisterMsg
+import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
+import org.aphreet.c3.platform.search.impl.index.DeleteMsg
+import org.aphreet.c3.platform.search.impl.index.SetMaxDocsCountMsg
+import org.aphreet.c3.platform.search.impl.index.DeleteForUpdateMsg
+import org.aphreet.c3.platform.config.RegisterMsg
+import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.search.impl.index.ResourceIndexingFailed
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.search.impl.index.FlushIndex
+import org.aphreet.c3.platform.access.ResourceAddedMsg
+import org.aphreet.c3.platform.search.impl.background.BackgroundIndexMsg
+import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
+import org.aphreet.c3.platform.search.impl.index.IndexMsg
+import org.aphreet.c3.platform.search.impl.index.ResourceIndexedMsg
+import org.aphreet.c3.platform.access.UpdateMetadataMsg
+import org.aphreet.c3.platform.search.SearchResult
+import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.access.ResourceDeletedMsg
 
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with SearchManagerInternal with SPlatformPropertyListener with ComponentGuard {
@@ -256,6 +279,7 @@ class SearchManagerImpl extends SearchManager with SearchManagerInternal with SP
   def deleteIndexes(){
     log.info("Reseting search index")
     fileIndexer ! DeleteIndexMsg
+    searchConfigurationManager ! DropFieldConfiguration
     configManager.setPlatformProperty(INDEX_CREATE_TIMESTAMP, System.currentTimeMillis().toString)
   }
 

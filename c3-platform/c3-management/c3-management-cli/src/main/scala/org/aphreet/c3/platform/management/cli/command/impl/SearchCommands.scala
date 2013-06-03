@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object SearchCommands extends Commands{
 
-  def instances = List(new ResetSearchIndexCommand, new DumpSearchIndexCommand)
+  def instances = List(new ResetSearchIndexCommand, new DumpSearchIndexCommand, new DeleteSearchIndexCommand)
 
 }
 
@@ -17,6 +17,16 @@ class ResetSearchIndexCommand extends Command{
   }
 
   def name = List("reset", "search", "index")
+}
+
+class DeleteSearchIndexCommand extends Command{
+
+  override def execute(management: PlatformManagementService): String = {
+    management.dropSearchIndex()
+    "Search index dropped and will be recreated"
+  }
+
+  def name = List("drop", "search", "index")
 }
 
 class DumpSearchIndexCommand extends Command{

@@ -11,3 +11,4 @@ trait SearchConfigurationManager extends WatchedActor{
 
 case class HandleFieldListMsg(fields:List[String])
 
+object DropFieldConfiguration

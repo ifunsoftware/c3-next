@@ -55,14 +55,7 @@ class WeightedDocumentBuilder(val configuration: SearchConfiguration) {
     // store extracted Metadata
     for (key <- extractedMetadata.keys) {
       if (!key.equalsIgnoreCase("domain")) {
-
-        val modifiedKey = if (metadata.has(key)){
-          key + EXTRACTED_SUFFIX
-        }else{
-          key
-        }
-
-        val field = new Field(modifiedKey, extractedMetadata.get(key).get, Field.Store.YES, Field.Index.ANALYZED)
+        val field = new Field(key, extractedMetadata.get(key).get, Field.Store.YES, Field.Index.ANALYZED)
 
         if (weights.containsField(key)) {
           field.setBoost(weights.getBoostFactor(key, 1))

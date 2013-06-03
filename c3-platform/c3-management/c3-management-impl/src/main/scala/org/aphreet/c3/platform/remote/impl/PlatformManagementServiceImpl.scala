@@ -696,6 +696,18 @@ class PlatformManagementServiceImpl extends SpringBeanAutowiringSupport with Pla
     }
   }
 
+  def dropSearchIndex() {
+    try{
+      _searchManager.deleteIndexes()
+    }catch{
+      case e: Throwable => {
+        e.printStackTrace()
+        throw new RemoteException("Exception " + e.getClass.getCanonicalName + ": " + e.getMessage)
+      }
+    }
+  }
+
+
   def listBackups(targetId : String) : Array[String] = {
     try {
       backupManager.listBackups(targetId).toArray

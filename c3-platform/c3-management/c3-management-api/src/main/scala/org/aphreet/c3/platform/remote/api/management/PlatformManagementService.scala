@@ -102,6 +102,8 @@ trait PlatformManagementService {
 
   def resetSearchIndex()
 
+  def dropSearchIndex()
+
   def dumpSearchIndex(path: String)
 
   def createBackup(targetId : String)
