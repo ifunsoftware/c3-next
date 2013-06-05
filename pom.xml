@@ -16,8 +16,8 @@
         <url>https://github.com/ifunsoftware/c3-next</url>
         <connection>scm:git:ssh://github.com/ifunsoftware/c3-next.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/ifunsoftware/c3-next.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -88,9 +88,9 @@
         </dependency>
 
         <dependency>
-        	<groupId>org.slf4j</groupId>
-        	<artifactId>jcl-over-slf4j</artifactId>
-        	<version>1.6.4</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.6.4</version>
             <scope>test</scope>
         </dependency>
 

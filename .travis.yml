@@ -1,1 +1,4 @@
 language: java
+after_success:
+  - cd c3-deploy
+  - mvn deploy
