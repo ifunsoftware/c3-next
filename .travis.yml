@@ -1,4 +1,14 @@
 language: java
+
+branches:
+  only:
+    - master
+
 after_success:
   - cd c3-deploy
-  - mvn deploy
+  - mvn deploy --settings src/main/config/travis-settings.xml
+
+env:
+  global:
+    - secure: "M0hSGpBD0OVmRvogWtNWQRdZbLzaTF8GyaqKHL43ArRe+mS6RWkXaWzzttMt\noX3eC6oyqRzE/0vaMXpapRdsoCpyuC9FLIpJXqy3fuPdl4DJd6eKFNEKPPVl\nusoMtm5DdhOxTWYoiEu5CAi/0Ke9bT1hK+N/bRDeop0FE6LXIUA="
+    - secure: "O9GEYcrlEtLn9SLfs4TMZNrv7b0td4AtIWibBRJFcpdth7qa5DK0c08P/nJv\nvqhRY/J+fODvgiCzoVuDxDiobzFK68HQdcmyf0w8cKJG1NWUEvKbCTP26kVI\nO+UwQSuEOfQPl4euGHzqo1ot2tjDvk41b5dOCbtDMQaczq7lKUY="
