@@ -1,4 +1,4 @@
-[![Build Status](http://build.ifunsoftware.com/app/rest/builds/buildType:%28id:bt4%29/statusIcon)](http://build.ifunsoftware.com/viewType.html?buildTypeId=bt4)
+[![Build Status](https://api.travis-ci.org/ifunsoftware/c3-next.png)](https://travis-ci.org/ifunsoftware/c3-next)
 
 C3-next (Content-Communication-Collaboration platform)
 ----------------------------------------------------------
