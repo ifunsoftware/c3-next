@@ -682,7 +682,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     try{
       storage.add(createResource())
-      println(storage.usedCapacity)
+      assertTrue(storage.usedCapacity > 0)
     }finally storage.close()
   }
 
