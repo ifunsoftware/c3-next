@@ -65,7 +65,7 @@
                                         <include name="**/target/c3deploy/*" />
                                     </fileset>
                                 </copy>
-                                <copy toDir="${project.build.directory}/server-package/server/pickup" file="${basedir}/src/main/config/c3.plan" />
+                                <copy toDir="${project.build.directory}/server-package/server/pickup" file="${basedir}/src/main/config/*.plan" />
                             </tasks>
                         </configuration>
                         <goals>
