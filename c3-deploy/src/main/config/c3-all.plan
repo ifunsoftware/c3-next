@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plan name="c3-web.plan" version="1.0.0" scoped="false" atomic="false"
-        xmlns="http://www.springsource.org/schema/dm-server/plan"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://www.springsource.org/schema/dm-server/plan
-            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+<plan name="c3.plan" version="1.0.0" scoped="false" atomic="false"
+      xmlns="http://www.eclipse.org/virgo/schema/plan"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+            http://www.eclipse.org/virgo/schema/plan
+            http://www.eclipse.org/virgo/schema/plan/eclipse-virgo-plan.xsd">
 
-    <artifact type="bundle" name="org.aphreet.c3.platform.core" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.core" version="[1.0.0, 2.0.0)" />
     <artifact type="bundle" name="org.aphreet.c3.platform.storage" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.search" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.filesystem" version="[1.0.0, 2.0.0)"/>
@@ -18,5 +18,7 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.management" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.gen" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.cli" version="[1.0.0, 2.0.0)"/>
-
+    <artifact type="bundle" name="org.aphreet.c3.platform.management.web" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.metadata" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.web" version="[1.0.0, 2.0.0)"/>
 </plan>

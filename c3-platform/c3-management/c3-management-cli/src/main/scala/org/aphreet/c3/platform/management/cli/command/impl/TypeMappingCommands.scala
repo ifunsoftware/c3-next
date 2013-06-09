@@ -46,12 +46,12 @@ class AddTypeMappingCommand extends Command{
 
   override
   def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 3)
+    if(params.size < 2)
       wrongParameters("create type mapping <mimetype> <versioned>")
     else{
 
       val mimeType = params.head
-      val versioned = (params(1) == "true")
+      val versioned = params(1) == "true"
 
       management.addTypeMapping(mimeType, versioned)
 
