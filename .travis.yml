@@ -1,9 +1,5 @@
 language: java
 
-script: mvn clean install -B
-
-install:
-
 branches:
   only:
     - master
