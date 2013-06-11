@@ -57,4 +57,14 @@
         <servlet-name>DispatcherServlet</servlet-name>
     </filter-mapping>
 
+    <filter>
+        <filter-name>WSAuthFilter</filter-name>
+        <filter-class>org.aphreet.c3.platform.remote.management.web.WSAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>WSAuthFilter</filter-name>
+        <servlet-name>DispatcherServlet</servlet-name>
+    </filter-mapping>
+
 </web-app>
