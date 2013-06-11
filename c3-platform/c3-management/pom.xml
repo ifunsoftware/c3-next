@@ -17,6 +17,7 @@
         <module>c3-management-gen</module>
         <module>c3-management-web</module>
         <module>c3-management-cli</module>
+        <module>c3-management-rest</module>
     </modules>
 
 </project>

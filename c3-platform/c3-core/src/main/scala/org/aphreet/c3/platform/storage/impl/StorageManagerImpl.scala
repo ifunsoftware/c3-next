@@ -134,7 +134,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
     }
   }
 
-  def createStorage(storageType: String, storagePath: Option[Path]) {
+  def createStorage(storageType: String, storagePath: Option[Path]): Storage = {
     val storage = factories.get(storageType) match {
       case Some(factory) => {
 
@@ -157,6 +157,8 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
     registerStorage(storage)
     addStorageToParams(storage)
+
+    storage
   }
 
 

@@ -43,8 +43,8 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def listStorageTypes:List[String] = storageManager.listStorageTypes
   
-  def createStorage(storageType:String, path:String) {
-    val storagePath = if(path.isEmpty) None else Some(Path(path))
+  def createStorage(storageType:String, path:String): Storage = {
+    val storagePath = if(path == null || path.isEmpty) None else Some(Path(path))
 
     storageManager.createStorage(storageType, storagePath)
   }

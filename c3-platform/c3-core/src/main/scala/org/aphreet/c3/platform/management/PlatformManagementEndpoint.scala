@@ -14,7 +14,7 @@ trait PlatformManagementEndpoint {
   
   def listStorageTypes:List[String]
   
-  def createStorage(storageType:String, path:String)
+  def createStorage(storageType:String, path:String): Storage
   
   def removeStorage(is:String)
   
