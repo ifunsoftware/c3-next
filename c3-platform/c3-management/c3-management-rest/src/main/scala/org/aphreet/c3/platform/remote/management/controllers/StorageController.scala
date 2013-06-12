@@ -1,13 +1,15 @@
 package org.aphreet.c3.platform.remote.management.controllers
 
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, ResponseBody, RequestMethod}
+import org.springframework.web.bind.annotation._
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.springframework.beans.factory.annotation.Autowired
 import java.util
 import org.aphreet.c3.platform.remote.management.model.StorageModel
 import scala.collection.JavaConversions._
 import org.aphreet.c3.platform.remote.management.controllers.request.StorageCreateRequest
+import org.aphreet.c3.platform.remote.management.controllers.request.StorageCreateRequest
+import javax.servlet.http.HttpServletResponse
 
 @Controller
 @RequestMapping(Array("/storage"))
@@ -21,6 +23,19 @@ class StorageController {
   def list(): util.Collection[StorageModel] = {
     platformManagementService.listStorages
       .map(StorageModel(_))
+  }
+
+  @RequestMapping(method = Array(RequestMethod.GET), value = Array("/{id}"))
+  @ResponseBody
+  def view(@PathVariable id: String,
+           response: HttpServletResponse): StorageModel = {
+    platformManagementService.listStorages.find(_.id == id) match {
+      case Some(storage) => StorageModel(storage)
+      case None => {
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND)
+        null
+      }
+    }
   }
 
   @RequestMapping(method = Array(RequestMethod.GET),  value = Array("/types"))
