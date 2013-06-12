@@ -19,6 +19,7 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.management.gen" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.cli" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.management.web" version="[1.0.0, 2.0.0)"/>
+    <artifact type="bundle" name="org.aphreet.c3.platform.management.rest" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.metadata" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.web" version="[1.0.0, 2.0.0)"/>
 </plan>
