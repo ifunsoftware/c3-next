@@ -38,6 +38,7 @@
                     <finalName>c3-${project.version}.jar</finalName>
                     <classesDirectory>${project.build.directory}/server-package</classesDirectory>
                     <includes>
+                        <include>**/*.war</include>
                         <include>**/*.jar</include>
                         <include>**/*.plan</include>
                     </includes>
