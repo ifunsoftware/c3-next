@@ -2,7 +2,6 @@ package org.aphreet.c3.platform.remote.management.controllers
 
 import java.util
 import org.aphreet.c3.platform.common.Constants._
-import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.remote.management.controllers.exception.{WrongRequestException, NotFoundException}
 import org.aphreet.c3.platform.remote.management.controllers.request.StorageCreateRequest
