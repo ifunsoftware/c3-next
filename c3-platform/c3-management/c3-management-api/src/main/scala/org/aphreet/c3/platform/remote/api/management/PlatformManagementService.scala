@@ -24,12 +24,12 @@ trait PlatformManagementService {
 
   def removeStorageIndex(name: String)
 
-
+//Implemented in rest interface
   def setPlatformProperty(key:String, value:String)
 
   def platformProperties:Array[Pair]
 
-
+//Implemented in rest interface
   def listTasks:Array[RemoteTaskDescription]
 
   def listFinishedTasks:Array[RemoteTaskDescription]
@@ -50,6 +50,7 @@ trait PlatformManagementService {
   def removeTypeMapping(mimeType:String)
 
 
+//Implemented in rest interface
   def listUsers:Array[UserDescription]
 
   def addUser(name:String, password:String)
@@ -58,7 +59,10 @@ trait PlatformManagementService {
 
   def deleteUser(name:String)
 
+
+//Implemented in the rest interface
   def statistics:Array[Pair]
+
 
   def createReplicationTarget(host:String, port:java.lang.Integer, username:String, password:String)
 
@@ -74,7 +78,7 @@ trait PlatformManagementService {
 
   def dumpReplicationQueue(path: String)
 
-
+//Implemented in the rest interface
   def createDomain(name:String)
 
   def listDomains:Array[DomainDescription]
@@ -100,11 +104,13 @@ trait PlatformManagementService {
 
   def startFilesystemCheck()
 
+
   def resetSearchIndex()
 
   def dropSearchIndex()
 
   def dumpSearchIndex(path: String)
+
 
   def createBackup(targetId : String)
 
