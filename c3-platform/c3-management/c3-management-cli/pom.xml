@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-management-cli</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>C3 Management CLI</name>
 
     <parent>
@@ -13,23 +13,67 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-management-api</artifactId>
+            <groupId>eu.medsea.mimeutil</groupId>
+            <artifactId>mime-util</artifactId>
+            <version>2.1.2</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-management-impl</artifactId>
-            <version>${project.version}</version>
+            <artifactId>c3-core</artifactId>
             <scope>provided</scope>
-            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-backup</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-filesystem</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-access-control</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-search</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-replication</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twmacinta.util</groupId>
+            <artifactId>md5</artifactId>
+            <version>1.0.539</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>com.springsource.javax.servlet</artifactId>
+            <version>2.5.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>com.springsource.org.apache.commons.codec</artifactId>
             <version>1.4.0</version>
+            <scope>provided</scope> <!-- TODO don't forget to add this to the dependencies copy -->
         </dependency>
 
     </dependencies>
@@ -56,30 +100,83 @@
             </plugin>
 
             <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
+                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
+                    <archive>
+                        <manifestFile>target/MANIFEST.MF</manifestFile>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
             </plugin>
 
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>manifest</id>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <tasks>
-                                <echo message="Updating manifest file with current build number" />
-                                <copy file="src/main/resources/META-INF/MANIFEST.MF" toDir="target" overwrite="true" />
-                                <replace file="target/MANIFEST.MF" token="Bundle-Version: 9.9.9.TO_BE_REPLACED" value="Bundle-Version: ${parsedVersion.osgiVersion}" />
-                                <replace file="target/MANIFEST.MF" token="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;1.0.0&quot;" value="Fragment-Host: org.aphreet.c3.platform.management;bundle-version=&quot;${parsedVersion.osgiVersion}&quot;" />
-                            </tasks>
-                        </configuration>
+                        <id>make-a-jar</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>
+                                ${project.build.directory}/${project.artifactId}-${project.version}.jar
+                            </file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.commons</groupId>
+                                    <artifactId>com.springsource.org.apache.commons.codec</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.deploy.tmp.dir}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+            
         </plugins>
     </build>
 </project>

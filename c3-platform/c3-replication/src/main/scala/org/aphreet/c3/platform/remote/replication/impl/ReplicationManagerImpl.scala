@@ -39,7 +39,6 @@ import org.aphreet.c3.platform.common._
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsg
 import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsgReply
@@ -47,9 +46,9 @@ import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterS
 import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterSourceMsgReply
 import org.aphreet.c3.platform.remote.replication.impl.data.QueuedTasksReply
 import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
-import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.remote.replication.{ReplicationHost, ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.task.{Task, TaskManager}
+import org.aphreet.c3.platform.task.TaskManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
@@ -234,7 +233,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val negotiator = RemoteActor.select(node, 'ReplicationNegotiator)
 
-    val keyExchangeReply = (negotiator !? (NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1))) match {
+    val keyExchangeReply = negotiator !?(NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1)) match {
       case Some(reply) => reply.asInstanceOf[NegotiateKeyExchangeMsgReply]
       case None => throw new ReplicationException("Failed to perform key exchange")
     }
@@ -246,13 +245,13 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
     val sourceConfiguration = configurationManager.getSerializedConfiguration
 
-    val registerSourceReply = (negotiator !? (NEGOTIATE_MSG_TIMEOUT,
+    val registerSourceReply = negotiator !?(NEGOTIATE_MSG_TIMEOUT,
       NegotiateRegisterSourceMsg(
         localSystemId,
         dataEncryptor.encrypt(sourceConfiguration),
         dataEncryptor.encrypt(user),
         dataEncryptor.encrypt(password)
-      ))) match {
+      )) match {
       case Some(reply) => reply.asInstanceOf[NegotiateRegisterSourceMsgReply]
       case None => throw new ReplicationException("Failed to perform configuration exchange")
     }
@@ -309,7 +308,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
   }
 
   private def runQueueMaintainer() {
-    (new ReplicationMaintainThread(this)).start()
+    new ReplicationMaintainThread(this).start()
   }
 
   override def defaultValues:Map[String, String] =

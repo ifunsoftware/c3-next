@@ -31,8 +31,8 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, DomainDescription, Pair}
-import reflect.BeanProperty
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
+import scala.beans.BeanProperty
 
 case class PlatformInfo(@BeanProperty var systemId:String,
                    @BeanProperty var host:ReplicationHost,

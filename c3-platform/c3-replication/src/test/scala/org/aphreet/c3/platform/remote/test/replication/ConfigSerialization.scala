@@ -36,7 +36,7 @@ import com.thoughtworks.xstream.XStream
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.remote.replication.impl.config._
-import org.aphreet.c3.platform.remote.api.management.{ReplicationHost, StorageDescription, Pair, DomainDescription}
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 class ConfigSerialization extends TestCase{
 

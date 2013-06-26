@@ -33,7 +33,6 @@ import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.common.{Logger, ComponentGuard, WatchedActor}
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
 import org.aphreet.c3.platform.resource.Resource

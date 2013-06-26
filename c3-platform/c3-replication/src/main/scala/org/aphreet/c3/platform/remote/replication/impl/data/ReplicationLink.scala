@@ -30,16 +30,15 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import encryption.DataEncryptor
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
-import actors.remote.{RemoteActor, Node}
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
-import org.aphreet.c3.platform.remote.replication._
-import collection.mutable.{HashSet, HashMap}
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import actors.AbstractActor
+import actors.remote.{RemoteActor, Node}
+import encryption.DataEncryptor
+import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
+import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
+import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import scala.collection.mutable
 
 class ReplicationLink(val localSystemId:String,
                       val host:ReplicationHost,
@@ -53,7 +52,7 @@ class ReplicationLink(val localSystemId:String,
 
   val replicationTimeout = 1000 * 60 * 5
 
-  private val queue = new HashMap[ReplicationTask, Long]
+  private val queue = new mutable.HashMap[ReplicationTask, Long]
 
   private val dataEncryptor = new DataEncryptor(host.encryptionKey)
 
@@ -160,7 +159,7 @@ class ReplicationLink(val localSystemId:String,
         case QueuedTasks => {
           log debug "Retrieving queued tasks"
 
-          val set = new HashSet[ReplicationTask]
+          val set = new mutable.HashSet[ReplicationTask]
 
           set ++= queue.filter(System.currentTimeMillis.longValue - _._2.longValue > replicationTimeout).map(e => e._1)
 
@@ -210,4 +209,4 @@ class ReplicationLink(val localSystemId:String,
 }
 
 object QueuedTasks
-case class QueuedTasksReply(set:HashSet[ReplicationTask])
+case class QueuedTasksReply(set:mutable.HashSet[ReplicationTask])

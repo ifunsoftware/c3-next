@@ -38,7 +38,7 @@ import com.springsource.json.parser._
 import org.springframework.stereotype.Component
 import org.springframework.context.annotation.Scope
 import collection.JavaConversions._
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, ReplicationHost]]{
 

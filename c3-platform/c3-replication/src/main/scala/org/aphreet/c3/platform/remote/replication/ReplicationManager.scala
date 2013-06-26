@@ -29,7 +29,6 @@
  */
 package org.aphreet.c3.platform.remote.replication
 
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.WatchedActor
 
 

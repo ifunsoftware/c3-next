@@ -30,25 +30,7 @@
         <!--virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
                 <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup-->
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Internal dependencies -->
-            <dependency>
-                <groupId>org.aphreet.c3</groupId>
-                <artifactId>c3-management-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aphreet.c3</groupId>
-                <artifactId>c3-management-cli</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
+    
     <dependencies>
 
         <dependency>

@@ -34,7 +34,7 @@ import junit.framework.Assert._
 import java.io.File
 import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 import org.aphreet.c3.platform.remote.replication.impl.config.ReplicationSourcesConfigAccessor
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 class ReplicationConfigAccessorTestCase extends TestCase {
 

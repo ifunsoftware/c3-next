@@ -30,9 +30,8 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import com.twmacinta.util.MD5
-import org.aphreet.c3.platform.remote.replication.ReplicationSignature
+import org.aphreet.c3.platform.remote.replication.{ReplicationHost, ReplicationSignature}
 
 class ReplicationSignatureCalculator(val localSystemId:String, val host:ReplicationHost){
 

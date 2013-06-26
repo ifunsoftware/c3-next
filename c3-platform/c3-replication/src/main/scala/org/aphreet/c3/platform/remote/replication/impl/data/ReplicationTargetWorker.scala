@@ -31,7 +31,6 @@
 package org.aphreet.c3.platform.remote.replication.impl.data
 
 import encryption.DataEncryptor
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager

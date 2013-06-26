@@ -38,7 +38,6 @@ import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.domain.DomainManager
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.aphreet.c3.platform.remote.replication._
 import impl.config.ConfigurationManager
 import org.aphreet.c3.platform.statistics.StatisticsManager

@@ -38,10 +38,10 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.filesystem.FSManager
-import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 @Component
 class ConfigurationManager extends DtoConvertor{

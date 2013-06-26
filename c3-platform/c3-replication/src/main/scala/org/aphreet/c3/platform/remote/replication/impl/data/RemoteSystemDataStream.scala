@@ -34,12 +34,12 @@ import java.io._
 import org.apache.commons.httpclient.methods.GetMethod
 import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.resource.{DataStream, AbstractFileDataStream}
-import org.aphreet.c3.platform.remote.api.management.ReplicationHost
 import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.aphreet.c3.platform.auth.HashUtil
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 class RemoteSystemDataStream(val host:ReplicationHost,
                               val secure:Boolean,
@@ -71,7 +71,7 @@ class RemoteSystemDataStream(val host:ReplicationHost,
     }
 
     try{
-      val status = (new HttpClient()).executeMethod(getMethod)
+      val status = new HttpClient().executeMethod(getMethod)
       status match {
         case HttpStatus.SC_OK => {
           val fileChannel = new FileOutputStream(file).getChannel

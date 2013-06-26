@@ -12,4 +12,6 @@
 
     <reference id="authService" interface="org.aphreet.c3.platform.auth.AuthenticationManager"/>
 
+    <reference id="domainService" interface="org.aphreet.c3.platform.domain.DomainManager"/>
+
 </beans:beans>  
