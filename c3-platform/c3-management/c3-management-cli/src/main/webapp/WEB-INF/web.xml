@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+
+    <filter>
+        <filter-name>WSAuthFilter</filter-name>
+        <filter-class>org.aphreet.c3.platform.remote.ws.WSAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>WSAuthFilter</filter-name>
+        <servlet-name>CLIServlet</servlet-name>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>CLIServlet</servlet-name>
+        <servlet-class>org.aphreet.c3.platform.remote.servlet.CLIServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CLIServlet</servlet-name>
+        <url-pattern>/cli</url-pattern>
+    </servlet-mapping>
+
+    <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>
+            org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext
+        </param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/bundle-context.xml
+            /WEB-INF/bundle-services.xml
+        </param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+</web-app>
