@@ -6,8 +6,8 @@ import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.remote.management.controllers.exception.{WrongRequestException, NotFoundException}
 import org.aphreet.c3.platform.remote.management.controllers.request.StorageCreateRequest
 import org.aphreet.c3.platform.remote.management.controllers.request.StorageUpdateRequest
-import org.aphreet.c3.platform.remote.management.model.StorageModel
-import org.aphreet.c3.platform.storage.{U, RO, RW}
+import org.aphreet.c3.platform.remote.management.model.{StorageIndexModel, StorageModel}
+import org.aphreet.c3.platform.storage.{StorageIndex, U, RO, RW}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
@@ -69,5 +69,20 @@ class StorageController extends AbstractController{
     }
 
     platformManagementService.setStorageMode(id, storageMode)
+  }
+
+  @RequestMapping(method = Array(RequestMethod.POST), value = Array("/index"))
+  @ResponseStatus(HttpStatus.CREATED)
+  def createIndex(@RequestBody index: StorageIndexModel){
+    platformManagementService.createIndex(new StorageIndex(index.name,
+      index.fields.toList,
+      index.multi,
+      index.system,
+      System.currentTimeMillis))
+  }
+
+  @RequestMapping(method = Array(RequestMethod.DELETE), value = Array("/index/{name}"))
+  def removeIndex(@PathVariable name: String){
+    platformManagementService.removeIndex(name)
   }
 }
