@@ -3,6 +3,7 @@ Bundle-Version: 9.9.9.TO_BE_REPLACED
 Bundle-Name: C3 Management
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.management.cli
+Bundle-Classpath: WEB-INF/classes
 Web-ContextPath: /manage
 Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
  org.scala-lang.scala-actors;version="[2.10.1,2.11)",

@@ -35,7 +35,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
-                    <finalName>c3-${project.version}.jar</finalName>
+                    <finalName>c3-${project.version}</finalName>
                     <classesDirectory>${project.build.directory}/server-package</classesDirectory>
                     <includes>
                         <include>**/*.war</include>
