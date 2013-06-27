@@ -60,7 +60,7 @@ class ReplicationLink(val localSystemId:String,
 
   private var remoteActor: AbstractActor = _
 
-  override def start(){
+  override def start() = {
 
     log info "Establishing replication link to " + host.systemId
 
