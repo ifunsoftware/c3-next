@@ -44,7 +44,12 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
                                  val queueStorage:ReplicationQueueStorage,
                                  val sourceActor:Actor) extends Task {
 
-  var iterator = queueStorage.iterator
+  var iterator: ReplicationQueueIterator = _
+
+  override protected def preStart() {
+    iterator = queueStorage.iterator
+  }
+
 
   override def step(){
 
