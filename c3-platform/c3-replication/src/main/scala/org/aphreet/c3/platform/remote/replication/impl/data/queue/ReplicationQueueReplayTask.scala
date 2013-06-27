@@ -97,7 +97,7 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
   }
 
-  override def shouldStop:Boolean = !iterator.hasNext
+  override def shouldStop:Boolean = if(iterator != null) !iterator.hasNext else false
 
   protected override def postComplete() {
     replicationManager.isTaskRunning = false
