@@ -50,7 +50,7 @@ object ThreadWatcher{
     registeredThreads.synchronized{
       registeredThreads -= any
       log info "Unregistered " + any + ", left: " + registeredThreads.size
-      log.info("Left threads: " + registeredThreads.toString)
+      log.debug("Left threads: " + registeredThreads.toString)
     }
   }
 

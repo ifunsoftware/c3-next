@@ -12,9 +12,11 @@ class DirectoryConflictResolver extends ConflictResolver{
 
   def resolve(savedResource: Resource, incomeResource: Resource) {
 
-    log.info("Resolving conflict: saved({}, {}), income({}, {})", Array(
-      savedResource.versions.last.date.getTime, savedResource.versions.last.basedOnVersion,
-      incomeResource.versions.last.date.getTime, incomeResource.versions.last.basedOnVersion))
+    if(log.isDebugEnabled){
+      log.debug("Resolving conflict: ({})", Array(
+        savedResource.versions.last.date.getTime, savedResource.versions.last.basedOnVersion,
+        incomeResource.versions.last.date.getTime, incomeResource.versions.last.basedOnVersion))
+    }
 
     val resultNodes = new mutable.HashMap[String, NodeRef]()
 
@@ -60,7 +62,7 @@ class DirectoryConflictResolver extends ConflictResolver{
             }
           }else{
 
-            if((node.deleted && nodeRef.deleted) || (!node.deleted && !nodeRef.deleted)){
+            if(node.deleted && nodeRef.deleted || !node.deleted && !nodeRef.deleted){
               //We have two files or directories with the same name but with different content
               resultNodes.remove(node.name)
               resultNodes.put(node.name + "-" + node.modified, NodeRef(node.name + "-" + node.modified, node.address, node.leaf, node.deleted, node.modified))

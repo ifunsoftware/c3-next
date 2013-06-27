@@ -55,7 +55,7 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
     for(i <- 1 to 100){
       if(iterator.hasNext){
-        val task = iterator.next
+        val task = iterator.next()
         iterator.remove()
 
         submitTask(task)

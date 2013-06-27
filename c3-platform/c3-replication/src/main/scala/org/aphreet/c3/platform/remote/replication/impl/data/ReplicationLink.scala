@@ -56,9 +56,11 @@ class ReplicationLink(val localSystemId:String,
 
   private val dataEncryptor = new DataEncryptor(host.encryptionKey)
 
-  override def act(){
+  private val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
-    val calculator = new ReplicationSignatureCalculator(localSystemId, host)
+  private var remoteActor: AbstractActor = _
+
+  override def start(){
 
     log info "Establishing replication link to " + host.systemId
 
@@ -66,12 +68,15 @@ class ReplicationLink(val localSystemId:String,
 
     val peer = Node(host.hostname, port)
 
-    val remoteActor = RemoteActor.select(peer, 'ReplicationActor)
+    remoteActor = RemoteActor.select(peer, 'ReplicationActor)
 
     link(remoteActor)
 
     started = true
+    super.start()
+  }
 
+  override def act(){
     loop{
       react{
 

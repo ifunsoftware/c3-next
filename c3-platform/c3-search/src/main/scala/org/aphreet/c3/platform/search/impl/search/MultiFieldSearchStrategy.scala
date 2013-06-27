@@ -118,7 +118,7 @@ class MultiFieldSearchStrategy extends SearchStrategy{
       SearchResult(topQuery.toString, result.toArray)
     }catch{
       case e: ParseException =>
-        log.warn("Incorrect search query: ", e)
+        log.debug("Incorrect search query: ", e)
         throw new SearchQueryException(e.getMessage, e)
       case e: Throwable => {
         log.error("Failed to execute query", e)
