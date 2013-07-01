@@ -32,6 +32,7 @@ package org.aphreet.c3.platform.search.impl.search
 
 import collection.JavaConversions._
 import collection.mutable.ArrayBuffer
+import org.apache.lucene.search.highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
 import java.util
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
@@ -39,11 +40,10 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.Term
 import org.apache.lucene.queryParser.{ParseException, MultiFieldQueryParser}
 import org.apache.lucene.search._
-import highlight.{QueryScorer, SimpleSpanFragmenter, Highlighter, TokenSources}
-import org.apache.lucene.util.Version.LUCENE_35
-import org.aphreet.c3.platform.search.{SearchResult, SearchQueryException, SearchResultElement, SearchResultFragment}
-import org.aphreet.c3.platform.search.impl.SearchConfiguration
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
+import org.aphreet.c3.platform.search.{SearchResult, SearchQueryException, SearchResultElement, SearchResultFragment}
 
 
 class MultiFieldSearchStrategy extends SearchStrategy{
@@ -53,13 +53,13 @@ class MultiFieldSearchStrategy extends SearchStrategy{
   def search(searcher: IndexSearcher, configuration: SearchConfiguration, query: String,
              max: Int, offset: Int, domain: String): SearchResult = {
 
-    val analyzer = new StandardAnalyzer(LUCENE_35)
+    val analyzer = new StandardAnalyzer(LUCENE_VERSION)
 
-    val russianAnalyzer = new RussianAnalyzer(LUCENE_35)
+    val russianAnalyzer = new RussianAnalyzer(LUCENE_VERSION)
     val fieldWeights = configuration.getFieldWeights
 
     try {
-      val parser = new MultiFieldQueryParser(LUCENE_35, fieldWeights.getFields, analyzer)
+      val parser = new MultiFieldQueryParser(LUCENE_VERSION, fieldWeights.getFields, analyzer)
       val searchQuery = parser.parse(query)
 
       val topQuery = new BooleanQuery()

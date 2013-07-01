@@ -1,17 +1,16 @@
 package org.aphreet.c3.platform.search
 
+import actors.Actor
 import impl.index.extractor.SimpleTextExtractor
 import impl.index.{IndexMsg, MergeIndexMsg, RamIndexer}
-import junit.framework.TestCase
 import junit.framework.Assert._
-import actors.Actor
-import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
-import org.apache.lucene.search.IndexSearcher
-import org.apache.lucene.queryParser.QueryParser
+import junit.framework.TestCase
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.util.Version
 import org.apache.lucene.index.IndexReader
-import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.apache.lucene.queryParser.QueryParser
+import org.apache.lucene.search.IndexSearcher
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
+import org.aphreet.c3.platform.search.impl.{SearchManagerInternal, SearchConfiguration}
 
 class RamIndexerTestCase extends TestCase{
 
@@ -48,7 +47,7 @@ class RamIndexerTestCase extends TestCase{
     Thread.sleep(1000)
 
     val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
-    val searchQuery = new QueryParser(Version.LUCENE_35, "content", new StandardAnalyzer(Version.LUCENE_35)).parse("users")
+    val searchQuery = new QueryParser(SearchManagerInternal.LUCENE_VERSION, "content", new StandardAnalyzer(SearchManagerInternal.LUCENE_VERSION)).parse("users")
     val topDocs = searcher.search(searchQuery, 10)
 
     assertEquals(1, topDocs.scoreDocs.length)

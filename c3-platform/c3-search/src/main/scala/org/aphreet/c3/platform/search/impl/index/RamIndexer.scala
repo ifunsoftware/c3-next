@@ -37,10 +37,10 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.{IndexWriterConfig, IndexWriter}
 import org.apache.lucene.store.{RAMDirectory, Directory}
-import org.apache.lucene.util.Version
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
 import org.aphreet.c3.platform.resource.{Metadata, Resource}
+import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
@@ -77,7 +77,7 @@ class RamIndexer(val fileIndexer: Actor,
 
     directory = new RAMDirectory
 
-    writer = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_35, new StandardAnalyzer(Version.LUCENE_35)))
+    writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)))
 
     if (oldWriter != null) {
       oldWriter.close()

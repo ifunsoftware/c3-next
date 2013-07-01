@@ -34,10 +34,10 @@ import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search._
+import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
 import org.apache.lucene.index.{IndexReader, IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
 import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
-import org.apache.lucene.util.Version
 import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
 
 class FileIndexer(var indexPath:Path) extends WatchedActor{
@@ -59,8 +59,8 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
     }
 
     new IndexWriter(directory,
-      new IndexWriterConfig(Version.LUCENE_35,
-        new StandardAnalyzer(Version.LUCENE_35))
+      new IndexWriterConfig(LUCENE_VERSION,
+        new StandardAnalyzer(LUCENE_VERSION))
           .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
   }
 

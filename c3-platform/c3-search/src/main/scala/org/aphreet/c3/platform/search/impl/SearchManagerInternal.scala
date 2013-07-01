@@ -31,8 +31,15 @@
 package org.aphreet.c3.platform.search.impl
 
 import org.aphreet.c3.platform.search.SearchManager
+import org.apache.lucene.util.Version
 
 trait SearchManagerInternal extends SearchManager {
 
   def throttleBackgroundIndex: Boolean
+
+}
+
+object SearchManagerInternal{
+  val LUCENE_VERSION = Version.LUCENE_35
+
 }

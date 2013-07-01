@@ -33,8 +33,8 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
-import org.apache.lucene.util.Version
 import org.aphreet.c3.platform.resource.{Metadata, Resource}
+import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
 
@@ -62,8 +62,8 @@ class ResourceHandler(val searchConfiguration: SearchConfiguration,
 
   def analyzer:Analyzer = {
     
-    if(lang == "ru") new RussianAnalyzer(Version.LUCENE_35)
-    else new StandardAnalyzer(Version.LUCENE_35)
+    if(lang == "ru") new RussianAnalyzer(LUCENE_VERSION)
+    else new StandardAnalyzer(LUCENE_VERSION)
 
   }
 }
