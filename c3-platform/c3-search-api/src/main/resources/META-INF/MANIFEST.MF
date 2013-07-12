@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-Version: 9.9.9.TO_BE_REPLACED
+Bundle-Name: C3 Search API
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.aphreet.c3.platform.search.api
+Spring-Context: *
+Import-Bundle: org.aphreet.c3.platform.core;version="[1.0.0,2.0.0)",
+ org.scala-lang.scala-library;version="[2.10.1,2.11)",
+ org.scala-lang.scala-actors;version="[2.10.1,2.11)",
+Import-Package: javax.annotation;version="[1.0.0,1.0.0]",
+ org.slf4j;version="[1.6.4,2.0.0)"
+Export-Package: org.aphreet.c3.platform.search.api
