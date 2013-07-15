@@ -33,7 +33,6 @@ package org.aphreet.c3.platform.search.lucene.impl.search
 import org.apache.lucene.search.IndexSearcher
 import org.aphreet.c3.platform.search.api.SearchResult
 import org.aphreet.c3.platform.search.lucene.impl.SearchConfiguration
-import javax.naming.directory.SearchResult
 
 trait SearchStrategy {
 

@@ -77,7 +77,6 @@
 
     <build>
         <defaultGoal>package</defaultGoal>
-
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
 
@@ -115,19 +114,19 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
-                                    <artifactId>org.apache.org.aphreet.c3.platform.search.lucene.analysis</artifactId>
+                                    <artifactId>org.apache.lucene.analysis</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
-                                    <artifactId>org.apache.org.aphreet.c3.platform.search.lucene.highlighter</artifactId>
+                                    <artifactId>org.apache.lucene.highlighter</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
-                                    <artifactId>org.apache.org.aphreet.c3.platform.search.lucene.core</artifactId>
+                                    <artifactId>org.apache.lucene.core</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
