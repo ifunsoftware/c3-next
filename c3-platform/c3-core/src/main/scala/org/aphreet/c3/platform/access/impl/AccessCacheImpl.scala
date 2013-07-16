@@ -104,8 +104,9 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     }
   }
 
-  override def put(resource:Resource) {
+  override def put(resource:Resource): Resource = {
     cache.put(new Element(resource.address, resource))
+    resource
   }
 
   override def get(address:String):Option[Resource] = {
@@ -119,8 +120,9 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     }
   }
 
-  override def remove(address:String) {
+  override def remove(address:String): String = {
     cache.remove(address)
+    address
   }
 
   @PreDestroy

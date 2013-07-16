@@ -45,7 +45,7 @@ case class StorageMock(mockId:String, mockPath:String) extends Storage{
 
   def update(resource:Resource):String = resource.address
 
-  def delete(ra:String) {}
+  def delete(ra:String): String = ra
 
   def put(resource:Resource) {}
 

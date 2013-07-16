@@ -55,7 +55,8 @@ class FSCleanupManagerImpl extends FSNodeBFSTreeTraversal with FSCleanupManager{
   protected def resolveNodeByAddress(ra: String) = Node.fromResource(accessManager.get(ra))
 
   private def removeResource(ra: String){
-    storageManager.storageForAddress(ResourceAddress(ra)).delete(ra)
-    accessMediator ! ResourceDeletedMsg(ra, 'FSCleanupManager)
+    storageManager.storageForAddress(ResourceAddress(ra))
+      .map(_.delete(ra))
+      .map(accessMediator ! ResourceDeletedMsg(_, 'FSCleanupManager))
   }
 }

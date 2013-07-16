@@ -116,22 +116,16 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   }
 
-  def storageForId(id: String): Storage = {
-    storages.get(id) match {
-      case Some(storage) => storage
-      case None => throw new StorageNotFoundException(id)
-    }
+  def storageForId(id: String): Option[Storage] = {
+    storages.get(id)
   }
 
-  def storageForResource(resource: Resource): StorageLike = {
+  def storageForResource(resource: Resource): Option[StorageLike] = {
     storageForAddress(ResourceAddress(resource.address))
   }
 
-  def storageForAddress(address: ResourceAddress): StorageLike = {
-    storageDispatcher.selectStorageForAddress(address) match {
-      case Some(params) => storageForId(params.id)
-      case None => throw new StorageNotFoundException("Can't find storage for resource " + address.stringValue)
-    }
+  def storageForAddress(address: ResourceAddress): Option[StorageLike] = {
+    storageDispatcher.selectStorageForAddress(address).flatMap(params => storageForId(params.id))
   }
 
   def createStorage(storageType: String, storagePath: Option[Path]): Storage = {
@@ -221,7 +215,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
 
   def removeIndex(name: String) {
 
-    indexConfigAccessor.load.filter(_.name == name).headOption match {
+    indexConfigAccessor.load.find(_.name == name) match {
       case Some(index) => {
 
         indexConfigAccessor.update(list => list.filter(i => i.name != name))
@@ -257,7 +251,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
     }
 
     log.info("Recreating storages from configuration")
-    factories.values.foreach(createExistentStoragesForFactory(_))
+    factories.values.foreach(createExistentStoragesForFactory)
 
     log.info("Reseting storage dispatcher")
     storageDispatcher.reset(configAccessor.load)
@@ -274,7 +268,7 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
     }
   }
 
-  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver){
+  def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver) {
     conflictResolvers.synchronized(
       conflictResolvers.put(contentType, conflictResolver)
     )
@@ -368,15 +362,15 @@ class StorageManagerImpl extends StorageManager with ConflictResolverProvider {
   }
 
   class CapacityMonitoringTask(storageManager: StorageManager) extends Task {
-    override def step(){
-      for (storage <- storageManager.listStorages){
-        if (storage.availableCapacity < 100L * 1024 * 1024){
-          if (storage.mode.allowWrite){
+    override def step() {
+      for (storage <- storageManager.listStorages) {
+        if (storage.availableCapacity < 100L * 1024 * 1024) {
+          if (storage.mode.allowWrite) {
             storage.mode = RO(Constants.STORAGE_MODE_CAPACITY)
           }
-        }else if(!storage.mode.allowWrite){
-          if (storage.availableCapacity > 500L * 1024 * 1024){
-            if (storage.mode == RO(Constants.STORAGE_MODE_CAPACITY)){
+        } else if (!storage.mode.allowWrite) {
+          if (storage.availableCapacity > 500L * 1024 * 1024) {
+            if (storage.mode == RO(Constants.STORAGE_MODE_CAPACITY)) {
               storage.mode = RW(Constants.STORAGE_MODE_CAPACITY)
             }
           }

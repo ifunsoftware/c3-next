@@ -18,10 +18,10 @@ class FSCleanupManagerTestCase extends TestCase with FSTestHelpers{
   def testCleanupTask(){
 
     val storageLike = createMock(classOf[StorageLike])
-    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a01")).once()
-    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a02")).once()
-    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a03")).once()
-    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a04")).once()
+    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a01")).andReturn("00000000-c2fd-4bef-936e-59cef7943840-6a01").once()
+    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a02")).andReturn("00000000-c2fd-4bef-936e-59cef7943840-6a02").once()
+    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a03")).andReturn("00000000-c2fd-4bef-936e-59cef7943840-6a03").once()
+    expect(storageLike.delete("00000000-c2fd-4bef-936e-59cef7943840-6a04")).andReturn("00000000-c2fd-4bef-936e-59cef7943840-6a04").once()
     replay(storageLike)
 
     val accessManager = createMock(classOf[AccessManager])
@@ -32,10 +32,10 @@ class FSCleanupManagerTestCase extends TestCase with FSTestHelpers{
     replay(accessManager)
 
     val storageManager = createMock(classOf[StorageManager])
-    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a01"))).andReturn(storageLike).once()
-    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a02"))).andReturn(storageLike).once()
-    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a03"))).andReturn(storageLike).once()
-    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a04"))).andReturn(storageLike).once()
+    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a01"))).andReturn(Some(storageLike)).once()
+    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a02"))).andReturn(Some(storageLike)).once()
+    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a03"))).andReturn(Some(storageLike)).once()
+    expect(storageManager.storageForAddress(ResourceAddress("00000000-c2fd-4bef-936e-59cef7943840-6a04"))).andReturn(Some(storageLike)).once()
     replay(storageManager)
 
     val accessMediator = createMock(classOf[AccessMediator])
@@ -45,9 +45,9 @@ class FSCleanupManagerTestCase extends TestCase with FSTestHelpers{
     fsCleanupManager.accessMediator = accessMediator
 
     val rootDirStub = directoryStub(resourceStub("root", "00000000-c2fd-4bef-936e-59cef7943840-6a00", "00000000-c2fd-4bef-936e-59cef7943840-6a01"))
-    rootDirStub.addChild("dir11", "00000000-c2fd-4bef-936e-59cef7943840-6a02", false)
-    rootDirStub.addChild("dir12", "00000000-c2fd-4bef-936e-59cef7943840-6a03", false)
-    rootDirStub.addChild("file21", "00000000-c2fd-4bef-936e-59cef7943840-6a03", true)
+    rootDirStub.addChild("dir11", "00000000-c2fd-4bef-936e-59cef7943840-6a02", leaf = false)
+    rootDirStub.addChild("dir12", "00000000-c2fd-4bef-936e-59cef7943840-6a03", leaf = false)
+    rootDirStub.addChild("file21", "00000000-c2fd-4bef-936e-59cef7943840-6a03", leaf = true)
 
     fsCleanupManager.cleanupDirectory(rootDirStub)
   }

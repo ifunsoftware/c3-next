@@ -105,12 +105,13 @@ class Resource {
    * Triggers checksum update in all not persisted resource versions
    * @see ResourceVersion
    */
-  def calculateCheckSums = {
+  def calculateCheckSums: Resource = {
     if(!this.isVersioned){
       versions(0).calculateHash
     }else{
       versions.filter(!_.persisted).foreach(_.calculateHash)
     }
+    this
   }
 
   def resourceHash: Array[Byte] = {

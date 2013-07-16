@@ -36,10 +36,10 @@ import org.aphreet.c3.platform.resource.Resource
 
 trait AccessCache extends WatchedActor{
 
-  def put(resource:Resource)
+  def put(resource:Resource): Resource
 
   def get(address:String):Option[Resource]
 
-  def remove(address:String)
+  def remove(address:String): String
 
 }

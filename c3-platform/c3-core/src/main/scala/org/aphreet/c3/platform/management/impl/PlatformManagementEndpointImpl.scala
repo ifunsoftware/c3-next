@@ -1,25 +1,23 @@
 package org.aphreet.c3.platform.management.impl
 
+import java.util
+import java.util.{Map => JMap}
 import org.aphreet.c3.platform.common.{Logger, Path}
-import org.aphreet.c3.platform.storage.migration._
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
-import org.aphreet.c3.platform.task._
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-
-
-import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.config.{SetPropertyMsg, PlatformConfigManager}
-import java.util.{HashMap, Map => JMap}
+import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.statistics.StatisticsManager
+import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
+import org.aphreet.c3.platform.storage.migration._
 import org.aphreet.c3.platform.storage.{StorageIndex, StorageManager, Storage, StorageMode}
+import org.aphreet.c3.platform.task._
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
 
 @Component("platformManagementEndpoint")
 class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
 
-  val log = Logger(getClass())
+  val log = Logger(getClass)
 
   @Autowired
   var storageManager:StorageManager = null
@@ -50,12 +48,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   }
   
   def removeStorage(id:String) {
-    val storage = storageManager.storageForId(id)
-    if(storage != null){
-      storageManager.removeStorage(storage)
-    }else{
-      throw new StorageException("Can't find storage for id")
-    }
+    storageManager.storageForId(id).map(storageManager.removeStorage)
   }
 
   def purgeStorageData() {
@@ -72,7 +65,7 @@ class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
   
   def getPlatformProperties:JMap[String, String] = {
 
-    val properties = new HashMap[String, String]
+    val properties = new util.HashMap[String, String]
 
     configManager.getPlatformProperties.foreach{e => properties.put(e._1, e._2)}
 

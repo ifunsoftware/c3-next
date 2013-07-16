@@ -48,25 +48,25 @@ import org.springframework.stereotype.Component
 
 
 @Component("accessManager")
-class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
+class AccessManagerImpl extends AccessManager with SPlatformPropertyListener {
 
   private val MIME_DETECTOR_CLASS = "c3.platform.mime.detector"
   private val USE_ACCESS_CACHE = "c3.platform.cache.enabled"
 
   @Autowired
-  var storageManager:StorageManager = _
+  var storageManager: StorageManager = _
 
   @Autowired
-  var accessMediator:AccessMediator = _
+  var accessMediator: AccessMediator = _
 
   @Autowired
-  var configManager:PlatformConfigManager = _
+  var configManager: PlatformConfigManager = _
 
   @Autowired
-  var accessCache:AccessCache = _
+  var accessCache: AccessCache = _
 
   @Autowired
-  var mimeStorageSelector :MimeTypeStorageSelector = _
+  var mimeStorageSelector: MimeTypeStorageSelector = _
 
   val log = Logger(getClass)
 
@@ -77,7 +77,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   lazy val systemId = getSystemId
 
   @PostConstruct
-  def init(){
+  def init() {
     log info "Starting AccessManager"
 
     configureDefaultMimeDetector()
@@ -88,160 +88,125 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
   }
 
   @PreDestroy
-  def destroy(){
+  def destroy() {
     log info "Stopping AccessManager"
     this ! DestroyMsg
   }
 
-  def get(ra:String):Resource = getInternal(ra)
-
-  def getOption(ra:String):Option[Resource] = {
-    try{
-      Some(getInternal(ra))
-    }catch {
-      case e:Throwable => None
+  def get(ra: String): Resource = {
+    getInternal(ra) match {
+      case Some(resource) => resource
+      case None => throw new ResourceNotFoundException()
     }
   }
 
-  protected def getInternal(ra:String):Resource = {
+  def getOption(ra: String): Option[Resource] = getInternal(ra)
 
-    if(log.isDebugEnabled){
-      log.debug("Getting resource with address: " + ra)
+  protected def getInternal(ra: String): Option[Resource] = {
+
+    log.debug("Getting resource with address: {}", ra)
+
+    readCached(ra) match {
+      case None =>
+        cache(
+          storageManager.storageForAddress(ResourceAddress(ra)).filter(_.mode.allowRead)
+            .flatMap(storage => storage.get(ra))
+        )
+      case Some(resource) => Some(resource)
     }
-
-    if(useAccessCache){
-      accessCache.get(ra) match{
-        case Some(resource) => return resource
-        case None =>
-      }
-    }
-
-    try{
-
-      val storage = storageManager.storageForAddress(ResourceAddress(ra))
-
-      if(!storage.mode.allowRead){
-        throw new StorageException("Storage is not readable")
-      }
-
-      storage.get(ra) match {
-        case Some(r) => {
-          if(useAccessCache){
-            accessCache.put(r)
-          }
-          r
-        }
-        case None => throw new ResourceNotFoundException(ra)
-      }
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
-    }
-
   }
 
-  def add(resource:Resource):String = {
+  def add(resource: Resource): String = {
 
-    if(log.isDebugEnabled){
-      log.debug("Adding new resources")
-    }
+    log.debug("Adding new resource")
 
     val contentType = resource.metadata(Resource.MD_CONTENT_TYPE) match {
       case None => resource.versions(0).data.mimeType
-      case Some(x) => if(!x.isEmpty) x else resource.versions(0).data.mimeType
+      case Some(x) => if (!x.isEmpty) x else resource.versions(0).data.mimeType
     }
 
     resource.metadata(Resource.MD_CONTENT_TYPE) = contentType
     resource.address = ResourceAddress.generate(resource, systemId).stringValue
 
-    val isVersioned = mimeStorageSelector.storageTypeForResource(resource)
-    resource.isVersioned = isVersioned
+    resource.isVersioned = mimeStorageSelector.storageTypeForResource(resource)
 
+    storageManager.storageForResource(resource) match {
+      case Some(storage) => {
+        val ra = storage.add(resource.calculateCheckSums)
 
-    val storage = storageManager.storageForResource(resource)
+        accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
 
-    if(storage != null){
-      resource.calculateCheckSums
-      val ra = storage.add(resource)
-
-      accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
-
-      if(log.isDebugEnabled){
-        log.debug("Resource added: " + ra)
-      }
-
-      ra
-    }else{
-      throw new StorageNotFoundException("Failed to find storage for resource")
-    }
-  }
-
-  def update(resource:Resource):String = {
-
-    if(log.isDebugEnabled){
-      log.debug("Updating resource with address: " + resource.address)
-    }
-
-    try{
-      val storage = storageManager.storageForAddress(ResourceAddress(resource.address))
-
-      if(storage.mode.allowWrite){
-        resource.calculateCheckSums
-
-        for(owner <- resourceOwners){
-          if(!owner.resourceCanBeUpdated(resource)){
-            log info "" + owner + " forbided resource update"
-            throw new AccessException("Specified resource can't be updated")
-          }
-        }
-
-        resource.systemMetadata(Resource.MD_UPDATED) = System.currentTimeMillis().toString
-
-        val ra = storage.update(resource)
-
-        for(owner <- resourceOwners){
-          owner.updateResource(resource)
-        }
-
-        accessCache.remove(resource.address)
-
-        accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
+        log.debug("Resource added: {}", ra)
 
         ra
-
-      }else{
-        throw new StorageIsNotWritableException(storage.id)
       }
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
+      case None => throw new StorageNotFoundException("Failed to find storage for resource")
     }
   }
 
-  def delete(ra:String) {
+  def update(resource: Resource): String = {
 
-    if(log.isDebugEnabled){
+    log.debug("Updating resource with address: {}", resource.address)
+
+    storageManager.storageForAddress(ResourceAddress(resource.address)) match {
+      case Some(storage) => {
+        if (storage.mode.allowWrite) {
+          resource.calculateCheckSums
+
+          for (owner <- resourceOwners) {
+            if (!owner.resourceCanBeUpdated(resource)) {
+              log info "" + owner + " forbided resource update"
+              throw new AccessException("Specified resource can't be updated")
+            }
+          }
+
+          resource.systemMetadata(Resource.MD_UPDATED) = System.currentTimeMillis().toString
+
+          val ra = storage.update(resource)
+
+          for (owner <- resourceOwners) {
+            owner.updateResource(resource)
+          }
+
+          accessCache.remove(resource.address)
+
+          accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
+
+          ra
+
+        } else {
+          throw new StorageIsNotWritableException(storage.id)
+        }
+      }
+      case None => throw new ResourceNotFoundException()
+    }
+  }
+
+  def delete(ra: String) {
+
+    if (log.isDebugEnabled) {
       log.debug("Deleting resource with address: " + ra)
     }
 
-    try{
-      val storage = storageManager.storageForAddress(ResourceAddress(ra))
-
-      if(storage.mode.allowWrite){
+    storageManager.storageForAddress(ResourceAddress(ra)).filter(_.mode.allowWrite) match {
+      case Some(storage) => {
 
         val resource = storage.get(ra) match {
           case Some(r) => r
           case None => throw new ResourceNotFoundException()
         }
 
-        for(owner <- resourceOwners){
-          if(!owner.resourceCanBeDeleted(resource)){
+        for (owner <- resourceOwners) {
+          if (!owner.resourceCanBeDeleted(resource)) {
             log info "" + owner + " forbade resource deletion"
             throw new AccessException("Specified resource can't be deleted")
           }
         }
 
-        for(owner <- resourceOwners){
+        for (owner <- resourceOwners) {
           owner.deleteResource(resource)
         }
+
 
         storage delete ra
 
@@ -250,38 +215,32 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
         accessMediator ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
       }
 
-      else
-        throw new StorageIsNotWritableException(storage.id)
-    }catch{
-      case e:StorageNotFoundException => throw new ResourceNotFoundException(e)
+      case None => throw new ResourceNotFoundException()
     }
   }
 
-  def registerOwner(owner:ResourceOwner) {
-    resourceOwners.synchronized{
+  def registerOwner(owner: ResourceOwner) {
+    resourceOwners.synchronized {
       log debug "Registering owner " + owner
       resourceOwners += owner
     }
   }
 
-  def unregisterOwner(owner:ResourceOwner) {
-    resourceOwners.synchronized{
+  def unregisterOwner(owner: ResourceOwner) {
+    resourceOwners.synchronized {
       log debug "Unregistering owner " + owner
       resourceOwners -= owner
     }
   }
 
-  def act(){
-    loop{
-      react{
-        case UpdateMetadataMsg(address, metadata, isSystem) =>{
-          try{
-            val storage = storageManager.storageForAddress(ResourceAddress(address))
-            if(storage != null){
-              storage.appendMetadata(address, metadata, isSystem)
-              accessCache.remove(address)
-            }
-          }catch{
+  def act() {
+    loop {
+      react {
+        case UpdateMetadataMsg(address, metadata, isSystem) => {
+          try {
+            storageManager.storageForAddress(ResourceAddress(address)).map(_.appendMetadata(address, metadata, isSystem))
+            accessCache.remove(address)
+          } catch {
             case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
         }
@@ -293,13 +252,13 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     }
   }
 
-  def propertyChanged(event:PropertyChangeEvent) {
+  def propertyChanged(event: PropertyChangeEvent) {
 
     event.name match {
       case MIME_DETECTOR_CLASS => {
         log info "Received new value for mime detector: " + event.newValue
 
-        if(event.oldValue != null){
+        if (event.oldValue != null) {
           MimeUtil unregisterMimeDetector event.oldValue
         }
 
@@ -307,16 +266,16 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
       }
       case USE_ACCESS_CACHE => {
         useAccessCache = event.newValue.toBoolean
-        if(useAccessCache){
+        if (useAccessCache) {
           log.info("Access cache in enabled")
-        }else{
+        } else {
           log.info("Access cache is disabled")
         }
       }
     }
   }
 
-  def defaultValues:Map[String,String] =
+  def defaultValues: Map[String, String] =
     Map(
       MIME_DETECTOR_CLASS -> "eu.medsea.mimeutil.detector.MagicMimeMimeDetector",
       USE_ACCESS_CACHE -> "true"
@@ -336,7 +295,22 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener{
     TextMimeDetector.setPreferredEncodings(Array("UTF-8"))
   }
 
-  private def getSystemId:String = {
+  private def readCached(address: String): Option[Resource] = {
+    if (useAccessCache) {
+      accessCache.get(address)
+    } else {
+      None
+    }
+  }
+
+  private def cache(resourceOption: Option[Resource]): Option[Resource] = {
+    if (useAccessCache) {
+      resourceOption.map(accessCache.put)
+    }
+    resourceOption
+  }
+
+  private def getSystemId: String = {
     configManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get systemId from params")

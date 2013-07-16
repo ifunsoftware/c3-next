@@ -57,9 +57,11 @@ class MigrationManagerImpl extends MigrationManager{
   def migrateStorageToStorage(sourceId: String, targetId: String) {
     val source = storageManager storageForId sourceId
     val target = storageManager storageForId targetId
-    
-    if(source != null && target != null){
-      migrateStorageToStorage(source, target)
+
+
+
+    if(source.isDefined && target.isDefined){
+      migrateStorageToStorage(source.get, target.get)
     }else{
       throw new MigrationException("Can't find one of storages")
     }
@@ -97,8 +99,6 @@ class MigrationManagerImpl extends MigrationManager{
     if(!target.mode.allowWrite){
       throw new MigrationException("Target is not writable")
     }
-    
-    val requiredFreeCapacity = source.usedCapacity
 
     if(target.availableCapacity < source.usedCapacity){
       throw new MigrationException("Not enough capacity on target storage")

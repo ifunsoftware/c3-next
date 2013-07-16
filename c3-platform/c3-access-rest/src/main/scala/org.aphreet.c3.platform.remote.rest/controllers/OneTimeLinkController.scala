@@ -77,7 +77,7 @@ class OneTimeLinkController extends DataController{
     val resource = accessManager.get(address)
 
     if(Node.canBuildFromResource(resource) && Node.fromResource(resource).isDirectory){
-      throw new ResourceNotFoundException("Data not is not found");
+      throw new ResourceNotFoundException("Data is not found");
     }
 
     accessTokens.checkAccess(resource)
