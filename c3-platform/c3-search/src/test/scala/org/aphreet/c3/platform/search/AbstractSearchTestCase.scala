@@ -50,7 +50,7 @@ abstract class AbstractSearchTestCase extends TestCase{
 
   def testSearch(){
 
-    resources.foreach(indexResource(_))
+    resources.foreach(indexResource)
 
     Thread.sleep(1000)
 
