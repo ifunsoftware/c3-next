@@ -18,6 +18,7 @@
         <module>c3-access-control</module>
         <module>c3-search-api</module>
         <module>c3-search-lucene</module>
+        <module>c3-search-solr</module>
         <module>c3-management</module>
         <module>c3-access-rest</module>
         <module>c3-replication</module>

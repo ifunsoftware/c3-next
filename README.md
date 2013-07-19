@@ -49,7 +49,3 @@ http://localhost:8080/rest/fs/
 
 [docs](http://localhost:8080/rest/static/api.html)
 
-ESX client (only windows)
-esx.ifunsoftware.com
-root
-opensuse
