@@ -31,6 +31,16 @@
             <artifactId>org.apache.servicemix.bundles.solr-solrj</artifactId>
             <version>4.3.1_1</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -42,24 +52,25 @@
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <artifactId>httpclient-osgi</artifactId>
             <version>4.2.3</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.2.2</version>
+            <artifactId>httpcore-osgi</artifactId>
+            <version>4.2.3</version>
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+
+        <!--dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>4.2.3</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency-->
 
     </dependencies>
 
@@ -108,22 +119,22 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.httpcomponents</groupId>
-                                    <artifactId>httpcore</artifactId>
+                                    <artifactId>httpcore-osgi</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.httpcomponents</groupId>
-                                    <artifactId>httpclient</artifactId>
+                                    <artifactId>httpclient-osgi</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
-                                <artifactItem>
+                                <!--artifactItem>
                                     <groupId>org.apache.httpcomponents</groupId>
                                     <artifactId>httpmime</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
-                                </artifactItem>
+                                </artifactItem-->
                             </artifactItems>
                             <outputDirectory>${project.deploy.tmp.dir}</outputDirectory>
                         </configuration>
