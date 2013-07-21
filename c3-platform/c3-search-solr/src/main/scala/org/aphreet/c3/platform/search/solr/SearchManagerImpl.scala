@@ -38,8 +38,12 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
       solr.shutdown()
   }
 
+  @PostConstruct
   def initialize(numberOfIndexers:Int) {
      solr = new HttpSolrServer(URL)
+
+     this.start()
+     accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
   }
 
 
@@ -89,8 +93,6 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
             }
         }
 
-          this.start()
-          accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
 
       }
     }
