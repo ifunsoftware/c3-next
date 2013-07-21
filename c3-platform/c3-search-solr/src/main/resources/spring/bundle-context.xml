@@ -10,6 +10,6 @@
 
 	<context:annotation-config />
 
-    <context:component-scan base-package="org.aphreet.c3.platform.search.lucene" />
+    <context:component-scan base-package="org.aphreet.c3.platform.search.solr" />
 
 </beans>
