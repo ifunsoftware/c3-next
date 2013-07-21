@@ -24,7 +24,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
   val log = Logger(getClass)
 
-  val URL = "http://localhost:8989/solr"
+  val URL = "http://localhost:8983/solr"
 
   var solr:SolrServer = null
 
@@ -105,10 +105,12 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
     try{
       // val language = getLanguage(resource.metadata, extractedDocument)
-      document.addField("address", resource.address)
-      document.addField("metadata", resource.metadata)
+      //document.addField("address", resource.address)
+     // document.addField("metadata", resource.metadata)
+      document.addField("id", resource.address)
       log.debug("Solr document: {}", document.toString)
       solr.add(document)
+      solr.commit()
     }
 
     log.debug("Resource writen to index ({})", resource.address)
