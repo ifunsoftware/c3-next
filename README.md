@@ -39,7 +39,11 @@ cd $VIRGO_HOME/virgo/bin/
 
 ### C3 management console
 admin/password
+<<<<<<< Updated upstream
 (http://localhost:8080/manage/)
+=======
+http://localhost:8080/manage/
+>>>>>>> Stashed changes
 
 ### File system endpoint
 

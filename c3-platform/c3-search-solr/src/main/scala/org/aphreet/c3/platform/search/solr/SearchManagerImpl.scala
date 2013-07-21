@@ -3,7 +3,7 @@ package org.aphreet.c3.platform.search.solr
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.search.api.{SearchManager}
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
-import javax.annotation.PreDestroy
+import javax.annotation.{PostConstruct, PreDestroy}
 import org.apache.solr.client.solrj.SolrServer
 import org.apache.solr.client.solrj.impl.HttpSolrServer
 import scala.util.control.Exception._
