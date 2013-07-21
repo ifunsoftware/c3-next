@@ -1,15 +1,13 @@
 package org.aphreet.c3.platform.search.solr
 
 import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.search.api.{SearchResult, SearchManager}
+import org.aphreet.c3.platform.search.api.{SearchManager}
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import javax.annotation.PreDestroy
-import org.aphreet.c3.platform.common.msg.{RegisterNamedListenerMsg, DestroyMsg}
 import org.apache.solr.client.solrj.SolrServer
 import org.apache.solr.client.solrj.impl.HttpSolrServer
 import scala.util.control.Exception._
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.search.api.SearchResult
 import org.aphreet.c3.platform.resource.Resource
 import org.apache.solr.common.SolrInputDocument
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +36,6 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     log info "Destroying SearchManager"
     if (solr != null)
       solr.shutdown()
-    this ! DestroyMsg
   }
 
   def initialize(numberOfIndexers:Int) {
@@ -76,7 +73,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
         case IndexMsg(resource) => {
             handling(classOf[Throwable]).by(e => {
               log.warn("Failed to index resource " + resource.address, e)
-              sender ! ResourceIndexingFailed(resource.address)
+              this ! ResourceIndexingFailed(resource.address)
             }).apply{
               log.trace("Got request to index {}", resource.address)
 
@@ -84,7 +81,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
                 log.debug("Indexing resource {}", resource.address)
 
-                sender ! ResourceIndexedMsg(resource.address, indexResource(resource))
+                this ! ResourceIndexedMsg(resource.address, indexResource(resource))
 
               }else{
                 log.debug("No need to index resource {}", resource.address)
