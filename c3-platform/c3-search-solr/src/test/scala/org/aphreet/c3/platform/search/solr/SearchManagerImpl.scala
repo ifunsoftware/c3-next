@@ -4,16 +4,21 @@ import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.search.api.{SearchResult, SearchManager}
 import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import javax.annotation.PreDestroy
-import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.msg.{RegisterNamedListenerMsg, DestroyMsg}
 import org.apache.solr.client.solrj.SolrServer
 import org.apache.solr.client.solrj.impl.HttpSolrServer
 import scala.util.control.Exception._
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.search.api.SearchResult
+import org.aphreet.c3.platform.resource.Resource
+import org.apache.solr.common.SolrInputDocument
+import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.search.api.SearchResult
 import org.aphreet.c3.platform.access.ResourceDeletedMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
-import org.aphreet.c3.platform.resource.Resource
-import org.apache.solr.common.SolrInputDocument
+import scala.Some
 
 
 @Component("searchManager")
@@ -24,6 +29,9 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
   val URL = "http://localhost:8989/solr"
 
   var solr:SolrServer = null
+
+  @Autowired
+  var accessMediator: AccessMediator = _
 
   @PreDestroy
   def destroy() {
@@ -83,6 +91,9 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
               }
             }
         }
+
+          this.start()
+          accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
 
       }
     }
