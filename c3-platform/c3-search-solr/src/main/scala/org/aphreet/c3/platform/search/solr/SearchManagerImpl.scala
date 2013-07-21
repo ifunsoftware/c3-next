@@ -39,7 +39,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
   }
 
   @PostConstruct
-  def initialize(numberOfIndexers:Int) {
+  def init() {
      log info "init SearchManagerImpl solr"
      solr = new HttpSolrServer(URL)
 
