@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>c3-searh-es</artifactId>
+    <artifactId>c3-search-es</artifactId>
     <properties>
       <es.version>0.90.2_1</es.version>
     </properties>
@@ -30,6 +30,12 @@
             <artifactId>org.apache.servicemix.bundles.elasticsearch</artifactId>
             <version>${es.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.twmacinta.util</groupId>
+            <artifactId>md5</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

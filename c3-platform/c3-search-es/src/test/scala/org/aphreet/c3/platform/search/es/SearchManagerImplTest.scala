@@ -7,37 +7,53 @@ import scala.collection.mutable
 import scala.collection.Map
 import org.aphreet.c3.platform.access.{AccessMediator, ResourceAddedMsg}
 import org.easymock.EasyMock._
+import java.io.File
+import scala.io.Source
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.search.api.SearchResultElement
 
-
-class SearchManagerImplTest extends TestCase {
+ class SearchManagerImplTest extends TestCase {
 
   var searchManagerImpl:SearchManagerImpl = new SearchManagerImpl
   val resource:Resource = new Resource()
   val parentPath:String = "parentPath"
+  val log = Logger (getClass)
 
   override def setUp() {
-    val resourceMetadata:Map[String, String] = Map(("tags", "[cats,scala,cycling]"))
-    resource.metadata = new Metadata(new mutable.HashMap() ++= resourceMetadata)
-    resource.address = "someAddress"
-    resource.systemMetadata = new Metadata(new mutable.HashMap() ++=  Map(("c3.fs.parent", parentPath),("c3.fs.nodetype", "file")))
-
-    resource.addVersion(ResourceVersion(DataStream.create("Try out elasticsearch")))
-
     searchManagerImpl.accessMediator = createMock(classOf[AccessMediator])
     searchManagerImpl.init()
   }
 
-  def testAddResource() {
-    val initialMap = Map(("cats",2), ("scala",2), ("cycling", 2))
-    val mapString = MetadataHelper.writeTagMap(initialMap, (key: String, value: Int) => {key + ":" + value})
+  def resource(address:String, data:String, metadata:Map[String, String] = Map(), domain:String ):Resource = {
+    val resource = new Resource
+    resource.address = address
+    resource.systemMetadata("c3.domain.id") = domain
+    resource.addVersion(ResourceVersion(DataStream.create(data)))
+    resource.metadata ++= metadata
 
-    val map =  MetadataHelper.parseTagMap(mapString, (tagInfo: String) => {
-      (tagInfo.split(":")(0), tagInfo.split(":")(1).toInt)
-    }).toMap[String, Int]
-    assertEquals(initialMap, map)
+    resource
+  }
+
+  def indexResource(resource:Resource) {
     searchManagerImpl ! ResourceAddedMsg(resource, Symbol("source"))
+  }
 
-    Thread.sleep(1000000)
-    //assertEquals(Some(MetadataHelper.writeTagMap(Map(("scala",1),("cycling", 1),("cats",1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
+  def testSearch(){
+    resources.foreach(indexResource(_))
+    Thread.sleep(1000)
+    verifyResults(searchManagerImpl.search("domain", searchQuery).elements.toList)
+  }
+
+  def searchQuery:String = "Apache Tika"
+
+  var resources:List[Resource] = List(
+    resource("address1",
+      DataStream.create(new File("./c3-platform/c3-search-es/src/test/resources/testXHTML.html")).stringValue,
+      new mutable.HashMap() ++= Map(("tags", "[cats,scala,cycling]")),
+      "domain")
+  )
+
+  def verifyResults(found:List[SearchResultElement]) {
+    assertEquals(List("address1"), found.map(e => e.address))
   }
 }
