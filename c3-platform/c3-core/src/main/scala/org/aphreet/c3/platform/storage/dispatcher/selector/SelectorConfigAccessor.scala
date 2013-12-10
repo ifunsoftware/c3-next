@@ -43,12 +43,6 @@ import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
 import org.springframework.beans.factory.annotation.Autowired
 
 abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, Boolean]] {
-  var configManager: PlatformConfigManager = null
-
-  @Autowired
-  def setConfigManager(manager: PlatformConfigManager) {configManager = manager}
-
-  def configDir: File = configManager.configDir
 
   def defaultConfig:Map[T, Boolean] = Map()
 

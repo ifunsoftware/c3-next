@@ -67,3 +67,9 @@ trait StorageManager {
 
   def registerConflictResolver(contentType: String, conflictResolver: ConflictResolver)
 }
+
+trait StorageComponent{
+
+  def storageManager: StorageManager
+
+}

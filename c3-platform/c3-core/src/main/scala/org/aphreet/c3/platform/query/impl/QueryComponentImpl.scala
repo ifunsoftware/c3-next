@@ -27,61 +27,47 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package org.aphreet.c3.platform.storage.dispatcher.selector.mime
 
-import org.aphreet.c3.platform.resource.Resource
+package org.aphreet.c3.platform.query.impl
 
-import scala.collection.mutable.HashMap
+import org.aphreet.c3.platform.common.Disposable._
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.query._
+import org.aphreet.c3.platform.storage.StorageComponent
+import scala.util.control.Exception._
 
-import eu.medsea.mimeutil.MimeType
+trait QueryComponentImpl extends QueryComponent{
 
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
+  this: StorageComponent =>
 
-import org.aphreet.c3.platform.storage.dispatcher.selector.AbstractStorageSelector
-import collection.mutable
+  val queryManager: QueryManager = new QueryManagerImpl
 
-@Component
-class MimeTypeStorageSelector extends AbstractStorageSelector[String]{
+  class QueryManagerImpl extends QueryManager{
 
-  private var typeMap = new mutable.HashMap[String, Boolean]
-  
-  @Autowired
-  def setConfigAccessor(accessor:MimeTypeConfigAccessor) {configAccessor = accessor}
-  
-  override def storageTypeForResource(resource:Resource):Boolean = {
-    
-    val mime = new MimeType(resource.mimeType)
+    val log = Logger(classOf[QueryComponentImpl])
 
-    storageTypeForMimeType(mime) 
-  }
-  
-  def storageTypeForMimeType(mime:MimeType):Boolean = {
-    val mediaType = mime.getMediaType
-    val subType = mime.getSubType
-    
-    typeMap.get(mediaType + "/" + subType) match {
-      case Some(entry) => entry
-      case None => typeMap.get(mediaType + "/*") match {
-        case Some(entry) => entry
-        case None => typeMap.get("*/*") match {
-          case Some(entry) => entry
-          case None => true
-        }
-      }
+    {
+      log.info("Starting QueryManager")
+    }
+
+    override
+    def executeQuery[T](fields:Map[String, String],
+                        systemFields:Map[String, String],
+                        consumer:GenericQueryConsumer[T]): T = {
+
+      log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
+
+      handling(classOf[Throwable]).by(e => log.warn("Exception while processing query", e))
+        .andFinally(consumer.close())
+        .apply(
+        storageManager.listStorages.filter(_.mode.allowRead).foreach(storage =>
+          using(storage.iterator(fields, systemFields))(iterator =>
+            while(iterator.hasNext && consumer.consume(iterator.next())){}
+          )
+        )
+      )
+
+      consumer.result
     }
   }
-  
-  override def configEntries:List[(String, Boolean)] =
-    typeMap.map(entry => (entry._1, entry._2)).toList
-  
-  
-  override def updateConfig(config:Map[String, Boolean]) {
-    val map = new mutable.HashMap[String, Boolean]
-    for(entry <- config)
-      map += entry
-    
-    typeMap = map
-  }
-  
 }

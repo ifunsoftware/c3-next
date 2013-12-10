@@ -39,9 +39,10 @@ import scala.language.implicitConversions
 
 
 trait ConfigAccessor[T] {
+
   def load: T = {
 
-    val file = new File(configDir, configFileName)
+    val file = new File(directoryConfigProvider.configurationDirectory, configFileName)
 
     if (!file.exists) {
       storeConfig(defaultConfig, file)
@@ -51,7 +52,7 @@ trait ConfigAccessor[T] {
   }
 
   def store(data: T) {
-    storeConfig(data, new File(configDir, configFileName))
+    storeConfig(data, new File(directoryConfigProvider.configurationDirectory, configFileName))
   }
 
   def update(f: (T) => T) {
@@ -85,8 +86,6 @@ trait ConfigAccessor[T] {
   implicit def asBooleanScalarNodeValue(node:Node):Boolean = node.asInstanceOf[ScalarNode].getValue[Boolean]
 
 
-  protected def configDir: File
-
   protected def configFileName: String
 
   protected def defaultConfig: T
@@ -94,5 +93,7 @@ trait ConfigAccessor[T] {
   def writeConfig(data: T, writer: JSONWriter)
 
   def readConfig(node:Node):T
+
+  def directoryConfigProvider: SystemDirectoryProvider
 
 }

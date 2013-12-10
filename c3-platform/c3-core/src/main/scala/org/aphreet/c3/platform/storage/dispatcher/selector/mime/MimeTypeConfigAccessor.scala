@@ -32,10 +32,10 @@ package org.aphreet.c3.platform.storage.dispatcher.selector.mime
 
 import org.aphreet.c3.platform.storage.dispatcher.selector.SelectorConfigAccessor;
 
-import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.config.SystemDirectoryProvider
 
-@Component
-class MimeTypeConfigAccessor extends SelectorConfigAccessor[String]{
+class MimeTypeConfigAccessor(override val directoryConfigProvider: SystemDirectoryProvider)
+  extends SelectorConfigAccessor[String]{
 
   override def defaultConfig = Map(
       "*/*" -> true,

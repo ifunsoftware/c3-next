@@ -37,3 +37,9 @@ trait QueryManager{
                    consumer:GenericQueryConsumer[T]): T
 
 }
+
+trait QueryComponent{
+
+  def queryManager: QueryManager
+
+}

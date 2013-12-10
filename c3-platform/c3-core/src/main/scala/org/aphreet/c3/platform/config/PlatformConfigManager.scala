@@ -36,8 +36,6 @@ import org.springframework.stereotype.Component
 import java.io.File
 import org.aphreet.c3.platform.common.WatchedActor
 
-
-@Component
 trait PlatformConfigManager extends WatchedActor {
 
   def configDir: File
@@ -49,6 +47,11 @@ trait PlatformConfigManager extends WatchedActor {
   def getPlatformProperties: Map[String, String]
 
   def setPlatformProperty(key: String, value: String)
+}
+
+trait PlatformConfigComponent{
+
+  def platformConfigManager: PlatformConfigManager
 
 }
 

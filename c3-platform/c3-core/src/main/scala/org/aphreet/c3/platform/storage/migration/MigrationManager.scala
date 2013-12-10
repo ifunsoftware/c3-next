@@ -38,3 +38,9 @@ trait MigrationManager {
   def migrateStorageToStorage(sourceId:String, targetId:String)
   
 }
+
+trait MigrationComponent{
+
+  def migrationManager: MigrationManager
+
+}

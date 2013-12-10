@@ -6,10 +6,10 @@ import org.easymock.EasyMock._
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.query.QueryConsumer
-import org.aphreet.c3.platform.query.impl.QueryManagerImpl
 import org.aphreet.c3.platform.storage.RW
 import org.aphreet.c3.platform.mock.StorageMock
 import scala.language.reflectiveCalls
+import org.aphreet.c3.platform.query.impl.QueryComponentImpl
 
 class QueryManagerTestCase extends TestCase
 {
@@ -49,24 +49,28 @@ class QueryManagerTestCase extends TestCase
 
     }
 
-    val storageManager = createMock(classOf[StorageManager])
-    expect(storageManager.listStorages).andReturn(List(storage, unavailableStorage))
+    trait StorageComponentMock extends StorageComponent{
 
+      val storageManager: StorageManager = createMock(classOf[StorageManager])
+      expect(storageManager.listStorages).andReturn(List(storage, unavailableStorage))
+      replay(storageManager)
+
+    }
     val queryConsumer = createMock(classOf[QueryConsumer])
     expect(queryConsumer.consume(resources(0))).andReturn(true)
     expect(queryConsumer.consume(resources(1))).andReturn(true)
     expect(queryConsumer.consume(resources(2))).andReturn(true)
     expect(queryConsumer.close())
     expect(queryConsumer.result).andReturn(null)
+    replay(queryConsumer)
 
-    replay(storageManager, queryConsumer)
+    val app = new Object with StorageComponentMock with QueryComponentImpl
 
-    val queryManager = new QueryManagerImpl
-    queryManager.storageManager = storageManager
+    val queryManager = app.queryManager
 
     queryManager.executeQuery(Map("md_field0" -> "md_value0"), Map("smd_field0" -> "smd_value0"), queryConsumer)
 
-    verify(storageManager, queryConsumer)
+    verify(app.storageManager, queryConsumer)
     assertTrue(mockedIterator.closed)
   }
 }

@@ -32,4 +32,8 @@ package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.config.ConfigAccessor
 
-trait StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]
+trait StorageConfigAccessor extends ConfigAccessor[List[StorageParams]]{
+
+  def indexConfigAccessor: StorageIndexConfigAccessor
+
+}

@@ -38,6 +38,12 @@ trait StatisticsManager extends WatchedActor{
 
 }
 
+trait StatisticsComponent{
+
+  def statisticsManager: StatisticsManager
+
+}
+
 case class SetStatisticsMsg(key:String, value:String)
 
 case class IncreaseStatisticsMsg(key:String, value:Long)

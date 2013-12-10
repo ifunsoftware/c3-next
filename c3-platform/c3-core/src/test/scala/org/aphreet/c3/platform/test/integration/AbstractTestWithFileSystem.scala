@@ -32,14 +32,20 @@ package org.aphreet.c3.platform.test.integration
 import junit.framework.TestCase
 
 import java.io.File
+import org.aphreet.c3.platform.config.SystemDirectoryProvider
 
 class AbstractTestWithFileSystem extends TestCase{
 
-  var testDir:File = null
-  
+  var testDir = new File(System.getProperty("user.home"), "c3_int_test")
+
+  val testDirectoryProvider = new SystemDirectoryProvider {
+    def configurationDirectory: File = testDir
+
+    def dataDirectory: File = testDir
+  }
+
   override def setUp(){
-	testDir = new File(System.getProperty("user.home"), "c3_int_test")
-    testDir.mkdirs
+    testDir.mkdirs()
   }
   
   override def tearDown(){

@@ -40,18 +40,17 @@ import collection.mutable.HashMap
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.common.Logger
+import scala.collection.mutable
 
 @Component("authenticationManager")
 class AuthenticationManagerImpl extends AuthenticationManager {
 
   val log = Logger(getClass)
 
-  val users = new HashMap[String, User]
-
-  var configAccessor: AuthConfigAccessor = _
+  val users = new mutable.HashMap[String, User]
 
   @Autowired
-  def setConfigAccessor(accessor: AuthConfigAccessor) {configAccessor = accessor}
+  var configAccessor: AuthConfigAccessor = _
 
   @PostConstruct
   def init() {
@@ -110,7 +109,6 @@ class AuthenticationManagerImpl extends AuthenticationManager {
       }
 
       case None => throw new UserNotFoundException
-
     }
   }
 

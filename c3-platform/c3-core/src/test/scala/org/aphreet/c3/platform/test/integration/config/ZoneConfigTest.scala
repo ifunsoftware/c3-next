@@ -1,7 +1,6 @@
 package org.aphreet.c3.platform.test.integration.config
 
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-import java.io.File
 import junit.framework.Assert._
 import org.aphreet.c3.platform.zone.impl.ZoneConfigAccessor
 import org.aphreet.c3.platform.zone._
@@ -10,7 +9,7 @@ class ZoneConfigTest extends AbstractTestWithFileSystem{
 
   def testConfigPersistence() {
 
-    val configAccessor = new ZoneConfigAccessor
+    val configAccessor = new ZoneConfigAccessor(testDirectoryProvider)
 
     val startTime = 1350000000000l
 
@@ -34,11 +33,9 @@ class ZoneConfigTest extends AbstractTestWithFileSystem{
 
     val config = ZoneConfig(timeRangeList)
 
-    val fileName = "zone-config.json"
+    configAccessor.store(config)
 
-    configAccessor.storeConfig(config, new File(testDir, fileName))
-
-    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
+    val readConfig = configAccessor.load
 
     assertEquals(config, readConfig)
   }

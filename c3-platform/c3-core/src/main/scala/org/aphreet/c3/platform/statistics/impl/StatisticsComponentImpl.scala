@@ -5,7 +5,7 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -30,74 +30,74 @@
 package org.aphreet.c3.platform.statistics.impl
 
 import collection.mutable
-import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger}
 import org.aphreet.c3.platform.statistics._
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.common.Logger
 
-@Component("statisticsManager")
-@Qualifier("StatisticsService")
-class StatisticsManagerImpl extends StatisticsManager{
+trait StatisticsComponentImpl extends StatisticsComponent with ComponentLifecycle{
 
-  val log = Logger(getClass)
+  private val statisticsManagerImpl = new StatisticsManagerImpl
 
-  val statistics = new mutable.HashMap[String, Any]
+  def statisticsManager: StatisticsManager = statisticsManagerImpl
 
-  {
-    log info "Starting Statistics manager"
-    this.start()
-  }
+  destroy(Unit => statisticsManagerImpl.destroy())
 
-  @PreDestroy
-  def destroy(){
-    log info "Stopping Statistics manager"
-    this ! DestroyMsg
-  }
+  class StatisticsManagerImpl extends StatisticsManager{
 
-  def act(){
-    loop{
-      react{
-        case SetStatisticsMsg(key, value) =>{
-          statistics.put(key, value)
-        }
-        case IncreaseStatisticsMsg(key, delta) => {
-          statistics.get(key) match {
-            case Some(string) => {
-              try{
-                statistics.put(key, string.asInstanceOf[Long] + delta)
-              }catch{
-                case e: Throwable => {
-                  log warn "Failed to store statistics " + key
+    val log = Logger(classOf[StatisticsComponentImpl])
+
+    val statistics = new mutable.HashMap[String, Any]
+
+    {
+      log info "Starting StatisticsManager"
+      this.start()
+    }
+
+    def destroy(){
+      log info "Stopping StatisticsManager"
+      this ! DestroyMsg
+    }
+
+    def act(){
+      loop{
+        react{
+          case SetStatisticsMsg(key, value) =>{
+            statistics.put(key, value)
+          }
+          case IncreaseStatisticsMsg(key, delta) => {
+            statistics.get(key) match {
+              case Some(string) => {
+                try{
+                  statistics.put(key, string.asInstanceOf[Long] + delta)
+                }catch{
+                  case e: Throwable => {
+                    log warn "Failed to store statistics " + key
+                  }
                 }
               }
-            }
-            case None => {
-              statistics.put(key, delta)
+              case None => {
+                statistics.put(key, delta)
+              }
             }
           }
-        }
 
-        case ResetStatisticsMsg(key) => {
-          statistics.remove(key)
-        }
+          case ResetStatisticsMsg(key) => {
+            statistics.remove(key)
+          }
 
-        case DestroyMsg => {
-          log info "Statistics Manager's actor stopped"
-          this.exit()
+          case DestroyMsg => {
+            log info "Statistics Manager's actor stopped"
+            this.exit()
+          }
         }
       }
     }
-  }
 
-  def fullStatistics:Map[String, String] = {
-
-    Map[String, String]() ++ {
-      for((key, value) <- statistics)
+    def fullStatistics:Map[String, String] = {
+      Map[String, String]() ++ {
+        for((key, value) <- statistics)
         yield (key, value.toString)
+      }
     }
-    
   }
-
 }

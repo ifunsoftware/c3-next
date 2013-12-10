@@ -29,44 +29,45 @@
  */
 package org.aphreet.c3.platform.test.integration.storage
 
-import eu.medsea.mimeutil.MimeType
-
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 
 import junit.framework.Assert._
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
 import java.io.File
+import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.resource.Resource
 
 class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
   def testConfigPersistence() {
-    
-    val configAccessor = new MimeTypeConfigAccessor
-    
+
+    val configAccessor = new MimeTypeConfigAccessor(testDirectoryProvider)
+
     val config = Map(
-    	"*/*" -> false,
-    	"image/*" -> true,
-    	"image/png" -> true
+      "*/*" -> false,
+      "image/*" -> true,
+      "image/png" -> true
     )
 
-    val configFile = "c3-mime-types.json"
+    configAccessor.store(config)
 
+    assertEquals(config, configAccessor.load)
 
-    configAccessor.storeConfig(config, new File(testDir, configFile))
-   
-    val configManager = new PlatformConfigManagerImpl
-    configManager.configDir = testDir
-    
-    configAccessor.setConfigManager(configManager)
-    
-    val selector = new MimeTypeStorageSelector
-    selector.setConfigAccessor(configAccessor)
-    selector.init()
-    
-    assertEquals(true,selector.storageTypeForMimeType(new MimeType("image/png")))
-    assertEquals(true,selector.storageTypeForMimeType(new MimeType("image/jpeg")))
-    assertEquals(false,selector.storageTypeForMimeType(new MimeType("application/pdf")))
-    
+    val app = new Object with SystemDirectoryProvider with MimeTypeStorageSelectorComponent {
+      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
+
+      def dataDirectory: File = testDirectoryProvider.dataDirectory
+    }
+
+    val selector = app.mimeStorageSelector
+
+    assertEquals(true,selector.storageTypeForResource(resourceWithType("image/png")))
+    assertEquals(true,selector.storageTypeForResource(resourceWithType("image/jpeg")))
+    assertEquals(false,selector.storageTypeForResource(resourceWithType("application/pdf")))
+
+  }
+
+  def resourceWithType(mimeType: String): Resource = {
+    new Resource().withMetadata(Map(Resource.MD_CONTENT_TYPE -> mimeType))
   }
 }

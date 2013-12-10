@@ -36,9 +36,6 @@ import impl.{StorageConfigAccessorImpl, StorageIndexConfigAccessorImpl}
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 import junit.framework.Assert._
-import org.easymock.EasyMock._
-import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
-import java.io.File
 import collection.mutable
 
 class StorageConfigTest extends AbstractTestWithFileSystem{
@@ -69,22 +66,14 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
         paramsMap2)
     )
 
-    val configManager = new PlatformConfigManagerImpl
-    configManager.configDir = testDir
+    val indexAccessor = new StorageIndexConfigAccessorImpl(testDirectoryProvider)
+    indexAccessor.store(List())
 
-    val indexConfigAccessor = createMock(classOf[StorageIndexConfigAccessor])
-    expect(indexConfigAccessor.load).andReturn(List()).atLeastOnce()
-    replay(indexConfigAccessor)
+    val accessor = new StorageConfigAccessorImpl(testDirectoryProvider)
 
-    val accessor = new StorageConfigAccessorImpl
-    accessor.configManager = configManager
-    accessor.indexesConfig = indexConfigAccessor
+    accessor.store(config)
 
-    val fileName = "c3-storage-config.json"
-
-    accessor.storeConfig(config, new File(testDir, fileName))
-
-    val readConfig = accessor.loadConfig(new File(testDir, fileName))
+    val readConfig = accessor.load
 
     assertEquals(config, readConfig)
 
@@ -96,8 +85,6 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
     accessor.update(config => newParams :: config.filter(_.id != newParams.id))
 
     assertEquals(newParams, accessor.load.head)
-
-    verify(indexConfigAccessor)
   }
 
   def testIdCheck() {
@@ -138,11 +125,8 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
   }
 
   def testIndexConfigPersistence(){
-    val configManager = new PlatformConfigManagerImpl
-    configManager.configDir = testDir
 
-    val configAccessor = new StorageIndexConfigAccessorImpl
-    configAccessor.configManager = configManager
+    val configAccessor = new StorageIndexConfigAccessorImpl(testDirectoryProvider)
 
     val indexesConfig =  List(
       new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),

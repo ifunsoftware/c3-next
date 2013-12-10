@@ -29,35 +29,23 @@
  */
 package org.aphreet.c3.platform.storage.impl
 
-import java.io.File
-
-import org.aphreet.c3.platform.common.Path
+import collection.JavaConversions._
+import collection.mutable
 import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriter
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import collection.JavaConversions._
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.config.SystemDirectoryProvider
 import org.aphreet.c3.platform.storage._
-import org.aphreet.c3.platform.storage.StorageParams
-import collection.mutable
 
+class StorageConfigAccessorImpl(val directoryConfigProvider: SystemDirectoryProvider) extends StorageConfigAccessor {
 
-@Component
-class StorageConfigAccessorImpl extends StorageConfigAccessor {
+  private val indexesConfig: StorageIndexConfigAccessor = new StorageIndexConfigAccessorImpl(directoryConfigProvider)
 
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  @Autowired
-  var indexesConfig: StorageIndexConfigAccessor = _
+  def indexConfigAccessor: StorageIndexConfigAccessor = indexesConfig
 
   def configFileName: String = "c3-storage-config.json"
 
-  def configDir: File = configManager.configDir
-
-  def defaultConfig:List[StorageParams] = List()
+  def defaultConfig: List[StorageParams] = List()
 
   def readConfig(node:Node): List[StorageParams] = {
 

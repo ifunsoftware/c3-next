@@ -30,66 +30,76 @@
 
 package org.aphreet.c3.platform.test.unit
 
-import junit.framework.TestCase
-import junit.framework.Assert._
-import org.easymock.EasyMock._
-import org.aphreet.c3.platform.storage.impl.StorageManagerImpl
-import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcher
-import org.aphreet.c3.platform.storage._
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.aphreet.c3.platform.common.{Constants, Path}
 import collection.mutable
-import org.aphreet.c3.platform.storage.StorageParams
-import org.aphreet.c3.platform.storage.RW
+import java.io.File
+import junit.framework.Assert._
+import org.aphreet.c3.platform.common.{Constants, Path}
+import org.aphreet.c3.platform.config.{SystemDirectoryProvider, PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.mock.StorageMock
-import org.aphreet.c3.platform.task.TaskManager
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.dispatcher.{StorageDispatcherComponent, StorageDispatcher}
+import org.aphreet.c3.platform.storage.impl.{StorageIndexConfigAccessorImpl, StorageConfigAccessorImpl, StorageComponentImpl}
+import org.aphreet.c3.platform.task.{TaskComponent, TaskManager}
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
+import org.easymock.EasyMock._
 
-class StorageManagerTestCase extends TestCase{
+class StorageManagerTestCase extends AbstractTestWithFileSystem{
 
   val storagePath = "/path/to/storage"
   val storageId = "1234"
   val storageName = "StorageMock"
 
   def testRegisterFactory() {
-
-    val storageManager = new StorageManagerImpl
-
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
 
-    val taskManager = createMock(classOf[TaskManager])
-    expect(taskManager.submitTask(anyObject())).andReturn("capacityTaskId")
-    replay(taskManager)
+    val createdStorageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""),
+      List(),
+      new mutable.HashMap[String, String])
 
-    val storageDispatcher = createMock(classOf[StorageDispatcher])
-    expect(storageDispatcher.setStorageParams(List(storageParams)))
-    replay(storageDispatcher)
+    trait TaskComponentMock extends TaskComponent{
+      val taskManager: TaskManager = createMock(classOf[TaskManager])
+      expect(taskManager.submitTask(anyObject())).andReturn("capacityTaskId")
+      replay(taskManager)
+    }
+    
+    trait StorageDispatcherComponentMock extends StorageDispatcherComponent{
+      val storageDispatcher: StorageDispatcher = createMock(classOf[StorageDispatcher])
+      expect(storageDispatcher.setStorageParams(List(createdStorageParams)))
+      replay(storageDispatcher)  
+    }
 
+    trait ConfigComponentMock extends PlatformConfigComponent {
+      val platformConfigManager: PlatformConfigManager = createMock(classOf[PlatformConfigManager])
+      expect(platformConfigManager.getPlatformProperties).andReturn(
+        Map(Constants.C3_SYSTEM_ID -> "12341234")
+      ).atLeastOnce
+      replay(platformConfigManager)
+    }
+
+    new StorageIndexConfigAccessorImpl(testDirectoryProvider).store(List())
+
+    val configAccessor = new StorageConfigAccessorImpl(testDirectoryProvider)
+    configAccessor.store(List(storageParams))
+
+    val app = new Object with SystemDirectoryProvider
+      with StorageDispatcherComponentMock
+      with ConfigComponentMock
+      with TaskComponentMock
+      with StorageComponentImpl{
+
+      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
+
+      def dataDirectory: File = testDirectoryProvider.dataDirectory
+    }
+
+    val storageManager = app.storageManager
 
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234", storageManager)
+      createdStorageParams, "12341234", storageManager.asInstanceOf[ConflictResolverProvider])
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
-
-    val configAccessor = createMock(classOf[StorageConfigAccessor])
-    expect(configAccessor.load).andReturn(
-      List(storageParams)
-    ).atLeastOnce
-    replay(configAccessor)
-
-    val configManager = createMock(classOf[PlatformConfigManager])
-    expect(configManager.getPlatformProperties).andReturn(
-      Map(Constants.C3_SYSTEM_ID -> "12341234")
-    ).atLeastOnce
-    replay(configManager)
-
-    storageManager.taskManager = taskManager
-    storageManager.configAccessor = configAccessor
-    storageManager.storageDispatcher = storageDispatcher
-    storageManager.platformConfigManager = configManager
-
-    storageManager.init()
 
 
     storageManager.registerFactory(storageFactory)
@@ -97,61 +107,65 @@ class StorageManagerTestCase extends TestCase{
     assertEquals(storageManager.storageForId(storageId), Some(StorageMock(storageId, storagePath)))
 
     verify(storageFactory)
-    verify(configAccessor)
-    verify(storageDispatcher)
-    verify(configManager)
-    verify(taskManager)
+    verify(app.storageDispatcher)
+    verify(app.platformConfigManager)
+    verify(app.taskManager)
   }
 
   def testUpdateStorageMode() {
+    val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""),
+      List(),
+      new mutable.HashMap[String, String])
 
-    val storageManager = new StorageManagerImpl
 
-    val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
-    val updatedParams = StorageParams(storageId, new Path(storagePath), storageName, RO("USER"), List(), new mutable.HashMap[String, String])
+    val updatedParams = StorageParams(storageId, new Path(storagePath), storageName, RO("USER"),
+      List(),
+      new mutable.HashMap[String, String])
 
-    val taskManager = createMock(classOf[TaskManager])
-    expect(taskManager.submitTask(notNull())).andReturn("capacityTaskId")
-    replay(taskManager)
+    val configAccessor = new StorageConfigAccessorImpl(testDirectoryProvider)
+    configAccessor.store(List(storageParams))
 
-    val storageDispatcher = createMock(classOf[StorageDispatcher])
-    expect(storageDispatcher.setStorageParams(List(storageParams)))
-    expect(storageDispatcher.setStorageParams(List(updatedParams)))
-    replay(storageDispatcher)
+    trait TaskComponentMock extends TaskComponent{
+      val taskManager: TaskManager = createMock(classOf[TaskManager])
+      expect(taskManager.submitTask(notNull())).andReturn("capacityTaskId")
+      replay(taskManager)
+    }
 
+    trait StorageDispatcherComponentMock extends StorageDispatcherComponent {
+      val storageDispatcher: StorageDispatcher = createMock(classOf[StorageDispatcher])
+      expect(storageDispatcher.setStorageParams(List(storageParams)))
+      expect(storageDispatcher.setStorageParams(List(updatedParams)))
+      replay(storageDispatcher)
+    }
+
+    trait ConfigComponentMock extends PlatformConfigComponent {
+      val platformConfigManager = createMock(classOf[PlatformConfigManager])
+      expect(platformConfigManager.getPlatformProperties).andReturn(
+        Map(Constants.C3_SYSTEM_ID -> "12341234")
+      ).atLeastOnce
+      replay(platformConfigManager)
+    }
+
+    new StorageIndexConfigAccessorImpl(testDirectoryProvider).store(List())
+
+    val app = new Object with SystemDirectoryProvider
+      with StorageDispatcherComponentMock
+      with ConfigComponentMock
+      with TaskComponentMock
+      with StorageComponentImpl{
+      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
+
+      def dataDirectory: File = testDirectoryProvider.dataDirectory
+    }
+
+    val storageManager = app.storageManager
 
     val storageFactory = createMock(classOf[StorageFactory])
     expect(storageFactory.name).andReturn("StorageMock").anyTimes
     expect(storageFactory.createStorage(
-      storageParams, "12341234", storageManager)
+      storageParams, "12341234", storageManager.asInstanceOf[ConflictResolverProvider])
     ).andReturn(StorageMock(storageId, storagePath))
     replay(storageFactory)
-
-    val configAccessor = createMock(classOf[StorageConfigAccessor])
-    expect(configAccessor.load).andReturn(
-      List(storageParams)
-    ).times(2)
-    expect(configAccessor.store(List(updatedParams))).once()
-    expect(configAccessor.load).andReturn(
-      List(updatedParams)
-    ).times(2)
-
-    replay(configAccessor)
-
-    val configManager = createMock(classOf[PlatformConfigManager])
-    expect(configManager.getPlatformProperties).andReturn(
-      Map(Constants.C3_SYSTEM_ID -> "12341234")
-    ).atLeastOnce
-    replay(configManager)
-
-
-    storageManager.taskManager = taskManager
-    storageManager.configAccessor = configAccessor
-    storageManager.storageDispatcher = storageDispatcher
-    storageManager.platformConfigManager = configManager
-
-    storageManager.init()
-
 
     storageManager.registerFactory(storageFactory)
 
@@ -163,10 +177,9 @@ class StorageManagerTestCase extends TestCase{
     assertEquals(RO("USER"), storageManager.storageForId(storageId).get.mode)
 
     verify(storageFactory)
-    verify(configAccessor)
-    verify(storageDispatcher)
-    verify(configManager)
-    verify(taskManager)
+    verify(app.storageDispatcher)
+    verify(app.platformConfigManager)
+    verify(app.taskManager)
   }
 
 

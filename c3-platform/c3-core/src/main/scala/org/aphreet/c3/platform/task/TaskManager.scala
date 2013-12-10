@@ -32,3 +32,9 @@ trait TaskManager {
   def scheduledTaskList: List[TaskDescription]
   
 }
+
+trait TaskComponent {
+
+  def taskManager: TaskManager
+
+}

@@ -39,7 +39,7 @@ class MimeTypeConfigTest extends AbstractTestWithFileSystem{
 
   def testConfigPersistence() {
     
-    val configAccessor = new MimeTypeConfigAccessor
+    val configAccessor = new MimeTypeConfigAccessor(testDirectoryProvider)
     
     val config = Map(
     	"*/*" -> false,
@@ -47,13 +47,10 @@ class MimeTypeConfigTest extends AbstractTestWithFileSystem{
     	"image/png" -> true
     )
 
-    val fileName = "config.json"
-     
-    configAccessor.storeConfig(config, new File(testDir, fileName))
+    configAccessor.store(config)
     
-    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
-    
+    val readConfig = configAccessor.load
+
     assertEquals(config, readConfig)
-    
   }
 }

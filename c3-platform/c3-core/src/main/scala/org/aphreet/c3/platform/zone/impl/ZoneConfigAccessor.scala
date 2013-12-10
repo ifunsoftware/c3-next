@@ -1,23 +1,13 @@
 package org.aphreet.c3.platform.zone.impl
 
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
-import org.aphreet.c3.platform.zone.{Zone, IdRange, TimeRangeConfig, ZoneConfig}
-import java.io.{StringWriter, File}
-import org.springframework.beans.factory.annotation.Autowired
-import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
-import org.aphreet.c3.platform.common.JSONFormatter
 import com.springsource.json.parser._
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.zone.ZoneConfig
+import com.springsource.json.writer.JSONWriter
+import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
 import org.aphreet.c3.platform.zone.TimeRangeConfig
+import org.aphreet.c3.platform.zone.ZoneConfig
+import org.aphreet.c3.platform.zone.{Zone, IdRange}
 
-@Component
-class ZoneConfigAccessor extends ConfigAccessor[ZoneConfig]{
-
-  @Autowired
-  var configManager: PlatformConfigManager = null
-
-  def configDir: File = configManager.configDir
+class ZoneConfigAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[ZoneConfig]{
 
   protected def configFileName = "c3-zones.json"
 

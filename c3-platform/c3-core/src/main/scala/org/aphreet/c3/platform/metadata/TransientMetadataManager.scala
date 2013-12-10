@@ -13,6 +13,12 @@ trait TransientMetadataManager extends WatchedActor{
   def supportedMetaKeys: Set[String]
 }
 
+trait TransientMetadataComponent{
+
+  def transientMetadataManager: TransientMetadataManager
+
+}
+
 class TransientMetadataBuildStrategy(val transientMetaField: String, mdFunc: String => Option[String]) {
   def buildMetadataField(ra: String): Option[String] = mdFunc(ra)
 }

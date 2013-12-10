@@ -253,6 +253,16 @@ class Resource {
     }
   }
 
+  def withAddress(address: String): Resource = {
+    this.address = address
+    this
+  }
+
+  def withMetadata(map: Map[String, String]) : Resource = {
+    this.metadata ++= map
+    this
+  }
+
 }
 
 object Resource {

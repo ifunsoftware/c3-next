@@ -2,6 +2,8 @@ package org.aphreet.c3.platform.task
 
 import org.aphreet.c3.platform.common.{Logger, CloseableIterable, ThreadWatcher}
 import scala.util.control.Exception._
+import java.util.concurrent.Future
+import org.aphreet.c3.platform.exception.PlatformException
 
 abstract class Task extends Runnable{
 
@@ -23,6 +25,7 @@ abstract class Task extends Runnable{
 
   def state:TaskState = taskState
 
+  var taskFuture: Future[_] = null
 
   override def run() {
 
@@ -38,7 +41,16 @@ abstract class Task extends Runnable{
         taskState = RUNNING
         log.info(id + " started")
         preStart()
-        work()
+
+        try{
+          work()
+        }catch{
+          case e: InterruptedException => {
+            if(!shouldStop){
+              throw new PlatformException("Unexpected interrupted event for task " + id, e)
+            }
+          }
+        }
         postComplete()
         taskState = FINISHED
         log.info(id + " stopped")
@@ -116,7 +128,11 @@ abstract class Task extends Runnable{
   }
 
   def stop() {
-    Thread.currentThread.interrupt()
+
+    if(taskFuture != null){
+      taskFuture.cancel(true)
+    }
+
     shouldStopFlag = true
     taskState = INTERRUPTED
   }

@@ -42,9 +42,9 @@ import org.aphreet.c3.platform.config.{RegisterMsg, PlatformConfigManager, SPlat
 import org.aphreet.c3.platform.exception._
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelector
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.storage.dispatcher.selector.StorageSelector
 
 
 @Component("accessManager")
@@ -66,7 +66,7 @@ class AccessManagerImpl extends AccessManager with SPlatformPropertyListener {
   var accessCache: AccessCache = _
 
   @Autowired
-  var mimeStorageSelector: MimeTypeStorageSelector = _
+  var mimeStorageSelector: StorageSelector = _
 
   val log = Logger(getClass)
 

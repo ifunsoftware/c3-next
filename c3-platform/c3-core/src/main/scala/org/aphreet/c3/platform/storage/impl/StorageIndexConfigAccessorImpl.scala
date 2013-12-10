@@ -1,23 +1,16 @@
 package org.aphreet.c3.platform.storage.impl
 
-import org.aphreet.c3.platform.storage.StorageIndexConfigAccessor
 import com.springsource.json.parser.{MapNode, Node}
 import com.springsource.json.writer.JSONWriter
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.storage.StorageIndex
-import scala.List
 import java.util.{List => JList}
+import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.storage.StorageIndex
+import org.aphreet.c3.platform.storage.StorageIndexConfigAccessor
+import scala.List
 import scala.collection.JavaConversions._
 
-@Component
-class StorageIndexConfigAccessorImpl extends StorageIndexConfigAccessor{
-
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  protected def configDir = configManager.configDir
+class StorageIndexConfigAccessorImpl(val directoryConfigProvider: SystemDirectoryProvider)
+  extends StorageIndexConfigAccessor{
 
   protected def configFileName = "c3-storage-index-config.json"
 

@@ -34,10 +34,7 @@ import org.aphreet.c3.platform.config._
 import org.springframework.stereotype.Component
 import java.io.File
 
-@Component
-class PlatformConfigAccessor
-  extends AbstractDictionaryConfigAccessor("c3-platform-config.json") {
+class PlatformConfigAccessor(override val directoryConfigProvider: SystemDirectoryProvider)
+    extends AbstractDictionaryConfigAccessor("c3-platform-config.json", directoryConfigProvider)
 
-  var configDir: File = _
 
-}

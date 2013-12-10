@@ -57,3 +57,9 @@ trait PlatformManagementEndpoint {
   def removeIndex(name:String)
 
 }
+
+trait PlatformManagementComponent{
+
+  def platformManagementEndpoint: PlatformManagementEndpoint
+
+}

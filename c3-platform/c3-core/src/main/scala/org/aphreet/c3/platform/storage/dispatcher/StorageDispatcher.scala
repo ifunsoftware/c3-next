@@ -40,5 +40,10 @@ trait StorageDispatcher{
 
   def mergeStorages(fromId:String, toId:String)
 
-  def reset(sts:List[StorageParams])
+  def resetDispatcher(sts:List[StorageParams])
+}
+
+trait StorageDispatcherComponent {
+
+  def storageDispatcher: StorageDispatcher
 }
