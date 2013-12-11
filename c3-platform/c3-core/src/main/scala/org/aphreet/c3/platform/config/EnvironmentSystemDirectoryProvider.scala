@@ -17,7 +17,7 @@ trait EnvironmentSystemDirectoryProvider extends SystemDirectoryProvider{
 
 }
 
-object EnvironmentSystemDirectoryProvider{
+object EnvironmentSystemDirectoryProvider extends SystemDirectoryProvider{
 
   val log = Logger(getClass)
 

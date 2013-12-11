@@ -35,16 +35,22 @@ import junit.framework.Assert._
 
 import org.easymock.EasyMock._
 import org.osgi.framework.{BundleContext, Bundle}
-import org.aphreet.c3.platform.config.impl.VersionManagerImpl
+import org.aphreet.c3.platform.config.impl.VersionComponentImpl
 import java.util.Hashtable
 import org.scalatest.mock.EasyMockSugar
+import org.aphreet.c3.platform.config.BundleContextProvider
 
 class VersionManagerTestCase extends TestCase with EasyMockSugar{
 
   def testVersions() {
-    val manager = new VersionManagerImpl
 
-    manager.setBundleContext(createBundleContext)
+    trait BundleContextProviderMock extends BundleContextProvider{
+      def bundleContext: BundleContext = createBundleContext
+    }
+
+    val app = new Object with BundleContextProviderMock with VersionComponentImpl
+
+    val manager = app.versionManager
 
     val modules = manager.listC3Modules
 
@@ -65,7 +71,7 @@ class VersionManagerTestCase extends TestCase with EasyMockSugar{
       createBundle("org.aphreet.c3.remote-api", "1.0.102"),
       createBundle("org.aphreet.c3.search", "1.0.103"),
       createBundle("org.aphreet.some.other.bundle", "1.0.104")
-    );
+    )
 
     val context = mock[BundleContext]
 

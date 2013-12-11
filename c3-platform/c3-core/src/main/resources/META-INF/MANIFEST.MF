@@ -3,7 +3,7 @@ Bundle-Version: 9.9.9.TO_BE_REPLACED
 Bundle-Name: C3 Platform
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.core
-Spring-Context: *
+Bundle-Activator: org.aphreet.c3.platform.C3CoreBundleActivator
 Import-Bundle: com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  org.scala-lang.scala-library;version="[2.10.1,2.11)",

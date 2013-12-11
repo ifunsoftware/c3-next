@@ -30,32 +30,19 @@
 
 package org.aphreet.c3.platform.access.impl
 
-import javax.annotation.{PreDestroy, PostConstruct}
 import actors.Actor
-import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.access._
-import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
-import org.springframework.beans.factory.annotation.Qualifier
-import org.aphreet.c3.platform.access.ResourceUpdatedMsg
-import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
-import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
-import org.aphreet.c3.platform.access.ResourceDeletedMsg
-import org.aphreet.c3.platform.access.ResourceAddedMsg
-import scala.collection.mutable
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.common.msg._
+import scala.collection.mutable
 
-@Component("accessMediator")
-@Scope("singleton")
-@Qualifier("AccessMediator")
 class AccessMediatorImpl extends AccessMediator {
 
   val log = Logger(getClass)
 
   var accessListeners = new mutable.HashMap[Actor, Symbol]
 
-  @PostConstruct
-  def init() {
+  {
     log info "Starting access mediator"
     this.start()
   }
@@ -111,7 +98,6 @@ class AccessMediatorImpl extends AccessMediator {
 
   }
 
-  @PreDestroy
   def destroy() {
     log info "Stopping access mediator..."
     this ! DestroyMsg

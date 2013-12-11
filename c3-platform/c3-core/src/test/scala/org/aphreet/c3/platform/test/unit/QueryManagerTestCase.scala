@@ -10,6 +10,7 @@ import org.aphreet.c3.platform.storage.RW
 import org.aphreet.c3.platform.mock.StorageMock
 import scala.language.reflectiveCalls
 import org.aphreet.c3.platform.query.impl.QueryComponentImpl
+import org.aphreet.c3.platform.storage.updater.StorageUpdater
 
 class QueryManagerTestCase extends TestCase
 {
@@ -54,6 +55,8 @@ class QueryManagerTestCase extends TestCase
       val storageManager: StorageManager = createMock(classOf[StorageManager])
       expect(storageManager.listStorages).andReturn(List(storage, unavailableStorage))
       replay(storageManager)
+
+      val storageUpdater: StorageUpdater = createMock(classOf[StorageUpdater])
 
     }
     val queryConsumer = createMock(classOf[QueryConsumer])

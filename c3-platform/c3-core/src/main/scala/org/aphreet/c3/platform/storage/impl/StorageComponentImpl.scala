@@ -44,6 +44,8 @@ import org.aphreet.c3.platform.task.{TaskComponent, Task, IterableTask}
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 import scala.actors.Actor
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcherComponent
+import org.aphreet.c3.platform.storage.updater.StorageUpdater
+import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterImpl
 
 trait StorageComponentImpl extends StorageComponent{
 
@@ -53,6 +55,8 @@ trait StorageComponentImpl extends StorageComponent{
     with SystemDirectoryProvider =>
 
   val storageManager: StorageManager = new StorageManagerImpl(new StorageConfigAccessorImpl(this))
+
+  val storageUpdater: StorageUpdater = new StorageUpdaterImpl(storageManager, taskManager)
 
   class StorageManagerImpl(val configAccessor: StorageConfigAccessor) extends StorageManager with ConflictResolverProvider {
 

@@ -32,7 +32,6 @@
 package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
-import javax.annotation.{PreDestroy, PostConstruct}
 import net.sf.ehcache.{Element, Cache, CacheManager}
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.aphreet.c3.platform.access._
@@ -40,31 +39,15 @@ import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
-import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import org.springframework.stereotype.Component
 import scala.Some
 
-@Component
-class AccessCacheImpl extends AccessCache with ComponentGuard{
+class AccessCacheImpl(val accessMediator: Actor, val statisticsManager: Actor) extends AccessCache with ComponentGuard{
 
   var cache:Cache = _
 
-  var accessMediator:Actor = _
-
-  var statisticsService:Actor = _
-
   val log = Logger(getClass)
 
-  @Autowired
-  @Qualifier("AccessMediator")
-  def setAccessMediator(mediator:Actor) {accessMediator = mediator}
-
-  @Autowired
-  @Qualifier("StatisticsService")
-  def setStatisticsService(service:Actor) {statisticsService = service}
-
-  @PostConstruct
-  def init(){
+  {
 
     val cacheManager = CacheManager.create()
 
@@ -112,10 +95,10 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
   override def get(address:String):Option[Resource] = {
     val element = cache.get(address)
     if(element != null){
-      statisticsService ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
+      statisticsManager ! IncreaseStatisticsMsg("c3.access.cache.hit", 1)
       Some(element.getObjectValue.asInstanceOf[Resource].clone)
     }else{
-      statisticsService ! IncreaseStatisticsMsg("c3.access.cache.miss", 1)
+      statisticsManager ! IncreaseStatisticsMsg("c3.access.cache.miss", 1)
       None
     }
   }
@@ -125,7 +108,6 @@ class AccessCacheImpl extends AccessCache with ComponentGuard{
     address
   }
 
-  @PreDestroy
   def destroy(){
     this ! DestroyMsg
   }

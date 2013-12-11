@@ -29,36 +29,32 @@
  */
 package org.aphreet.c3.platform.config.impl
 
-import org.osgi.framework.BundleContext
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.config.VersionManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.eclipse.gemini.blueprint.context.BundleContextAware
 import collection.mutable
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.config.{BundleContextProvider, VersionComponent, VersionManager}
+import org.osgi.framework.BundleContext
 
-@Component("versionManager")
-class VersionManagerImpl extends VersionManager with BundleContextAware{
+trait VersionComponentImpl extends VersionComponent {
 
-  val log = Logger(getClass)
+  this: BundleContextProvider =>
 
-  var bundleContext:BundleContext = null;
+  val versionManager: VersionManager = new VersionManagerImpl(this.bundleContext)
 
-  @Autowired
-  override def setBundleContext(bundleContext_ :BundleContext){
-    bundleContext = bundleContext_
-  }
+  class VersionManagerImpl(val bundleContext:BundleContext) extends VersionManager {
 
-  override def listC3Modules:mutable.Map[String, String] = {
+    val log = Logger(getClass)
 
-    val map = new mutable.HashMap[String, String]
+    override def listC3Modules:mutable.Map[String, String] = {
 
-    bundleContext.getBundles
-            .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
-            .foreach(b => map += (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
+      val map = new mutable.HashMap[String, String]
 
-    log.info("Found modules: " + map.toString)
+      bundleContext.getBundles
+        .filter(b => b.getSymbolicName.startsWith("org.aphreet.c3"))
+        .foreach(b => map += (b.getSymbolicName -> b.getHeaders.get("Bundle-Version").toString))
 
-    map
+      log.info("Found modules: " + map.toString)
+
+      map
+    }
   }
 }

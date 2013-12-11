@@ -36,3 +36,9 @@ trait VersionManager{
   def listC3Modules:Map[String, String]
   
 }
+
+trait VersionComponent{
+
+  def versionManager: VersionManager
+
+}

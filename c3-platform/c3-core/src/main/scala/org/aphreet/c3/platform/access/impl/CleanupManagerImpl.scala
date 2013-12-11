@@ -1,21 +1,13 @@
 package org.aphreet.c3.platform.access.impl
 
 import org.aphreet.c3.platform.access.{ResourceDeletedMsg, AccessMediator, CleanupManager}
+import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.Storage
 import org.aphreet.c3.platform.storage.updater.{StorageUpdater, Transformation}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.common.Logger
 
-@Component("cleanupManager")
-class CleanupManagerImpl extends CleanupManager{
-
-  @Autowired
-  var storageUpdater: StorageUpdater = _
-
-  @Autowired
-  var accessMediator: AccessMediator = _
+class CleanupManagerImpl(val storageUpdater: StorageUpdater,
+                         val accessMediator: AccessMediator) extends CleanupManager{
 
   def cleanupResources(filter: Resource => Boolean) {
     storageUpdater.applyTransformation(new CleanupTransformation(filter, accessMediator))

@@ -12,6 +12,7 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageS
 import org.aphreet.c3.platform.storage.impl.StorageComponentImpl
 import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
+import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 
 /**
  * Author: Mikhail Malygin
@@ -37,6 +38,7 @@ object AppRunner extends App{
     with PlatformManagementComponentImpl
     with TransientMetadataComponentImpl
     with QueryComponentImpl
+    with AccessComponentImpl
 
   log.info("Running initialization hooks")
 

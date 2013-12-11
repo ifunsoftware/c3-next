@@ -31,6 +31,7 @@ package org.aphreet.c3.platform.storage
 
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.storage.updater.StorageUpdater
 
 trait StorageManager {
 
@@ -72,4 +73,5 @@ trait StorageComponent{
 
   def storageManager: StorageManager
 
+  def storageUpdater: StorageUpdater
 }
