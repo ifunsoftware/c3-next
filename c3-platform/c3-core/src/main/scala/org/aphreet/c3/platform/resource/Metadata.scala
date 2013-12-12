@@ -32,7 +32,6 @@ package org.aphreet.c3.platform.resource
 
 import collection.{Map, mutable}
 import scala.collection.mutable.ArrayBuffer
-import com.thoughtworks.xstream.XStream
 
 class Metadata(private val map: mutable.HashMap[String, String], private var deletedKeys: List[String]) {
 
@@ -118,7 +117,7 @@ object MetadataHelper{
   }
 
   def writeTagMap[T,B](values: Map[T,B], converter: (T,B) => String): String = {
-     "[" + (values.map(tagInfo => (converter.apply(tagInfo._1, tagInfo._2)))).mkString(",") + "]"
+     "[" + values.map(tagInfo => converter.apply(tagInfo._1, tagInfo._2)).mkString(",") + "]"
   }
 
   def parseSequence(value: String): TraversableOnce[String] = {
