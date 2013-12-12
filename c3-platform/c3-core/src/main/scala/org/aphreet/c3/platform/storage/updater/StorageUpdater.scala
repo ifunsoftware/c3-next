@@ -5,3 +5,9 @@ trait StorageUpdater {
   def applyTransformation(transformation: Transformation)
 
 }
+
+trait StorageUpdaterComponent {
+
+  def storageUpdater: StorageUpdater
+
+}

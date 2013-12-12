@@ -13,6 +13,7 @@ import org.aphreet.c3.platform.storage.impl.StorageComponentImpl
 import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
+import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 
 /**
  * Author: Mikhail Malygin
@@ -33,6 +34,7 @@ object AppRunner extends App{
     with TaskComponentImpl
     with ZoneStorageDispatcherComponent
     with StorageComponentImpl
+    with StorageUpdaterComponentImpl
     with MigrationComponentImpl
     with MimeTypeStorageSelectorComponent
     with PlatformManagementComponentImpl

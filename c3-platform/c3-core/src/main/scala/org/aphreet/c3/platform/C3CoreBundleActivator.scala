@@ -23,6 +23,7 @@ import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.osgi.framework.{BundleContext, BundleActivator}
+import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 
 /**
  * Author: Mikhail Malygin
@@ -53,6 +54,7 @@ class C3CoreBundleActivator extends BundleActivator {
       with TaskComponentImpl
       with ZoneStorageDispatcherComponent
       with StorageComponentImpl
+      with StorageUpdaterComponentImpl
       with MigrationComponentImpl
       with MimeTypeStorageSelectorComponent
       with PlatformManagementComponentImpl
@@ -93,5 +95,7 @@ class C3CoreBundleActivator extends BundleActivator {
     app.foreach(_.stop())
 
     log.info("c3-core is stopped")
+
+    context.ungetService()
   }
 }

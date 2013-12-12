@@ -30,54 +30,44 @@
 package org.aphreet.c3.platform.storage.common
 
 
-import javax.annotation.{PostConstruct, PreDestroy}
 import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
 import org.aphreet.c3.platform.storage._
-import org.springframework.beans.factory.annotation.Autowired
 import scala.collection.mutable
 
 
-abstract class AbstractStorageFactory extends StorageFactory with ComponentGuard{
+abstract class AbstractStorageFactory(val storageManager: StorageManager) extends StorageFactory with ComponentGuard {
 
   val log = Logger(getClass)
-  
+
   val createdStorages = new mutable.HashSet[Storage]
-  
-  var storageManager :StorageManager = null
-  
-  @Autowired
-  def setStorageManager(_manager:StorageManager) {storageManager = _manager}
-  
-  
-  def createStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage = {
+
+  def createStorage(params: StorageParams, systemId: String, conflictResolverProvider: ConflictResolverProvider): Storage = {
     val storage = createNewStorage(params, systemId, conflictResolverProvider)
-    
+
     storage.mode = params.mode
-    
+
     createdStorages += storage
     storage
   }
 
-  def storages:mutable.Set[Storage] = createdStorages
-  
-  protected def createNewStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage
-  
-  @PostConstruct
+  def storages: mutable.Set[Storage] = createdStorages
+
+  protected def createNewStorage(params: StorageParams, systemId: String, conflictResolverProvider: ConflictResolverProvider): Storage
+
   def init() {
     log info "Starting " + this.name + " storage factory"
     storageManager.registerFactory(this)
   }
-  
-  @PreDestroy
+
   def destroy() {
     log info "Stopping " + this.name + " storage factory"
-    
+
     createdStorages.foreach(s => s.close())
 
-    letItFall{
+    letItFall {
       storageManager.unregisterFactory(this)
     }
-    
+
     createdStorages.clear()
   }
 }

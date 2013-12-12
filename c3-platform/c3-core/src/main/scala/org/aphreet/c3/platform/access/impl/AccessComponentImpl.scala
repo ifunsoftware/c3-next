@@ -44,13 +44,15 @@ import org.aphreet.c3.platform.statistics.StatisticsComponent
 import org.aphreet.c3.platform.storage.StorageComponent
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelectorComponent
 import scala.Some
+import org.aphreet.c3.platform.storage.updater.StorageUpdaterComponent
 
 trait AccessComponentImpl extends AccessComponent with ComponentLifecycle{
 
   this: PlatformConfigComponent
+    with StatisticsComponent
     with StorageComponent
-    with MimeTypeStorageSelectorComponent
-    with StatisticsComponent =>
+    with StorageUpdaterComponent
+    with MimeTypeStorageSelectorComponent =>
 
   private val accessMediatorImpl = new AccessMediatorImpl
 

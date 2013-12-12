@@ -29,12 +29,25 @@
  */
 package org.aphreet.c3.platform.storage.file
 
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.{ConflictResolverProvider, Storage, StorageParams}
+import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.storage.bdb.AbstractBDBStorageFactory
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
+import org.aphreet.c3.platform.common.ComponentLifecycle
+import org.aphreet.c3.platform.storage.StorageParams
 
-@Component
-class FileBDBStorageFactory extends AbstractBDBStorageFactory{
+trait FileBDBStorageComponent extends ComponentLifecycle{
+
+  this: StorageComponent
+    with PlatformConfigComponent =>
+
+  val fileBDBStorageFactory = new FileBDBStorageFactory(storageManager, platformConfigManager)
+
+  destroy(Unit => fileBDBStorageFactory.destroy())
+}
+
+class FileBDBStorageFactory(override val storageManager: StorageManager,
+                            override val platformConfigManager: PlatformConfigManager)
+  extends AbstractBDBStorageFactory(storageManager, platformConfigManager){
 
   protected def createNewStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage =
     new FileBDBStorage(params, systemId, bdbConfig, conflictResolverProvider)

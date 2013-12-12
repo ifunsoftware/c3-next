@@ -29,28 +29,30 @@
  */
 package org.aphreet.c3.platform.storage.bdb.impl
 
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.storage.{ConflictResolverProvider, Storage, StorageParams}
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.storage.bdb._
-import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.StorageParams
+import org.aphreet.c3.platform.common.ComponentLifecycle
 
-@Component
-class PureBDBStorageFactory extends AbstractBDBStorageFactory{
+trait PureBDBStorageComponent extends ComponentLifecycle{
+
+  this: StorageComponent
+    with PlatformConfigComponent =>
+
+  val pureBDBStorageFactory = new PureBDBStorageFactory(storageManager, platformConfigManager)
+
+  destroy(Unit => pureBDBStorageFactory.destroy())
+
+}
+
+class PureBDBStorageFactory(override val storageManager: StorageManager,
+                            override val platformConfigManager: PlatformConfigManager)
+  extends AbstractBDBStorageFactory(storageManager, platformConfigManager){
 
   protected def createNewStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage =
     new PureBDBStorage(params, systemId, bdbConfig, conflictResolverProvider)
 
-
-  @PostConstruct
-  override def init() {
-    super.init()
-  }
-
-  @PreDestroy
-  override def destroy() {
-    super.destroy()
-  }
-  
   def name:String = PureBDBStorage.NAME
   
 }

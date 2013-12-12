@@ -29,14 +29,14 @@
  */
 package org.aphreet.c3.platform.storage.bdb
 
-import org.springframework.beans.factory.annotation.Autowired
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.storage.U
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.storage.common.AbstractStorageFactory
+import org.aphreet.c3.platform.storage.{StorageManager, U}
 
-abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPlatformPropertyListener{
+abstract class AbstractBDBStorageFactory(override val storageManager: StorageManager,
+                                         val platformConfigManager: PlatformConfigManager)
+  extends AbstractStorageFactory(storageManager) with SPlatformPropertyListener{
 
   val BDB_CONFIG_TX_NO_SYNC = "c3.storage.bdb.txnosync"
   val BDB_CONFIG_CACHE_PERCENT = "c3.storage.bdb.cachepercent"
@@ -45,27 +45,23 @@ abstract class AbstractBDBStorageFactory extends AbstractStorageFactory with SPl
 
   var currentConfig:BDBConfig = new BDBConfig(false, 20, 10240, 102400)
 
-  var configManager:PlatformConfigManager = _
-
-  @Autowired
-  def setPlatformConfigManager(manager:PlatformConfigManager) {configManager = manager}
-
   def bdbConfig:BDBConfig = currentConfig
 
+  {
+    init()
+  }
 
-  @PostConstruct
   override def init() {
     log info "Post construct callback invoked"
-    configManager !? RegisterMsg(this) //sync call. Setting properties before opening storages
+    platformConfigManager !? RegisterMsg(this) //sync call. Setting properties before opening storages
     super.init()
   }
 
-  @PreDestroy
   override def destroy() {
     log info "Pre destroy callback invoked"
 
     letItFall{
-      configManager ! UnregisterMsg(this)
+      platformConfigManager ! UnregisterMsg(this)
     }
 
     super.destroy()
