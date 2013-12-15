@@ -40,3 +40,9 @@ trait AccessControlManager {
   def retrieveAccessTokens(accessType:AccessType, action:Action, accessParams:Map[String, String]):AccessTokens
 
 }
+
+trait AccessControlComponent {
+
+  def accessControlManager: AccessControlManager
+
+}

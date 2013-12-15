@@ -22,6 +22,19 @@
             <artifactId>com.springsource.json</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.osgi</groupId>
+            <artifactId>org.eclipse.osgi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aphreet.c3</groupId>
+            <artifactId>c3-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

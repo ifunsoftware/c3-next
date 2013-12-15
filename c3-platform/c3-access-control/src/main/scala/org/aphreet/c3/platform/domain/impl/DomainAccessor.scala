@@ -31,27 +31,15 @@
 
 package org.aphreet.c3.platform.domain.impl
 
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
-import org.springframework.beans.factory.annotation.Autowired
-import java.io.{FileWriter, StringWriter, File}
-import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
-import org.aphreet.c3.platform.common.JSONFormatter
 import com.springsource.json.parser._
-import org.springframework.context.annotation.Scope
-import org.springframework.stereotype.Component
+import com.springsource.json.writer.JSONWriter
 import java.util.UUID
-import scala.collection.JavaConversions._
+import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
 import org.aphreet.c3.platform.domain.{FullMode, DomainMode, Domain}
+import scala.collection.JavaConversions._
 
 
-@Component
-@Scope("singleton")
-class DomainAccessor extends ConfigAccessor[DomainConfig]{
-
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  def configDir: File = configManager.configDir
+class DomainAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[DomainConfig]{
 
   def configFileName: String = "c3-domain-config.json"
 

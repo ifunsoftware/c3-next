@@ -30,48 +30,56 @@
  */
 package org.aphreet.c3.platform.accesscontrol.impl
 
-import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.accesscontrol._
 import collection.mutable
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.domain.DomainComponent
+import org.aphreet.c3.platform.domain.impl.{RestDomainAccessTokenFactory, LocalDomainAccessTokenFactory}
 
-@Component("accessControlManager")
-class AccessControlManagerImpl extends AccessControlManager {
+trait AccessControlComponentImpl extends AccessControlComponent {
 
-  val log = Logger(getClass)
+  this: DomainComponent =>
 
-  val factories = new mutable.HashSet[AccessTokenFactory]
+  val accessControlManager: AccessControlManager = new AccessControlManagerImpl
 
-  @PostConstruct
-  def init(){
-    log.info("Starting access control manager")
-  }
+  accessControlManager.registerFactory(new LocalDomainAccessTokenFactory(domainManager))
+  accessControlManager.registerFactory(new RestDomainAccessTokenFactory(domainManager))
 
-  def registerFactory(factory:AccessTokenFactory) {
-    this.synchronized{
-      
-      log.debug("Registering factory " + factory.toString)
-      
-      factories += factory
+  class AccessControlManagerImpl extends AccessControlManager {
+
+    val log = Logger(getClass)
+
+    val factories = new mutable.HashSet[AccessTokenFactory]
+
+    {
+      log.info("Starting AccessControlManager")
     }
-  }
 
-  def unregisterFactory(factory:AccessTokenFactory) {
-    this.synchronized{
+    def registerFactory(factory:AccessTokenFactory) {
+      this.synchronized{
 
-      log.debug("Unregistering factory " + factory.toString)
+        log.debug("Registering factory " + factory.toString)
 
-      factories -= factory
+        factories += factory
+      }
     }
-  }
 
-  def retrieveAccessTokens(accessType: AccessType, action: Action, accessParams: Map[String, String]): AccessTokens = {
-    try{
-      new AccessTokensImpl(factories.filter(_.supportsAccess(accessType)).map(f => f.createAccessToken(action, accessParams)).toList)
-    }catch{
-      case e: Throwable => throw new AccessControlException(e.getMessage, e)
+    def unregisterFactory(factory:AccessTokenFactory) {
+      this.synchronized{
+
+        log.debug("Unregistering factory " + factory.toString)
+
+        factories -= factory
+      }
     }
-  }
 
+    def retrieveAccessTokens(accessType: AccessType, action: Action, accessParams: Map[String, String]): AccessTokens = {
+      try{
+        new AccessTokensImpl(factories.filter(_.supportsAccess(accessType)).map(f => f.createAccessToken(action, accessParams)).toList)
+      }catch{
+        case e: Throwable => throw new AccessControlException(e.getMessage, e)
+      }
+    }
+
+  }
 }

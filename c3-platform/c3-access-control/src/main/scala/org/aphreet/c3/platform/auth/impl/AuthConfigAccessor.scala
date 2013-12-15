@@ -30,25 +30,14 @@
 
 package org.aphreet.c3.platform.auth.impl
 
-import org.aphreet.c3.platform.config.ConfigAccessor
-import org.springframework.beans.factory.annotation.Autowired
-import org.aphreet.c3.platform.config.PlatformConfigManager
-import java.io.File
-import com.springsource.json.writer.JSONWriter
-import org.springframework.stereotype.Component
-import com.springsource.json.parser._
-import collection.mutable.HashMap
-import collection.Map
 import collection.JavaConversions._
+import scala.collection.{mutable, Map}
+import com.springsource.json.parser._
+import com.springsource.json.writer.JSONWriter
 import org.aphreet.c3.platform.auth.User
+import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
 
-@Component
-class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
-
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  def configDir: File = configManager.configDir
+class AuthConfigAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[Map[String, User]] {
 
   def configFileName: String = "c3-auth-config.json"
 
@@ -56,7 +45,7 @@ class AuthConfigAccessor extends ConfigAccessor[Map[String, User]] {
     Map("admin" -> User("admin", "password", true))
 
   def readConfig(node: Node): Map[String, User] = {
-    val map = new HashMap[String, User]
+    val map = new mutable.HashMap[String, User]
 
     for (userNode <- node.getNode("users").getNodes) {
 

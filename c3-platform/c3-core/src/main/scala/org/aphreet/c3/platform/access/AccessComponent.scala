@@ -11,5 +11,10 @@ trait AccessComponent {
 
   def accessMediator: AccessMediator
 
+}
+
+trait CleanupComponent {
+
   def cleanupManager: CleanupManager
+
 }

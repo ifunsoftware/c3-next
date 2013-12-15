@@ -31,10 +31,10 @@
 
 package org.aphreet.c3.platform.remote.test.domain
 
-import junit.framework.TestCase
 import junit.framework.Assert._
+import junit.framework.TestCase
+import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.domain.impl.DomainManagerImpl
-import org.aphreet.c3.platform.domain.{ReadOnlyMode, FullMode, Domain}
 
 class DomainManagerTestCase extends TestCase{
 
@@ -43,15 +43,12 @@ class DomainManagerTestCase extends TestCase{
     val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
     val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
-
-    val domainManager = new DomainManagerImpl
-
     val existentDomains = List(domain1,
                                domain2)
 
     val newDomain = Domain("3", "name3", "key3", FullMode, deleted = false)
 
-    val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
+    val newDomainList = DomainManagerImpl.addDomainToList(newDomain, "systemId", existentDomains)
 
     assertTrue(newDomainList.contains(domain1))
     assertTrue(newDomainList.contains(domain2))
@@ -64,15 +61,12 @@ class DomainManagerTestCase extends TestCase{
     val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
     val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
-
-    val domainManager = new DomainManagerImpl
-
     val existentDomains = List(domain1,
                                domain2)
 
     val newDomain = Domain("3", "name", "key3", FullMode, deleted = false)
 
-    val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
+    val newDomainList = DomainManagerImpl.addDomainToList(newDomain, "systemId", existentDomains)
 
     assertTrue(newDomainList.contains(domain1))
     assertTrue(newDomainList.contains(domain2))
@@ -85,15 +79,12 @@ class DomainManagerTestCase extends TestCase{
     val domain1 = Domain("1", "name", "key", FullMode, deleted = false)
     val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
-
-    val domainManager = new DomainManagerImpl
-
     val existentDomains = List(domain1,
                                domain2)
 
     val newDomain = Domain("1", "name3", "key3", ReadOnlyMode, deleted = false)
 
-    val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
+    val newDomainList = DomainManagerImpl.addDomainToList(newDomain, "systemId", existentDomains)
 
     assertTrue(newDomainList.contains(domain1))
     assertTrue(domain1.id == "1")
@@ -112,15 +103,12 @@ class DomainManagerTestCase extends TestCase{
     val domain1 = Domain("1", "name-systemId", "key", FullMode, deleted = false)
     val domain2 = Domain("2", "name2", "key2", FullMode, deleted = false)
 
-
-    val domainManager = new DomainManagerImpl
-
     val existentDomains = List(domain1,
                                domain2)
 
     val newDomain = Domain("1", "name", "key3", ReadOnlyMode, deleted = false)
 
-    val newDomainList = domainManager.addDomainToList(newDomain, "systemId", existentDomains)
+    val newDomainList = DomainManagerImpl.addDomainToList(newDomain, "systemId", existentDomains)
 
     assertTrue(newDomainList.contains(domain1))
     assertTrue(domain1.id == "1")

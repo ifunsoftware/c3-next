@@ -52,3 +52,9 @@ trait AuthenticationManager{
   def list:List[User]
 
 }
+
+trait AuthenticationComponent {
+
+  def authenticationManager: AuthenticationManager
+
+}

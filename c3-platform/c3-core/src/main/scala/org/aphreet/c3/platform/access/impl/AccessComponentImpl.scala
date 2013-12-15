@@ -46,7 +46,7 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageS
 import scala.Some
 import org.aphreet.c3.platform.storage.updater.StorageUpdaterComponent
 
-trait AccessComponentImpl extends AccessComponent with ComponentLifecycle{
+trait AccessComponentImpl extends AccessComponent with CleanupComponent with ComponentLifecycle{
 
   this: PlatformConfigComponent
     with StatisticsComponent

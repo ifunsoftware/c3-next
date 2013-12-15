@@ -1,11 +1,9 @@
 package org.aphreet.c3.platform.domain.impl
 
-import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.accesscontrol.{LocalAccess, RemoteAccess, AccessType}
-import org.aphreet.c3.platform.domain.{DomainException, Domain}
+import org.aphreet.c3.platform.domain.{DomainManager, DomainException, Domain}
 
-@Component
-class LocalDomainAccessTokenFactory extends DomainAccessTokenFactory {
+class LocalDomainAccessTokenFactory(val domainManager: DomainManager) extends DomainAccessTokenFactory {
 
   def retrieveDomain(accessParams: Map[String, String]):Domain = {
 

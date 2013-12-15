@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.storage.activator
 
-import org.aphreet.c3.platform.common.{Logger, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.common.{C3Activator, Logger, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.storage.bdb.impl.PureBDBStorageComponent
 import org.aphreet.c3.platform.storage.composite.CompositeStorageComponent
@@ -13,9 +13,7 @@ import org.osgi.framework.{BundleContext, BundleActivator}
  * Date:   12/13/13
  * Time:   1:23 AM
  */
-class C3StorageActivator extends BundleActivator{
-
-  val log = Logger(classOf[C3StorageActivator])
+class C3StorageActivator extends C3Activator {
 
   var storageApp: Option[DefaultComponentLifecycle] = None
 
@@ -58,12 +56,6 @@ class C3StorageActivator extends BundleActivator{
     storageApp.foreach(_.stop())
 
     log.info("c3-storage stopped")
-  }
-
-  def getService[T](context: BundleContext, clazz: Class[T]): T = {
-    val reference = context.getServiceReference(clazz.getCanonicalName)
-
-    context.getService(reference).asInstanceOf[T]
   }
 
 }

@@ -1,9 +1,8 @@
 package org.aphreet.c3.platform
 
-import java.util.Properties
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.access.{CleanupManager, AccessMediator, AccessManager}
-import org.aphreet.c3.platform.common.{Logger, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.common.{C3Activator, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
 import org.aphreet.c3.platform.config.impl.VersionComponentImpl
 import org.aphreet.c3.platform.config.{VersionManager, BundleContextProvider, PlatformConfigManager, EnvironmentSystemDirectoryProvider}
@@ -20,19 +19,17 @@ import org.aphreet.c3.platform.storage.dispatcher.impl.ZoneStorageDispatcherComp
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelectorComponent
 import org.aphreet.c3.platform.storage.impl.StorageComponentImpl
 import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
+import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
-import org.osgi.framework.{BundleContext, BundleActivator}
-import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
+import org.osgi.framework.BundleContext
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/11/13
  * Time:   1:08 AM
  */
-class C3CoreBundleActivator extends BundleActivator {
-
-  val log = Logger(getClass)
+class C3CoreActivator extends C3Activator {
 
   var app: Option[DefaultComponentLifecycle] = None
 
@@ -84,10 +81,6 @@ class C3CoreBundleActivator extends BundleActivator {
 
   }
 
-  protected def registerService[T](context: BundleContext, clazz: Class[T], service: T){
-    context.registerService(clazz.getCanonicalName, service, new Properties())
-  }
-
   def stop(context: BundleContext) {
 
     log.info("Stopping c3-core")
@@ -95,7 +88,5 @@ class C3CoreBundleActivator extends BundleActivator {
     app.foreach(_.stop())
 
     log.info("c3-core is stopped")
-
-    context.ungetService()
   }
 }

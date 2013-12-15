@@ -29,29 +29,10 @@
  */
 package org.aphreet.c3.platform.domain.impl
 
-import org.springframework.beans.factory.annotation.Autowired
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.accesscontrol._
-import org.springframework.stereotype.Component
+import org.aphreet.c3.platform.domain._
 
 abstract class DomainAccessTokenFactory extends AccessTokenFactory{
-
-  @Autowired
-  var domainManager:DomainManager = null
-
-  @Autowired
-  var accessControlManager:AccessControlManager = null
-
-  @PostConstruct
-  def init(){
-    accessControlManager.registerFactory(this)
-  }
-
-  @PreDestroy
-  def destroy(){
-    accessControlManager.unregisterFactory(this)
-  }
 
   def retrieveDomain(accessParams:Map[String, String]):Domain
 

@@ -59,3 +59,9 @@ trait DomainManager {
 
   def deleteDomain(name: String)
 }
+
+trait DomainComponent{
+
+  def domainManager: DomainManager
+
+}
