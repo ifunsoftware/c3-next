@@ -70,13 +70,14 @@ class ReplicationLink(val localSystemId:String,
 
     remoteActor = RemoteActor.select(peer, 'ReplicationActor)
 
-    link(remoteActor)
-
     started = true
     super.start()
   }
 
   override def act(){
+                        
+    link(remoteActor)                    
+                        
     loop{
       react{
 
