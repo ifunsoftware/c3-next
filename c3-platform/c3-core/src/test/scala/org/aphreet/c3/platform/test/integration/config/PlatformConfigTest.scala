@@ -30,14 +30,14 @@
 package org.aphreet.c3.platform.test.integration.config
 
 import junit.framework.Assert._
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-import org.aphreet.c3.platform.config.impl.PlatformConfigAccessor
+import junit.framework.TestCase
+import org.aphreet.c3.platform.config.impl.{MemoryConfigPersister, PlatformConfigAccessor}
 
-class PlatformConfigTest extends AbstractTestWithFileSystem{
+class PlatformConfigTest extends TestCase {
 
   def testConfigPersistence() {
 
-    val configAccessor = new PlatformConfigAccessor(testDirectoryProvider)
+    val configAccessor = new PlatformConfigAccessor(new MemoryConfigPersister)
     
     val config = Map[String, String](
       "prop1" -> "val1",

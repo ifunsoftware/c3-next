@@ -35,14 +35,14 @@ import scala.collection.{mutable, Map}
 import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriter
 import org.aphreet.c3.platform.auth.User
-import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, SystemDirectoryProvider, ConfigAccessor}
 
-class AuthConfigAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[Map[String, User]] {
+class AuthConfigAccessor(val persister: ConfigPersister) extends ConfigAccessor[Map[String, User]] {
 
-  def configFileName: String = "c3-auth-config.json"
+  def name: String = "c3-auth-config"
 
   def defaultConfig:Map[String, User] =
-    Map("admin" -> User("admin", "password", true))
+    Map("admin" -> User("admin", "password", enabled = true))
 
   def readConfig(node: Node): Map[String, User] = {
     val map = new mutable.HashMap[String, User]

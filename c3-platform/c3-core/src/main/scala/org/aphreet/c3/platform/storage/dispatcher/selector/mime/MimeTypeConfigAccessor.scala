@@ -30,11 +30,11 @@
 
 package org.aphreet.c3.platform.storage.dispatcher.selector.mime
 
-import org.aphreet.c3.platform.storage.dispatcher.selector.SelectorConfigAccessor;
+import org.aphreet.c3.platform.config.ConfigPersister
+import org.aphreet.c3.platform.storage.dispatcher.selector.SelectorConfigAccessor
 
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
 
-class MimeTypeConfigAccessor(override val directoryConfigProvider: SystemDirectoryProvider)
+class MimeTypeConfigAccessor(val persister: ConfigPersister)
   extends SelectorConfigAccessor[String]{
 
   override def defaultConfig = Map(
@@ -45,7 +45,7 @@ class MimeTypeConfigAccessor(override val directoryConfigProvider: SystemDirecto
       "application/x-c3-directory" -> false
     )
 
-  override def configFileName:String = "c3-mime-types.json"
+  override def name = "c3-mime-types"
   
   override def keyFromString(string:String):String = string
   

@@ -2,13 +2,13 @@ package org.aphreet.c3.platform.accesscontrol
 
 import org.aphreet.c3.platform.access.{CleanupComponent, CleanupManager}
 import org.aphreet.c3.platform.accesscontrol.impl.AccessControlComponentImpl
+import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.auth.impl.AuthenticationComponentImpl
 import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3Activator}
-import org.aphreet.c3.platform.config.EnvironmentSystemDirectoryProvider
+import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
+import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.domain.impl.DomainComponentImpl
 import org.osgi.framework.BundleContext
-import org.aphreet.c3.platform.domain.DomainManager
-import org.aphreet.c3.platform.auth.AuthenticationManager
 
 /**
  * Author: Mikhail Malygin
@@ -23,15 +23,22 @@ class C3AccessControlActivator extends C3Activator {
 
     log.info("Starting c3-access-control")
 
-    trait ServiceDependencyProvider extends CleanupComponent{
-      val cleanupManager: CleanupManager = getService(context, classOf[CleanupManager])
+    val cleanupManagerService = getService(context, classOf[CleanupManager])
+    val platformConfigManagerService = getService(context, classOf[PlatformConfigManager])
+    val configPersisterService = getService(context, classOf[ConfigPersister])
+
+    trait ServiceDependencyProvider extends CleanupComponent with PlatformConfigComponent{
+      def cleanupManager: CleanupManager = cleanupManagerService
+
+      def platformConfigManager: PlatformConfigManager = platformConfigManagerService
+
+      def configPersister: ConfigPersister = configPersisterService
     }
 
     log.info("Creating components")
 
     val app = new Object
       with DefaultComponentLifecycle
-      with EnvironmentSystemDirectoryProvider
       with ServiceDependencyProvider
       with DomainComponentImpl
       with AuthenticationComponentImpl

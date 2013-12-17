@@ -41,7 +41,7 @@ import org.aphreet.c3.platform.task.Task
 class FSCheckTask(val accessManager: AccessManager,
                   val statisticsManager: StatisticsManager,
                   val queryManager: QueryManager,
-                  val fsManager: FSManagerImpl,
+                  val fsManager: FSManagerInternal,
                   val fsRoots: Map[String, String]) extends Task {
 
   var rootsToCheck = Map[String, String]()

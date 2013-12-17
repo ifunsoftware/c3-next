@@ -29,17 +29,17 @@
  */
 package org.aphreet.c3.platform.test.integration.config
 
+import junit.framework.Assert._
+import junit.framework.TestCase
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeConfigAccessor
 
-import junit.framework.Assert._
-import java.io.File
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
-class MimeTypeConfigTest extends AbstractTestWithFileSystem{
+class MimeTypeConfigTest extends TestCase {
 
   def testConfigPersistence() {
     
-    val configAccessor = new MimeTypeConfigAccessor(testDirectoryProvider)
+    val configAccessor = new MimeTypeConfigAccessor(new MemoryConfigPersister)
     
     val config = Map(
     	"*/*" -> false,

@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.access.{CleanupManager, AccessMediator, AccessMan
 import org.aphreet.c3.platform.common.{C3Activator, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
 import org.aphreet.c3.platform.config.impl.VersionComponentImpl
-import org.aphreet.c3.platform.config.{VersionManager, BundleContextProvider, PlatformConfigManager, EnvironmentSystemDirectoryProvider}
+import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.management.impl.PlatformManagementComponentImpl
 import org.aphreet.c3.platform.metadata.TransientMetadataManager
@@ -23,6 +23,7 @@ import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.osgi.framework.BundleContext
+import scala.Some
 
 /**
  * Author: Mikhail Malygin
@@ -74,6 +75,7 @@ class C3CoreActivator extends C3Activator {
     registerService(context, classOf[QueryManager], core.queryManager)
     registerService(context, classOf[StorageManager], core.storageManager)
     registerService(context, classOf[VersionManager], core.versionManager)
+    registerService(context, classOf[ConfigPersister], core.configPersister)
 
     log.info("Startup is complete")
 

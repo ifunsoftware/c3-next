@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.storage.activator
 
 import org.aphreet.c3.platform.common.{C3Activator, Logger, DefaultComponentLifecycle}
-import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
+import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.storage.bdb.impl.PureBDBStorageComponent
 import org.aphreet.c3.platform.storage.composite.CompositeStorageComponent
 import org.aphreet.c3.platform.storage.file.FileBDBStorageComponent
@@ -25,11 +25,14 @@ class C3StorageActivator extends C3Activator {
 
     val storageManagerService = getService(context, classOf[StorageManager])
     val platformConfigManagerService = getService(context, classOf[PlatformConfigManager])
+    val configPersisterService = getService(context, classOf[ConfigPersister])
 
     trait DependencyProvider extends StorageComponent with PlatformConfigComponent{
       def storageManager: StorageManager = storageManagerService
 
       def platformConfigManager: PlatformConfigManager = platformConfigManagerService
+
+      def configPersister: ConfigPersister = configPersisterService
     }
 
     log.info("Creating components")

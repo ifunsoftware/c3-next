@@ -30,18 +30,10 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.config.{PlatformConfigManager, AbstractDictionaryConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, AbstractDictionaryConfigAccessor}
 import org.aphreet.c3.platform.filesystem.FSConfigAccessor
-import org.springframework.beans.factory.annotation.Autowired
 
-@Component
-class FSConfigAccessorImpl
-  extends AbstractDictionaryConfigAccessor("c3-fs-config.json") with FSConfigAccessor{
-
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  protected def configDir = configManager.configDir
+class FSConfigAccessorImpl(val persister: ConfigPersister)
+  extends AbstractDictionaryConfigAccessor("c3-fs-config") with FSConfigAccessor{
 
 }

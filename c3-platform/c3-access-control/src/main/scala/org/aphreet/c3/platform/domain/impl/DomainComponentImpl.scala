@@ -37,7 +37,7 @@ import java.util.{Random, UUID}
 import org.aphreet.c3.platform.access.CleanupComponent
 import org.aphreet.c3.platform.auth.HashUtil
 import org.aphreet.c3.platform.common.Logger
-import org.aphreet.c3.platform.config.{ConfigAccessor, SystemDirectoryProvider}
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigAccessor, SystemDirectoryProvider}
 import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.exception.PlatformException
 import scala.Some
@@ -45,9 +45,9 @@ import scala.Some
 trait DomainComponentImpl extends DomainComponent{
 
   this: CleanupComponent
-    with SystemDirectoryProvider =>
+    with PlatformConfigComponent =>
 
-  val domainManager: DomainManager = new DomainManagerImpl(new DomainAccessor(this))
+  val domainManager: DomainManager = new DomainManagerImpl(new DomainAccessor(configPersister))
 
   class DomainManagerImpl(val domainAccessor: ConfigAccessor[DomainConfig]) extends DomainManager {
 

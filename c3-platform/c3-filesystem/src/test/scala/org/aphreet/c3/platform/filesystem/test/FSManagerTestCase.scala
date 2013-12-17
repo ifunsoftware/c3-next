@@ -32,29 +32,38 @@
 package org.aphreet.c3.platform.filesystem.test
 
 import junit.framework.TestCase
-import org.aphreet.c3.platform.access.AccessManager
-import org.aphreet.c3.platform.filesystem.impl.FSManagerImpl
+import org.aphreet.c3.platform.access.{AccessMediator, AccessComponent, AccessManager}
+import org.aphreet.c3.platform.filesystem.impl.{FSPermissionCheckerResourceOwner, FSComponentImpl, FSManagerImpl}
 import junit.framework.Assert._
 import org.easymock.EasyMock._
 import org.aphreet.c3.platform.filesystem._
 import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
+import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
+import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
+import org.aphreet.c3.platform.metadata.{TransientMetadataManager, TransientMetadataComponent}
+import org.aphreet.c3.platform.query.{QueryManager, QueryComponent}
+import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
+import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
+import org.aphreet.c3.platform.common.ComponentLifecycle
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
 
 class FSManagerTestCase extends TestCase with FSTestHelpers{
 
   def testDeletePermission() {
 
-    val fsManager = new FSManagerImpl
+    val fsResourceOwner = new FSPermissionCheckerResourceOwner {
+      def fsRoots: Map[String, String] = Map("domain id " -> "address", "domain id 2" -> "address2")
+    }
 
-    fsManager.fsRoots = Map("domain id " -> "address", "domain id 2" -> "address2")
 
     val resource = new Resource
 
-    assertTrue(fsManager.resourceCanBeDeleted(resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(resource))
 
 
     resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
-    assertTrue(fsManager.resourceCanBeDeleted(resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(resource))
 
 
     val directory = Directory.emptyDirectory("domain id", "name")
@@ -62,22 +71,22 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
     directory.resource.address = "some other address"
 
     //empty non-root directory
-    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(directory.resource))
 
     directory.resource.address = "address"
 
     //empty root directory
-    assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
+    assertFalse(fsResourceOwner.resourceCanBeDeleted(directory.resource))
 
     directory.addChild("name", "address", leaf = true)
 
     //non-empty root directory
-    assertFalse(fsManager.resourceCanBeDeleted(directory.resource))
+    assertFalse(fsResourceOwner.resourceCanBeDeleted(directory.resource))
 
     directory.resource.address = "some other address"
 
     //non-empty non-root directory
-    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(directory.resource))
 
     directory.removeChild("name")
 
@@ -86,34 +95,36 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
     //in the child list
     assertTrue(directory.allChildren.length > 0)
 
-    assertTrue(fsManager.resourceCanBeDeleted(directory.resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(directory.resource))
 
     val file = File.createFile(new Resource, "some domain", "name")
 
-    assertTrue(fsManager.resourceCanBeDeleted(file.resource))
+    assertTrue(fsResourceOwner.resourceCanBeDeleted(file.resource))
   }
 
   def testUpdatePermission() {
 
-    val fsManager = new FSManagerImpl
+    val fsResourceOwner = new FSPermissionCheckerResourceOwner {
+      def fsRoots: Map[String, String] = Map("domain id " -> "address", "domain id 2" -> "address2")
+    }
 
     val resource = new Resource
 
-    assertTrue(fsManager.resourceCanBeUpdated(resource))
+    assertTrue(fsResourceOwner.resourceCanBeUpdated(resource))
 
     resource.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_FILE
 
-    assertTrue(fsManager.resourceCanBeUpdated(resource))
+    assertTrue(fsResourceOwner.resourceCanBeUpdated(resource))
 
     val directory = Directory.emptyDirectory("domain id", "name")
 
     //empty directory
-    assertTrue(fsManager.resourceCanBeUpdated(directory.resource))
+    assertTrue(fsResourceOwner.resourceCanBeUpdated(directory.resource))
 
     directory.addChild("name", "address", leaf = true)
 
     //non-empty directory
-    assertTrue(fsManager.resourceCanBeUpdated(directory.resource))
+    assertTrue(fsResourceOwner.resourceCanBeUpdated(directory.resource))
 
     //some non-directory data
 
@@ -146,26 +157,24 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
 
     resource0.addVersion(version)
 
-    assertTrue(fsManager.resourceCanBeUpdated(resource0))
+    assertTrue(fsResourceOwner.resourceCanBeUpdated(resource0))
 
     resource0.systemMetadata(Node.NODE_FIELD_TYPE) = Node.NODE_TYPE_DIR
 
-    assertFalse(fsManager.resourceCanBeUpdated(resource0))
+    assertFalse(fsResourceOwner.resourceCanBeUpdated(resource0))
 
   }
 
   def testAddressToPathConversion() {
 
-    val accessManager = createMock(classOf[AccessManager])
-    expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("third_level_dir", "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("second_level_dir", "00000003-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
-    replay(accessManager)
+    val accessManagerMock = createMock(classOf[AccessManager])
+    expect(accessManagerMock.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
+    expect(accessManagerMock.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("third_level_dir", "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
+    expect(accessManagerMock.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("second_level_dir", "00000003-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
+    expect(accessManagerMock.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
+    replay(accessManagerMock)
 
-    val fsManager = new FSManagerImpl
-
-    fsManager.accessManager = accessManager
+    val fsManager = createFSManager(accessManagerMock)
 
     assertEquals(Some("/second_level_dir/third_level_dir/file0"), fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals(Some("/second_level_dir/third_level_dir"), fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
@@ -173,37 +182,75 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
     assertEquals(None, fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
 
-    verify(accessManager)
+    verify(accessManagerMock)
   }
 
   def testNonFileAddressToPathConversion() {
 
-    val accessManager = createMock(classOf[AccessManager])
-    expect(accessManager.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
-    expect(accessManager.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, null)).anyTimes
-    expect(accessManager.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
-    replay(accessManager)
+    val accessManagerMock = createMock(classOf[AccessManager])
+    expect(accessManagerMock.get("00000000-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("file0", "00000001-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
+    expect(accessManagerMock.get("00000001-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, "00000002-c2fd-4bef-936e-59cef7943840-6a47")).anyTimes
+    expect(accessManagerMock.get("00000002-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub(null, null)).anyTimes
+    expect(accessManagerMock.get("00000003-c2fd-4bef-936e-59cef7943840-6a47")).andReturn(resourceStub("", null)).anyTimes
+    replay(accessManagerMock)
 
-    val fsManager = new FSManagerImpl
 
-    fsManager.accessManager = accessManager
+    
+    val fsManager = createFSManager(accessManagerMock)
 
     assertEquals(None, fsManager.lookupResourcePath("00000000-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals(None, fsManager.lookupResourcePath("00000001-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals(None, fsManager.lookupResourcePath("00000002-c2fd-4bef-936e-59cef7943840-6a47"))
     assertEquals(None, fsManager.lookupResourcePath("00000003-c2fd-4bef-936e-59cef7943840-6a47"))
 
-    verify(accessManager)
+    verify(accessManagerMock)
   }
 
   def testSplitPath() {
 
-    val manager = new FSManagerImpl
-
-    val result = manager.splitPath("test/dir/file.jpeg")
+    val result = FSManagerImpl.splitPath("test/dir/file.jpeg")
 
     assertEquals(result._1, "test/dir")
     assertEquals(result._2, "file.jpeg")
+  }
+
+  def createFSManager(accessManagerMock: AccessManager): FSManager = {
+    val app = new Object
+      with AccessComponent
+      with StorageComponent
+      with PlatformConfigComponent
+      with TransientMetadataComponent
+      with QueryComponent
+      with StatisticsComponent
+      with TaskComponent
+      with FSCleanupComponent
+      with ComponentLifecycle
+      with FSComponentImpl{
+      def queryManager: QueryManager = null
+
+      def init(callback: this.type#LifecycleCallback) { }
+
+      def destroy(callback: this.type#LifecycleCallback){ }
+
+      def accessManager: AccessManager = accessManagerMock
+
+      def accessMediator: AccessMediator = null
+
+      def transientMetadataManager: TransientMetadataManager = null
+
+      def statisticsManager: StatisticsManager = null
+
+      def storageManager: StorageManager = null
+
+      def taskManager: TaskManager = null
+
+      def filesystemCleanupManager: FSCleanupManager = null
+
+      def platformConfigManager: PlatformConfigManager = null
+
+      def configPersister: ConfigPersister = new MemoryConfigPersister
+    }
+
+    app.filesystemManager
   }
 }

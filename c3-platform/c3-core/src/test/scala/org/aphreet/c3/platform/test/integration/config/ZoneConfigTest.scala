@@ -1,15 +1,16 @@
 package org.aphreet.c3.platform.test.integration.config
 
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import junit.framework.Assert._
 import org.aphreet.c3.platform.zone.impl.ZoneConfigAccessor
 import org.aphreet.c3.platform.zone._
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
+import junit.framework.TestCase
 
-class ZoneConfigTest extends AbstractTestWithFileSystem{
+class ZoneConfigTest extends TestCase {
 
   def testConfigPersistence() {
 
-    val configAccessor = new ZoneConfigAccessor(testDirectoryProvider)
+    val configAccessor = new ZoneConfigAccessor(new MemoryConfigPersister)
 
     val startTime = 1350000000000l
 

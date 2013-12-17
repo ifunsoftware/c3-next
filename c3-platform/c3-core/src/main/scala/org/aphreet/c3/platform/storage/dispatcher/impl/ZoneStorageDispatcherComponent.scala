@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.storage.dispatcher.impl
 
 import org.aphreet.c3.platform.common.Logger
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.config.PlatformConfigComponent
 import org.aphreet.c3.platform.resource.ResourceAddress
 import org.aphreet.c3.platform.storage.StorageParams
 import org.aphreet.c3.platform.storage.dispatcher.{StorageDispatcherComponent, StorageDispatcher}
@@ -11,9 +11,9 @@ import scala.Some
 
 trait ZoneStorageDispatcherComponent extends StorageDispatcherComponent{
 
-  this: SystemDirectoryProvider =>
+  this: PlatformConfigComponent =>
 
-  val storageDispatcher: StorageDispatcher = new ZoneStorageDispatcher(new ZoneConfigAccessor(this))
+  val storageDispatcher: StorageDispatcher = new ZoneStorageDispatcher(new ZoneConfigAccessor(configPersister))
 
   class ZoneStorageDispatcher(val configAccessor: ZoneConfigAccessor) extends StorageDispatcher{
 

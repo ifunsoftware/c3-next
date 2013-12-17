@@ -38,7 +38,7 @@ import scala.collection.JavaConversions._
 import com.springsource.json.parser.Node
 import com.springsource.json.writer.JSONWriter
 
-abstract class AbstractDictionaryConfigAccessor(val configFileName: String, val directoryConfigProvider: SystemDirectoryProvider) extends DictionaryConfigAccessor{
+abstract class AbstractDictionaryConfigAccessor(val name: String) extends DictionaryConfigAccessor{
 
   def defaultConfig = Map()
 

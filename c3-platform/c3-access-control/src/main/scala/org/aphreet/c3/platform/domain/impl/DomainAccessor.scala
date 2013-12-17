@@ -34,14 +34,14 @@ package org.aphreet.c3.platform.domain.impl
 import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriter
 import java.util.UUID
-import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, SystemDirectoryProvider, ConfigAccessor}
 import org.aphreet.c3.platform.domain.{FullMode, DomainMode, Domain}
 import scala.collection.JavaConversions._
 
 
-class DomainAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[DomainConfig]{
+class DomainAccessor(val persister: ConfigPersister) extends ConfigAccessor[DomainConfig]{
 
-  def configFileName: String = "c3-domain-config.json"
+  def name: String = "c3-domain-config"
 
   def defaultConfig:DomainConfig = {
     val domainId = UUID.randomUUID.toString

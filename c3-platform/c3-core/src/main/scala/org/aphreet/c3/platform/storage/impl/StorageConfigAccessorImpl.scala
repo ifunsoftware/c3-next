@@ -34,16 +34,16 @@ import collection.mutable
 import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriter
 import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.config.{ConfigPersister, SystemDirectoryProvider}
 import org.aphreet.c3.platform.storage._
 
-class StorageConfigAccessorImpl(val directoryConfigProvider: SystemDirectoryProvider) extends StorageConfigAccessor {
+class StorageConfigAccessorImpl(val persister: ConfigPersister) extends StorageConfigAccessor {
 
-  private val indexesConfig: StorageIndexConfigAccessor = new StorageIndexConfigAccessorImpl(directoryConfigProvider)
+  private val indexesConfig: StorageIndexConfigAccessor = new StorageIndexConfigAccessorImpl(persister)
 
   def indexConfigAccessor: StorageIndexConfigAccessor = indexesConfig
 
-  def configFileName: String = "c3-storage-config.json"
+  def name: String = "c3-storage-config"
 
   def defaultConfig: List[StorageParams] = List()
 

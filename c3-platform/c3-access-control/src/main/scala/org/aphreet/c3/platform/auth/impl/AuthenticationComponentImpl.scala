@@ -34,14 +34,14 @@ import org.aphreet.c3.platform.auth._
 import org.aphreet.c3.platform.auth.exception._
 import org.aphreet.c3.platform.common.Logger
 import scala.collection.mutable
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, SystemDirectoryProvider}
 
 
 trait AuthenticationComponentImpl extends AuthenticationComponent{
 
-  this: SystemDirectoryProvider =>
+  this: PlatformConfigComponent =>
 
-  val authenticationManager: AuthenticationManager = new AuthenticationManagerImpl(new AuthConfigAccessor(this))
+  val authenticationManager: AuthenticationManager = new AuthenticationManagerImpl(new AuthConfigAccessor(configPersister))
 
   class AuthenticationManagerImpl(val configAccessor: AuthConfigAccessor) extends AuthenticationManager {
 

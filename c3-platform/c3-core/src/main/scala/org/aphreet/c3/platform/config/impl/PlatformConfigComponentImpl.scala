@@ -43,9 +43,11 @@ trait PlatformConfigComponentImpl extends PlatformConfigComponent with Component
 
   this: SystemDirectoryProvider =>
 
+  val configPersister: ConfigPersister = new FileConfigPersister(this)
+
   def platformConfigManager: PlatformConfigManager = platformConfigManagerImpl
 
-  private val platformConfigManagerImpl = new PlatformConfigManagerImpl(new PlatformConfigAccessor(this))
+  private val platformConfigManagerImpl = new PlatformConfigManagerImpl(new PlatformConfigAccessor(configPersister))
 
   destroy(
     Unit => platformConfigManagerImpl.destroy()

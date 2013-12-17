@@ -36,23 +36,22 @@ import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files
 import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.common.{Logger, SimpleCloseableIterable, Path, Constants}
-import org.aphreet.c3.platform.config.{PlatformConfigComponent, SystemDirectoryProvider}
+import org.aphreet.c3.platform.config.PlatformConfigComponent
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
 import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcherComponent
 import org.aphreet.c3.platform.task.{TaskComponent, Task, IterableTask}
 import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
 import scala.actors.Actor
-import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcherComponent
 
 trait StorageComponentImpl extends StorageComponent{
 
   this: PlatformConfigComponent
     with StorageDispatcherComponent
-    with TaskComponent
-    with SystemDirectoryProvider =>
+    with TaskComponent =>
 
-  val storageManager: StorageManager = new StorageManagerImpl(new StorageConfigAccessorImpl(this))
+  val storageManager: StorageManager = new StorageManagerImpl(new StorageConfigAccessorImpl(configPersister))
 
   class StorageManagerImpl(val configAccessor: StorageConfigAccessor) extends StorageManager with ConflictResolverProvider {
 
@@ -342,7 +341,7 @@ trait StorageComponentImpl extends StorageComponent{
     }
 
     private def defaultStoragePath: Path = {
-      Path(dataDirectory.getAbsolutePath).append("storages")
+      Path(platformConfigManager.dataDir.getAbsolutePath).append("storages")
     }
 
     class CreateIndexTask(storages: List[Storage], index: StorageIndex) extends IterableTask(new SimpleCloseableIterable(storages)) {

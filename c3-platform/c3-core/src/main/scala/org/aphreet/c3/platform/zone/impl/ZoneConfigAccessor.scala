@@ -2,14 +2,14 @@ package org.aphreet.c3.platform.zone.impl
 
 import com.springsource.json.parser._
 import com.springsource.json.writer.JSONWriter
-import org.aphreet.c3.platform.config.{SystemDirectoryProvider, ConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, SystemDirectoryProvider, ConfigAccessor}
 import org.aphreet.c3.platform.zone.TimeRangeConfig
 import org.aphreet.c3.platform.zone.ZoneConfig
 import org.aphreet.c3.platform.zone.{Zone, IdRange}
 
-class ZoneConfigAccessor(val directoryConfigProvider: SystemDirectoryProvider) extends ConfigAccessor[ZoneConfig]{
+class ZoneConfigAccessor(val persister: ConfigPersister) extends ConfigAccessor[ZoneConfig]{
 
-  protected def configFileName = "c3-zones.json"
+  protected def name = "c3-zones"
 
   protected def defaultConfig = ZoneConfig(Nil)
 

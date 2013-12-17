@@ -33,15 +33,17 @@ import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.storage._
 
 import impl.{StorageConfigAccessorImpl, StorageIndexConfigAccessorImpl}
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-
 import junit.framework.Assert._
 import collection.mutable
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
+import junit.framework.TestCase
 
-class StorageConfigTest extends AbstractTestWithFileSystem{
+class StorageConfigTest extends TestCase {
 
 
   def testConfigPersistence() {
+
+    val configPersister = new MemoryConfigPersister
 
     val paramsMap1 = new mutable.HashMap[String, String]
     val paramsMap2 = new mutable.HashMap[String, String]
@@ -66,10 +68,10 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
         paramsMap2)
     )
 
-    val indexAccessor = new StorageIndexConfigAccessorImpl(testDirectoryProvider)
+    val indexAccessor = new StorageIndexConfigAccessorImpl(configPersister)
     indexAccessor.store(List())
 
-    val accessor = new StorageConfigAccessorImpl(testDirectoryProvider)
+    val accessor = new StorageConfigAccessorImpl(configPersister)
 
     accessor.store(config)
 
@@ -126,7 +128,7 @@ class StorageConfigTest extends AbstractTestWithFileSystem{
 
   def testIndexConfigPersistence(){
 
-    val configAccessor = new StorageIndexConfigAccessorImpl(testDirectoryProvider)
+    val configAccessor = new StorageIndexConfigAccessorImpl(new MemoryConfigPersister)
 
     val indexesConfig =  List(
       new StorageIndex("poolindex", List("c3.pool", "c3.tags"), false, true, 10002l),

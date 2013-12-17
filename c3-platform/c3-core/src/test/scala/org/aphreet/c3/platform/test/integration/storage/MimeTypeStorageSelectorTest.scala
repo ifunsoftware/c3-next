@@ -29,19 +29,21 @@
  */
 package org.aphreet.c3.platform.test.integration.storage
 
+import junit.framework.Assert._
+import junit.framework.TestCase
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
+import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 
-import junit.framework.Assert._
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
-import java.io.File
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
-import org.aphreet.c3.platform.resource.Resource
 
-class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
+class MimeTypeStorageSelectorTest extends TestCase {
 
   def testConfigPersistence() {
 
-    val configAccessor = new MimeTypeConfigAccessor(testDirectoryProvider)
+    val testConfigPersister = new MemoryConfigPersister
+
+    val configAccessor = new MimeTypeConfigAccessor(testConfigPersister)
 
     val config = Map(
       "*/*" -> false,
@@ -53,10 +55,10 @@ class MimeTypeStorageSelectorTest extends AbstractTestWithFileSystem{
 
     assertEquals(config, configAccessor.load)
 
-    val app = new Object with SystemDirectoryProvider with MimeTypeStorageSelectorComponent {
-      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
+    val app = new Object with PlatformConfigComponent with MimeTypeStorageSelectorComponent {
+      def platformConfigManager: PlatformConfigManager = null
 
-      def dataDirectory: File = testDirectoryProvider.dataDirectory
+      def configPersister: ConfigPersister = testConfigPersister
     }
 
     val selector = app.mimeStorageSelector

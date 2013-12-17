@@ -31,16 +31,17 @@ package org.aphreet.c3.platform.storage.dispatcher.selector.mime
 
 import collection.mutable
 import eu.medsea.mimeutil.MimeType
-import org.aphreet.c3.platform.config.SystemDirectoryProvider
+import org.aphreet.c3.platform.config.PlatformConfigComponent
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.dispatcher.selector.ModifiableStorageSelector
 
 
 trait MimeTypeStorageSelectorComponent{
 
-  this: SystemDirectoryProvider =>
+  this: PlatformConfigComponent =>
 
-  val mimeStorageSelector: ModifiableStorageSelector[String] = new MimeTypeStorageSelectorImpl(new MimeTypeConfigAccessor(this))
+  val mimeStorageSelector: ModifiableStorageSelector[String] =
+    new MimeTypeStorageSelectorImpl(new MimeTypeConfigAccessor(configPersister))
 
   class MimeTypeStorageSelectorImpl(val configAccessor: MimeTypeConfigAccessor)
     extends ModifiableStorageSelector[String]{

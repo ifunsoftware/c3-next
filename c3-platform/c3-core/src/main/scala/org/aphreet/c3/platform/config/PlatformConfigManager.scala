@@ -53,6 +53,8 @@ trait PlatformConfigComponent{
 
   def platformConfigManager: PlatformConfigManager
 
+  def configPersister: ConfigPersister
+
 }
 
 case class RegisterMsg(listener: PlatformPropertyListener)

@@ -54,5 +54,10 @@ trait FSManager{
 
   def startFilesystemCheck()
 
+}
+
+trait FSComponent{
+
+  def filesystemManager: FSManager
 
 }

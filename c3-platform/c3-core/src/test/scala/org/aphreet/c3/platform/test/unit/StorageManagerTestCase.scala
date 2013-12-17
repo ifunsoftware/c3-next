@@ -31,25 +31,28 @@
 package org.aphreet.c3.platform.test.unit
 
 import collection.mutable
-import java.io.File
 import junit.framework.Assert._
+import junit.framework.TestCase
 import org.aphreet.c3.platform.common.{Constants, Path}
-import org.aphreet.c3.platform.config.{SystemDirectoryProvider, PlatformConfigComponent, PlatformConfigManager}
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
+import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.mock.StorageMock
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.storage.dispatcher.{StorageDispatcherComponent, StorageDispatcher}
 import org.aphreet.c3.platform.storage.impl.{StorageIndexConfigAccessorImpl, StorageConfigAccessorImpl, StorageComponentImpl}
 import org.aphreet.c3.platform.task.{TaskComponent, TaskManager}
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import org.easymock.EasyMock._
 
-class StorageManagerTestCase extends AbstractTestWithFileSystem{
+class StorageManagerTestCase extends TestCase {
 
   val storagePath = "/path/to/storage"
   val storageId = "1234"
   val storageName = "StorageMock"
 
   def testRegisterFactory() {
+
+    val testConfigPersister = new MemoryConfigPersister
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""), List(), new mutable.HashMap[String, String])
 
     val createdStorageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""),
@@ -74,23 +77,20 @@ class StorageManagerTestCase extends AbstractTestWithFileSystem{
         Map(Constants.C3_SYSTEM_ID -> "12341234")
       ).atLeastOnce
       replay(platformConfigManager)
+
+      val configPersister: ConfigPersister = testConfigPersister
     }
 
-    new StorageIndexConfigAccessorImpl(testDirectoryProvider).store(List())
+    new StorageIndexConfigAccessorImpl(testConfigPersister).store(List())
 
-    val configAccessor = new StorageConfigAccessorImpl(testDirectoryProvider)
+    val configAccessor = new StorageConfigAccessorImpl(testConfigPersister)
     configAccessor.store(List(storageParams))
 
-    val app = new Object with SystemDirectoryProvider
+    val app = new Object
       with StorageDispatcherComponentMock
       with ConfigComponentMock
       with TaskComponentMock
-      with StorageComponentImpl{
-
-      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
-
-      def dataDirectory: File = testDirectoryProvider.dataDirectory
-    }
+      with StorageComponentImpl
 
     val storageManager = app.storageManager
 
@@ -113,6 +113,9 @@ class StorageManagerTestCase extends AbstractTestWithFileSystem{
   }
 
   def testUpdateStorageMode() {
+
+    val testConfigPersister = new MemoryConfigPersister
+
     val storageParams = StorageParams(storageId, new Path(storagePath), storageName, RW(""),
       List(),
       new mutable.HashMap[String, String])
@@ -122,7 +125,7 @@ class StorageManagerTestCase extends AbstractTestWithFileSystem{
       List(),
       new mutable.HashMap[String, String])
 
-    val configAccessor = new StorageConfigAccessorImpl(testDirectoryProvider)
+    val configAccessor = new StorageConfigAccessorImpl(testConfigPersister)
     configAccessor.store(List(storageParams))
 
     trait TaskComponentMock extends TaskComponent{
@@ -144,19 +147,17 @@ class StorageManagerTestCase extends AbstractTestWithFileSystem{
         Map(Constants.C3_SYSTEM_ID -> "12341234")
       ).atLeastOnce
       replay(platformConfigManager)
+
+      val configPersister = testConfigPersister
     }
 
-    new StorageIndexConfigAccessorImpl(testDirectoryProvider).store(List())
+    new StorageIndexConfigAccessorImpl(testConfigPersister).store(List())
 
-    val app = new Object with SystemDirectoryProvider
+    val app = new Object
       with StorageDispatcherComponentMock
       with ConfigComponentMock
       with TaskComponentMock
-      with StorageComponentImpl{
-      def configurationDirectory: File = testDirectoryProvider.configurationDirectory
-
-      def dataDirectory: File = testDirectoryProvider.dataDirectory
-    }
+      with StorageComponentImpl
 
     val storageManager = app.storageManager
 

@@ -42,37 +42,37 @@ trait ConfigAccessor[T] {
 
   def load: T = {
 
-    val file = new File(directoryConfigProvider.configurationDirectory, configFileName)
-
-    if (!file.exists) {
-      storeConfig(defaultConfig, file)
+    if(!persister.configExists(name)){
+      store(defaultConfig)
     }
 
-    loadConfig(file)
+    deserialize(persister.readConfig(name))
   }
 
   def store(data: T) {
-    storeConfig(data, new File(directoryConfigProvider.configurationDirectory, configFileName))
+    persister.writeConfig(name, serialize(data))
   }
 
   def update(f: (T) => T) {
     store(f.apply(load))
   }
 
-  def storeConfig(data: T, configFile: File) {
+  def serialize(data: T): String = {
     this.synchronized {
       using(new StringWriter())(
         writer => {
           writeConfig(data, new JSONWriterImpl(writer))
-          Files.write(configFile.toPath, JSONFormatter.format(writer.toString).getBytes("UTF-8"),
-            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
+          JSONFormatter.format(writer.toString)
+
+//          Files.write(configFile.toPath, JSONFormatter.format(writer.toString).getBytes("UTF-8"),
+//            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
         }
       )
     }
   }
 
-  def loadConfig(configFile: File): T = {
-    readConfig(new AntlrJSONParser().parse(configFile))
+  def deserialize(config: String): T = {
+    readConfig(new AntlrJSONParser().parse(config))
   }
 
   implicit def asMap(node:Node):MapNode = node.asInstanceOf[MapNode]
@@ -86,14 +86,14 @@ trait ConfigAccessor[T] {
   implicit def asBooleanScalarNodeValue(node:Node):Boolean = node.asInstanceOf[ScalarNode].getValue[Boolean]
 
 
-  protected def configFileName: String
+  protected def name: String
 
   protected def defaultConfig: T
+
+  def persister: ConfigPersister
 
   def writeConfig(data: T, writer: JSONWriter)
 
   def readConfig(node:Node):T
-
-  def directoryConfigProvider: SystemDirectoryProvider
 
 }
