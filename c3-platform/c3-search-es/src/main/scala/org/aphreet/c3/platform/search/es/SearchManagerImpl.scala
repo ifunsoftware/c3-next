@@ -25,8 +25,12 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.{SearchHit, SearchHits}
 import scala.collection.mutable.ArrayBuffer
+import org.elasticsearch.index.query.{FieldQueryBuilder, QueryStringQueryBuilder, QueryBuilders, QueryBuilder}
 
-
+/**
+ * Need plugin
+ * https://github.com/elasticsearch/elasticsearch-mapper-attachments
+ */
 @Component("searchManager")
 class SearchManagerImpl extends SearchManager with WatchedActor {
 
@@ -62,7 +66,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
         ImmutableSettings.settingsBuilder()
           .put ("index.mapping.attachment.ignore_errors",false)
           .put("number_of_shards", 1)
-          .put("index.numberOfReplicas", 1))
+          .put("index.numberOfReplicas", 0))
         .addMapping(docName, mapping())
         .execute().actionGet()
 
@@ -116,23 +120,27 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     xbMapping
   }
 
-  def search(domain: String, query: String): SearchResult = {
-    log debug "Search called with query: " + query
+  def search(domain: String, text: String): SearchResult = {
+    log debug "Search called with query: " + text
 
     if (esClient == null) {
       log debug "ES client is null"
-      SearchResult(query, null)
+      SearchResult(text, new Array[SearchResultElement](0))
     } else {
-      val resp:SearchResponse = esClient.prepareSearch("resources-index").setQuery("")
+      val queryBuilder:FieldQueryBuilder = QueryBuilders.fieldQuery("_all", text)
+      val resp:SearchResponse = esClient.prepareSearch(indexName).setQuery(queryBuilder)
         .execute()
         .actionGet()
-      var searchResults:Array[SearchResultElement] = new Array[SearchResultElement](resp.getHits.getTotalHits.toInt)
-      resp.getHits.hits().foreach((hit:SearchHit) => {
-        val fieldFragments = new ArrayBuffer[SearchResultFragment]
-      })
 
-      SearchResult(query, null)
-    }  //solr.search(domain, query)
+      val searchResults = resp.getHits.hits().map((hit:SearchHit) => {
+        if (hit.id().isEmpty)  {
+           None
+        } else {
+           Some(SearchResultElement(hit.id(), null, hit.getScore, Array.ofDim[SearchResultFragment](0)))
+        }
+      }).flatten.toList.toArray
+      SearchResult(text, searchResults)
+    }
   }
 
   def flushIndexes() {}

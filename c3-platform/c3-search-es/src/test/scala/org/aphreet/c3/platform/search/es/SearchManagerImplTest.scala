@@ -12,6 +12,36 @@ import scala.io.Source
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.search.api.SearchResultElement
 
+/**
+{
+  "fields": [
+    "document.author",
+    "document.title",
+    "document.content_type"
+  ],
+  "query": {
+    "query_string": {
+      "query": "XHTML"
+    }
+  }
+}
+
+  {
+  "fields": [
+    "title"
+  ],
+  "query": {
+    "text": {
+      "document.author": "Tika*"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "title": {}
+    }
+  }
+}
+ */
  class SearchManagerImplTest extends TestCase {
 
   var searchManagerImpl:SearchManagerImpl = new SearchManagerImpl
@@ -44,7 +74,7 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
     verifyResults(searchManagerImpl.search("domain", searchQuery).elements.toList)
   }
 
-  def searchQuery:String = "Apache Tika"
+  def searchQuery:String = "Tika"
 
   var resources:List[Resource] = List(
     resource("address1",
@@ -54,6 +84,7 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
   )
 
   def verifyResults(found:List[SearchResultElement]) {
+    println (found)
     assertEquals(List("address1"), found.map(e => e.address))
   }
 }
