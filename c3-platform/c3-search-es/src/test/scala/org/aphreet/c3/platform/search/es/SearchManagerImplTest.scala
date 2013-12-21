@@ -13,31 +13,28 @@ import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.search.api.SearchResultElement
 
 /**
+//hightlight
 {
   "fields": [
-    "document.author",
-    "document.title",
-    "document.content_type"
+    "*",
+    "address"
   ],
   "query": {
     "query_string": {
-      "query": "XHTML"
-    }
-  }
-}
-
-  {
-  "fields": [
-    "title"
-  ],
-  "query": {
-    "text": {
-      "document.author": "Tika*"
+      "query": "ability"
     }
   },
   "highlight": {
+    "pre_tags": [
+      "<b>"
+    ],
+    "post_tags": [
+      "</b>"
+    ],
     "fields": {
-      "title": {}
+      "document": {
+        "number_of_fragments": 3
+      }
     }
   }
 }

@@ -84,6 +84,10 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
             .startObject("document")
             .field("type", "attachment")
               .startObject("fields")
+                 .startObject("document")
+                    .field("term_vector", "with_positions_offsets")
+                    .field("store", "yes")
+                  .endObject()
                   .startObject("date")
                     .field("store", "yes")
                    .endObject()
@@ -127,16 +131,16 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
       log debug "ES client is null"
       SearchResult(text, new Array[SearchResultElement](0))
     } else {
-      val queryBuilder:FieldQueryBuilder = QueryBuilders.fieldQuery("_all", text)
-      val resp:SearchResponse = esClient.prepareSearch(indexName).setQuery(queryBuilder)
+      val queryBuilder:QueryStringQueryBuilder = QueryBuilders.queryString(text)
+      val resp:SearchResponse = esClient.prepareSearch(indexName).setQuery(queryBuilder ).addFields("*","address")
         .execute()
         .actionGet()
 
       val searchResults = resp.getHits.hits().map((hit:SearchHit) => {
-        if (hit.id().isEmpty)  {
+        if (!hit.getFields.containsKey("address"))  {
            None
         } else {
-           Some(SearchResultElement(hit.id(), null, hit.getScore, Array.ofDim[SearchResultFragment](0)))
+           Some(SearchResultElement(hit.getFields.get("address").values().get(0).asInstanceOf[String], null, hit.getScore, Array.ofDim[SearchResultFragment](0)))
         }
       }).flatten.toList.toArray
       SearchResult(text, searchResults)
