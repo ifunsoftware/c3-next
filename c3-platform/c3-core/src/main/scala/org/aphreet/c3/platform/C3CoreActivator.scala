@@ -2,7 +2,7 @@ package org.aphreet.c3.platform
 
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.access.{CleanupManager, AccessMediator, AccessManager}
-import org.aphreet.c3.platform.common.{C3Activator, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.common.{C3AppHandle, C3Activator, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
 import org.aphreet.c3.platform.config.impl.VersionComponentImpl
 import org.aphreet.c3.platform.config._
@@ -23,7 +23,6 @@ import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.osgi.framework.BundleContext
-import scala.Some
 
 /**
  * Author: Mikhail Malygin
@@ -32,17 +31,15 @@ import scala.Some
  */
 class C3CoreActivator extends C3Activator {
 
-  var app: Option[DefaultComponentLifecycle] = None
+  def name = "c3-core"
 
-  def start(context: BundleContext) {
-
-    log.info("Starting c3-core")
+  def createApplication(context: BundleContext): C3AppHandle = {
 
     trait LocalBundleContextProvider extends BundleContextProvider{
       def bundleContext: BundleContext = context
     }
 
-    val core = new Object
+    val module = new Object
       with DefaultComponentLifecycle
       with LocalBundleContextProvider
       with VersionComponentImpl
@@ -60,35 +57,23 @@ class C3CoreActivator extends C3Activator {
       with QueryComponentImpl
       with AccessComponentImpl
 
-    log.info("Running initialization hooks")
+    new C3AppHandle {
+      def registerServices(context: BundleContext) {
+        registerService(context, classOf[AccessManager], module.accessManager)
+        registerService(context, classOf[AccessMediator], module.accessMediator)
+        registerService(context, classOf[CleanupManager], module.cleanupManager)
+        registerService(context, classOf[TaskManager], module.taskManager)
+        registerService(context, classOf[StatisticsManager], module.statisticsManager)
+        registerService(context, classOf[TransientMetadataManager], module.transientMetadataManager)
+        registerService(context, classOf[PlatformConfigManager], module.platformConfigManager)
+        registerService(context, classOf[PlatformManagementEndpoint], module.platformManagementEndpoint)
+        registerService(context, classOf[QueryManager], module.queryManager)
+        registerService(context, classOf[StorageManager], module.storageManager)
+        registerService(context, classOf[VersionManager], module.versionManager)
+        registerService(context, classOf[ConfigPersister], module.configPersister)
+      }
 
-    core.start()
-
-    registerService(context, classOf[AccessManager], core.accessManager)
-    registerService(context, classOf[AccessMediator], core.accessMediator)
-    registerService(context, classOf[CleanupManager], core.cleanupManager)
-    registerService(context, classOf[TaskManager], core.taskManager)
-    registerService(context, classOf[StatisticsManager], core.statisticsManager)
-    registerService(context, classOf[TransientMetadataManager], core.transientMetadataManager)
-    registerService(context, classOf[PlatformConfigManager], core.platformConfigManager)
-    registerService(context, classOf[PlatformManagementEndpoint], core.platformManagementEndpoint)
-    registerService(context, classOf[QueryManager], core.queryManager)
-    registerService(context, classOf[StorageManager], core.storageManager)
-    registerService(context, classOf[VersionManager], core.versionManager)
-    registerService(context, classOf[ConfigPersister], core.configPersister)
-
-    log.info("Startup is complete")
-
-    app = Some(core)
-
-  }
-
-  def stop(context: BundleContext) {
-
-    log.info("Stopping c3-core")
-
-    app.foreach(_.stop())
-
-    log.info("c3-core is stopped")
+      val app = module
+    }
   }
 }

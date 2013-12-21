@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.filesystem
 
-import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3Activator}
+import org.aphreet.c3.platform.common.{C3AppHandle, DefaultComponentLifecycle, C3Activator}
 import org.osgi.framework.BundleContext
 import org.aphreet.c3.platform.filesystem.impl.{FSComponentImpl, FSCleanupComponentImpl}
 import org.aphreet.c3.platform.access.{AccessComponent, AccessMediator, AccessManager}
@@ -17,10 +17,9 @@ import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponen
  * Time:   12:01 AM
  */
 class C3FilesystemActivator extends C3Activator{
+  def name = "c3-filesystem"
 
-  var app: Option[DefaultComponentLifecycle] = None
-
-  def start(context: BundleContext) {
+  def createApplication(context: BundleContext): C3AppHandle = {
 
     trait DependencyProvider extends AccessComponent
     with StorageComponent
@@ -50,29 +49,18 @@ class C3FilesystemActivator extends C3Activator{
 
     log.info("Starting c3-filesystem")
 
-    val app = new Object
+    val module = new Object
       with DefaultComponentLifecycle
       with DependencyProvider
       with FSCleanupComponentImpl
       with FSComponentImpl
 
-    log.info("Running initialization callbacks")
+    new C3AppHandle {
+      def registerServices(context: BundleContext) {
+        registerService(context, classOf[FSManager], module.filesystemManager)
+      }
 
-    app.start()
-
-    registerService(context, classOf[FSManager], app.filesystemManager)
-
-    log.info("c3-filesystem started")
-
-    this.app = Some(app)
-  }
-
-  def stop(context: BundleContext) {
-
-    log.info("Stopping c3-filesystem")
-
-    this.app.foreach(_.stop())
-
-    log.info("c3-filesystem stopped")
+      val app = module
+    }
   }
 }

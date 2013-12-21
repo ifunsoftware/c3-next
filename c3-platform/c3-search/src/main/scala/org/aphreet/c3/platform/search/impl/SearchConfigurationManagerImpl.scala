@@ -1,24 +1,16 @@
 package org.aphreet.c3.platform.search.impl
 
-import org.aphreet.c3.platform.search.{DropFieldConfiguration, HandleFieldListMsg, SearchConfigurationManager}
-import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.springframework.beans.factory.annotation.Autowired
+import org.aphreet.c3.platform.config.ConfigAccessor
+import org.aphreet.c3.platform.search.{DropFieldConfiguration, HandleFieldListMsg, SearchConfigurationManager}
 
-@Component
-class SearchConfigurationManagerImpl extends SearchConfigurationManager {
-
-  @Autowired
-  var configAccessor: SearchConfigurationAccessor = _
+class SearchConfigurationManagerImpl(val configAccessor: ConfigAccessor[FieldConfiguration]) extends SearchConfigurationManager {
 
   var currentSearchConfiguration = new SearchConfiguration
 
   var currentFields: FieldConfiguration = _
 
-  @PostConstruct
-  def init() {
-
+  {
     currentFields = configAccessor.load
 
     currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
@@ -51,7 +43,6 @@ class SearchConfigurationManagerImpl extends SearchConfigurationManager {
     }
   }
 
-  @PreDestroy
   def destroy() {
     this ! DestroyMsg
   }

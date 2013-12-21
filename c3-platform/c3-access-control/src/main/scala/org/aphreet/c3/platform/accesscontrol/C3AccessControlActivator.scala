@@ -4,7 +4,7 @@ import org.aphreet.c3.platform.access.{CleanupComponent, CleanupManager}
 import org.aphreet.c3.platform.accesscontrol.impl.AccessControlComponentImpl
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.auth.impl.AuthenticationComponentImpl
-import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3Activator}
+import org.aphreet.c3.platform.common.{C3AppHandle, DefaultComponentLifecycle, C3Activator}
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.domain.impl.DomainComponentImpl
@@ -17,52 +17,34 @@ import org.osgi.framework.BundleContext
  */
 class C3AccessControlActivator extends C3Activator {
 
-  var app: Option[DefaultComponentLifecycle] = None
 
-  def start(context: BundleContext) {
+  def name = "c3-access-control"
 
-    log.info("Starting c3-access-control")
-
-    val cleanupManagerService = getService(context, classOf[CleanupManager])
-    val platformConfigManagerService = getService(context, classOf[PlatformConfigManager])
-    val configPersisterService = getService(context, classOf[ConfigPersister])
+  def createApplication(context: BundleContext): C3AppHandle = {
 
     trait ServiceDependencyProvider extends CleanupComponent with PlatformConfigComponent{
-      def cleanupManager: CleanupManager = cleanupManagerService
+      val cleanupManager = getService(context, classOf[CleanupManager])
 
-      def platformConfigManager: PlatformConfigManager = platformConfigManagerService
+      val platformConfigManager = getService(context, classOf[PlatformConfigManager])
 
-      def configPersister: ConfigPersister = configPersisterService
+      val configPersister = getService(context, classOf[ConfigPersister])
     }
 
-    log.info("Creating components")
-
-    val app = new Object
+    val module = new Object
       with DefaultComponentLifecycle
       with ServiceDependencyProvider
       with DomainComponentImpl
       with AuthenticationComponentImpl
       with AccessControlComponentImpl
 
-    log.info("Initializing components")
+    new C3AppHandle {
+      def registerServices(context: BundleContext){
+        registerService(context, classOf[DomainManager], module.domainManager)
+        registerService(context, classOf[AuthenticationManager], module.authenticationManager)
+        registerService(context, classOf[AccessControlManager], module.accessControlManager)
+      }
 
-    app.start()
-
-    registerService(context, classOf[DomainManager], app.domainManager)
-    registerService(context, classOf[AuthenticationManager], app.authenticationManager)
-    registerService(context, classOf[AccessControlManager], app.accessControlManager)
-
-    this.app = Some(app)
-
-    log.info("c3-access-control started")
-
-  }
-
-  def stop(context: BundleContext) {
-    log.info("Stopping c3-access-control")
-
-    this.app.foreach(_.stop())
-
-    log.info("c3-access-control stopped")
+      val app = module
+    }
   }
 }

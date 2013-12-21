@@ -1,33 +1,35 @@
-package org.aphreet.c3.platform.backup
+package org.aphreet.c3.platform.search
 
-import org.aphreet.c3.platform.common.{C3AppHandle, DefaultComponentLifecycle, C3Activator}
-import org.aphreet.c3.platform.access.{AccessManager, AccessMediator, AccessComponent}
+import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3AppHandle, C3Activator}
+import org.osgi.framework.BundleContext
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
 import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
+import org.aphreet.c3.platform.access.{AccessManager, AccessMediator, AccessComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
-import org.aphreet.c3.platform.backup.impl.BackupComponentImpl
-import org.aphreet.c3.platform.filesystem.{FSManager, FSComponent}
-import org.osgi.framework.BundleContext
+import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
+import org.aphreet.c3.platform.search.impl.SearchComponentImpl
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/21/13
- * Time:   3:36 PM
+ * Time:   4:20 PM
  */
-class C3BackupActivator extends C3Activator {
+class C3SearchActivator extends C3Activator {
 
-  def name = "c3-backup"
+  def name: String = "c3-search"
 
   def createApplication(context: BundleContext): C3AppHandle = {
 
-    trait DependencyProvider extends AccessComponent
+    trait DependencyProvider extends  AccessComponent
     with StorageComponent
     with PlatformConfigComponent
     with TaskComponent
-    with FSComponent {
+    with StatisticsComponent {
       val accessManager = getService(context, classOf[AccessManager])
 
       val accessMediator = getService(context, classOf[AccessMediator])
+
+      val statisticsManager = getService(context, classOf[StatisticsManager])
 
       val storageManager = getService(context, classOf[StorageManager])
 
@@ -36,19 +38,15 @@ class C3BackupActivator extends C3Activator {
       val platformConfigManager = getService(context, classOf[PlatformConfigManager])
 
       val configPersister = getService(context, classOf[ConfigPersister])
-
-      val filesystemManager: FSManager = getService(context, classOf[FSManager])
     }
 
-    log.info("Starting c3-backup")
-
     val module = new Object with DefaultComponentLifecycle
-      with DependencyProvider
-      with BackupComponentImpl
+    with DependencyProvider
+    with SearchComponentImpl
 
     new C3AppHandle {
-      def registerServices(context: BundleContext) {
-        registerService(context, classOf[BackupManager], module.backupManager)
+      def registerServices(context: BundleContext){
+        registerService(context, classOf[StorageManager], module.storageManager)
       }
 
       val app = module

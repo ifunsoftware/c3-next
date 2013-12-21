@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.search.impl
 
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigManager, ConfigAccessor}
 import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 import com.springsource.json.writer.JSONWriter
@@ -8,15 +8,9 @@ import com.springsource.json.parser._
 import collection.JavaConversions._
 import collection.mutable.ArrayBuffer
 
-@Component
-class SearchConfigurationAccessor extends ConfigAccessor[FieldConfiguration]{
+class SearchConfigurationAccessor(val persister: ConfigPersister) extends ConfigAccessor[FieldConfiguration]{
 
-  @Autowired
-  var configManager:PlatformConfigManager = _
-
-  protected def configFileName = "c3-search-config.json"
-
-  protected def configDir = configManager.configDir
+  def name = "c3-search-config"
 
   protected def defaultConfig = FieldConfiguration(List())
 

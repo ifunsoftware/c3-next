@@ -4,20 +4,19 @@ import impl.{Field, FieldConfiguration, SearchConfigurationAccessor}
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import java.io.File
 import junit.framework.Assert._
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
 
 class SearchConfigurationAccessorTestCase extends AbstractTestWithFileSystem{
 
   def testConfigPersistence() {
 
-    val configAccessor = new SearchConfigurationAccessor
+    val configAccessor = new SearchConfigurationAccessor(new MemoryConfigPersister)
 
     val config = FieldConfiguration(List(Field("f2", 2.0f, 2), Field("f1", 1, 1)))
 
-    val fileName = "config.json"
+    configAccessor.store(config)
 
-    configAccessor.storeConfig(config, new File(testDir, fileName))
-
-    val readConfig = configAccessor.loadConfig(new File(testDir, fileName))
+    val readConfig = configAccessor.load
 
     assertEquals(config, readConfig)
   }

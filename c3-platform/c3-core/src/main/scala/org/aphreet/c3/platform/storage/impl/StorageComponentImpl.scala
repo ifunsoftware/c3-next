@@ -34,7 +34,6 @@ import java.io.IOException
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Path => NioPath, FileVisitResult, SimpleFileVisitor, Files}
 import javax.annotation.PreDestroy
-import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.common.{Logger, SimpleCloseableIterable, Path, Constants}
 import org.aphreet.c3.platform.config.PlatformConfigComponent
 import org.aphreet.c3.platform.exception.{ConfigurationException, StorageException, StorageNotFoundException}
@@ -42,8 +41,6 @@ import org.aphreet.c3.platform.resource.{ResourceAddress, IdGenerator, Resource}
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.storage.dispatcher.StorageDispatcherComponent
 import org.aphreet.c3.platform.task.{TaskComponent, Task, IterableTask}
-import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import scala.actors.Actor
 
 trait StorageComponentImpl extends StorageComponent{
 
@@ -62,10 +59,6 @@ trait StorageComponentImpl extends StorageComponent{
     private val factories = new mutable.HashMap[String, StorageFactory]
 
     val indexConfigAccessor: StorageIndexConfigAccessor = configAccessor.indexConfigAccessor
-
-    @Autowired
-    @Qualifier("AccessMediator")
-    var accessMediator: Actor = _
 
     lazy val systemId = getSystemId
 
@@ -246,8 +239,6 @@ trait StorageComponentImpl extends StorageComponent{
 
       log.info("Reseting storage dispatcher")
       storageDispatcher.resetDispatcher(configAccessor.load)
-
-      accessMediator ! StoragePurgedMsg('StorageManager)
     }
 
 

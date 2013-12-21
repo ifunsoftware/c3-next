@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.storage.activator
 
-import org.aphreet.c3.platform.common.{C3Activator, Logger, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.common.{C3AppHandle, C3Activator, Logger, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigComponent, PlatformConfigManager}
 import org.aphreet.c3.platform.storage.bdb.impl.PureBDBStorageComponent
 import org.aphreet.c3.platform.storage.composite.CompositeStorageComponent
@@ -15,50 +15,28 @@ import org.osgi.framework.{BundleContext, BundleActivator}
  */
 class C3StorageActivator extends C3Activator {
 
-  var storageApp: Option[DefaultComponentLifecycle] = None
+  def name = "c3-storage"
 
-  def start(context: BundleContext) {
-
-    log.info("Starting c3-storage")
-
-    log.info("Resolving services")
-
-    val storageManagerService = getService(context, classOf[StorageManager])
-    val platformConfigManagerService = getService(context, classOf[PlatformConfigManager])
-    val configPersisterService = getService(context, classOf[ConfigPersister])
-
+  def createApplication(context: BundleContext): C3AppHandle = {
     trait DependencyProvider extends StorageComponent with PlatformConfigComponent{
-      def storageManager: StorageManager = storageManagerService
+      val storageManager = getService(context, classOf[StorageManager])
 
-      def platformConfigManager: PlatformConfigManager = platformConfigManagerService
+      val platformConfigManager = getService(context, classOf[PlatformConfigManager])
 
-      def configPersister: ConfigPersister = configPersisterService
+      val configPersister = getService(context, classOf[ConfigPersister])
     }
 
-    log.info("Creating components")
-
-    val app = new Object with DefaultComponentLifecycle
+    val module = new Object with DefaultComponentLifecycle
       with DependencyProvider
       with PureBDBStorageComponent
       with FileBDBStorageComponent
       with CompositeStorageComponent
 
-    log.info("Running initialization callbacks")
+    new C3AppHandle {
+      def registerServices(context: BundleContext) {}
 
-    app.start()
+      val app = module
+    }
 
-    storageApp = Some(app)
-
-    log.info("Startup is complete")
   }
-
-  def stop(context: BundleContext) {
-
-    log.info("Stopping components")
-
-    storageApp.foreach(_.stop())
-
-    log.info("c3-storage stopped")
-  }
-
 }

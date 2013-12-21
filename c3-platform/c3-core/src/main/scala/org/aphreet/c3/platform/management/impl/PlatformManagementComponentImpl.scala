@@ -9,17 +9,22 @@ import org.aphreet.c3.platform.statistics.impl.StatisticsComponentImpl
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.storage.impl.StorageComponentImpl
 import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
-import org.aphreet.c3.platform.storage.{StorageIndex, Storage, StorageMode}
+import org.aphreet.c3.platform.storage.{StorageComponent, StorageIndex, Storage, StorageMode}
 import org.aphreet.c3.platform.task._
+import org.aphreet.c3.platform.access.AccessComponent
+import org.aphreet.c3.platform.storage.migration.MigrationComponent
+import org.aphreet.c3.platform.statistics.StatisticsComponent
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 
 trait PlatformManagementComponentImpl extends PlatformManagementComponent{
 
   this: TaskComponent
-    with StatisticsComponentImpl
+    with StatisticsComponent
     with MimeTypeStorageSelectorComponent
     with PlatformConfigComponent
-    with StorageComponentImpl
-    with MigrationComponentImpl =>
+    with StorageComponent
+    with MigrationComponent
+    with AccessComponent =>
 
   val platformManagementEndpoint: PlatformManagementEndpoint = new PlatformManagementEndpointImpl
 
@@ -47,6 +52,7 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
 
     def purgeStorageData() {
       storageManager.resetStorages()
+      accessMediator ! StoragePurgedMsg('PlatformManagement)
     }
 
     def setStorageMode(id:String, mode:StorageMode) {

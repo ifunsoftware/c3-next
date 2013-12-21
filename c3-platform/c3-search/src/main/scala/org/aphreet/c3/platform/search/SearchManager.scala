@@ -43,3 +43,9 @@ trait SearchManager extends WatchedActor {
   def dumpIndex(path: String)
 
 }
+
+trait SearchComponent{
+
+  def searchManager: SearchManager
+
+}
