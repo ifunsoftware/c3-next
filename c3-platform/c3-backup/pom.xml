@@ -45,6 +45,11 @@
         	<artifactId>com.ifunsoftware.j2ssh-core</artifactId>
         	<version>0.2.9.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.osgi</groupId>
+            <artifactId>org.eclipse.osgi</artifactId>
+        </dependency>
         
         <dependency>
         	<groupId>sshtools</groupId>

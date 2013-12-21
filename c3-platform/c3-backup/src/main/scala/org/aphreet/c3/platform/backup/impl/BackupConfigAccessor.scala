@@ -1,29 +1,17 @@
 package org.aphreet.c3.platform.backup.impl
 
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
-import org.springframework.beans.factory.annotation.Autowired
-import java.io.File
 import com.springsource.json.parser.Node
 import com.springsource.json.writer.JSONWriter
 import org.aphreet.c3.platform.backup.BackupLocation
-import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
-import scala.collection.JavaConversions._
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.config.{ConfigPersister, ConfigAccessor}
+import scala.collection.JavaConversions._
 
-@Component
-@Scope("singleton")
-class BackupConfigAccessor extends ConfigAccessor[List[BackupLocation]] {
+class BackupConfigAccessor(val persister: ConfigPersister) extends ConfigAccessor[List[BackupLocation]] {
 
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  def configDir: File = configManager.configDir
-
-  def configFileName: String = "c3-backup-config.json"
+  def name = "c3-backup-config"
 
   val log = Logger(getClass)
-
 
   def defaultConfig:List[BackupLocation] = Nil
 

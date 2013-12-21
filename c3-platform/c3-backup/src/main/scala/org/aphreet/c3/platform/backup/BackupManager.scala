@@ -50,3 +50,10 @@ trait BackupManager {
 
   def scheduleBackup(targetId: String, crontabSchedule: String)
 }
+
+
+trait BackupComponent {
+
+  def backupManager: BackupManager
+
+}

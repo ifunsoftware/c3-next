@@ -60,6 +60,8 @@ class C3FilesystemActivator extends C3Activator{
 
     app.start()
 
+    registerService(context, classOf[FSManager], app.filesystemManager)
+
     log.info("c3-filesystem started")
 
     this.app = Some(app)

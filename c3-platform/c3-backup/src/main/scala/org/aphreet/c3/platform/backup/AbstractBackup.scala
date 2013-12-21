@@ -20,7 +20,6 @@ abstract class AbstractBackup extends CloseableIterable[Resource] {
 
   val log = Logger(getClass)
 
-
   def addResource(resource:Resource){
 
       resource.embedData = false
@@ -110,11 +109,5 @@ class BackupIterator(val zipFs: FileSystem, val addresses:Seq[String]) extends C
   def close(){
     zipFs.close()
   }
-}
-
-trait ResourceConsumer{
-
-  def consume(resource:Resource)
-
 }
 
