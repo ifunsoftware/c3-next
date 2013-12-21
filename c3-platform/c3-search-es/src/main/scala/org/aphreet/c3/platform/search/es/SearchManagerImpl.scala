@@ -13,6 +13,7 @@ import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.access.ResourceDeletedMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import scala.Some
+import scala.collection.JavaConversions._
 import org.elasticsearch.common.settings.{Settings, ImmutableSettings}
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
@@ -26,6 +27,7 @@ import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.{SearchHit, SearchHits}
 import scala.collection.mutable.ArrayBuffer
 import org.elasticsearch.index.query.{FieldQueryBuilder, QueryStringQueryBuilder, QueryBuilders, QueryBuilder}
+import org.elasticsearch.search.highlight.HighlightField
 
 /**
  * Need plugin
@@ -132,15 +134,26 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
       SearchResult(text, new Array[SearchResultElement](0))
     } else {
       val queryBuilder:QueryStringQueryBuilder = QueryBuilders.queryString(text)
-      val resp:SearchResponse = esClient.prepareSearch(indexName).setQuery(queryBuilder ).addFields("*","address")
+
+      val resp:SearchResponse = esClient.prepareSearch(indexName)
+        .setQuery(queryBuilder )
+        .addHighlightedField("document")
+        .setHighlighterPreTags("<b>")
+        .setHighlighterPostTags("</b>")
+        .addHighlightedField("*")
+        .addFields("*","address")
         .execute()
         .actionGet()
 
-      val searchResults = resp.getHits.hits().map((hit:SearchHit) => {
+      val searchResults = resp.getHits.hits().map(hit => {
+        println(hit)
         if (!hit.getFields.containsKey("address"))  {
            None
         } else {
-           Some(SearchResultElement(hit.getFields.get("address").values().get(0).asInstanceOf[String], null, hit.getScore, Array.ofDim[SearchResultFragment](0)))
+           val score = hit.getScore
+           val address = hit.getFields.get("address").values().get(0).asInstanceOf[String]
+           val searchResultFragment = mapAsScalaMap(hit.getHighlightFields).map(e =>  SearchResultFragment(e._1, e._2.getFragments.map(_.string()))).toArray
+           Some(SearchResultElement(address, null, score, searchResultFragment))
         }
       }).flatten.toList.toArray
       SearchResult(text, searchResults)
