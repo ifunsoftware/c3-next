@@ -7,6 +7,12 @@ trait TagManager extends WatchedActor{
 
 }
 
+trait TagComponent {
+
+  def tagManager: TagManager
+
+}
+
 object TagManager {
 
   val TAGS_FIELD = "tags"

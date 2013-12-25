@@ -2,25 +2,27 @@ package org.aphreet.c3.platform.tags.impl
 
 import junit.framework.Assert._
 import junit.framework.TestCase
-import org.aphreet.c3.platform.access.ResourceAddedMsg
-import org.aphreet.c3.platform.access.ResourceUpdatedMsg
-import org.aphreet.c3.platform.access.{AccessMediator, AccessManager}
+import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.DefaultComponentLifecycle
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
 import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
+import org.aphreet.c3.platform.tags.TagManager
 import org.easymock.EasyMock._
 import scala.Some
 import scala.collection.Map
 import scala.collection.mutable
-import org.aphreet.c3.platform.tags.TagManager
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 
 class TagManagerImplTest extends TestCase {
 
-    var tagManager: TagManagerImpl = new TagManagerImpl
+    var tagManager: TagManager with ResourceOwner = null
     val resource:Resource = new Resource()
     val parent:Resource = new Resource()
     val parent2:Resource = new Resource()
     val parentPath:String = "parentPath"
     val parent2Path:String = "parent2Path"
+
+    var app: AccessComponent = null
 
     override def setUp() {
       val resourceMetadata:Map[String, String] = Map((TagManager.TAGS_FIELD, "[cats,scala,cycling]"))
@@ -53,17 +55,37 @@ class TagManagerImplTest extends TestCase {
       val parentDir = parentNode.asInstanceOf[Directory]
       parentDir.addChild("file", resource.address, leaf = true)
 
-      tagManager.accessManager = createMock(classOf[AccessManager])
-      tagManager.accessMediator = createMock(classOf[AccessMediator])
+      val accessManagerMock = createMock(classOf[AccessManager])
+      val accessMediatorMock = createMock(classOf[AccessMediator])
 
-      expect(tagManager.accessManager.get(resource.address)).andReturn(resource).anyTimes
-      expect(tagManager.accessManager.update(parent)).andReturn("").anyTimes
-      expect(tagManager.accessManager.update(parent2)).andReturn("").anyTimes
-      expect(tagManager.accessManager.get(parentPath)).andReturn(parent).anyTimes()
-      expect(tagManager.accessManager.get(parent2Path)).andReturn(parent2).anyTimes()
+      expect(accessManagerMock.get(resource.address)).andReturn(resource).anyTimes
+      expect(accessManagerMock.update(parent)).andReturn("").anyTimes
+      expect(accessManagerMock.update(parent2)).andReturn("").anyTimes
+      expect(accessManagerMock.get(parentPath)).andReturn(parent).anyTimes()
+      expect(accessManagerMock.get(parent2Path)).andReturn(parent2).anyTimes()
 
-      replay(tagManager.accessManager)
-      tagManager.init()
+      expect(accessMediatorMock.!(RegisterNamedListenerMsg(anyObject(), 'tagManager)))
+
+      replay(accessMediatorMock)
+      replay(accessManagerMock)
+
+      val module = new Object with DefaultComponentLifecycle
+        with AccessComponent
+        with TagComponentImpl {
+
+        def accessManager = accessManagerMock
+
+        def accessMediator = accessMediatorMock
+      }
+
+      this.app = module
+
+      tagManager = module.tagManager
+    }
+
+    override def tearDown(){
+      verify(app.accessManager)
+      verify(app.accessMediator)
     }
 
     def testAddResource() {
@@ -76,7 +98,7 @@ class TagManagerImplTest extends TestCase {
        assertEquals(initialMap, map)
        tagManager ! ResourceAddedMsg(resource, Symbol("source"))
        Thread.sleep(1000)
-       assertEquals(Some(MetadataHelper.writeTagMap(Map(("scala",1),("cycling", 1),("cats",1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
+       assertEquals(Some(MetadataHelper.writeTagMap(Map(("cats",1), ("scala",1),("cycling", 1)).toMap[String, Int], (key: String, value: Int) => {key + ":" + value})), parent.metadata(TagManager.TAGS_FIELD))
     }
 
     def testTagParsing() {
