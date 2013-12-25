@@ -3,7 +3,8 @@ package org.aphreet.c3.platform.tags.impl
 import junit.framework.Assert._
 import junit.framework.TestCase
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.DefaultComponentLifecycle
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.common.{ThreadWatcher, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
 import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
 import org.aphreet.c3.platform.tags.TagManager
@@ -11,7 +12,6 @@ import org.easymock.EasyMock._
 import scala.Some
 import scala.collection.Map
 import scala.collection.mutable
-import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 
 class TagManagerImplTest extends TestCase {
 
@@ -22,7 +22,7 @@ class TagManagerImplTest extends TestCase {
     val parentPath:String = "parentPath"
     val parent2Path:String = "parent2Path"
 
-    var app: AccessComponent = null
+    var app: AccessComponent with DefaultComponentLifecycle  = null
 
     override def setUp() {
       val resourceMetadata:Map[String, String] = Map((TagManager.TAGS_FIELD, "[cats,scala,cycling]"))
@@ -86,6 +86,12 @@ class TagManagerImplTest extends TestCase {
     override def tearDown(){
       verify(app.accessManager)
       verify(app.accessMediator)
+
+      app.stop()
+
+      Thread.sleep(500)
+
+      assertTrue(ThreadWatcher.registeredThreads.isEmpty)
     }
 
     def testAddResource() {
