@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigAccessor}
+import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigManager, ConfigAccessor}
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
 import com.springsource.json.writer.JSONWriter
@@ -41,11 +41,6 @@ import collection.JavaConversions._
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, ReplicationHost]]{
-
-  @Autowired
-  var configManager: PlatformConfigManager = _
-
-  def configDir: File = configManager.configDir
 
   override def defaultConfig:Map[String, ReplicationHost] = Map()
 
@@ -112,19 +107,14 @@ abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, Repl
 
 }
 
+class ReplicationSourcesConfigAccessor(val persister: ConfigPersister) extends ReplicationConfigAccessor{
 
-@Component
-@Scope("singleton")
-class ReplicationSourcesConfigAccessor extends ReplicationConfigAccessor{
-
-  def configFileName: String = "c3-replication-sources.json"
+  def name = "c3-replication-sources"
 
 }
 
-@Component
-@Scope("singleton")
-class ReplicationTargetsConfigAccessor extends ReplicationConfigAccessor{
+class ReplicationTargetsConfigAccessor(val persister: ConfigPersister) extends ReplicationConfigAccessor{
 
-  def configFileName: String = "c3-replication-targets.json"
+  def name = "c3-replication-targets"
 
 }

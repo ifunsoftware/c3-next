@@ -38,44 +38,22 @@ import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManag
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.Storage
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Scope
-import org.springframework.stereotype.Component
 
-
-@Component
-@Scope("singleton")
-class ReplicationSourceActor extends WatchedActor with ComponentGuard{
+class ReplicationSenderActor(val accessMediator: AccessMediator,
+                              val statisticsManager: StatisticsManager,
+                              val configurationManager: ConfigurationManager,
+                              val replicationManager: ReplicationManager) extends WatchedActor with ComponentGuard{
 
   private var remoteReplicationActors = Map[String, ReplicationLink]()
 
   val log = Logger(getClass)
 
-  var accessMediator:AccessMediator = _
-
-  var manager:ReplicationManager = _
-
-  var statisticsManager:StatisticsManager = _
-
-  var configurationManager:ConfigurationManager = _
-
   var localSystemId:String = _
 
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) {statisticsManager = manager}
-  
-  @Autowired
-  def setConfigurationManager(manager:ConfigurationManager) {configurationManager = manager}
-
-
-  def startWithConfig(config:Map[String, ReplicationHost], manager:ReplicationManager, localSystemId:String) {
+  def startWithConfig(config:Map[String, ReplicationHost], localSystemId:String) {
 
     log info "Starting ReplicationSourceActor..."
 
-    this.manager = manager
     this.localSystemId = localSystemId
 
     for((id, host) <- config) {
@@ -98,7 +76,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
 
         case ResourceDeletedMsg(address, source) if source != 'FSCleanupManager => sendToAllLinks(ResourceDeletedMsg(address, source))
 
-        case StoragePurgedMsg(source) => manager ! StoragePurgedMsg(source)
+        case StoragePurgedMsg(source) => replicationManager ! StoragePurgedMsg(source)
 
         case ReplicateAddAckMsg(address, sign) => sendToLinkWithId(sign.systemId, ReplicateAddAckMsg(address, sign))
 
@@ -112,7 +90,7 @@ class ReplicationSourceActor extends WatchedActor with ComponentGuard{
         }
 
         case QueuedTasksReply(tasks) => {
-          manager ! QueuedTasksReply(tasks)
+          replicationManager ! QueuedTasksReply(tasks)
         }
 
         case ReplicationReplayAdd(resource, systemId) => sendToLinkWithId(systemId, ResourceAddedMsg(resource, 'ReplicationManager))

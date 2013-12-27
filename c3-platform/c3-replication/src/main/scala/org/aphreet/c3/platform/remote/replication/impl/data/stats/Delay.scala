@@ -32,13 +32,10 @@ package org.aphreet.c3.platform.remote.replication.impl.data.stats
 
 import collection.mutable
 import org.aphreet.c3.platform.common.WatchedActor
-import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.common.msg.DestroyMsg
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.springframework.beans.factory.annotation.{Autowired, Qualifier}
 import org.aphreet.c3.platform.statistics.{SetStatisticsMsg, StatisticsManager}
 
-case class Delay(val time: Long) {
+case class Delay(time: Long) {
 
   var value = 0L
 
@@ -50,15 +47,13 @@ case class Delay(val time: Long) {
   }
 }
 
-@Component
-@Qualifier("delayHistory")
-class DelayHistory extends WatchedActor{
-
-  @Autowired
-  var statisticsManager: StatisticsManager = _
+class DelayHistory(val statisticsManager: StatisticsManager) extends WatchedActor{
 
   var history: mutable.Queue[Delay] = mutable.Queue(new Delay(roundTime(0)))
 
+  {
+    this.start()
+  }
   def add(delay: Long, timestamp: Long){
     val time = roundTime(timestamp)
 
@@ -69,12 +64,6 @@ class DelayHistory extends WatchedActor{
     history.last.update(delay)
   }
 
-  @PostConstruct
-  def init(){
-    this.start()
-  }
-
-  @PreDestroy
   def destroy(){
     this ! DestroyMsg
   }
@@ -112,11 +101,11 @@ class DelayHistory extends WatchedActor{
     val elements = history.filter(_.time >= time - period + 1)
 
     if (!elements.isEmpty)
-      (elements.foldRight(0L)(_.value + _))/elements.size
+      elements.foldRight(0L)(_.value + _) /elements.size
     else
       0L
   }
 }
 
-case class DelayInfoMsg(val timestamp: Long, val delay: Long)
+case class DelayInfoMsg(timestamp: Long, delay: Long)
 

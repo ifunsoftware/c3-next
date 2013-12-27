@@ -30,48 +30,33 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import collection.mutable.HashMap
+import collection.mutable
+import org.aphreet.c3.platform.auth.AuthenticationManager
+import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
+import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationPortRetriever
 import org.aphreet.c3.platform.remote.replication.impl.data.encryption.{DataEncryptor, SymmetricKeyGenerator, AsymmetricDataEncryptor}
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.auth.AuthenticationManager
-import org.aphreet.c3.platform.common.{Logger, WatchedActor}
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.resource.IdGenerator
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import scala.None
 import scala.actors.remote.RemoteActor._
 
 //TODO clear sharedKeys map after unsuccessful negotiations
-@Component
-class ReplicationNegotiator extends WatchedActor{
+class ReplicationNegotiator(val authManager: AuthenticationManager,
+                            val configurationManager: ConfigurationManager,
+                            val replicationManager: ReplicationManager,
+                            val replicationPortRetriever: ReplicationPortRetriever) extends WatchedActor{
 
   val log = Logger(getClass)
 
-  val sharedKeys = new HashMap[String, String]
+  val sharedKeys = new mutable.HashMap[String, String]
 
-  @Autowired
-  var authManager:AuthenticationManager = _
-
-  @Autowired
-  var configurationManager:ConfigurationManager = _
-
-  @Autowired
-  var replicationManager:ReplicationManager = _
-
-  @Autowired
-  var replicationPortRetriever:ReplicationPortRetriever = _
-
-  @PostConstruct
-  def init(){
+  {
     log info "Starting replication negotiator..."
 
     this.start()
   }
 
-  @PreDestroy
   def destroy(){
     log info "Stopping replication negotiator"
 

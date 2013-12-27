@@ -30,51 +30,32 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
+import actors.AbstractActor
 import actors.remote.RemoteActor._
 import actors.remote.{RemoteActor, Node}
-import actors.{Actor, AbstractActor}
 import javax.annotation.PreDestroy
 import org.aphreet.c3.platform.access.AccessMediator
-import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.DestroyMsg
+import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.remote.replication._
-import impl.config.ConfigurationManager
+import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
+import org.aphreet.c3.platform.remote.replication.impl.data.stats.DelayHistory
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
-import org.springframework.beans.factory.annotation.{Qualifier, Autowired}
-import org.springframework.context.annotation.Scope
-import org.springframework.stereotype.Component
 
-@Component
-@Scope("singleton")
-class ReplicationTargetActor extends WatchedActor {
+class ReplicationAcceptorActor(val accessMediator: AccessMediator,
+                               val storageManager: StorageManager,
+                               val configurationManager: ConfigurationManager,
+                               val domainManager: DomainManager,
+                               val statisticsManager: StatisticsManager,
+                               val sourceReplicationActor: ReplicationSenderActor) extends WatchedActor {
 
   val log = Logger(getClass)
 
   val WORKERS_COUNT = 8
 
-  @Autowired
-  var accessMediator: AccessMediator = null
-
-  @Autowired
-  var storageManager: StorageManager = null
-
-  @Autowired
-  var configurationManager: ConfigurationManager = null
-
-  @Autowired
-  var domainManager: DomainManager = null
-
-  @Autowired
-  var sourceReplicationActor: ReplicationSourceActor = null
-
-  @Autowired
-  var statisticsManager: StatisticsManager = null
-
-  @Autowired
-  @Qualifier("delayHistory")
-  var delayHistory: Actor = _
+  var delayHistory = new DelayHistory(statisticsManager)
 
   var replicationPort: Int = -1
 
@@ -138,6 +119,8 @@ class ReplicationTargetActor extends WatchedActor {
           log info "DestoryMsg received. Stopping"
 
           workers.foreach(_ ! DestroyMsg)
+
+          delayHistory.destroy()
 
           this.exit()
         }

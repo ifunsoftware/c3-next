@@ -34,10 +34,11 @@ import config._
 import data._
 import encryption.{DataEncryptor, AsymmetricDataEncryptor, AsymmetricKeyGenerator}
 import java.io.File
-import javax.annotation.{PreDestroy, PostConstruct}
+import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common._
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config._
+import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsg
@@ -47,18 +48,21 @@ import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterS
 import org.aphreet.c3.platform.remote.replication.impl.data.QueuedTasksReply
 import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
 import org.aphreet.c3.platform.remote.replication.{ReplicationHost, ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Scope
-import org.springframework.stereotype.Component
 import scala.Some
 import scala.actors.remote.Node
 
-
-@Component("replicationManager")
-@Scope("singleton")
-class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
+class ReplicationManagerImpl(val accessMediator: AccessMediator,
+                              val storageManager: StorageManager,
+                              val taskManager: TaskManager,
+                              val domainManager: DomainManager,
+                              val statisticsManager: StatisticsManager,
+                              val platformConfigManager: PlatformConfigManager,
+                              val configPersister: ConfigPersister,
+                              val configurationManager: ConfigurationManager,
+                              val replicationPortRetriever: ReplicationPortRetriever) extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
 
   private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
 
@@ -76,37 +80,20 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
 
   var isTaskRunning = false
 
+  var sourceReplicationActor = new ReplicationSenderActor(accessMediator, statisticsManager,
+                                                      configurationManager, this)
 
-  @Autowired
-  var localReplicationActor:ReplicationTargetActor = _
-
-  @Autowired
-  var sourceReplicationActor:ReplicationSourceActor = _
-
-  @Autowired
-  var platformConfigManager:PlatformConfigManager = _
-
-  @Autowired
-  var configurationManager:ConfigurationManager = _
-
-  @Autowired
-  var storageManager:StorageManager = _
-
-  @Autowired
-  var taskManager:TaskManager = _
-
-  @Autowired
-  var sourcesConfigAccessor:ReplicationSourcesConfigAccessor = _
-
-  @Autowired
-  var targetsConfigAccessor:ReplicationTargetsConfigAccessor = _
-
-  @Autowired
-  var replicationPortRetriever:ReplicationPortRetriever = _
+  val localReplicationActor = new ReplicationAcceptorActor(accessMediator,
+                              storageManager, configurationManager, domainManager, statisticsManager, sourceReplicationActor)
 
 
-  @PostConstruct
-  def init(){
+
+  val sourcesConfigAccessor = new ReplicationSourcesConfigAccessor(configPersister)
+
+  val targetsConfigAccessor = new ReplicationTargetsConfigAccessor(configPersister)
+
+
+  {
 
     //Overriding classLoader
     RemoteActor.classLoader = getClass.getClassLoader
@@ -128,7 +115,7 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     localReplicationActor.startWithConfig(currentSourceConfig, replicationPort, localSystemId)
 
     currentTargetConfig = targetsConfigAccessor.load
-    sourceReplicationActor.startWithConfig(currentTargetConfig, this, localSystemId)
+    sourceReplicationActor.startWithConfig(currentTargetConfig, localSystemId)
 
     runQueueMaintainer()
 
@@ -139,7 +126,6 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
     log info "Replicationg manager started"
   }
 
-  @PreDestroy
   def destroy(){
     log info "Destroying ReplicationManager"
 
@@ -181,6 +167,9 @@ class ReplicationManagerImpl extends ReplicationManager with SPlatformPropertyLi
           letItFall{
             platformConfigManager ! UnregisterMsg(this)
           }
+
+          sourceReplicationActor.destroy()
+          localReplicationActor.destroy()
 
           log info "RemoteManagerActor stopped"
           this.exit()

@@ -38,24 +38,12 @@ import org.aphreet.c3.platform.config.PlatformConfigManager
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.filesystem.FSManager
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 
-@Component
-class ConfigurationManager extends DtoConvertor{
+class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainManager, val platformConfigManager: PlatformConfigManager) extends DtoConvertor{
 
   val log = Logger(getClass)
-
-  @Autowired
-  var fsManager:FSManager = _
-
-  @Autowired
-  var domainManager:DomainManager = _
-
-  @Autowired
-  var platformConfigManager:PlatformConfigManager = _
 
   def processSerializedRemoteConfiguration(configuration:String) {
     processRemoteConfiguration(deserializeConfiguration(configuration))
@@ -121,10 +109,10 @@ class ConfigurationManager extends DtoConvertor{
   }
 
   private def createLocalPropertyRetriever:(String) => String = {
-    ((key:String) => platformConfigManager.getPlatformProperties.get(key) match {
+    (key: String) => platformConfigManager.getPlatformProperties.get(key) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get property " + key)
-    })
+    }
   }
 
   private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) {

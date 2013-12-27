@@ -29,46 +29,26 @@
  */
 package org.aphreet.c3.platform.remote.test.replication
 
-import junit.framework.TestCase
 import junit.framework.Assert._
-import java.io.File
-import org.aphreet.c3.platform.config.impl.PlatformConfigManagerImpl
-import org.aphreet.c3.platform.remote.replication.impl.config.ReplicationSourcesConfigAccessor
+import junit.framework.TestCase
+import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.impl.config.ReplicationSourcesConfigAccessor
 
 class ReplicationConfigAccessorTestCase extends TestCase {
-
-  var testDir:File = null
-
-  override def setUp(){
-    testDir = new File(System.getProperty("user.home"), "c3_int_test")
-    testDir.mkdirs
-  }
-
-  override def tearDown(){
-    def delDir(directory:File) {
-      if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
-      directory.delete
-    }
-    delDir(testDir)
-  }
 
   def testConfigPersistence() {
 
     val config = Map("localhost" -> new ReplicationHost("localhost", "localhost.localdomain", "key1", 7373, 7374, 7375, "my_encoded_aes_key"),
                      "darkstar" ->  new ReplicationHost("darkstar", "darkstar.localdomain", "key2", 7373, 7374, 7375, "my_encoded_aes_key2"))
 
-    val configManager = new PlatformConfigManagerImpl
-    configManager.configDir = testDir
+    val persister = new MemoryConfigPersister
 
-    val accessor = new ReplicationSourcesConfigAccessor
-    accessor.configManager = configManager
+    val accessor = new ReplicationSourcesConfigAccessor(persister)
 
-    val fileName = "c3-replication-sources.json"
+    accessor store config
 
-    accessor.storeConfig(config, new File(testDir, fileName))
-
-    val readConfig = accessor.loadConfig(new File(testDir, fileName))
+    val readConfig = accessor.load
     
     assertEquals(config, readConfig)
 

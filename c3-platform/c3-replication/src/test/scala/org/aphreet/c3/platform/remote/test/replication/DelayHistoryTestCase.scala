@@ -36,8 +36,8 @@ import org.aphreet.c3.platform.remote.replication.impl.data.stats.DelayHistory
 
 class DelayHistoryTestCase extends TestCase{
 
-  def testHistory{
-    val history = new DelayHistory
+  def testHistory(){
+    val history = new DelayHistory(null)
 
     history.add(500, 1000)
     history.add(300, 1000) //300
