@@ -75,7 +75,7 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
 
   var resources:List[Resource] = List(
     resource("address1",
-      DataStream.create(new File("./c3-platform/c3-search-es/src/test/resources/testXHTML.html")).stringValue,
+      scala.io.Source.fromInputStream(getClass.getResourceAsStream("/testXHTML.html")).getLines().mkString,
       new mutable.HashMap() ++= Map(("tags", "[cats,scala,cycling]")),
       "domain")
   )

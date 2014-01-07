@@ -6,7 +6,7 @@ import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import javax.annotation.{PostConstruct, PreDestroy}
 import scala.util.control.Exception._
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.resource.{DataStream, Resource}
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
@@ -28,6 +28,7 @@ import org.elasticsearch.search.{SearchHit, SearchHits}
 import scala.collection.mutable.ArrayBuffer
 import org.elasticsearch.index.query.{FieldQueryBuilder, QueryStringQueryBuilder, QueryBuilders, QueryBuilder}
 import org.elasticsearch.search.highlight.HighlightField
+import java.io.File
 
 /**
  * Need plugin
@@ -62,6 +63,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     this.start()
 
     val resp: IndicesExistsResponse = esClient.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()
+     log info "mapping: \n: " + mapping()
 
     if (!resp.isExists) {
       val response: CreateIndexResponse = esClient.admin().indices().prepareCreate(indexName).setSettings(
@@ -77,53 +79,8 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
   }
 
-  def mapping(): XContentBuilder = {
-    val xbMapping: XContentBuilder =
-      XContentFactory.jsonBuilder()
-        .startObject()
-        .startObject(docName)
-          .startObject("properties")
-            .startObject("document")
-            .field("type", "attachment")
-              .startObject("fields")
-                 .startObject("document")
-                    .field("term_vector", "with_positions_offsets")
-                    .field("store", "yes")
-                  .endObject()
-                  .startObject("date")
-                    .field("store", "yes")
-                   .endObject()
-                    .startObject("author")
-                    .field("store", "yes")
-                   .endObject()
-                    .startObject("title")
-                    .field("store", "yes")
-                   .endObject()
-                    .startObject("keywords")
-                    .field("store", "yes")
-                   .endObject()
-                  .startObject("content_type")
-                  .field("store", "yes")
-                  .endObject()
-                  .startObject("content_length")
-                  .field("store", "yes")
-                  .endObject()
-                .endObject()
-               .endObject()
-               .startObject("address")
-                  .field("type", "string")
-               .endObject()
-                  .startObject("metadata")
-                  .startObject("properties")
-                  .startObject("tags")
-                  .field("type", "string")
-              .endObject()
-              .endObject()
-            .endObject()
-          .endObject()
-        .endObject()
-        .endObject()
-    xbMapping
+  def mapping(): String = {
+    scala.io.Source.fromInputStream(getClass.getResourceAsStream("/config/index-mapping.json")).getLines().mkString
   }
 
   def search(domain: String, text: String): SearchResult = {
