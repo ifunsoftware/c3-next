@@ -36,7 +36,6 @@ import actors.Actor
 import org.aphreet.c3.platform.resource.ResourceAddress
 import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.remote.replication.impl.data._
-import org.aphreet.c3.platform.remote.replication.ReplicationException
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationManagerImpl
 
 class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
@@ -72,21 +71,20 @@ class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
 
     }else{
       try{
-        val storage = storageManager.storageForAddress(ResourceAddress(task.address))
+        storageManager.storageForAddress(ResourceAddress(task.address)).filter(_.mode.allowRead) match {
+          case Some(storage) => {
+            val resource = storage.get(task.address) match {
+              case Some(r) => r
+              case None => throw new RuntimeException("Resource not found")
+            }
 
-        if(!storage.mode.allowRead){
-          throw new ReplicationException("Storage is not readable")
-        }
-
-        val resource = storage.get(task.address) match {
-          case Some(r) => r
-          case None => throw new RuntimeException("Resource not found")
-        }
-
-        task.action match {
-          case AddAction => sourceActor ! ReplicationReplayAdd(resource, task.systemId)
-          case UpdateAction(timestamp) => sourceActor ! ReplicationReplayUpdate(resource, task.systemId)
-          case DeleteAction => //Do nothing. This line is just for compiler
+            task.action match {
+              case AddAction => sourceActor ! ReplicationReplayAdd(resource, task.systemId)
+              case UpdateAction(timestamp) => sourceActor ! ReplicationReplayUpdate(resource, task.systemId)
+              case DeleteAction => //Do nothing. This line is just for compiler
+            }
+          }
+          case None => throw new StorageNotFoundException("Can't find storage for address: " + task.address)
         }
 
       }catch{

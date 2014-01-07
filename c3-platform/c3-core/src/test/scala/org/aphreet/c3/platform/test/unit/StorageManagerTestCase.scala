@@ -94,7 +94,7 @@ class StorageManagerTestCase extends TestCase{
 
     storageManager.registerFactory(storageFactory)
 
-    assertEquals(storageManager.storageForId(storageId), StorageMock(storageId, storagePath))
+    assertEquals(storageManager.storageForId(storageId), Some(StorageMock(storageId, storagePath)))
 
     verify(storageFactory)
     verify(configAccessor)
@@ -155,12 +155,12 @@ class StorageManagerTestCase extends TestCase{
 
     storageManager.registerFactory(storageFactory)
 
-    assertEquals(storageManager.storageForId(storageId), StorageMock(storageId, storagePath))
+    assertEquals(storageManager.storageForId(storageId), Some(StorageMock(storageId, storagePath)))
 
     storageManager.setStorageMode(storageId, RO("USER"))
 
 
-    assertEquals(RO("USER"), storageManager.storageForId(storageId).mode)
+    assertEquals(RO("USER"), storageManager.storageForId(storageId).get.mode)
 
     verify(storageFactory)
     verify(configAccessor)

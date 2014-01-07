@@ -36,6 +36,7 @@ import org.aphreet.c3.platform.remote.rest.response.{Result, ResourceAddress, Up
 import org.aphreet.c3.platform.resource.Resource
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
+import org.springframework.http.HttpStatus
 
 
 @Controller

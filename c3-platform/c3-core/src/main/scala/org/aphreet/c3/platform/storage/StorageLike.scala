@@ -9,34 +9,34 @@ trait StorageLike {
   /**
    * Add resource to storage and return address of this resource
    */
-  def add(resource:Resource):String
+  def add(resource: Resource): String
 
   /**
    * Get resource from this storage
    * If resource is not found throws ResourceNotFoundException
    */
-  def get(ra:String):Option[Resource]
+  def get(ra: String): Option[Resource]
 
   /**
    * Update resource that already exists in this storage
-   * If there is no such resource resource gets created
+   * If there is no such resource it gets created
    */
-  def update(resource:Resource):String
+  def update(resource: Resource): String
 
   /**
    * Delete resource from storage.
    * If resource with specified address is not exists in storage
    * throws ResourceNotFoundException
    */
-  def delete(ra:String)
+  def delete(ra: String): String
 
   /**
    * Append specified map to system metadata of the specified resource
    */
-  def appendMetadata(ra:String, metadata:Map[String, String], system: Boolean)
+  def appendMetadata(ra: String, metadata: Map[String, String], system: Boolean)
 
   /**
    * Get current mode
    */
-  def mode:StorageMode
+  def mode: StorageMode
 }

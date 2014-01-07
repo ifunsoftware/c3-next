@@ -72,6 +72,13 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
           try{
             val reader = IndexReader.open(directory)
 
+            //Make sure we don't have duplicates in index
+            for (docIndex <- 0 until reader.numDocs()){
+              val document = reader.document(docIndex)
+              indexWriter.deleteDocuments(new Term(Fields.ADDRESS, document.get(Fields.ADDRESS)))
+            }
+
+
             indexWriter.addIndexes(reader)
             indexWriter.commit()
 

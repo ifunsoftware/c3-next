@@ -69,11 +69,7 @@ class PlatformAccessServiceImpl extends PlatformAccessService{
         resultBuilder.append("\tCreate time: " + address.time + "\n")
         resultBuilder.append("\tRange prefix: " + IdGenerator.trailShort(address.randomPart) + "\n")
 
-        try{
-          resultBuilder.append("\nStorages: " + storageManager.storageForAddress(address).id).append("\n\n")
-        }catch {
-          case e:Throwable => resultBuilder.append("Can't find storage for resource\n\n")
-        }
+        resultBuilder.append("\nStorages: " + storageManager.storageForAddress(address).map(_.id).getOrElse("Can't find storage for resource")).append("\n\n")
 
       }catch{
         case e:ResourceException => resultBuilder.append(e.getMessage)

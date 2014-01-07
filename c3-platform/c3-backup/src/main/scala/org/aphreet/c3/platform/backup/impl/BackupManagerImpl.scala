@@ -46,6 +46,7 @@ import org.springframework.stereotype.Component
 import scala._
 import scala.collection.mutable.ListBuffer
 import ssh.SftpConnector
+import org.aphreet.c3.platform.exception.StorageNotFoundException
 
 @Component("backupManager")
 class BackupManagerImpl extends BackupManager with SPlatformPropertyListener with TaskScheduleObserver {
@@ -367,7 +368,10 @@ class RestoreTask(val storageManager: StorageManager, val accessMediator: Access
     if (log.isDebugEnabled)
       log.debug("Importing resource " + resource.address)
 
-    storageManager.storageForAddress(ResourceAddress(resource.address)).update(resource)
+    storageManager.storageForResource(resource) match {
+      case Some(storage) => storage.update(resource)
+      case None => throw new StorageNotFoundException("Can't find storage to import resource " + resource.address)
+    }
     accessMediator ! ResourceAddedMsg (resource, 'BackupManager)
   }
 

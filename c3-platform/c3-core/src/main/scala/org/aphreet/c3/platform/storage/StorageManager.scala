@@ -32,36 +32,36 @@ package org.aphreet.c3.platform.storage
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.common.Path
 
-trait StorageManager{
+trait StorageManager {
 
-  def registerFactory(factory:StorageFactory)
-  
-  def unregisterFactory(factory:StorageFactory)
-  
+  def registerFactory(factory: StorageFactory)
 
-  def storageForId(id:String):Storage
+  def unregisterFactory(factory: StorageFactory)
 
-  def storageForResource(resource:Resource):StorageLike
 
-  def storageForAddress(address:ResourceAddress):StorageLike
+  def storageForId(id: String): Option[Storage]
 
-  def createStorage(storageType:String, storagePath:Option[Path]): Storage
-  
-  def listStorages:List[Storage]
-  
-  def removeStorage(storage:Storage)
-  
-  def listStorageTypes:List[String]
-    
-  def setStorageMode(id:String, mode:StorageMode)
-  
-  def updateStorageParams(storage:Storage)
+  def storageForResource(resource: Resource): Option[StorageLike]
 
-  def createIndex(index:StorageIndex)
+  def storageForAddress(address: ResourceAddress): Option[StorageLike]
 
-  def removeIndex(name:String)
+  def createStorage(storageType: String, storagePath: Option[Path]): Storage
 
-  def mergeStorages(fromId:String, toId:String)
+  def listStorages: List[Storage]
+
+  def removeStorage(storage: Storage)
+
+  def listStorageTypes: List[String]
+
+  def setStorageMode(id: String, mode: StorageMode)
+
+  def updateStorageParams(storage: Storage)
+
+  def createIndex(index: StorageIndex)
+
+  def removeIndex(name: String)
+
+  def mergeStorages(fromId: String, toId: String)
 
   def resetStorages()
 

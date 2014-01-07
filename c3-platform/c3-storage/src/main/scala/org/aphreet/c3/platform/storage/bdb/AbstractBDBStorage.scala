@@ -141,7 +141,7 @@ with DatabaseProvider{
     }
   }
 
-  def delete(ra:String) {
+  def delete(ra:String): String = {
     val key = new DatabaseEntry(ra.getBytes)
 
     val tx = environment.beginTransaction(null, null)
@@ -157,6 +157,7 @@ with DatabaseProvider{
 
       dataLog.debug("Deleted resource " + ra)
 
+      ra
     }catch{
       case e: Throwable => {
         tx.abort()
@@ -227,7 +228,7 @@ with DatabaseProvider{
       status match {
         case OperationStatus.SUCCESS => doUpdate(tx, resource, Resource.fromByteArray(value.getData))
         case OperationStatus.NOTFOUND => doPut(tx, resource)
-        case _ => throw new ResourceNotFoundException("Failed to update resource with address " + ra + " Operation status " + status.toString)
+        case _ => throw new StorageException("Failed to update resource with address " + ra + " Operation status " + status.toString)
       }
 
       ra

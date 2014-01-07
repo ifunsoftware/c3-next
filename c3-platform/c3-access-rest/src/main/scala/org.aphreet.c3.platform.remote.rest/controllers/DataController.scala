@@ -162,9 +162,9 @@ class DataController extends AbstractController with ServletContextAware with Re
 
     val map = new mutable.HashMap[String, String]
 
-    map ++= resource.metadata.asMap.filterKeys(metaKeys.contains(_))
+    map ++= resource.metadata.asMap.filterKeys(metaKeys.contains)
 
-    map ++= resource.systemMetadata.asMap.filterKeys(sysMetaKeys.contains(_))
+    map ++= resource.systemMetadata.asMap.filterKeys(sysMetaKeys.contains)
 
     //This is actually a hack, but we don't have a created field in metadata
     if(sysMetaKeys.contains("c3.created")){
@@ -172,7 +172,7 @@ class DataController extends AbstractController with ServletContextAware with Re
     }
 
     if(sysMetaKeys.contains("c3.data.length")){
-      map.put("c3.data.length", resource.versions.last.systemMetadata.asMap.getOrElse(Resource.MD_DATA_LENGTH, "-1").toString)
+      map.put("c3.data.length", resource.versions.last.systemMetadata.asMap.getOrElse(Resource.MD_DATA_LENGTH, "-1"))
     }
 
     if(sysMetaKeys.contains("c3.versions.number")){
@@ -320,7 +320,7 @@ class DataController extends AbstractController with ServletContextAware with Re
         resource.addVersion(version)
       }
 
-      getMetadataToDelete(request).foreach(resource.metadata.remove(_))
+      getMetadataToDelete(request).foreach(resource.metadata.remove)
 
       resource.metadata ++= metadata
 

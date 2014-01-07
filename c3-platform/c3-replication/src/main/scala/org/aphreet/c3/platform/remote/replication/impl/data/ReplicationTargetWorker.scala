@@ -43,6 +43,7 @@ import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 import collection.mutable
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import stats.DelayInfoMsg
+import org.aphreet.c3.platform.exception.StorageNotFoundException
 
 class ReplicationTargetWorker(val localSystemId: String,
                               val storageManager: StorageManager,
@@ -118,21 +119,24 @@ class ReplicationTargetWorker(val localSystemId: String,
 
       fillWithData(resource, host)
 
-      val storage = storageManager.storageForResource(resource)
+      storageManager.storageForResource(resource) match {
+        case Some(storage) => {
+          resource.verifyCheckSums()
 
-      resource.verifyCheckSums()
-      storage.update(resource)
+          storage.update(resource)
 
-      val calculator = new ReplicationSignatureCalculator(localSystemId, host)
+          val calculator = new ReplicationSignatureCalculator(localSystemId, host)
 
-      target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
+          target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
 
-      accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
+          accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
 
-      statisticsManager ! IncreaseStatisticsMsg("c3.replication.created", 1)
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.created", 1)
 
-      handleDelay(resource)
-
+          handleDelay(resource)
+        }
+        case None => throw new StorageNotFoundException("Can't find storage for resource " + resource.address)
+      }
     } catch {
       case e: Throwable => {
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
@@ -157,30 +161,32 @@ class ReplicationTargetWorker(val localSystemId: String,
 
       val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
-      val storage = storageManager.storageForResource(resource)
+      storageManager.storageForResource(resource).filter(_.mode.allowWrite) match {
+        case Some(storage) => {
+          if (!storage.mode.allowWrite) {
+            log warn "Failed to store resource, storage is not writable"
+            return
+          }
 
-      if (!storage.mode.allowWrite) {
-        log warn "Failed to store resource, storage is not writable"
-        return
+          fillWithData(resource, host)
+
+          resource.verifyCheckSums()
+          storage.update(resource)
+
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.updated", 1)
+
+          accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
+
+          handleDelay(resource)
+
+          val calculator = new ReplicationSignatureCalculator(localSystemId, host)
+
+          val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
+
+          target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
+        }
+        case None => throw new StorageNotFoundException("Can't find storage for resource " + resource.address)
       }
-
-      fillWithData(resource, host)
-
-      resource.verifyCheckSums()
-      storage.update(resource)
-
-      statisticsManager ! IncreaseStatisticsMsg("c3.replication.updated", 1)
-
-      accessMediator ! ResourceUpdatedMsg(resource, 'ReplicationManager)
-
-      handleDelay(resource)
-
-      val calculator = new ReplicationSignatureCalculator(localSystemId, host)
-
-      val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
-
-      target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
-
     } catch {
       case e: Throwable => {
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)
@@ -199,25 +205,21 @@ class ReplicationTargetWorker(val localSystemId: String,
         return
       }
 
-      val storage = storageManager.storageForAddress(ResourceAddress(address))
+      storageManager.storageForAddress(ResourceAddress(address)).filter(_.mode.allowWrite) match {
+        case Some(storage) => {
 
-      if (storage.mode.allowWrite) {
+          storage.delete(address)
 
-        storage.get(address) match {
-          case Some(r) => storage.delete(address)
-          case None =>
+          target ! ReplicateDeleteAckMsg(address, new ReplicationSignatureCalculator(localSystemId, host).calculate(address))
+
+          accessMediator ! ResourceDeletedMsg(address, 'ReplicationManager)
+
+          statisticsManager ! IncreaseStatisticsMsg("c3.replication.deleted", 1)
+
         }
-
-        val calculator = new ReplicationSignatureCalculator(localSystemId, host)
-
-        target ! ReplicateDeleteAckMsg(address, calculator.calculate(address))
-
-        accessMediator ! ResourceDeletedMsg(address, 'ReplicationManager)
-
-        statisticsManager ! IncreaseStatisticsMsg("c3.replication.deleted", 1)
-      } else {
-        log warn "Failed to replicate delete, storage is not writable"
+        case None => throw new StorageNotFoundException("Can't find storage for resource " + address)
       }
+
     } catch {
       case e: Throwable => {
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.fail", 1)

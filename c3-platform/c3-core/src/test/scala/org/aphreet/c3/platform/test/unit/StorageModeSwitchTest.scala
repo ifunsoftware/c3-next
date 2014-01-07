@@ -104,7 +104,7 @@ class StorageStub extends Storage{
 
   def update(resource:Resource):String = ""
   
-  def delete(ra:String) {}
+  def delete(ra:String): String = ra
   
   def put(resource:Resource) {}
 
