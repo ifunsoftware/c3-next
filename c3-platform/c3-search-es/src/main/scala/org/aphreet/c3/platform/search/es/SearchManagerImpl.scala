@@ -6,7 +6,7 @@ import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import javax.annotation.{PostConstruct, PreDestroy}
 import scala.util.control.Exception._
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.resource.{DataStream, Resource}
+import org.aphreet.c3.platform.resource.Resource
 import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
@@ -22,13 +22,9 @@ import org.elasticsearch.common.xcontent.{XContentFactory, XContentBuilder}
 import java.util
 import org.elasticsearch.common.Base64
 import org.elasticsearch.action.admin.indices.exists.indices.{IndicesExistsResponse, IndicesExistsRequest}
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.action.search.SearchResponse
-import org.elasticsearch.search.{SearchHit, SearchHits}
-import scala.collection.mutable.ArrayBuffer
-import org.elasticsearch.index.query.{FieldQueryBuilder, QueryStringQueryBuilder, QueryBuilders, QueryBuilder}
-import org.elasticsearch.search.highlight.HighlightField
-import java.io.File
+import org.elasticsearch.index.query.{QueryStringQueryBuilder, QueryBuilders}
+import org.elasticsearch.action.delete.DeleteResponse
 
 /**
  * Need plugin
@@ -66,7 +62,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
      log info "mapping: \n: " + mapping()
 
     if (!resp.isExists) {
-      val response: CreateIndexResponse = esClient.admin().indices().prepareCreate(indexName).setSettings(
+      esClient.admin().indices().prepareCreate(indexName).setSettings(
         ImmutableSettings.settingsBuilder()
           .put ("index.mapping.attachment.ignore_errors",false)
           .put("number_of_shards", 1)
@@ -129,16 +125,29 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
     while (true) {
       receive {
-        case ResourceAddedMsg(resource, source) => {
+        case ResourceAddedMsg(resource, source) =>
           println("Got resource added!")
           this ! IndexMsg(resource)
-        }
 
-        case ResourceUpdatedMsg(resource, source) => ;
+        case ResourceUpdatedMsg(resource, source) =>
+          println("Got resource updated!")
+          this ! DeleteFromIndexMsg(resource.address)
+          this ! IndexMsg(resource)
 
-        case ResourceDeletedMsg(address, source) => ;
+        case ResourceDeletedMsg(address, source) =>
+          println("Got resource deleted!")
+          this ! DeleteFromIndexMsg(address)
 
-        case IndexMsg(resource) => {
+        case DeleteFromIndexMsg(address) =>
+          handling(classOf[Throwable]).by(e => {
+            log.warn("Failed to index resource " + address, e)
+            this ! ResourceDeleteFromIndexFailed(address)
+          }).apply {
+            log.trace("Got request to delete resource from index {}", address)
+            this ! ResourceDeletedFromIndexMsg(address, removeResourceFromIndex(address))
+          }
+
+        case IndexMsg(resource) =>
           handling(classOf[Throwable]).by(e => {
             log.warn("Failed to index resource " + resource.address, e)
             this ! ResourceIndexingFailed(resource.address)
@@ -146,18 +155,28 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
             log.trace("Got request to index {}", resource.address)
 
             if (shouldIndexResource(resource)) {
-
               log.debug("Indexing resource {}", resource.address)
-
               this ! ResourceIndexedMsg(resource.address, indexResource(resource))
-
             } else {
               log.debug("No need to index resource {}", resource.address)
             }
           }
         }
-      }
     }
+  }
+
+  def removeResourceFromIndex(address: String): Map[String, String] = {
+    log.debug("{}: Deleting resource {}", address)
+    var response: DeleteResponse = null
+    try {
+      response = esClient.prepareDelete(indexName, docName, address).execute().actionGet()
+    } catch {
+      case e: Exception => log error "exception caught: " + e.printStackTrace()
+    }
+
+    log.debug("Resource deleted from index ({}) : {}", address, response)
+    val m: Map[String, String] = collection.immutable.HashMap("address" -> address, "2" -> "3")
+    m
   }
 
   def indexResource(resource: Resource): Map[String, String] = {
@@ -203,10 +222,16 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     }
   }
 
+  case class ResourceDeleteFromIndexFailed(address: String)
+
   case class ResourceIndexingFailed(address: String)
 
   case class ResourceIndexedMsg(address: String, extractedMetadata: Map[String, String])
 
   case class IndexMsg(resource: Resource)
+
+  case class ResourceDeletedFromIndexMsg(address: String, extractedMetadata: Map[String, String])
+
+  case class DeleteFromIndexMsg(address: String)
 
 }

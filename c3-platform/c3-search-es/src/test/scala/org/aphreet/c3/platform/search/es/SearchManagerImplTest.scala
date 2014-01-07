@@ -5,7 +5,7 @@ import org.aphreet.c3.platform.resource._
 import junit.framework.Assert._
 import scala.collection.mutable
 import scala.collection.Map
-import org.aphreet.c3.platform.access.{AccessMediator, ResourceAddedMsg}
+import org.aphreet.c3.platform.access.{ResourceDeletedMsg, AccessMediator, ResourceAddedMsg}
 import org.easymock.EasyMock._
 import java.io.File
 import scala.io.Source
@@ -65,10 +65,15 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
     searchManagerImpl ! ResourceAddedMsg(resource, Symbol("source"))
   }
 
+  def removeResourceFromIndex(resource:Resource) {
+    searchManagerImpl ! ResourceDeletedMsg("address1", Symbol("source"))
+  }
+
   def testSearch(){
-    resources.foreach(indexResource(_))
+    resources.foreach(indexResource)
     Thread.sleep(1000)
     verifyResults(searchManagerImpl.search("domain", searchQuery).elements.toList)
+    resources.foreach(removeResourceFromIndex)
   }
 
   def searchQuery:String = "Tika"
