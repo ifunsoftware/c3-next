@@ -12,7 +12,7 @@ import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.access.ResourceDeletedMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
-import scala.Some
+import scala.{None, Some}
 import scala.collection.JavaConversions._
 import org.elasticsearch.common.settings.{Settings, ImmutableSettings}
 import org.elasticsearch.client.transport.TransportClient
@@ -25,6 +25,7 @@ import org.elasticsearch.action.admin.indices.exists.indices.{IndicesExistsRespo
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.{QueryStringQueryBuilder, QueryBuilders}
 import org.elasticsearch.action.delete.DeleteResponse
+import scala.io.Source
 
 /**
  * Need plugin
@@ -35,7 +36,7 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
   val log = Logger(getClass)
 
-  var esClient: TransportClient = null
+  var esClient: Option[TransportClient] = None
 
   val indexName: String = "resources-index"
   val docName: String = "resource"
@@ -46,70 +47,70 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
   @PreDestroy
   def destroy() {
     log info "Destroying SearchManager"
-    if (esClient != null)
-      esClient.close()
+    esClient.map(_.close())
   }
 
   @PostConstruct
   def init() {
     log info "init SearchManagerImpl es"
-    val settings: Settings = ImmutableSettings.settingsBuilder().put("cluster.name", "c3cluster").build()
-    val transportClient: TransportClient = new TransportClient(settings)
-    esClient = transportClient.addTransportAddress(new InetSocketTransportAddress("localhost", 9300))
+    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", "c3cluster").build()
+    val transportClient = new TransportClient(settings)
+    esClient = Some(transportClient.addTransportAddress(new InetSocketTransportAddress("localhost", 9300)))
     this.start()
 
-    val resp: IndicesExistsResponse = esClient.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()
-     log info "mapping: \n: " + mapping()
 
-    if (!resp.isExists) {
-      esClient.admin().indices().prepareCreate(indexName).setSettings(
+    val exists = esClient.flatMap(client =>
+      Some(client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()))
+    .flatMap(response => Some(response.isExists))
+
+    exists match {
+      case None => esClient.flatMap(client => Some(client.admin().indices().prepareCreate(indexName).setSettings(
         ImmutableSettings.settingsBuilder()
           .put ("index.mapping.attachment.ignore_errors",false)
           .put("number_of_shards", 1)
           .put("index.numberOfReplicas", 0))
-        .addMapping(docName, mapping())
-        .execute().actionGet()
+        .addMapping(docName, mapping)
+        .execute().actionGet()))
+        log info "mapping changed"
 
-      log info "mapping changed"
+      case Some(exists) => ;
     }
+
     accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
   }
 
-  def mapping(): String = {
-    scala.io.Source.fromInputStream(getClass.getResourceAsStream("/config/index-mapping.json")).getLines().mkString
-  }
+  lazy val mapping = Source.fromInputStream(getClass.getResourceAsStream("/config/index-mapping.json")).getLines().mkString
 
   def search(domain: String, text: String): SearchResult = {
     log debug "Search called with query: " + text
 
-    if (esClient == null) {
-      log debug "ES client is null"
-      SearchResult(text, new Array[SearchResultElement](0))
-    } else {
-      val queryBuilder:QueryStringQueryBuilder = QueryBuilders.queryString(text)
+    val queryBuilder:QueryStringQueryBuilder = QueryBuilders.queryString(text)
 
-      val resp:SearchResponse = esClient.prepareSearch(indexName)
-        .setQuery(queryBuilder )
-        .addHighlightedField("document")
-        .setHighlighterPreTags("<b>")
-        .setHighlighterPostTags("</b>")
-        .addHighlightedField("*")
-        .addFields("*","address")
-        .execute()
-        .actionGet()
+    val resp = esClient.flatMap(client => Some(client.prepareSearch(indexName)
+      .setQuery(queryBuilder )
+      .addHighlightedField("document")
+      .setHighlighterPreTags("<b>")
+      .setHighlighterPostTags("</b>")
+      .addHighlightedField("*")
+      .addFields("*","address")
+      .execute()
+      .actionGet()))
 
-      val searchResults = resp.getHits.hits().map(hit => {
-        println(hit)
-        if (!hit.getFields.containsKey("address"))  {
-           None
-        } else {
-           val score = hit.getScore
-           val address = hit.getFields.get("address").values().get(0).asInstanceOf[String]
-           val searchResultFragment = mapAsScalaMap(hit.getHighlightFields).map(e =>  SearchResultFragment(e._1, e._2.getFragments.map(_.string()))).toArray
-           Some(SearchResultElement(address, null, score, searchResultFragment))
-        }
-      }).flatten.toList.toArray
-      SearchResult(text, searchResults)
+    val searchResults = resp.flatMap(resp => Some(resp.getHits.hits().map(hit => {
+      log debug "hit " + hit
+      if (!hit.getFields.containsKey("address"))  {
+         None
+      } else {
+         val score = hit.getScore
+         val address = hit.getFields.get("address").values().get(0).asInstanceOf[String]
+         val searchResultFragment = mapAsScalaMap(hit.getHighlightFields).map(e =>  SearchResultFragment(e._1, e._2.getFragments.map(_.string()))).toArray
+         Some(SearchResultElement(address, null, score, searchResultFragment))
+      }
+    }).flatten.toList.toArray))
+
+    searchResults match {
+      case Some(results) =>  SearchResult(text, results)
+      case None => SearchResult(text, new Array[SearchResultElement](0))
     }
   }
 
@@ -167,31 +168,29 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
 
   def removeResourceFromIndex(address: String): Map[String, String] = {
     log.debug("{}: Deleting resource {}", address)
-    var response: DeleteResponse = null
+    var response: Option[DeleteResponse] = None
     try {
-      response = esClient.prepareDelete(indexName, docName, address).execute().actionGet()
+      response = esClient.flatMap(client => Some(client.prepareDelete(indexName, docName, address).execute().actionGet() ))
     } catch {
       case e: Exception => log error "exception caught: " + e.printStackTrace()
     }
 
     log.debug("Resource deleted from index ({}) : {}", address, response)
-    val m: Map[String, String] = collection.immutable.HashMap("address" -> address, "2" -> "3")
-    m
+    Map("address" -> address, "2" -> "3")
   }
 
   def indexResource(resource: Resource): Map[String, String] = {
     log.debug("{}: Indexing resource {}", resource.address)
-    var response: IndexResponse = null
+    var response: Option[IndexResponse] = None
     try {
       // val language = getLanguage(resource.metadata, extractedDocument)
       val metadataMap = new util.HashMap[String, String]()
       resource.metadata.asMap.foreach {
         keyVal => {
-          println(keyVal._1 + "=" + keyVal._2)
+          log debug keyVal._1 + "=" + keyVal._2
           metadataMap.put(keyVal._1, keyVal._2)
         }
       }
-
 
       val doc: XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
@@ -200,10 +199,10 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
         .field("document", Base64.encodeBytes(resource.versions.head.data.getBytes))
         .endObject()
 
-      response = esClient.prepareIndex(indexName, docName, resource.address)
+      response = esClient.flatMap(client => Some (client.prepareIndex(indexName, docName, resource.address)
         .setSource(doc)
         .execute()
-        .actionGet()
+        .actionGet()))
 
       log.debug("ES document: {}", doc)
     } catch {
@@ -211,15 +210,13 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     }
 
     log.debug("Resource writen to index ({}) : {}", resource.address, response.toString)
-    val m: Map[String, String] = collection.immutable.HashMap("address" -> resource.address, "2" -> "3")
-    m
+    Map("address" -> resource.address,
+      "es_metadata" -> "unknown") //TODO get indexed doc metadata (author, title, ...)
+
   }
 
   def shouldIndexResource(resource: Resource): Boolean = {
-    resource.systemMetadata("c3.skip.index") match {
-      case Some(x) => false
-      case None => true
-    }
+    resource.systemMetadata("c3.skip.index").isEmpty
   }
 
   case class ResourceDeleteFromIndexFailed(address: String)
