@@ -37,13 +37,13 @@ class SearchManagerImpl extends SearchManager with WatchedActor  with SPlatformP
 
   val log = Logger(getClass)
 
-  val ES_HOST = "localhost"
+  val ES_HOST = "ES_HOST"
 
-  var esHost:Option[String] = None
+  val ES_CLUSTER_NAME = "ES_CLUSTER_NAME"
 
-  var esClusterName:Option[String] = None
+  var esHost:String = "localhost"
 
-  val ES_CLUSTER_NAME = "c3cluster"
+  var esClusterName:String = "c3cluster"
 
   var esClient: Option[TransportClient] = None
 
@@ -62,11 +62,10 @@ class SearchManagerImpl extends SearchManager with WatchedActor  with SPlatformP
   @PostConstruct
   def init() {
     log info "init SearchManagerImpl es"
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", "c3cluster").build()
+    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", esClusterName).build()
     val transportClient = new TransportClient(settings)
-    esClient = Some(transportClient.addTransportAddress(new InetSocketTransportAddress("localhost", 9300)))
+    esClient = Some(transportClient.addTransportAddress(new InetSocketTransportAddress(esHost, 9300)))
     this.start()
-
 
     val exists = esClient.flatMap(client =>
       Some(client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()))
@@ -232,19 +231,17 @@ class SearchManagerImpl extends SearchManager with WatchedActor  with SPlatformP
     event.name match {
       case ES_HOST =>
         val newHost = event.newValue
-          esHost match {
-            case Some(name) =>
-              if (name != newHost)
-                log info "New esClusterName : " + newHost
-            case None => log info "New esClusterName :" + newHost
-      }
+        if (esHost != newHost) {
+          log info "New esHost address : " + newHost
+          esHost = newHost
+          init()
+        }
       case ES_CLUSTER_NAME =>
         val newClusterName = event.newValue
-        esClusterName match {
-          case Some(name) =>
-            if (name != newClusterName)
-              log info "New esClusterName : " + newClusterName
-          case None => log info "New esClusterName :" + newClusterName
+        if (esClusterName != newClusterName) {
+           log info "New esClusterName : " + newClusterName
+           esClusterName = newClusterName
+           init()
         }
     }
   }

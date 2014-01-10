@@ -11,6 +11,7 @@ import java.io.File
 import scala.io.Source
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.search.api.SearchResultElement
+import org.aphreet.c3.platform.config.{PropertyChangeEvent, SetPropertyMsg}
 
 /**
 //hightlight
@@ -70,6 +71,8 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
   }
 
   def testSearch(){
+    searchManagerImpl.propertyChanged(new PropertyChangeEvent("ES_HOST", null, "localhost", this))
+    searchManagerImpl.propertyChanged(new PropertyChangeEvent("ES_CLUSTER_NAME", null, "c3cluster", this))
     resources.foreach(indexResource)
     Thread.sleep(1000)
     verifyResults(searchManagerImpl.search("domain", searchQuery).elements.toList)
