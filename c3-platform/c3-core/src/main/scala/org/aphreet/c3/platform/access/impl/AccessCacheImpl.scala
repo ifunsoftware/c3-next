@@ -31,59 +31,59 @@
 
 package org.aphreet.c3.platform.access.impl
 
-import actors.Actor
+import akka.actor._
 import net.sf.ehcache.{Element, Cache, CacheManager}
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
+import org.aphreet.c3.platform.common.msg.UnregisterNamedListenerMsg
 import org.aphreet.c3.platform.common.{Logger, ComponentGuard}
-import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
 import scala.Some
 
-class AccessCacheImpl(val accessMediator: Actor, val statisticsManager: Actor) extends AccessCache with ComponentGuard{
+class AccessCacheImpl(val actorSystem: ActorRefFactory, val accessMediator: ActorRef, val statisticsManager: ActorRef) extends AccessCache with ComponentGuard{
 
   var cache:Cache = _
 
   val log = Logger(getClass)
 
-  {
+  val cacheActor = actorSystem.actorOf(Props[AccessCacheActor])
 
+  {
     val cacheManager = CacheManager.create()
 
     cache = new Cache("resourceCache", 5000, false, false, 120, 120)
 
     cacheManager.addCache(cache)
 
-    accessMediator ! RegisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
-    this.start()
+    accessMediator ! RegisterNamedListenerMsg(cacheActor, ACCESS_MANAGER_NAME)
 
     log info "Access cache started"
   }
 
-  def act() {
+  class AccessCacheActor extends Actor {
 
-    loop{
-      react{
-        case ResourceAddedMsg(resource, source) =>
+    def receive = {
+      case ResourceAddedMsg(resource, source) =>
 
-        case ResourceDeletedMsg(address, source) =>
-          this.remove(address)
-        case ResourceUpdatedMsg(resource, source) =>
-          this.remove(resource.address)
+      case ResourceDeletedMsg(address, source) =>
+        remove(address)
+      case ResourceUpdatedMsg(resource, source) =>
+        remove(resource.address)
 
-        case StoragePurgedMsg(source) =>
-          log.info("Reseting resources cache")
-          this.cache.removeAll()
+      case StoragePurgedMsg(source) =>
+        log.info("Reseting resources cache")
+        cache.removeAll()
+    }
 
-        case DestroyMsg =>
-          letItFall{
-            CacheManager.getInstance.shutdown()
-            accessMediator ! UnregisterNamedListenerMsg(this, ACCESS_MANAGER_NAME)
-          }
-          log info "AccessCache stopped"
-          this.exit()
+    override def postStop(){
+      letItFall{
+        CacheManager.getInstance.shutdown()
+        accessMediator ! UnregisterNamedListenerMsg(cacheActor, ACCESS_MANAGER_NAME)
       }
+      log info "AccessCache stopped"
     }
   }
 
@@ -106,10 +106,6 @@ class AccessCacheImpl(val accessMediator: Actor, val statisticsManager: Actor) e
   override def remove(address:String): String = {
     cache.remove(address)
     address
-  }
-
-  def destroy(){
-    this ! DestroyMsg
   }
 
 }

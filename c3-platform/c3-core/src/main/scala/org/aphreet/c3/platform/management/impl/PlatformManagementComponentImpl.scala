@@ -2,19 +2,16 @@ package org.aphreet.c3.platform.management.impl
 
 import java.util
 import java.util.{Map => JMap}
+import org.aphreet.c3.platform.access.AccessComponent
+import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.config.{PlatformConfigComponent, SetPropertyMsg}
 import org.aphreet.c3.platform.management.{PlatformManagementComponent, PlatformManagementEndpoint}
-import org.aphreet.c3.platform.statistics.impl.StatisticsComponentImpl
+import org.aphreet.c3.platform.statistics.StatisticsComponent
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
-import org.aphreet.c3.platform.storage.impl.StorageComponentImpl
-import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
+import org.aphreet.c3.platform.storage.migration.MigrationComponent
 import org.aphreet.c3.platform.storage.{StorageComponent, StorageIndex, Storage, StorageMode}
 import org.aphreet.c3.platform.task._
-import org.aphreet.c3.platform.access.AccessComponent
-import org.aphreet.c3.platform.storage.migration.MigrationComponent
-import org.aphreet.c3.platform.statistics.StatisticsComponent
-import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 
 trait PlatformManagementComponentImpl extends PlatformManagementComponent{
 
@@ -52,7 +49,7 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
 
     def purgeStorageData() {
       storageManager.resetStorages()
-      accessMediator ! StoragePurgedMsg('PlatformManagement)
+      accessMediator.async ! StoragePurgedMsg('PlatformManagement)
     }
 
     def setStorageMode(id:String, mode:StorageMode) {
@@ -78,7 +75,7 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
         throw new NullPointerException("Properties must be not-null")
       }
 
-      platformConfigManager ! SetPropertyMsg(key, value)
+      platformConfigManager.async ! SetPropertyMsg(key, value)
     }
 
     def listTasks:List[TaskDescription] = taskManager.taskList

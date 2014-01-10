@@ -30,76 +30,64 @@
 
 package org.aphreet.c3.platform.access.impl
 
-import actors.Actor
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.common.msg._
 import scala.collection.mutable
+import akka.actor.{Props, ActorRefFactory, ActorRef, Actor}
 
-class AccessMediatorImpl extends AccessMediator {
+class AccessMediatorImpl(val actorSystem: ActorRefFactory) extends AccessMediator {
 
   val log = Logger(getClass)
 
-  var accessListeners = new mutable.HashMap[Actor, Symbol]
+  val async = actorSystem.actorOf(Props[AccessMediatorActor])
 
-  {
-    log info "Starting access mediator"
-    this.start()
-  }
+  class AccessMediatorActor extends Actor {
 
-  override def act() {
-    loop{
-      react{
-        case DestroyMsg => {
-          log info "AccessMediator stopped"
-          this.exit()
-        }
+    var accessListeners = new mutable.HashMap[ActorRef, Symbol]
 
-        case RegisterNamedListenerMsg(actor, name) =>
-          log debug "Registering listener " + actor.toString
-          accessListeners.put(actor, name)
-          log debug accessListeners.toString
-        
-        case UnregisterNamedListenerMsg(actor, name) =>
-          log debug "Unregistering listener " + actor.toString
-          accessListeners.remove(actor)
-          log debug accessListeners.toString
-
-        case ResourceAddedMsg(resource, source) => {
-
-          accessListeners.foreach{e => {
-            if(e._2 != source)
-              e._1 ! ResourceAddedMsg(resource, source)
-            }
-          }
-        }
-
-        case StoragePurgedMsg(source) => {
-          accessListeners.filter(e => e._2 != source).foreach(e => e._1 ! StoragePurgedMsg(source))
-        }
-
-        case ResourceUpdatedMsg(resource, source) => {
-          accessListeners.foreach{e => {
-            if(e._2 != source)
-              e._1 ! ResourceUpdatedMsg(resource, source)
-            }
-          }
-        }
-
-        case ResourceDeletedMsg(address, source) => {
-          accessListeners.foreach {e => {
-            if(e._2 != source)
-              e._1 ! ResourceDeletedMsg(address, source)
-            }
-          }
-        }
-      }
+    {
+      log info "Starting access mediator"
     }
 
-  }
+    override def receive = {
 
-  def destroy() {
-    log info "Stopping access mediator..."
-    this ! DestroyMsg
+      case RegisterNamedListenerMsg(actor, name) =>
+        log debug "Registering listener " + actor.toString
+        accessListeners.put(actor, name)
+        log debug accessListeners.toString
+
+      case UnregisterNamedListenerMsg(actor, name) =>
+        log debug "Unregistering listener " + actor.toString
+        accessListeners.remove(actor)
+        log debug accessListeners.toString
+
+      case ResourceAddedMsg(resource, source) => {
+
+        accessListeners.foreach{e => {
+          if(e._2 != source)
+            e._1 ! ResourceAddedMsg(resource, source)
+        }
+        }
+      }
+
+      case StoragePurgedMsg(source) => {
+        accessListeners.filter(e => e._2 != source).foreach(e => e._1 ! StoragePurgedMsg(source))
+      }
+
+      case ResourceUpdatedMsg(resource, source) => {
+        accessListeners.foreach(e => {
+          if(e._2 != source)
+            e._1 ! ResourceUpdatedMsg(resource, source)
+        })
+      }
+
+      case ResourceDeletedMsg(address, source) => {
+        accessListeners.foreach (e => {
+          if(e._2 != source)
+            e._1 ! ResourceDeletedMsg(address, source)
+        })
+      }
+    }
   }
 }

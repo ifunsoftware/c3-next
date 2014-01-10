@@ -1,50 +1,43 @@
 package org.aphreet.c3.platform.search.impl
 
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.config.ConfigAccessor
 import org.aphreet.c3.platform.search.{DropFieldConfiguration, HandleFieldListMsg, SearchConfigurationManager}
+import akka.actor.{Props, Actor, ActorRefFactory}
 
-class SearchConfigurationManagerImpl(val configAccessor: ConfigAccessor[FieldConfiguration]) extends SearchConfigurationManager {
+class SearchConfigurationManagerImpl(val actorSystem: ActorRefFactory,
+                                     val configAccessor: ConfigAccessor[FieldConfiguration])
+  extends SearchConfigurationManager {
 
   var currentSearchConfiguration = new SearchConfiguration
 
   var currentFields: FieldConfiguration = _
 
+  val async = actorSystem.actorOf(Props[SearchConfigurationManagerActor])
+
   {
     currentFields = configAccessor.load
 
     currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
-
-    this.start()
   }
 
   def searchConfiguration: SearchConfiguration = {
     currentSearchConfiguration
   }
 
+  class SearchConfigurationManagerActor extends Actor {
+    def receive = {
+      case HandleFieldListMsg(fields) => {
+        currentFields = currentFields.handleIndexedFields(fields)
+        currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
+        configAccessor.store(currentFields)
+      }
 
-  def act() {
-    loop {
-      react {
-        case HandleFieldListMsg(fields) => {
-          currentFields = currentFields.handleIndexedFields(fields)
-          currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
-          configAccessor.store(currentFields)
-        }
-
-        case DropFieldConfiguration => {
-          currentFields = FieldConfiguration(List())
-          currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
-          configAccessor.store(currentFields)
-        }
-
-        case DestroyMsg => this.exit()
+      case DropFieldConfiguration => {
+        currentFields = FieldConfiguration(List())
+        currentSearchConfiguration.loadFieldWeight(currentFields.fieldMap)
+        configAccessor.store(currentFields)
       }
     }
-  }
-
-  def destroy() {
-    this ! DestroyMsg
   }
 }
 

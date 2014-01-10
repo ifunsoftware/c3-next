@@ -2,6 +2,7 @@ package org.aphreet.c3.platform.common
 
 import org.osgi.framework.{BundleActivator, BundleContext}
 import java.util.Properties
+import akka.actor.{ActorRef, ActorRefFactory}
 
 /**
  * Author: Mikhail Malygin
@@ -54,7 +55,6 @@ trait C3Activator extends BundleActivator {
 
     context.getService(reference).asInstanceOf[T]
   }
-
 }
 
 trait C3AppHandle {

@@ -31,6 +31,8 @@
 
 package org.aphreet.c3.platform.domain
 
+import org.aphreet.c3.platform.common.Constants
+
 abstract sealed class DomainMode(val name:String);
 
 object DomainMode{
@@ -53,7 +55,7 @@ case class Domain(id:String, var name:String, var key:String, var mode:DomainMod
 
 object Domain{
 
-  val MD_FIELD = "c3.domain.id"
+  val MD_FIELD = Constants.C3_MD_DOMAIN_ID
   val ACCESS_TOKEN_NAME = "DomainAccessToken"
   
 }

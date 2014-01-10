@@ -29,26 +29,30 @@
  */
 package org.aphreet.c3.platform.storage.bdb.impl
 
-import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
-import org.aphreet.c3.platform.storage.bdb._
-import org.aphreet.c3.platform.storage._
-import org.aphreet.c3.platform.storage.StorageParams
+import akka.actor.ActorRefFactory
+import org.aphreet.c3.platform.actor.ActorComponent
 import org.aphreet.c3.platform.common.ComponentLifecycle
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, PlatformConfigManager}
+import org.aphreet.c3.platform.storage.StorageParams
+import org.aphreet.c3.platform.storage._
+import org.aphreet.c3.platform.storage.bdb._
 
 trait PureBDBStorageComponent extends ComponentLifecycle{
 
   this: StorageComponent
-    with PlatformConfigComponent =>
+    with PlatformConfigComponent
+    with ActorComponent =>
 
-  val pureBDBStorageFactory = new PureBDBStorageFactory(storageManager, platformConfigManager)
+  val pureBDBStorageFactory = new PureBDBStorageFactory(storageManager, platformConfigManager, actorSystem)
 
   destroy(Unit => pureBDBStorageFactory.destroy())
 
 }
 
 class PureBDBStorageFactory(override val storageManager: StorageManager,
-                            override val platformConfigManager: PlatformConfigManager)
-  extends AbstractBDBStorageFactory(storageManager, platformConfigManager){
+                            override val platformConfigManager: PlatformConfigManager,
+                            override val actorSystem: ActorRefFactory)
+  extends AbstractBDBStorageFactory(storageManager, platformConfigManager, actorSystem){
 
   protected def createNewStorage(params:StorageParams, systemId:String, conflictResolverProvider: ConflictResolverProvider):Storage =
     new PureBDBStorage(params, systemId, bdbConfig, conflictResolverProvider)

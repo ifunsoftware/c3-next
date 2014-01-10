@@ -31,10 +31,9 @@
 
 package org.aphreet.c3.platform.access
 
-import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.resource.Resource
 
-trait AccessCache extends WatchedActor{
+trait AccessCache {
 
   def put(resource:Resource): Resource
 

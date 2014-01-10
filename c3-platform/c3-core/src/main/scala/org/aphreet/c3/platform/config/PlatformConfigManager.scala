@@ -31,12 +31,11 @@
 package org.aphreet.c3.platform.config
 
 import collection.immutable.Map
-
-import org.springframework.stereotype.Component
 import java.io.File
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.ActorRefHolder
 
-trait PlatformConfigManager extends WatchedActor {
+
+trait PlatformConfigManager extends ActorRefHolder{
 
   def configDir: File
 

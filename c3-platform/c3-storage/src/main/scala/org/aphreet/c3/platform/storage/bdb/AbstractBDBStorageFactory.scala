@@ -29,13 +29,18 @@
  */
 package org.aphreet.c3.platform.storage.bdb
 
+import akka.actor.ActorRefFactory
+import akka.pattern.ask
+import akka.util.Timeout
+import java.util.concurrent.TimeUnit
 import org.aphreet.c3.platform.common.Constants
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.storage.common.AbstractStorageFactory
 import org.aphreet.c3.platform.storage.{StorageManager, U}
 
 abstract class AbstractBDBStorageFactory(override val storageManager: StorageManager,
-                                         val platformConfigManager: PlatformConfigManager)
+                                         val platformConfigManager: PlatformConfigManager,
+                                         val actorSystem: ActorRefFactory)
   extends AbstractStorageFactory(storageManager) with SPlatformPropertyListener{
 
   val BDB_CONFIG_TX_NO_SYNC = "c3.storage.bdb.txnosync"
@@ -52,16 +57,20 @@ abstract class AbstractBDBStorageFactory(override val storageManager: StorageMan
   }
 
   override def init() {
+
+    import actorSystem.dispatcher
+
     log info "Post construct callback invoked"
-    platformConfigManager !? RegisterMsg(this) //sync call. Setting properties before opening storages
-    super.init()
+    (platformConfigManager.async ? RegisterMsg(this)).onComplete(result => super.init()) //sync call. Setting properties before opening storages
   }
+
+  implicit val timeout = Timeout(1, TimeUnit.MINUTES)
 
   override def destroy() {
     log info "Pre destroy callback invoked"
 
     letItFall{
-      platformConfigManager ! UnregisterMsg(this)
+      platformConfigManager.async ! UnregisterMsg(this)
     }
 
     super.destroy()
@@ -124,9 +133,4 @@ abstract class AbstractBDBStorageFactory(override val storageManager: StorageMan
       }
     }
   }
-
-
-
-
-
 }

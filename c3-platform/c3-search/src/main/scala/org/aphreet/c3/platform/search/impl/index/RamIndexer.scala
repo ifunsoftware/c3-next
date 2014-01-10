@@ -30,185 +30,180 @@
 
 package org.aphreet.c3.platform.search.impl.index
 
-import actors.Actor
+import akka.actor._
 import collection.JavaConversions._
-import java.io.{Reader, StringReader}
+import java.io.StringReader
+import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.ru.RussianAnalyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.{IndexWriterConfig, IndexWriter}
 import org.apache.lucene.store.{RAMDirectory, Directory}
-import org.aphreet.c3.platform.common.{Logger, WatchedActor}
 import org.aphreet.c3.platform.common.msg.{DestroyMsgReply, DestroyMsg}
+import org.aphreet.c3.platform.common.{ActorRefHolder, Constants, Logger}
 import org.aphreet.c3.platform.resource.{Metadata, Resource}
+import org.aphreet.c3.platform.search.HandleFieldListMsg
+import org.aphreet.c3.platform.search.SearchConfigurationManager
 import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
 import org.aphreet.c3.platform.search.impl.common.Fields._
 import org.aphreet.c3.platform.search.impl.common.LanguageGuesserUtil
 import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
-import org.aphreet.c3.platform.search.{HandleFieldListMsg, SearchConfigurationManager}
+import scala.Some
 import scala.util.control.Exception._
 
 
-class RamIndexer(val fileIndexer: Actor,
+class RamIndexer(val actorSystem: ActorRefFactory,
+                 val fileIndexer: ActorRef,
                  val configurationManager:SearchConfigurationManager, num: Int,
                  var extractDocumentContent:Boolean,
-                 var textExtractor:TextExtractor) extends WatchedActor {
+                 var textExtractor:TextExtractor) extends ActorRefHolder {
 
   val log = Logger(getClass)
 
-  var maxDocsCount: Int = 100
-
   var directory: Directory = null
 
-  var writer: IndexWriter = null
+  val async = actorSystem.actorOf(Props[RamIndexerActor])
 
-  var lastDocumentTime: Long = System.currentTimeMillis
+  class RamIndexerActor extends Actor {
 
-  val languageGuesser = LanguageGuesserUtil.createGuesser
+    var lastDocumentTime: Long = System.currentTimeMillis
 
-  {
-    createNewWriter()
-  }
+    val languageGuesser = LanguageGuesserUtil.createGuesser
 
+    var maxDocsCount: Int = 100
 
-  def createNewWriter() {
+    var writer: IndexWriter = null
 
-    val oldWriter = writer
-    val oldDirectory = directory
-
-    directory = new RAMDirectory
-
-    writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)))
-
-    if (oldWriter != null) {
-      oldWriter.close()
-      fileIndexer ! MergeIndexMsg(oldDirectory)
+    {
+      createNewWriter()
     }
-  }
 
+    def createNewWriter() {
 
-  def act() {
-    loop {
-      react {
-        case IndexMsg(resource) => {
-          handling(classOf[Throwable]).by(e => {
-            log.warn(num + ": Failed to index resource " + resource.address, e)
-            sender ! ResourceIndexingFailed(resource.address)
-          }).apply{
-            log.trace("Got request to index {}", resource.address)
+      val oldWriter = writer
+      val oldDirectory = directory
 
-            if(shouldIndexResource(resource)){
+      directory = new RAMDirectory
 
-              log.debug("Indexing resource {}", resource.address)
+      writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)))
 
-              sender ! ResourceIndexedMsg(resource.address, indexResource(resource))
-              lastDocumentTime = System.currentTimeMillis
-              if (writer.numDocs > maxDocsCount) {
-                createNewWriter()
-              }
-            }else{
-              log.debug("No need to index resource {}", resource.address)
-            }
-          }
-        }
+      if (oldWriter != null) {
+        oldWriter.close()
+        fileIndexer ! MergeIndexMsg(oldDirectory)
+      }
+    }
 
-        case SetMaxDocsCountMsg(count) => maxDocsCount = count
+    def receive = {
+      case IndexMsg(resource) => {
+        handling(classOf[Throwable]).by(e => {
+          log.warn(num + ": Failed to index resource " + resource.address, e)
+          sender ! ResourceIndexingFailed(resource.address)
+        }).apply{
+          log.trace("Got request to index {}", resource.address)
 
-        case FlushIndex(force) => {
-          if (writer.numDocs > 0) {
-            if (force)
+          if(shouldIndexResource(resource)){
+
+            log.debug("Indexing resource {}", resource.address)
+
+            sender ! ResourceIndexedMsg(resource.address, indexResource(resource))
+            lastDocumentTime = System.currentTimeMillis
+            if (writer.numDocs > maxDocsCount) {
               createNewWriter()
-            else {
-              //More than 30 seconds between resources
-              if (System.currentTimeMillis - lastDocumentTime > 30 * 1000)
-                createNewWriter()
             }
           }else{
-            log trace num + ": Writer is empty, flush skipped"
-          }
-        }
-
-        case UpdateTextExtractor(extractor) => textExtractor = extractor
-
-        case DestroyMsg => {
-
-          handling(classOf[Throwable]).by(
-            e => log.warn(num + ": Failed to store indexer", e)
-          ).andFinally{
-            reply { DestroyMsgReply}
-            this.exit()
-          }.apply{
-            log.info(num + ": Stopping memory indexer")
-            writer.close()
-            fileIndexer ! MergeIndexMsg(directory)
+            log.debug("No need to index resource {}", resource.address)
           }
         }
       }
-    }
-  }
 
-  def indexResource(resource: Resource): Map[String, String] = {
-    log.debug("{}: Indexing resource {}", num,resource.address)
+      case SetMaxDocsCountMsg(count) => maxDocsCount = count
 
-    val extractedDocument = if(extractDocumentContent){
-      textExtractor.extract(resource)
-    }else None
+      case FlushIndex(force) => {
+        if (writer.numDocs > 0) {
+          if (force)
+            createNewWriter()
+          else {
+            //More than 30 seconds between resources
+            if (System.currentTimeMillis - lastDocumentTime > 30 * 1000)
+              createNewWriter()
+          }
+        }else{
+          log trace num + ": Writer is empty, flush skipped"
+        }
+      }
 
-    val metadata: Map[String, String] = extractedDocument match {
-      case Some(document) => document.metadata
-      case None => Map()
-    }
+      case UpdateTextExtractor(extractor) => textExtractor = extractor
 
-    try{
-      val language = getLanguage(resource.metadata, extractedDocument)
+      case DestroyMsg => {
 
-      val resourceHandler = new ResourceHandler(configurationManager.searchConfiguration, resource, resource.metadata, extractedDocument, language)
-
-      val document = resourceHandler.document
-      val analyzer = resourceHandler.analyzer
-
-      captureDocumentFields(document)
-
-      log.debug("Lucene document: {}", document.toString)
-
-      writer.addDocument(document, analyzer)
-      writer.commit()
-    }finally{
-      extractedDocument match {
-        case Some(document) => document.dispose()
-        case None =>
+        handling(classOf[Throwable]).by(
+          e => log.warn(num + ": Failed to store indexer", e)
+        ).andFinally{
+          sender ! DestroyMsgReply
+        }.apply{
+          log.info(num + ": Stopping memory indexer")
+          writer.close()
+          fileIndexer ! MergeIndexMsg(directory)
+        }
       }
     }
 
-    log.debug("Resource writen to tmp index ({})", resource.address)
-    metadata
-  }
+    def indexResource(resource: Resource): Map[String, String] = {
+      log.debug("{}: Indexing resource {}", num,resource.address)
 
-  def captureDocumentFields(document:Document){
-    val indexedFieldList = asScalaBuffer(document.getFields).filter(_.isTokenized).map(_.name()).toList
+      val extractedDocument = if(extractDocumentContent){
+        textExtractor.extract(resource)
+      }else None
 
-    configurationManager ! HandleFieldListMsg(indexedFieldList)
-  }
+      try{
+        val language = getLanguage(resource.metadata, extractedDocument)
 
-  def getLanguage(metadata: Metadata, extracted: Option[ExtractedDocument]):String = {
+        val document = new WeightedDocumentBuilder(configurationManager.searchConfiguration).build(resource,
+          extractedDocument, language)
 
-    val reader: Option[Reader] = extracted match {
-      case Some(document) => Some(new StringReader(document.content))
-      case None => metadata(TITLE) match {
-        case Some(value) => Some(new StringReader(value))
-        case None => None
+        captureDocumentFields(document)
+
+        if(log.isDebugEnabled){
+          log.debug("Lucene document: {}", document.toString)
+        }
+
+        writer.addDocument(document, analyzer(language))
+        writer.commit()
+
+        log.debug("Resource written to tmp index ({})", resource.address)
+
+        extractedDocument match {
+          case Some(doc) => doc.metadata
+          case None => Map()
+        }
+      }finally{
+        extractedDocument.map(_.dispose())
       }
     }
 
-    reader match {
-      case Some(value) => languageGuesser.guessLanguage(value)
-      case None => null
+    def analyzer(lang: Option[String]):Analyzer = {
+      lang match {
+        case Some("ru") => new RussianAnalyzer(LUCENE_VERSION)
+        case _ => new StandardAnalyzer(LUCENE_VERSION)
+      }
     }
-  }
 
-  def shouldIndexResource(resource:Resource):Boolean = {
-    resource.systemMetadata("c3.skip.index") match{
-      case Some(x) => false
-      case None => true
+    def captureDocumentFields(document:Document){
+      val indexedFieldList = asScalaBuffer(document.getFields).filter(_.isTokenized).map(_.name()).toList
+
+      configurationManager ! HandleFieldListMsg(indexedFieldList)
+    }
+
+    def getLanguage(metadata: Metadata, extracted: Option[ExtractedDocument]): Option[String] = {
+
+      (extracted match {
+        case Some(document) => Some(document.content)
+        case None => metadata(TITLE)
+      }).flatMap(text => Some(languageGuesser.guessLanguage(new StringReader(text))))
+    }
+
+    def shouldIndexResource(resource:Resource):Boolean = {
+      !resource.systemMetadata.asMap.contains(Constants.C3_MD_SKIP_IDX)
     }
   }
 }

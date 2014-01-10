@@ -31,9 +31,9 @@ package org.aphreet.c3.platform.common
 
 object Constants {
 
-  val C3_PLATFORM_HOME:String = "c3.platform.home"
+  val C3_PLATFORM_HOME = "c3.platform.home"
 
-  val C3_SYSTEM_ID:String = "c3.platform.id"
+  val C3_SYSTEM_ID = "c3.platform.id"
 
   val C3_PUBLIC_HOSTNAME = "c3.public.hostname"
  
@@ -42,5 +42,7 @@ object Constants {
   val STORAGE_MODE_MIGRATION = "migration"
   val STORAGE_MODE_CAPACITY = "capacity"
   val STORAGE_MODE_MAINTAIN = "MAINTAIN"
-  
+
+  val C3_MD_DOMAIN_ID = "c3.domain.id"
+  val C3_MD_SKIP_IDX  = "c3.skip.index"
 }

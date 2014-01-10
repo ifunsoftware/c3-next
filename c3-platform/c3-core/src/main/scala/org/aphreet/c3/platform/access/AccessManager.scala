@@ -30,10 +30,11 @@
 package org.aphreet.c3.platform.access
 
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.common.WatchedActor
+import akka.actor.ActorRef
+import org.aphreet.c3.platform.common.ActorRefHolder
 
 
-trait AccessManager extends WatchedActor {
+trait AccessManager extends ActorRefHolder{
 
   def get(ra: String): Resource
 
@@ -48,6 +49,7 @@ trait AccessManager extends WatchedActor {
   def registerOwner(owner: ResourceOwner)
 
   def unregisterOwner(owner: ResourceOwner)
+
 }
 
 case class UpdateMetadataMsg(address: String, metadata: Map[String, String], system: Boolean)

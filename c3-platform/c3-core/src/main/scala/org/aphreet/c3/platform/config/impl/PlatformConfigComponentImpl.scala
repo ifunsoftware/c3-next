@@ -30,10 +30,12 @@ package org.aphreet.c3.platform.config.impl
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import akka.actor.{Props, Actor}
 import collection.immutable.Map
 import collection.mutable
 import java.io.File
-import org.aphreet.c3.platform.common.msg.{DoneMsg, DestroyMsg}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.msg.DoneMsg
 import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger, Constants}
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.resource.IdGenerator
@@ -41,7 +43,8 @@ import org.aphreet.c3.platform.resource.IdGenerator
 
 trait PlatformConfigComponentImpl extends PlatformConfigComponent with ComponentLifecycle {
 
-  this: SystemDirectoryProvider =>
+  this: SystemDirectoryProvider
+    with ActorComponent =>
 
   val configPersister: ConfigPersister = new FileConfigPersister(this)
 
@@ -49,13 +52,12 @@ trait PlatformConfigComponentImpl extends PlatformConfigComponent with Component
 
   private val platformConfigManagerImpl = new PlatformConfigManagerImpl(new PlatformConfigAccessor(configPersister))
 
-  destroy(
-    Unit => platformConfigManagerImpl.destroy()
-  )
 
   class PlatformConfigManagerImpl(val platformConfigAccessor: DictionaryConfigAccessor) extends PlatformConfigManager{
 
     val log = Logger(classOf[PlatformConfigComponentImpl])
+
+    val async = actorSystem.actorOf(Props[PlatformConfigManagerActor])
 
     private val propertyListeners = new mutable.HashMap[String, Set[PlatformPropertyListener]]
 
@@ -80,90 +82,74 @@ trait PlatformConfigComponentImpl extends PlatformConfigComponent with Component
         }
         case Some(x) => log info "Found systemId " + x
       }
-
-      //Starting listening for events
-      log info "Starting config manager actor"
-      this.start()
     }
 
-    def destroy() {
-      log info "Stopping PlatformConfigManager"
-      this ! DestroyMsg
-    }
+    class PlatformConfigManagerActor extends Actor {
+      def receive = {
+        case RegisterMsg(listener) => {
+          log info "Registering property listener: " + listener.getClass.getSimpleName
 
-    def act() {
-      loop {
-        react {
-          case RegisterMsg(listener) => {
-            log info "Registering property listener: " + listener.getClass.getSimpleName
+          for (paramName <- listener.listeningForProperties) {
+            propertyListeners.get(paramName) match {
+              case Some(regListeners) => propertyListeners.put(paramName, regListeners + listener)
+              case None => propertyListeners.put(paramName, Set(listener))
+            }
 
-            for (paramName <- listener.listeningForProperties) {
-              propertyListeners.get(paramName) match {
-                case Some(regListeners) => propertyListeners.put(paramName, regListeners + listener)
-                case None => propertyListeners.put(paramName, Set(listener))
-              }
+            getPlatformProperties.get(paramName) match {
+              case Some(currentValue) =>
+                listener.propertyChanged(new PropertyChangeEvent(paramName, null, currentValue, this))
+              case None =>
+                val defaultParamValue = listener.defaultPropertyValues.get(paramName)
+                if (defaultParamValue != null)
+                  setPlatformProperty(paramName, defaultParamValue)
+            }
+          }
 
-              getPlatformProperties.get(paramName) match {
-                case Some(currentValue) =>
-                  listener.propertyChanged(new PropertyChangeEvent(paramName, null, currentValue, this))
+          sender ! DoneMsg
+
+          log debug propertyListeners.toString
+        }
+
+        case UnregisterMsg(listener) => {
+
+          log info "Unregistering property listener: " + listener.getClass.getSimpleName
+
+          for ((prop, listeners) <- propertyListeners if listeners.contains(listener)) {
+
+            propertyListeners.put(prop, listeners - listener)
+
+          }
+
+          log debug propertyListeners.toString
+        }
+
+        case SetPropertyMsg(key, value) => {
+          log info "Setting platform property: " + key
+
+          val config = platformConfigAccessor.load
+
+          val oldValue: String = config.get(key) match {
+            case Some(v) => v
+            case None => null
+          }
+
+          if(oldValue == null || oldValue != value){
+
+            try {
+              propertyListeners.get(key) match {
+                case Some(lx) => for (l <- lx)
+                  l.propertyChanged(new PropertyChangeEvent(key, oldValue, value, this))
                 case None =>
-                  val defaultParamValue = listener.defaultPropertyValues.get(paramName)
-                  if (defaultParamValue != null)
-                    setPlatformProperty(paramName, defaultParamValue)
               }
+
+              currentConfig = config + ((key, value))
+
+              platformConfigAccessor.store(currentConfig)
+            } catch {
+              case e: Throwable =>
+                log.warn("Failed to set property " + key, e)
             }
-            reply{
-              DoneMsg
-            }
-            log debug propertyListeners.toString
-          }
-
-          case UnregisterMsg(listener) => {
-
-            log info "Unregistering property listener: " + listener.getClass.getSimpleName
-
-            for ((prop, listeners) <- propertyListeners if listeners.contains(listener)) {
-
-              propertyListeners.put(prop, listeners - listener)
-
-            }
-
-            log debug propertyListeners.toString
-          }
-
-          case SetPropertyMsg(key, value) => {
-            log info "Setting platform property: " + key
-
-            val config = platformConfigAccessor.load
-
-            val oldValue: String = config.get(key) match {
-              case Some(v) => v
-              case None => null
-            }
-
-            if(oldValue == null || oldValue != value){
-
-              try {
-                propertyListeners.get(key) match {
-                  case Some(lx) => for (l <- lx)
-                    l.propertyChanged(new PropertyChangeEvent(key, oldValue, value, this))
-                  case None =>
-                }
-
-                currentConfig = config + ((key, value))
-
-                platformConfigAccessor.store(currentConfig)
-              } catch {
-                case e: Throwable =>
-                  log.warn("Failed to set property " + key, e)
-              }
-            }else log info "The value of the property " + key + " did not change"
-          }
-
-          case DestroyMsg => {
-            log info "Stopped config manager actor"
-            this.exit()
-          }
+          }else log info "The value of the property " + key + " did not change"
         }
       }
     }
@@ -187,7 +173,7 @@ trait PlatformConfigComponentImpl extends PlatformConfigComponent with Component
 
     override
     def setPlatformProperty(key: String, value: String) {
-      this ! SetPropertyMsg(key, value)
+      async ! SetPropertyMsg(key, value)
     }
   }
 }

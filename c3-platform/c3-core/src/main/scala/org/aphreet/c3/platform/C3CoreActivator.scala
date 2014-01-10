@@ -1,11 +1,13 @@
 package org.aphreet.c3.platform
 
+import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
-import org.aphreet.c3.platform.access.{CleanupManager, AccessMediator, AccessManager}
+import org.aphreet.c3.platform.access.{AccessMediator, CleanupManager, AccessManager}
+import org.aphreet.c3.platform.actor.impl.ActorComponentImpl
 import org.aphreet.c3.platform.common.{C3AppHandle, C3Activator, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
 import org.aphreet.c3.platform.config.impl.VersionComponentImpl
-import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.management.PlatformManagementEndpoint
 import org.aphreet.c3.platform.management.impl.PlatformManagementComponentImpl
 import org.aphreet.c3.platform.metadata.TransientMetadataManager
@@ -43,6 +45,7 @@ class C3CoreActivator extends C3Activator {
       with DefaultComponentLifecycle
       with LocalBundleContextProvider
       with VersionComponentImpl
+      with ActorComponentImpl
       with EnvironmentSystemDirectoryProvider
       with PlatformConfigComponentImpl
       with StatisticsComponentImpl
@@ -59,6 +62,7 @@ class C3CoreActivator extends C3Activator {
 
     new C3AppHandle {
       def registerServices(context: BundleContext) {
+        registerService(context, classOf[ActorRefFactory], module.actorSystem)
         registerService(context, classOf[AccessManager], module.accessManager)
         registerService(context, classOf[AccessMediator], module.accessMediator)
         registerService(context, classOf[CleanupManager], module.cleanupManager)

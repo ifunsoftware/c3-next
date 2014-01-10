@@ -41,9 +41,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-actors</artifactId>
-            <version>${scala.version}</version>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-osgi_2.10</artifactId>
+            <version>2.2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
 

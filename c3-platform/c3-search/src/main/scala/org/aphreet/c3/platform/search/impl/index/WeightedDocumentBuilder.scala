@@ -31,8 +31,10 @@
 package org.aphreet.c3.platform.search.impl.index
 
 import org.apache.lucene.document.{Document, Field}
-import org.aphreet.c3.platform.resource.Metadata
+import org.aphreet.c3.platform.resource.{Resource, Metadata}
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.aphreet.c3.platform.search.impl.index.extractor.ExtractedDocument
+import org.aphreet.c3.platform.common.Constants
 
 class WeightedDocumentBuilder(val configuration: SearchConfiguration) {
 
@@ -40,29 +42,35 @@ class WeightedDocumentBuilder(val configuration: SearchConfiguration) {
 
   val blackListedMeta = Set("domain", "c3.address", "lang")
 
-  def build(metadata: Metadata, extractedMetadata: Map[String, String],
-    content: String,
-    language: String, address: String, domain: String): Document = {
+  def build(resource: Resource, extractedContent: Option[ExtractedDocument],
+    language: Option[String]): Document = {
+
+    val metadata = resource.metadata
+    val address = resource.address
+    val domain = resource.systemMetadata(Constants.C3_MD_DOMAIN_ID).get
 
     val weights = configuration.getFieldWeights
 
     val document = new Document()
 
-    if(content != null){
-      document.add(new Field("content", content, Field.Store.YES, Field.Index.ANALYZED))
-    }
+    extractedContent.map(extracted => {
 
-    // store extracted Metadata
-    for (key <- extractedMetadata.keys) {
-      if (!key.equalsIgnoreCase("domain")) {
-        val field = new Field(key, extractedMetadata.get(key).get, Field.Store.YES, Field.Index.ANALYZED)
+      document.add(new Field("content", extracted.content, Field.Store.YES, Field.Index.ANALYZED))
 
-        if (weights.containsField(key)) {
-          field.setBoost(weights.getBoostFactor(key, 1))
+      val extractedMetadata = extracted.metadata
+
+      // store extracted Metadata
+      for (key <- extractedMetadata.keys) {
+        if (!key.equalsIgnoreCase("domain")) {
+          val field = new Field(key, extractedMetadata.get(key).get, Field.Store.YES, Field.Index.ANALYZED)
+
+          if (weights.containsField(key)) {
+            field.setBoost(weights.getBoostFactor(key, 1))
+          }
+          document.add(field)
         }
-        document.add(field)
       }
-    }
+    })
 
     // store user metadata
     for (key <- metadata.asMap.keys) {
@@ -87,9 +95,7 @@ class WeightedDocumentBuilder(val configuration: SearchConfiguration) {
       }
     }
 
-    if(language != null){
-      document.add(new Field("lang", language, Field.Store.YES, Field.Index.NOT_ANALYZED))
-    }
+    language.map(code => document.add(new Field("lang", code, Field.Store.YES, Field.Index.NOT_ANALYZED)))
 
     document.add(new Field("c3.address", address, Field.Store.YES, Field.Index.NOT_ANALYZED))
     document.add(new Field("domain", domain, Field.Store.YES, Field.Index.NOT_ANALYZED))

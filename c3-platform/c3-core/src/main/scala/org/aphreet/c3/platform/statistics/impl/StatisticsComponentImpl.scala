@@ -33,70 +33,59 @@ import collection.mutable
 import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger}
 import org.aphreet.c3.platform.statistics._
+import akka.actor.{Props, Actor}
+import org.aphreet.c3.platform.actor.ActorComponent
 
 trait StatisticsComponentImpl extends StatisticsComponent with ComponentLifecycle{
 
-  private val statisticsManagerImpl = new StatisticsManagerImpl
+  this: ActorComponent =>
 
-  def statisticsManager: StatisticsManager = statisticsManagerImpl
+  val statisticsManager = new StatisticsManagerImpl
 
-  destroy(Unit => statisticsManagerImpl.destroy())
-
-  class StatisticsManagerImpl extends StatisticsManager{
+  class StatisticsManagerImpl extends StatisticsManager {
 
     val log = Logger(classOf[StatisticsComponentImpl])
 
-    val statistics = new mutable.HashMap[String, Any]
+    private val statistics = new mutable.HashMap[String, Any]
+
+    val async = actorSystem.actorOf(Props[StatisticsActor])
 
     {
       log info "Starting StatisticsManager"
-      this.start()
-    }
-
-    def destroy(){
-      log info "Stopping StatisticsManager"
-      this ! DestroyMsg
-    }
-
-    def act(){
-      loop{
-        react{
-          case SetStatisticsMsg(key, value) =>{
-            statistics.put(key, value)
-          }
-          case IncreaseStatisticsMsg(key, delta) => {
-            statistics.get(key) match {
-              case Some(string) => {
-                try{
-                  statistics.put(key, string.asInstanceOf[Long] + delta)
-                }catch{
-                  case e: Throwable => {
-                    log warn "Failed to store statistics " + key
-                  }
-                }
-              }
-              case None => {
-                statistics.put(key, delta)
-              }
-            }
-          }
-
-          case ResetStatisticsMsg(key) => {
-            statistics.remove(key)
-          }
-
-          case DestroyMsg => {
-            log info "Statistics Manager's actor stopped"
-            this.exit()
-          }
-        }
-      }
     }
 
     def fullStatistics:Map[String, String] = {
       Map[String, String]() ++ {
         for((key, value) <- statistics)
         yield (key, value.toString)
+      }
+    }
+
+    class StatisticsActor extends Actor {
+      override def receive = {
+        case SetStatisticsMsg(key, value) =>{
+          statistics.put(key, value)
+        }
+        case IncreaseStatisticsMsg(key, delta) => {
+          statistics.get(key) match {
+            case Some(string) => {
+              try{
+                statistics.put(key, string.asInstanceOf[Long] + delta)
+              }catch{
+                case e: Throwable => {
+                  log warn "Failed to store statistics " + key
+                }
+              }
+            }
+            case None => {
+              statistics.put(key, delta)
+            }
+          }
+        }
+
+        case ResetStatisticsMsg(key) => {
+          statistics.remove(key)
+        }
       }
     }
   }

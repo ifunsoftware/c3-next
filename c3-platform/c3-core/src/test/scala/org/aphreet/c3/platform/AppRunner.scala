@@ -14,6 +14,7 @@ import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
+import org.aphreet.c3.platform.actor.impl.ActorComponentImpl
 
 /**
  * Author: Mikhail Malygin
@@ -29,6 +30,7 @@ object AppRunner extends App{
   val app = new Object
     with DefaultComponentLifecycle
     with EnvironmentSystemDirectoryProvider
+    with ActorComponentImpl
     with PlatformConfigComponentImpl
     with StatisticsComponentImpl
     with TaskComponentImpl

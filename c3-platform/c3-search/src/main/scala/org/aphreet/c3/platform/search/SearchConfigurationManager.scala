@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.search
 
-import org.aphreet.c3.platform.common.WatchedActor
 import org.aphreet.c3.platform.search.impl.SearchConfiguration
+import org.aphreet.c3.platform.common.ActorRefHolder
 
-trait SearchConfigurationManager extends WatchedActor{
+trait SearchConfigurationManager extends ActorRefHolder{
 
   def searchConfiguration:SearchConfiguration
 

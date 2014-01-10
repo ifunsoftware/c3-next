@@ -1,9 +1,10 @@
 package org.aphreet.c3.platform.metadata.impl
 
 import collection.mutable
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger}
 import org.aphreet.c3.platform.metadata.{TransientMetadataComponent, RegisterTransientMDBuildStrategy, TransientMetadataBuildStrategy, TransientMetadataManager}
+import akka.actor.{Props, Actor}
+import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
@@ -12,11 +13,9 @@ import org.aphreet.c3.platform.metadata.{TransientMetadataComponent, RegisterTra
 
 trait TransientMetadataComponentImpl extends TransientMetadataComponent with ComponentLifecycle {
 
-  private val metadataManagerImpl = new TransientMetadataManagerImpl
+  this: ActorComponent =>
 
-  def transientMetadataManager: TransientMetadataManager = metadataManagerImpl
-
-  destroy(Unit => metadataManagerImpl.destroy())
+  val transientMetadataManager = new TransientMetadataManagerImpl
 
   class TransientMetadataManagerImpl extends TransientMetadataManager{
 
@@ -24,28 +23,15 @@ trait TransientMetadataComponentImpl extends TransientMetadataComponent with Com
 
     private val transientMetadataBuildStrategies = new mutable.HashMap[String, TransientMetadataBuildStrategy]()
 
+    val async = actorSystem.actorOf(Props[TransientMetadataManagerActor])
+
     {
       logger.info("Starting Transient metadata manager")
-      this.start()
     }
 
-    def destroy() {
-      logger.info("Stopping Transient metadata manager")
-      this ! DestroyMsg
-    }
-
-    override def act() {
-      loop{
-        react{
-          case DestroyMsg => {
-            logger info "TransientMetadataManager is stopped"
-            this.exit()
-          }
-          case RegisterTransientMDBuildStrategy(s) => transientMetadataBuildStrategies.put(s.transientMetaField, s)
-          case msg => {
-            logger.error("Unknown message is received! Msg: " + msg + ". Skipping...")
-          }
-        }
+    class TransientMetadataManagerActor extends Actor {
+      def receive = {
+        case RegisterTransientMDBuildStrategy(s) => transientMetadataBuildStrategies.put(s.transientMetaField, s)
       }
     }
 

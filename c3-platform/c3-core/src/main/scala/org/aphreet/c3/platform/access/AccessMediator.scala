@@ -30,15 +30,6 @@
 
 package org.aphreet.c3.platform.access
 
-import org.aphreet.c3.platform.common.WatchedActor
-import org.aphreet.c3.platform.resource.Resource
+import org.aphreet.c3.platform.common.ActorRefHolder
 
-trait AccessMediator extends WatchedActor{
-  
-}
-
-case class ResourceAddedMsg(resource:Resource, source:Symbol)
-
-case class ResourceUpdatedMsg(resource:Resource, source:Symbol)
-
-case class ResourceDeletedMsg(address:String, source:Symbol)
+trait AccessMediator extends ActorRefHolder

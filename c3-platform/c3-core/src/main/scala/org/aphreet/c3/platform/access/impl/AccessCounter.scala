@@ -29,71 +29,41 @@
  */
 package org.aphreet.c3.platform.access.impl
 
-import actors.Actor
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
+import akka.actor.{Actor, ActorRef}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.statistics.IncreaseStatisticsMsg
 
-@Component
-class AccessCounter extends Actor{
+class AccessCounter(val accessMediator: ActorRef, val statisticsManager: ActorRef) extends Actor{
 
   val log = Logger(getClass)
 
-  var accessMediator:AccessMediator = _
-
-  var statisticsManger:StatisticsManager = _
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) {statisticsManger = manager}
-
   {
-    this.start()
-  }
-
-  @PostConstruct
-  def init(){
     log info "Starting AccessCounter"
-    accessMediator ! RegisterNamedListenerMsg(this, 'AccessCounter)
+    accessMediator ! RegisterNamedListenerMsg(self, 'AccessCounter)
   }
 
-  @PreDestroy
-  def destroy(){
+  override def postStop(){
     log info "Stopping AccessCounter"
-    accessMediator ! UnregisterNamedListenerMsg(this, 'AccessCounter)
-    this ! DestroyMsg
+    accessMediator ! UnregisterNamedListenerMsg(self, 'AccessCounter)
   }
 
-  def act(){
-    loop{
-      react{
-        case ResourceAddedMsg(resource, source) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.created", 1)
-        }
-
-        case ResourceUpdatedMsg(resource, source) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.updated", 1)
-        }
-
-        case ResourceDeletedMsg(address, source) => {
-          statisticsManger ! IncreaseStatisticsMsg("c3.access.deleted", 1)
-        }
-
-        case StoragePurgedMsg(source) => {}
-
-        case DestroyMsg =>{
-          log info "AccessCounter actor stopped"
-          this.exit()
-        }
-
-        case _ => log warn "Ignorring wrong message"
-      }
+  def receive = {
+    case ResourceAddedMsg(resource, source) => {
+      statisticsManager ! IncreaseStatisticsMsg("c3.access.created", 1)
     }
+
+    case ResourceUpdatedMsg(resource, source) => {
+      statisticsManager ! IncreaseStatisticsMsg("c3.access.updated", 1)
+    }
+
+    case ResourceDeletedMsg(address, source) => {
+      statisticsManager ! IncreaseStatisticsMsg("c3.access.deleted", 1)
+    }
+
+    case StoragePurgedMsg(source) => {}
+
+    case _ => log warn "Ignorring wrong message"
   }
 }

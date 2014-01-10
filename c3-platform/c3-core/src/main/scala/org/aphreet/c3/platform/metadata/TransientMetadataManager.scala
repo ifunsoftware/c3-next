@@ -1,16 +1,18 @@
 package org.aphreet.c3.platform.metadata
 
-import org.aphreet.c3.platform.common.WatchedActor
+import akka.actor.ActorRef
 
 /**
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
  * iFunSoftware
  */
-trait TransientMetadataManager extends WatchedActor{
+trait TransientMetadataManager {
 
   def getTransientMetadata(ra: String, metaKeys: Set[String]): Map[String, String]
 
   def supportedMetaKeys: Set[String]
+
+  def async: ActorRef
 }
 
 trait TransientMetadataComponent{

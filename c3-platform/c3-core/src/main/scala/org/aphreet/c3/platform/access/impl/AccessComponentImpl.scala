@@ -35,7 +35,6 @@ import eu.medsea.mimeutil.{TextMimeDetector, MimeUtil}
 import eu.medsea.util.EncodingGuesser
 import org.aphreet.c3.platform.access.Constants.ACCESS_MANAGER_NAME
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger, Constants}
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.exception._
@@ -45,6 +44,8 @@ import org.aphreet.c3.platform.storage.StorageComponent
 import org.aphreet.c3.platform.storage.dispatcher.selector.mime.MimeTypeStorageSelectorComponent
 import scala.Some
 import org.aphreet.c3.platform.storage.updater.StorageUpdaterComponent
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.{Actor, Props}
 
 trait AccessComponentImpl extends AccessComponent with CleanupComponent with ComponentLifecycle{
 
@@ -52,25 +53,18 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
     with StatisticsComponent
     with StorageComponent
     with StorageUpdaterComponent
-    with MimeTypeStorageSelectorComponent =>
+    with MimeTypeStorageSelectorComponent
+    with ActorComponent =>
 
-  private val accessMediatorImpl = new AccessMediatorImpl
+  val accessMediator = new AccessMediatorImpl(actorSystem)
 
-  private val accessManagerImpl = new AccessManagerImpl
+  private val accessCache = new AccessCacheImpl(actorSystem, accessMediator.async, statisticsManager.async)
 
-  private val accessCache = new AccessCacheImpl(accessMediatorImpl, statisticsManager)
+  val accessManager = new AccessManagerImpl
 
-  def accessMediator: AccessMediator = accessMediatorImpl
+  val cleanupManager = new CleanupManagerImpl(storageUpdater, accessMediator.async)
 
-  def accessManager: AccessManager = accessManagerImpl
-
-  def cleanupManager: CleanupManager = new CleanupManagerImpl(storageUpdater, accessMediatorImpl)
-
-  destroy(Unit => accessManagerImpl.destroy())
-
-  destroy(Unit => accessCache.destroy())
-
-  destroy(Unit => accessMediatorImpl.destroy())
+  val accessCounter = actorSystem.actorOf(Props.create(classOf[AccessCounter], accessMediator, statisticsManager.async))
 
   class AccessManagerImpl extends AccessManager with SPlatformPropertyListener {
 
@@ -85,19 +79,14 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
     lazy val systemId = getSystemId
 
+    val async = actorSystem.actorOf(Props[AccessManagerActor])
+
     {
       log info "Starting AccessManager"
 
       configureDefaultMimeDetector()
 
-      start()
-
-      platformConfigManager ! RegisterMsg(this)
-    }
-
-    def destroy() {
-      log info "Stopping AccessManager"
-      this ! DestroyMsg
+      platformConfigManager.async ! RegisterMsg(this)
     }
 
     def get(ra: String): Resource = {
@@ -141,7 +130,7 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
         case Some(storage) => {
           val ra = storage.add(resource.calculateCheckSums)
 
-          accessMediator ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
+          accessMediator.async ! ResourceAddedMsg(resource, ACCESS_MANAGER_NAME)
 
           log.debug("Resource added: {}", ra)
 
@@ -177,7 +166,7 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
             accessCache.remove(resource.address)
 
-            accessMediator ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
+            accessMediator.async ! ResourceUpdatedMsg(resource, ACCESS_MANAGER_NAME)
 
             ra
 
@@ -219,7 +208,7 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
           accessCache.remove(ra)
 
-          accessMediator ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
+          accessMediator.async ! ResourceDeletedMsg(ra, ACCESS_MANAGER_NAME)
         }
 
         case None => throw new ResourceNotFoundException()
@@ -240,20 +229,14 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
       }
     }
 
-    def act() {
-      loop {
-        react {
-          case UpdateMetadataMsg(address, metadata, isSystem) => {
-            try {
-              storageManager.storageForAddress(ResourceAddress(address)).map(_.appendMetadata(address, metadata, isSystem))
-              accessCache.remove(address)
-            } catch {
-              case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
-            }
-          }
-          case DestroyMsg => {
-            log info "Stopping AccessManagerActor"
-            exit()
+    class AccessManagerActor extends Actor{
+      def receive = {
+        case UpdateMetadataMsg(address, metadata, isSystem) => {
+          try {
+            storageManager.storageForAddress(ResourceAddress(address)).map(_.appendMetadata(address, metadata, isSystem))
+            accessCache.remove(address)
+          } catch {
+            case e: Throwable => log.warn("Failed to append metadata to resource: " + address + " msg is " + e.getMessage)
           }
         }
       }

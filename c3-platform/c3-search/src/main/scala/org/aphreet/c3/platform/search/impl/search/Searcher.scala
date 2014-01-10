@@ -29,110 +29,104 @@
  */
 package org.aphreet.c3.platform.search.impl.search
 
+import akka.actor.{Props, ActorRefFactory, Actor}
 import org.apache.lucene.index.IndexReader
 import org.apache.lucene.search._
 import org.apache.lucene.store.NIOFSDirectory
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
-import org.aphreet.c3.platform.search.impl.index.RamIndexer
+import org.aphreet.c3.platform.common.{ActorRefHolder, Logger, Path}
 import org.aphreet.c3.platform.search.{SearchResult, SearchConfigurationManager}
 
 
-class Searcher(var indexPath: Path,
-               var ramIndexers: List[RamIndexer],
-               val configurationManager: SearchConfigurationManager) extends WatchedActor {
-
+class Searcher(val actorSystem: ActorRefFactory, configurationManager: SearchConfigurationManager) extends ActorRefHolder {
 
   val log = Logger(getClass)
 
-  var indexSearcher = createSearcher()
+  var indexPath: Path = null
 
+  var indexSearcher: Option[IndexSearcher] = None
 
-  def act() {
-    loop {
-      react {
-        case ReopenSearcherMsg => {
-          log info "Reopening searcher"
-          val oldSearcher = indexSearcher
+  val async = actorSystem.actorOf(Props[SearcherActor])
 
-          try{
-            indexSearcher = createSearcher()
+  class SearcherActor extends Actor {
 
-            Thread.sleep(1000 * 5) //May be some threads are still using old searcher
+    def receive = {
+      case ReopenSearcherMsg => {
+        log info "Reopening searcher"
+        val oldSearcher = indexSearcher
 
-          }finally{
-            closeSearcher(oldSearcher)
+        try{
+          indexSearcher = createSearcher(indexPath)
+
+          Thread.sleep(1000 * 5) //May be some threads are still using old searcher
+
+        }finally{
+          closeSearcher(oldSearcher)
+        }
+      }
+
+      case NewIndexPathMsg(path) => {
+        log info "Changing index path to " + path
+        indexPath = path
+        self ! ReopenSearcherMsg
+      }
+    }
+
+    override def postStop(){
+      log.info("Destroying searcher")
+      closeSearcher(indexSearcher)
+    }
+
+    private def closeSearcher(searcherOption: Option[IndexSearcher]){
+
+      try{
+        searcherOption.map(searcher => {
+          searcher.close()
+          searcher.getIndexReader.close()
+          searcher.getIndexReader.directory().close()
+        })
+      }catch{
+        case e: Throwable => log.warn("Failed to close searcher", e)
+      }
+    }
+
+    private def createSearcher(indexPath: Path): Option[IndexSearcher] = {
+
+      if(indexPath == null){
+        log.warn("Index path is null")
+        None
+      }else{
+        var reader: IndexReader = null
+
+        try {
+          reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
+
+          Some(new IndexSearcher(reader))
+        } catch {
+          case e: Throwable => {
+            log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
+
+            if(reader != null){
+              reader.close()
+            }
+
+            None
           }
         }
-
-        case NewIndexPathMsg(path) => {
-          log info "Changing index path to " + path
-          indexPath = path
-          this ! ReopenSearcherMsg
-        }
-
-        case DestroyMsg => {
-          log info "Destroying searcher"
-          closeSearcher(indexSearcher)
-          this.exit()
-        }
       }
+
+      //TODO Add temp directories to the result in the future
+      //(reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
     }
   }
-
-  private def closeSearcher(searcherOption: Option[IndexSearcher]){
-
-    try{
-      searcherOption.foreach(searcher => {
-        searcher.close()
-        searcher.getIndexReader.close()
-        searcher.getIndexReader.directory().close()
-      })
-    }catch{
-      case e: Throwable => log.warn("Failed to close searcher", e)
-    }
-  }
-
-  private def createSearcher(): Option[IndexSearcher] = {
-
-    var reader: IndexReader = null
-
-    try {
-      reader = IndexReader.open(new NIOFSDirectory(indexPath.file.getCanonicalFile))
-
-      Some(new IndexSearcher(reader))
-    } catch {
-      case e: Throwable => {
-        log.warn("Failed to open IndexSearcher due to exception: " + e.getMessage)
-
-        if(reader != null){
-          reader.close()
-        }
-
-        None
-      }
-    }
-
-    //TODO Add temp directories to the result in the future
-    //(reader :: ramIndexers.map(indexer => IndexReader.open(indexer.directory)).toList).toArray
-  }
-
-  def getSearcher: Option[IndexSearcher] = indexSearcher
 
   def search(domain: String, sourceQuery: String): SearchResult = {
 
-    if (getSearcher.isEmpty) {
-      SearchResult(sourceQuery, Array())
-    } else {
-      new MultiFieldSearchStrategy().search(getSearcher.get,
+    indexSearcher match {
+      case Some(searcher) => new MultiFieldSearchStrategy().search(searcher,
         configurationManager.searchConfiguration,
         sourceQuery, 30, 0, domain)
+      case None => SearchResult(sourceQuery, Array())
     }
-  }
-
-
-  def close() {
-    this ! DestroyMsg
   }
 
 }

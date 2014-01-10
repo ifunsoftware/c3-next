@@ -30,9 +30,9 @@
 
 package org.aphreet.c3.platform.search
 
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.{ActorRefHolder, WatchedActor}
 
-trait SearchManager extends WatchedActor {
+trait SearchManager extends ActorRefHolder {
 
   def search(domain: String, query: String): SearchResult
 

@@ -32,19 +32,17 @@ package org.aphreet.c3.platform.search.impl.index
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.search.impl.search._
 import org.aphreet.c3.platform.search.impl.SearchManagerInternal.LUCENE_VERSION
 import org.apache.lucene.index.{IndexReader, IndexWriterConfig, Term, IndexWriter}
 import org.aphreet.c3.platform.search.impl.common.Fields
-import org.aphreet.c3.platform.common.{Logger, WatchedActor, Path}
+import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.search.impl.search.NewIndexPathMsg
+import akka.actor.Actor
 
-class FileIndexer(var indexPath:Path) extends WatchedActor{
+class FileIndexer(var indexPath:Path, val searcher: Searcher) extends Actor{
 
   val log = Logger(getClass)
-
-  var searcher:Searcher = null
 
   var indexWriter:IndexWriter = createWriter(indexPath)
 
@@ -61,81 +59,76 @@ class FileIndexer(var indexPath:Path) extends WatchedActor{
     new IndexWriter(directory,
       new IndexWriterConfig(LUCENE_VERSION,
         new StandardAnalyzer(LUCENE_VERSION))
-          .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
+        .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
   }
 
-  def act(){
-    loop{
-      react{
-        case MergeIndexMsg(directory) =>
-          try{
-            val reader = IndexReader.open(directory)
+  def receive = {
+    case MergeIndexMsg(directory) =>
+      try{
+        val reader = IndexReader.open(directory)
 
-            //Make sure we don't have duplicates in index
-            for (docIndex <- 0 until reader.numDocs()){
-              val document = reader.document(docIndex)
-              indexWriter.deleteDocuments(new Term(Fields.ADDRESS, document.get(Fields.ADDRESS)))
-            }
-
-
-            indexWriter.addIndexes(reader)
-            indexWriter.commit()
-
-            reader.close()
-            directory.close()
-
-            log debug "Index merged"
-            searcher ! ReopenSearcherMsg
-          }catch{
-            case e: Throwable =>
-              log.warn("Failed to merge index", e)
-          }
-        case DeleteMsg(address) => deleteResource(address)
-
-        case DeleteIndexMsg => {
-          try{
-            log.info("Deleting search index")
-            indexWriter.deleteAll()
-            indexWriter.commit()
-            searcher ! ReopenSearcherMsg
-          }catch{
-            case e : Throwable => log.warn("Failed to delete search index", e)
-          }
+        //Make sure we don't have duplicates in index
+        for (docIndex <- 0 until reader.numDocs()){
+          val document = reader.document(docIndex)
+          indexWriter.deleteDocuments(new Term(Fields.ADDRESS, document.get(Fields.ADDRESS)))
         }
 
-        case DeleteForUpdateMsg(resource) =>
-          deleteResource(resource.address)
-          sender ! IndexMsg(resource)
 
-        case NewIndexPathMsg(path) => {
-          try{
-            log info "Changing index path to " + path
-            indexPath = path
-            indexWriter.close()
-            indexWriter.getDirectory.close()
+        indexWriter.addIndexes(reader)
+        indexWriter.commit()
 
-            indexWriter = createWriter(indexPath)
-            log info "Index path changed"
-            searcher ! NewIndexPathMsg(path)
-            sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
-          }catch{
-            case e: Throwable => log.warn("Failed to create new indexWriter", e)
-          }
-        }
+        reader.close()
+        directory.close()
 
-        case DestroyMsg => {
-          try{
-            indexWriter.close()
-            indexWriter.getDirectory.close()
-          }catch{
-            case e: Throwable => log.warn("Failed to close index", e)
-            throw e
-          }finally {
-            log info "IndexWriter closed"
-            this.exit()
-          }
-        }
+        log debug "Index merged"
+        searcher ! ReopenSearcherMsg
+      }catch{
+        case e: Throwable =>
+          log.warn("Failed to merge index", e)
       }
+    case DeleteMsg(address) => deleteResource(address)
+
+    case DeleteIndexMsg => {
+      try{
+        log.info("Deleting search index")
+        indexWriter.deleteAll()
+        indexWriter.commit()
+        searcher ! ReopenSearcherMsg
+      }catch{
+        case e : Throwable => log.warn("Failed to delete search index", e)
+      }
+    }
+
+    case DeleteForUpdateMsg(resource) =>
+      deleteResource(resource.address)
+      sender ! IndexMsg(resource)
+
+    case NewIndexPathMsg(path) => {
+      try{
+        log info "Changing index path to " + path
+        indexPath = path
+        indexWriter.close()
+        indexWriter.getDirectory.close()
+
+        indexWriter = createWriter(indexPath)
+        log info "Index path changed"
+        searcher ! NewIndexPathMsg(path)
+        sender ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
+      }catch{
+        case e: Throwable => log.warn("Failed to create new indexWriter", e)
+      }
+    }
+  }
+
+
+  override def postStop(){
+    try{
+      indexWriter.close()
+      indexWriter.getDirectory.close()
+    }catch{
+      case e: Throwable => log.warn("Failed to close index", e)
+    }finally {
+      log info "IndexWriter closed"
     }
   }
 
