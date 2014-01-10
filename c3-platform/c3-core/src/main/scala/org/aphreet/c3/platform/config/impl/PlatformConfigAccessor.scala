@@ -31,8 +31,6 @@ package org.aphreet.c3.platform.config.impl
 
 import org.aphreet.c3.platform.config._
 
-import org.springframework.stereotype.Component
-import java.io.File
 
 class PlatformConfigAccessor(val persister: ConfigPersister)
     extends AbstractDictionaryConfigAccessor("c3-platform-config")

@@ -31,10 +31,9 @@
 package org.aphreet.c3.platform.config
 
 import collection.immutable.Map
-
-import org.springframework.stereotype.Component
 import java.io.File
 import org.aphreet.c3.platform.common.WatchedActor
+
 
 trait PlatformConfigManager extends WatchedActor {
 

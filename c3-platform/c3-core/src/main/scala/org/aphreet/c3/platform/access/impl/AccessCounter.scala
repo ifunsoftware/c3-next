@@ -30,40 +30,25 @@
 package org.aphreet.c3.platform.access.impl
 
 import actors.Actor
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import javax.annotation.{PreDestroy, PostConstruct}
-import org.aphreet.c3.platform.common.msg._
-import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.common.msg._
+import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 
-@Component
-class AccessCounter extends Actor{
+class AccessCounter(val accessMediator: AccessMediator,
+                    val statisticsManger: StatisticsManager) extends Actor{
+
+
 
   val log = Logger(getClass)
 
-  var accessMediator:AccessMediator = _
-
-  var statisticsManger:StatisticsManager = _
-
-  @Autowired
-  def setAccessMediator(mediator:AccessMediator) {accessMediator = mediator}
-
-  @Autowired
-  def setStatisticsManager(manager:StatisticsManager) {statisticsManger = manager}
-
   {
     this.start()
-  }
 
-  @PostConstruct
-  def init(){
     log info "Starting AccessCounter"
     accessMediator ! RegisterNamedListenerMsg(this, 'AccessCounter)
   }
 
-  @PreDestroy
   def destroy(){
     log info "Stopping AccessCounter"
     accessMediator ! UnregisterNamedListenerMsg(this, 'AccessCounter)

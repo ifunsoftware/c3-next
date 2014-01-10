@@ -60,6 +60,8 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
   private val accessCache = new AccessCacheImpl(accessMediatorImpl, statisticsManager)
 
+  private val accessCounter = new AccessCounter(accessMediatorImpl, statisticsManager)
+
   def accessMediator: AccessMediator = accessMediatorImpl
 
   def accessManager: AccessManager = accessManagerImpl
@@ -67,6 +69,8 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
   def cleanupManager: CleanupManager = new CleanupManagerImpl(storageUpdater, accessMediatorImpl)
 
   destroy(Unit => accessManagerImpl.destroy())
+
+  destroy(Unit => accessCounter.destroy())
 
   destroy(Unit => accessCache.destroy())
 

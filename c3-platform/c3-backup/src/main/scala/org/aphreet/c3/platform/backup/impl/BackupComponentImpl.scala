@@ -56,7 +56,6 @@ trait BackupComponentImpl extends BackupComponent{
 
   val backupManager = new BackupManagerImpl(new BackupConfigAccessor(configPersister))
 
-  @Component("backupManager")
   class BackupManagerImpl(val configAccessor: ConfigAccessor[List[BackupLocation]]) extends BackupManager with SPlatformPropertyListener with TaskScheduleObserver {
 
     val BACKUP_LOCATION = "c3.platform.backup.location"

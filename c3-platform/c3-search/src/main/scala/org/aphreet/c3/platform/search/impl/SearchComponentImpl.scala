@@ -51,7 +51,6 @@ import org.aphreet.c3.platform.search.impl.index.extractor.TikaHttpTextExtractor
 import org.aphreet.c3.platform.statistics.{StatisticsComponent, IncreaseStatisticsMsg}
 import org.aphreet.c3.platform.storage.StorageComponent
 import org.aphreet.c3.platform.task.TaskComponent
-import org.springframework.stereotype.Component
 import search._
 
 trait SearchComponentImpl extends SearchComponent{
@@ -71,7 +70,6 @@ trait SearchComponentImpl extends SearchComponent{
 
   destroy(Unit => searchManager.destroy())
 
-  @Component("searchManager")
   class SearchManagerImpl extends SearchManager with SearchManagerInternal with SPlatformPropertyListener with ComponentGuard {
 
     val INDEX_PATH = "c3.search.index.path"

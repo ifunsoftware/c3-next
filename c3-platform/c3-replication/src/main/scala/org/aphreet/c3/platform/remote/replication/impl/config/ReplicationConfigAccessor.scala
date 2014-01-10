@@ -30,14 +30,10 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.config
 
-import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigManager, ConfigAccessor}
-import org.springframework.beans.factory.annotation.Autowired
-import java.io.File
-import com.springsource.json.writer.JSONWriter
-import com.springsource.json.parser._
-import org.springframework.stereotype.Component
-import org.springframework.context.annotation.Scope
 import collection.JavaConversions._
+import com.springsource.json.parser._
+import com.springsource.json.writer.JSONWriter
+import org.aphreet.c3.platform.config.{ConfigPersister, ConfigAccessor}
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
 
 abstract class ReplicationConfigAccessor extends ConfigAccessor[Map[String, ReplicationHost]]{
