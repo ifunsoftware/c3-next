@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.client.access.http
 
 import org.apache.commons.httpclient.methods.multipart._
-import org.apache.commons.httpclient.methods.{DeleteMethod, GetMethod, PostMethod}
+import org.apache.commons.httpclient.methods._
 import java.nio.channels.Channels
 import java.io._
 import java.nio.ByteBuffer
@@ -40,6 +40,7 @@ import xml.XML
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 import org.aphreet.c3.platform.client.common.HashUtil
+import org.apache.commons.codec.binary.Base64
 
 class C3HttpAccessor(val host:String, val domain:String, val secret:String){
 
@@ -49,24 +50,19 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
   val httpClient = new HttpClient
 
   def write(data:Array[Byte], metadata:Map[String, String]):String =
-    writeData(new FilePart("data", new ByteArrayPartSource(data)), metadata)
+    writeData(new ByteArrayRequestEntity(data), metadata)
 
   def upload(file:File, metadata:Map[String, String]):String =
-    writeData(new FilePart("data", new FilePartSource(file)), metadata)
+    writeData(new FileRequestEntity(file, "application/octet-string"), metadata)
 
-  private def writeData(filePart:FilePart, metadata:Map[String, String]):String = {
+  private def writeData(requestEntity: RequestEntity, metadata:Map[String, String]):String = {
     val postMethod = new PostMethod(url)
 
+    postMethod.setRequestEntity(requestEntity)
+
+    metadata.foreach(e => postMethod.addRequestHeader("x-c3-metadata", e._1 + ":" + new String(Base64.encodeBase64(e._2.getBytes("UTF-8")))))
+
     addAuthHeader(postMethod, requestUri)
-
-    val parts:Array[Part] = (filePart ::
-            metadata.map(e => {
-              val part = new StringPart(e._1, e._2, "UTF-16")
-              part.setCharSet("UTF-8")
-              part
-            }).toList).toArray
-
-    postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams))
 
     try{
       val status = httpClient.executeMethod(postMethod)
@@ -80,7 +76,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
         }
         case _ =>
           println(postMethod.getResponseBodyAsString)
-          throw new Exception(("Filed to post resource, code " + status))
+          throw new Exception("Failed to post resource, code " + status)
       }
     }finally {
       postMethod.releaseConnection()
@@ -107,7 +103,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status))
+          throw new Exception("Failed to get resource, code " + status)
       }
     }finally{
       getMethod.releaseConnection()
@@ -135,7 +131,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)          
-          throw new Exception(("Failed to get resource, code " + status))
+          throw new Exception("Failed to get resource, code " + status)
       }
     }finally{
       getMethod.releaseConnection()
@@ -151,7 +147,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
       val status = httpClient.executeMethod(deleteMethod)
       status match{
         case HttpStatus.SC_OK => null
-        case _ => throw new Exception(("Failed to delete resource, code " + status))
+        case _ => throw new Exception("Failed to delete resource, code " + status)
       }
     }
   }
@@ -169,7 +165,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
         case HttpStatus.SC_CREATED => {
 
         }
-        case _ => throw new Exception(("Failed to make directory, message: " + postMethod.getResponseBodyAsString))
+        case _ => throw new Exception("Failed to make directory, message: " + postMethod.getResponseBodyAsString)
       }
     }
   }
@@ -190,7 +186,7 @@ class C3HttpAccessor(val host:String, val domain:String, val secret:String){
         }
         case _ =>
           println(getMethod.getResponseBodyAsString)
-          throw new Exception(("Failed to get resource, code " + status))
+          throw new Exception("Failed to get resource, code " + status)
       }
     }finally{
       getMethod.releaseConnection()

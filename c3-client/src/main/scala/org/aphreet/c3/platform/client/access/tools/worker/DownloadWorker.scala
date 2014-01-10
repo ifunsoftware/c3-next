@@ -30,16 +30,16 @@
 
 package org.aphreet.c3.platform.client.access.tools.worker
 
-import java.util.concurrent.ArrayBlockingQueue
 import java.io.File
+import java.util.concurrent.BlockingQueue
 
-class DownloadWorker(override val host:String,
-                     override val user:String,
-                     override val key:String,
-                     override val queue:ArrayBlockingQueue[String], val directory:File)
-        extends ConsumerWorker(host, user, key, queue){
+class DownloadWorker(override val host: String,
+                     override val user: String,
+                     override val key: String,
+                     override val queue: BlockingQueue[String], val directory: File)
+  extends ConsumerWorker(host, user, key, queue) {
 
-  override def execute(address:String) = {
+  override def execute(address: String) = {
     val dataFile = new File(directory, address + "-data")
     val metadataFile = new File(directory, address + "-metadata")
 

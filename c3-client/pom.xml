@@ -31,6 +31,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.twmacinta.util</groupId>
             <artifactId>md5</artifactId>
             <version>1.0.539</version>
@@ -47,7 +59,6 @@
     <build>
         <defaultGoal>package</defaultGoal>
         <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
 
         <resources>
             <resource>

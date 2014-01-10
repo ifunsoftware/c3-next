@@ -28,58 +28,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.aphreet.c3.platform.client.access.tools
+package org.aphreet.c3.platform.client.access.tools.worker
 
-import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 import java.util.Random
 import java.util.concurrent.LinkedBlockingQueue
+import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 
-class ResourceWriter(val number:Int,
-                     val host:String,
-                     val user:String,
-                     val key:String,
-                     val count:Int) extends Runnable {
+class WriteWorker(val number: Int,
+                  val host: String,
+                  val user: String,
+                  val key: String,
+                  val count: Int) extends Runnable {
 
-  var _size:Int = 1024
-  var _md:Map[String, String] = Map()
-  var _queue:LinkedBlockingQueue[String] = null
-  var written:Int = 0
-  var errors:Int = 0
-  var done:Boolean = false
+  var _size: Int = 1024
+  var _md: Map[String, String] = Map()
+  var _queue: LinkedBlockingQueue[String] = null
+  var written: Int = 0
+  var errors: Int = 0
+  var done: Boolean = false
 
   val random = new Random(System.currentTimeMillis() + number * 1111)
 
-  def size(s:Int):ResourceWriter = {_size = s; this}
+  def size(s: Int): WriteWorker = {
+    _size = s; this
+  }
 
-  def metadata(md:Map[String, String]):ResourceWriter = {_md = md; this}
+  def metadata(md: Map[String, String]): WriteWorker = {
+    _md = md; this
+  }
 
-  def queue(queue:LinkedBlockingQueue[String]):ResourceWriter = {_queue = queue; this}
+  def queue(queue: LinkedBlockingQueue[String]): WriteWorker = {
+    _queue = queue; this
+  }
 
-  override def run(){
+  override def run() {
 
     val client = new C3HttpAccessor(host, user, key)
 
-    for(i <- 1 to count){
-      try{
+    for (i <- 1 to count) {
+      try {
         val ra = client.write(generateDataOfSize(_size), _md)
-        if(_queue != null){
+        if (_queue != null) {
           _queue.offer(ra)
         }
         written = written + 1
-      }catch{
-        case e: Throwable => {errors = errors + 1; System.err.println(e.getMessage)}
+      } catch {
+        case e: Throwable => {
+          errors = errors + 1; System.err.println(e.getMessage)
+        }
       }
     }
 
     done = true
   }
 
-  def generateDataOfSize(size:Int):Array[Byte] = {
+  def generateDataOfSize(size: Int): Array[Byte] = {
 
     val result = new Array[Byte](size)
     random.nextBytes(result)
 
     result
   }
-  
+
 }

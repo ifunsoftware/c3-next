@@ -30,27 +30,27 @@
 
 package org.aphreet.c3.platform.client.access.tools.worker
 
-import java.util.concurrent.{TimeUnit, ArrayBlockingQueue}
+import java.util.concurrent.{BlockingQueue, TimeUnit}
 import org.aphreet.c3.platform.client.access.http.C3HttpAccessor
 
-class ConsumerWorker(val host:String, val user:String, val key:String, val queue:ArrayBlockingQueue[String]) extends Runnable{
+abstract class ConsumerWorker(val host: String, val user: String, val key: String, val queue: BlockingQueue[String]) extends Runnable {
 
-  var done:Boolean = false
-  var processed:Int = 0
-  var errors:Int = 0
-  var bytesRead:Long = 0l
+  var done: Boolean = false
+  var processed: Int = 0
+  var errors: Int = 0
+  var bytesRead: Long = 0l
   val client = new C3HttpAccessor(host, user, key)
 
-  override def run(){
+  override def run() {
 
     var address = queue.poll(5, TimeUnit.SECONDS)
 
-    while(address != null){
-      try{
+    while (address != null) {
+      try {
         val bytes = execute(address)
         bytesRead = bytesRead + bytes
         processed = processed + 1
-      }catch{
+      } catch {
         case e: Throwable => {
           errors = errors + 1
           System.err.println("Error: " + e.getMessage)
@@ -62,9 +62,6 @@ class ConsumerWorker(val host:String, val user:String, val key:String, val queue
     done = true
   }
 
-  def execute(address:String):Long = {
-    client.fakeRead(address) 
-  }
+  def execute(address: String): Long
 
-  
 }

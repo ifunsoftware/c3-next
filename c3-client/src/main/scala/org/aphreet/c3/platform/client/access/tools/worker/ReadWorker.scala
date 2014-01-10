@@ -30,13 +30,13 @@
 
 package org.aphreet.c3.platform.client.access.tools.worker
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
 
-class ReadWorker(override val host:String,
-                   override val user:String,
-                   override val key:String,
-                   override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, user, key, queue){
+class ReadWorker(override val host: String,
+                 override val user: String,
+                 override val key: String,
+                 override val queue: BlockingQueue[String])
+  extends ConsumerWorker(host, user, key, queue) {
 
-  override def execute(address:String) = client.fakeRead(address)
+  override def execute(address: String) = client.fakeRead(address)
 }
