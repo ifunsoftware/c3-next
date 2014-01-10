@@ -12,7 +12,7 @@ import org.aphreet.c3.platform.access.ResourceUpdatedMsg
 import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
 import org.aphreet.c3.platform.access.ResourceDeletedMsg
 import org.aphreet.c3.platform.access.ResourceAddedMsg
-import scala.{None, Some}
+import scala.{Array, None, Some}
 import scala.collection.JavaConversions._
 import org.elasticsearch.common.settings.{Settings, ImmutableSettings}
 import org.elasticsearch.client.transport.TransportClient
@@ -21,20 +21,29 @@ import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.common.xcontent.{XContentFactory, XContentBuilder}
 import java.util
 import org.elasticsearch.common.Base64
-import org.elasticsearch.action.admin.indices.exists.indices.{IndicesExistsResponse, IndicesExistsRequest}
-import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
 import org.elasticsearch.index.query.{QueryStringQueryBuilder, QueryBuilders}
 import org.elasticsearch.action.delete.DeleteResponse
 import scala.io.Source
+import org.aphreet.c3.platform.config.{PropertyChangeEvent, SPlatformPropertyListener}
+import java.io.File
 
 /**
  * Need plugin
  * https://github.com/elasticsearch/elasticsearch-mapper-attachments
  */
 @Component("searchManager")
-class SearchManagerImpl extends SearchManager with WatchedActor {
+class SearchManagerImpl extends SearchManager with WatchedActor  with SPlatformPropertyListener {
 
   val log = Logger(getClass)
+
+  val ES_HOST = "localhost"
+
+  var esHost:Option[String] = None
+
+  var esClusterName:Option[String] = None
+
+  val ES_CLUSTER_NAME = "c3cluster"
 
   var esClient: Option[TransportClient] = None
 
@@ -219,6 +228,36 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
     resource.systemMetadata("c3.skip.index").isEmpty
   }
 
+  def propertyChanged(event: PropertyChangeEvent): Unit = {
+    event.name match {
+      case ES_HOST =>
+        val newHost = event.newValue
+          esHost match {
+            case Some(name) =>
+              if (name != newHost)
+                log info "New esClusterName : " + newHost
+            case None => log info "New esClusterName :" + newHost
+      }
+      case ES_CLUSTER_NAME =>
+        val newClusterName = event.newValue
+        esClusterName match {
+          case Some(name) =>
+            if (name != newClusterName)
+              log info "New esClusterName : " + newClusterName
+          case None => log info "New esClusterName :" + newClusterName
+        }
+    }
+  }
+
+  override def listeningForProperties: Array[String] = Array(
+    ES_HOST, ES_CLUSTER_NAME
+  )
+
+  def defaultValues: Map[String, String] = Map(
+    ES_HOST -> ES_HOST,
+    ES_CLUSTER_NAME -> ES_CLUSTER_NAME
+  )
+
   case class ResourceDeleteFromIndexFailed(address: String)
 
   case class ResourceIndexingFailed(address: String)
@@ -230,5 +269,4 @@ class SearchManagerImpl extends SearchManager with WatchedActor {
   case class ResourceDeletedFromIndexMsg(address: String, extractedMetadata: Map[String, String])
 
   case class DeleteFromIndexMsg(address: String)
-
 }
