@@ -246,11 +246,12 @@ class SearchManagerImpl extends SearchManager with WatchedActor  with SPlatformP
     }
   }
 
-  override def listeningForProperties: Array[String] = Array(
+  override def listeningForProperties = Array(
     ES_HOST, ES_CLUSTER_NAME
   )
 
-  def defaultValues: Map[String, String] = Map(
+  def defaultValues
+  = Map(
     ES_HOST -> ES_HOST,
     ES_CLUSTER_NAME -> ES_CLUSTER_NAME
   )

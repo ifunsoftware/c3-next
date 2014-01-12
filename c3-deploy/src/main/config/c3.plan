@@ -9,7 +9,6 @@
     <artifact type="bundle" name="org.aphreet.c3.platform.core" version="[1.0.0, 2.0.0)" />
     <artifact type="bundle" name="org.aphreet.c3.platform.storage" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.search.api" version="[1.0.0, 2.0.0)"/>
-    <!--artifact type="bundle" name="org.aphreet.c3.platform.search.solr" version="[1.0.0, 2.0.0)"/-->
     <artifact type="bundle" name="org.aphreet.c3.platform.search.es" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.filesystem" version="[1.0.0, 2.0.0)"/>
     <artifact type="bundle" name="org.aphreet.c3.platform.accesscontrol" version="[1.0.0, 2.0.0)"/>
