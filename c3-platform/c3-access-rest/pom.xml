@@ -45,7 +45,7 @@
 
         <dependency>
             <groupId>org.aphreet.c3</groupId>
-            <artifactId>c3-search</artifactId>
+            <artifactId>c3-search-api</artifactId>
             <scope>provided</scope>
         </dependency>
 

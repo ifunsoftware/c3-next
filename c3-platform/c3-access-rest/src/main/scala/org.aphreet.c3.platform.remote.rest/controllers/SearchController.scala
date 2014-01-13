@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.remote.rest.controllers
 
-import org.aphreet.c3.platform.search.SearchManager
+import org.aphreet.c3.platform.search.api.SearchManager
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller

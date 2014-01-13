@@ -1,0 +1,43 @@
+{
+    "resource": {
+        "properties": {
+            "document": {
+                "type": "attachment",
+                "fields": {
+                    "document": {
+                        "term_vector": "with_positions_offsets",
+                        "store": "yes"
+                    },
+                    "date": {
+                        "store": "yes"
+                    },
+                    "author": {
+                        "store": "yes"
+                    },
+                    "title": {
+                        "store": "yes"
+                    },
+                    "keywords": {
+                        "store": "yes"
+                    },
+                    "content_type": {
+                        "store": "yes"
+                    },
+                    "content_length": {
+                        "store": "yes"
+                    }
+                }
+            },
+            "address": {
+                "type": "string"
+            },
+            "metadata": {
+                "properties": {
+                    "tags": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

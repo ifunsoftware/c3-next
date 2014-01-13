@@ -16,7 +16,7 @@
 
     <reference id="versionService" interface="org.aphreet.c3.platform.config.VersionManager"/>
 
-    <reference id="searchService" interface="org.aphreet.c3.platform.search.SearchManager"/>
+    <reference id="searchService" interface="org.aphreet.c3.platform.search.api.SearchManager"/>
 
     <reference id="filesystemService" interface="org.aphreet.c3.platform.filesystem.FSManager"/>
 

@@ -12,8 +12,8 @@ to your local settings.xml file, otherwise you can just copy this file to ~/.m2 
         <profile>
             <id>development</id>
             <properties>
-                <virgo.path.libs>/opt/virgo/repository/usr</virgo.path.libs>
-                <virgo.path.pickup>/opt/virgo/pickup</virgo.path.pickup>
+                <virgo.path.libs>/home/jingerbread/Develop/c3/virgo-jetty-server-3.5.0.RELEASE/repository/usr</virgo.path.libs>
+                <virgo.path.pickup>/home/jingerbread/Develop/c3/virgo-jetty-server-3.5.0.RELEASE/pickup</virgo.path.pickup>
             </properties>
         </profile>
 

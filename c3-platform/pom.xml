@@ -16,7 +16,9 @@
         <module>c3-storage</module>
         <module>c3-filesystem</module>
         <module>c3-access-control</module>
-        <module>c3-search</module>
+        <module>c3-search-api</module>
+        <module>c3-search-lucene</module>
+        <module>c3-search-es</module>
         <module>c3-management</module>
         <module>c3-access-rest</module>
         <module>c3-replication</module>
@@ -98,7 +100,7 @@
 
             <dependency>
                 <groupId>org.aphreet.c3</groupId>
-                <artifactId>c3-search</artifactId>
+                <artifactId>c3-search-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

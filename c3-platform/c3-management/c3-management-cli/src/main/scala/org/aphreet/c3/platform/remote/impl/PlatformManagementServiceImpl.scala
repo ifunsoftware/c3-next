@@ -42,7 +42,7 @@ import org.aphreet.c3.platform.remote.api.RemoteException
 import org.aphreet.c3.platform.remote.api.management._
 import org.aphreet.c3.platform.remote.impl.PlatformManagementServiceUtil._
 import org.aphreet.c3.platform.remote.replication.ReplicationManager
-import org.aphreet.c3.platform.search.SearchManager
+import org.aphreet.c3.platform.search.api.SearchManager
 import org.aphreet.c3.platform.storage._
 import org.aphreet.c3.platform.task.{RUNNING, TaskState, PAUSED}
 import org.springframework.beans.factory.annotation.Autowired
