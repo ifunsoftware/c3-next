@@ -49,7 +49,7 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
 
     val status = rwDatabase.get(null, key, value, LockMode.DEFAULT)
 
-    //TODO consider reuse got resource in the data manipulators implemenations
+    //TODO consider reuse got resource in the data manipulators implementations
     if (status == OperationStatus.SUCCESS) {
       val resource = Resource.fromByteArray(value.getData)
       selectDataManipulator(resource).deleteData(ra, tx)
@@ -70,7 +70,7 @@ trait CompositeDataManipulator extends DataManipulator with DatabaseProvider wit
 
     resource.systemMetadata("c3.blob.store") match {
       case Some(value) => value == "file"
-      case None => (resource.versions.head.data.length > config.fileThreshold)
+      case None => resource.versions.head.data.length > config.fileThreshold
     }
   }
 }

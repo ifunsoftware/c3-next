@@ -134,7 +134,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     }
 
     //This is mandatory as we create an index when db may already contain data
-    secConfig setAllowPopulate(true)
+    secConfig setAllowPopulate true
 
     val secDatabase = env.openSecondaryDatabase(null, index.name, database, secConfig)
 
