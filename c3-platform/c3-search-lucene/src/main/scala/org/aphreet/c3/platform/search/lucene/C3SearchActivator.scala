@@ -21,7 +21,7 @@ class C3SearchActivator extends C3Activator {
 
   def name: String = "c3-search-lucene"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait DependencyProvider extends  AccessComponent
     with StorageComponent
@@ -43,7 +43,7 @@ class C3SearchActivator extends C3Activator {
 
       val configPersister = getService(context, classOf[ConfigPersister])
 
-      val actorSystem = getService(context, classOf[ActorRefFactory])
+      val actorSystem = actorRefFactory
     }
 
     val module = new Object with DefaultComponentLifecycle

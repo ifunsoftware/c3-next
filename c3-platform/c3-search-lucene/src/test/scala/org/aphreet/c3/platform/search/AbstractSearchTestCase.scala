@@ -1,31 +1,39 @@
 package org.aphreet.c3.platform.search
 
-import lucene.impl.index.extractor.SimpleTextExtractor
-import org.aphreet.c3.platform.search.lucene.impl.index.{IndexMsg, FileIndexer, RamIndexer, MergeIndexMsg}
+import akka.actor.{Actor, Props, ActorSystem}
 import junit.framework.TestCase
-import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
-import org.apache.lucene.index.IndexReader
+import lucene.impl.index.extractor.SimpleTextExtractor
+import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.Document
+import org.apache.lucene.index.{IndexWriterConfig, IndexWriter, Term, IndexReader}
 import org.apache.lucene.search.IndexSearcher
-import org.aphreet.c3.platform.search.lucene.impl.SearchConfiguration
-import org.aphreet.c3.platform.search.lucene.impl.search.MultiFieldSearchStrategy
-import org.aphreet.c3.platform.search.lucene.SearchConfigurationManager
+import org.apache.lucene.store.RAMDirectory
+import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import org.aphreet.c3.platform.search.api.SearchResultElement
-import akka.actor.{Actor, Props, ActorSystem, ActorRef}
-import org.easymock.classextension.EasyMock
+import org.aphreet.c3.platform.search.lucene.SearchConfigurationManager
+import org.aphreet.c3.platform.search.lucene.impl.SearchConfiguration
+import org.aphreet.c3.platform.search.lucene.impl.SearchManagerInternal._
+import org.aphreet.c3.platform.search.lucene.impl.index.{IndexHolder, ParallelResourceIndexer}
+import org.aphreet.c3.platform.search.lucene.impl.search.MultiFieldSearchStrategy
 
 abstract class AbstractSearchTestCase extends TestCase{
 
   val actorSystem = ActorSystem()
 
-  var ramIndexer:RamIndexer = _
+  val senderMock = actorSystem.actorOf(Props.create(classOf[SenderActorStub], this))
+
+  var indexer: ParallelResourceIndexer = _
 
   val configuration = new SearchConfiguration
   configuration.loadFieldWeight(fieldWeights)
 
+  val indexHolder = new MemoryIndexHolder
+
   val searchStrategy = new MultiFieldSearchStrategy()
 
   val configurationManagerStub = new SearchConfigurationManager {
-    def async: ActorRef = actorSystem.actorOf(Props.create(classOf[ConfigurationManagerActorStub], this))
+    def async = actorSystem.actorOf(Props.create(classOf[ConfigurationManagerActorStub], this))
 
     def searchConfiguration = configuration
 
@@ -38,14 +46,11 @@ abstract class AbstractSearchTestCase extends TestCase{
 
   override
   def setUp(){
-
-    val fileIndexerMock = EasyMock.createMock(classOf[FileIndexer])
-
-    ramIndexer = new RamIndexer(actorSystem, fileIndexerMock, configurationManagerStub, 0, true, new SimpleTextExtractor)
+    indexer = new ParallelResourceIndexer(5, indexHolder, configurationManagerStub, true, new SimpleTextExtractor)
   }
 
   def indexResource(resource:Resource) {
-    ramIndexer.async ! IndexMsg(resource)
+    indexer.index(resource, senderMock)
   }
 
   def testSearch(){
@@ -54,10 +59,9 @@ abstract class AbstractSearchTestCase extends TestCase{
 
     Thread.sleep(1000)
 
-    val searcher = new IndexSearcher(IndexReader.open(ramIndexer.directory))
+    val searcher = new IndexSearcher(IndexReader.open(indexHolder.directory))
 
     verifyResults(searchStrategy.search(searcher, configuration, searchQuery, 100, 0, domain).elements.toList)
-
   }
 
   def resource(address:String, data:String, metadata:Map[String, String] = Map(), domain:String = this.domain):Resource = {
@@ -70,6 +74,13 @@ abstract class AbstractSearchTestCase extends TestCase{
     resource
   }
 
+  override def tearDown(){
+    actorSystem.shutdown()
+    actorSystem.awaitTermination()
+
+    indexer.destroy()
+  }
+
   def domain:String = "defaultDomain"
 
   def fieldWeights:Map[String, java.lang.Float] = Map()
@@ -79,4 +90,30 @@ abstract class AbstractSearchTestCase extends TestCase{
   def resources:List[Resource]
 
   def verifyResults(found:List[SearchResultElement])
+
+  class MemoryIndexHolder extends IndexHolder{
+
+    val directory = new RAMDirectory()
+
+    private val indexWriter = new IndexWriter(directory,
+      new IndexWriterConfig(LUCENE_VERSION,
+        new StandardAnalyzer(LUCENE_VERSION))
+        .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
+
+    def addDocument(document: Document, analyzer: Analyzer){
+      indexWriter.addDocument(document, analyzer)
+      indexWriter.commit()
+    }
+
+    def deleteDocuments(term: Term){
+      indexWriter.deleteDocuments(term)
+      indexWriter.commit()
+    }
+  }
+
+  class SenderActorStub extends Actor{
+    def receive = {
+      case _ =>
+    }
+  }
 }

@@ -15,6 +15,6 @@ class MetadataOnlySearchTestCase extends AbstractSearchTestCase{
   )
 
   def verifyResults(found: List[SearchResultElement]) {
-    assertEquals(List("address0", "address1", "address2"), found.map(e => e.address))
+    assertEquals(Set("address0", "address1", "address2"), found.map(e => e.address).toSet)
   }
 }

@@ -36,8 +36,6 @@ trait SearchManager extends ActorRefHolder {
 
   def search(domain: String, query: String): SearchResult
 
-  def flushIndexes()
-
   def deleteIndexes()
 
   def dumpIndex(path: String)

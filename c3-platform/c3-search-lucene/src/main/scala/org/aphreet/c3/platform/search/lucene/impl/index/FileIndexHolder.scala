@@ -36,18 +36,68 @@ import org.apache.lucene.store.{NIOFSDirectory, Directory}
 import org.aphreet.c3.platform.common.{Logger, Path}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.lucene.impl.SearchManagerInternal.LUCENE_VERSION
-import org.aphreet.c3.platform.search.lucene.impl.common.Fields
+import org.aphreet.c3.platform.search.lucene.impl.common.{LanguageGuesserUtil, Fields}
 import org.aphreet.c3.platform.search.lucene.impl.search._
 import akka.actor.ActorRef
+import org.apache.lucene.document.Document
+import org.apache.lucene.analysis.Analyzer
+import scala.concurrent.Future
+import java.util.concurrent.locks.{ReentrantReadWriteLock, Lock}
+import java.util.concurrent.atomic.AtomicLong
+import org.aphreet.c3.platform.search.lucene.impl.SearchComponentProtocol.UpdateIndexCreationTimestamp
 
 
-class FileIndexer(var indexPath:Path, val searcher: Searcher) {
+class FileIndexHolder(var indexPath:Path, val searcher: Searcher) extends IndexHolder{
 
   private val executor = Executors.newSingleThreadExecutor()
 
   private val log = Logger(getClass)
 
   private var indexWriter = createWriter(indexPath)
+
+  private val lock = new ReentrantReadWriteLock()
+
+  private val modificationCount = new AtomicLong()
+
+  private val indexScheduler = new SearchIndexScheduler()
+  indexScheduler.start()
+
+  private def inReadLock(block: => Any){
+    val readLock = lock.readLock()
+    try{
+      readLock.lock()
+      block
+    }finally {
+      readLock.unlock()
+    }
+  }
+
+  private def inWriteLock(block: => Any){
+    val writeLock = lock.writeLock()
+    try{
+      writeLock.lock()
+      block
+    }finally {
+      writeLock.unlock()
+    }
+  }
+
+  def addDocument(document: Document, analyzer: Analyzer) = {
+    inReadLock{
+      indexWriter.addDocument(document, analyzer)
+      indexWriter.commit()
+      modificationCount.incrementAndGet()
+    }
+  }
+
+  def deleteDocuments(term: Term) = {
+    inReadLock{
+      indexWriter.deleteDocuments(term)
+      indexWriter.commit()
+      modificationCount.incrementAndGet()
+    }
+  }
+
 
   private def createWriter(path:Path):IndexWriter = {
     log info "Creating IndexWriter"
@@ -65,54 +115,30 @@ class FileIndexer(var indexPath:Path, val searcher: Searcher) {
         .setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND))
   }
 
-  def mergeIndex(directory: Directory){
-    executor.submit(new IndexMerger(directory))
-  }
+  def deleteIndex(caller: ActorRef){
 
-  def deleteIndex(){
     log.info("Submitting task to delete search index")
     executor.submit(new Runnable {
       def run(){
-        try{
-          log.info("Deleting search index")
-          indexWriter.deleteAll()
-          indexWriter.commit()
-          searcher ! ReopenSearcherMsg
-        }catch{
-          case e : Throwable => log.warn("Failed to delete search index", e)
+        inWriteLock{
+          try{
+            log.info("Deleting search index")
+            indexWriter.deleteAll()
+            indexWriter.commit()
+            modificationCount.set(0)
+            searcher ! ReopenSearcherMsg
+            caller ! UpdateIndexCreationTimestamp(System.currentTimeMillis())
+          }catch{
+            case e : Throwable => log.warn("Failed to delete search index", e)
+          }
         }
       }
     })
   }
 
-  class IndexMerger(val directory: Directory) extends Runnable {
-    def run() {
-      try{
-        val reader = IndexReader.open(directory)
-
-        //Make sure we don't have duplicates in index
-        for (docIndex <- 0 until reader.numDocs()){
-          val document = reader.document(docIndex)
-          indexWriter.deleteDocuments(new Term(Fields.ADDRESS, document.get(Fields.ADDRESS)))
-        }
-
-
-        indexWriter.addIndexes(reader)
-        indexWriter.commit()
-
-        reader.close()
-        directory.close()
-
-        log debug "Index merged"
-        searcher ! ReopenSearcherMsg
-      }catch{
-        case e: Throwable =>
-          log.warn("Failed to merge index", e)
-      }
-    }
-  }
-
   def destroy() {
+
+    indexScheduler.interrupt()
 
     log.info("Stopping FileIndexer")
     executor.shutdown()
@@ -122,6 +148,7 @@ class FileIndexer(var indexPath:Path, val searcher: Searcher) {
     indexWriter.close()
     indexWriter.getDirectory.close()
 
+
     log.info("FileIndexer stopped")
   }
 
@@ -129,53 +156,60 @@ class FileIndexer(var indexPath:Path, val searcher: Searcher) {
 
     executor.submit(new Runnable {
       def run(){
-        try{
-          log info "Changing index path to " + path
-          indexPath = path
-          indexWriter.close()
-          indexWriter.getDirectory.close()
+        inWriteLock{
+          try{
 
-          indexWriter = createWriter(indexPath)
-          log info "Index path changed"
-          searcher ! NewIndexPathMsg(path)
-          caller ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
-        }catch{
-          case e: Throwable => log.warn("Failed to create new indexWriter", e)
+            log info "Changing index path to " + path
+            indexPath = path
+            indexWriter.close()
+            indexWriter.getDirectory.close()
+
+            indexWriter = createWriter(indexPath)
+            log info "Index path changed"
+            modificationCount.set(0)
+            searcher ! NewIndexPathMsg(path)
+            caller ! UpdateIndexCreationTimestamp(System.currentTimeMillis + 5000) //5 seconds offset
+          }catch{
+            case e: Throwable => log.warn("Failed to create new indexWriter", e)
+          }
         }
       }
     })
   }
 
-  def deleteForIndex(resource: Resource, caller: ActorRef){
-    executor.submit(new Runnable {
-      def run(){
-        deleteResource(resource.address)
-        caller ! IndexMsg(resource)
-      }
-    })
-  }
-
-  def delete(address: String){
-    executor.submit(new Runnable {
-      def run(){
-        deleteResource(address)
-      }
-    })
-  }
-
-  private def deleteResource(address:String) {
-    try{
-      val term = new Term(Fields.ADDRESS, address)
-      indexWriter.deleteDocuments(term)
-      log debug "Documents with term address:" + address + " have been deleted"
-    }catch{
-      case e: Throwable => log.error("Failed to delete resource, e is: ", e)
+  def reopenSearcher(){
+    if(modificationCount.get() > 0){
+      searcher ! ReopenSearcherMsg
+      modificationCount.set(0)
     }
   }
+
+  class SearchIndexScheduler() extends Thread{
+
+    val log = Logger(getClass)
+
+    {
+      this.setDaemon(true)
+    }
+
+    override def run(){
+
+      log info "Started scheduler"
+
+      while(!Thread.currentThread.isInterrupted){
+        try{
+          Thread.sleep(1000 * 60)
+        }catch{
+          case e:InterruptedException =>
+            log info "Thread interrupted"
+            Thread.currentThread.interrupt()
+        }
+        reopenSearcher()
+      }
+
+      log info "Search scheduler stopped"
+    }
+  }
+
 }
 
-case class MergeIndexMsg(directory:Directory)
-object DeleteIndexMsg
-case class DeleteMsg(address:String)
-case class DeleteForUpdateMsg(resource:Resource)
-case class UpdateIndexCreationTimestamp(time:Long)

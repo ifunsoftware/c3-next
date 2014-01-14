@@ -39,7 +39,7 @@ object LanguageGuesserUtil{
 
   val trigrams = Array("en.tri", "ru.tri")
 
-  def createGuesser:LanguageGuesser = {
+  def createGuesser():LanguageGuesser = {
     val guesser = new TrigramLanguageGuesser(trigrams.map(name => getClass.getClassLoader.getResource("META-INF/trigrams/" + name)).toArray)
     log info "Supported languages are: " + guesser.supportedLanguages.toList.toString
     guesser

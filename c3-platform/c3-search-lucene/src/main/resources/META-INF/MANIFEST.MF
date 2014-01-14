@@ -7,7 +7,7 @@ Bundle-SymbolicName: org.aphreet.c3.platform.search.lucene
 Import-Bundle: org.aphreet.c3.platform.core;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.search.api;version="[1.0.0,2.0.0)",
  org.scala-lang.scala-library;version="[2.10.1,2.11)",
- org.scala-lang.scala-actors;version="[2.10.1,2.11)",
+ com.typesafe.akka.osgi;version="[2.2.3,3.0.0)",
  com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  org.apache.lucene.core;bundle-version="[3.5.0,4.0.0)",
  org.apache.lucene.analysis;bundle-version="[3.5.0,4.0.0)",

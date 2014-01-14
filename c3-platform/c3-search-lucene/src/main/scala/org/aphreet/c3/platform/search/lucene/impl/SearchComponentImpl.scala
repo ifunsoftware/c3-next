@@ -45,6 +45,7 @@ import akka.actor.{Actor, Props}
 import org.aphreet.c3.platform.search.lucene.DropFieldConfiguration
 import org.aphreet.c3.platform.actor.ActorComponent
 import org.aphreet.c3.platform.search.lucene.impl.index.extractor.TikaHttpTextExtractor
+import org.aphreet.c3.platform.search.lucene.impl.SearchComponentProtocol.{UpdateIndexCreationTimestamp, ResourceIndexedMsg, ResourceIndexingFailed}
 
 trait SearchComponentImpl extends SearchComponent{
 
@@ -67,19 +68,13 @@ trait SearchComponentImpl extends SearchComponent{
 
     val log = Logger(getClass)
 
-    var fileIndexer: FileIndexer = null
+    var fileIndexHolder: FileIndexHolder = null
 
     var indexPath: Path = null
 
-    var ramIndexers: List[RamIndexer] = List()
-
-    val random = new java.util.Random(System.currentTimeMillis)
+    var indexer: ResourceIndexer = null
 
     var searcher:Searcher = null
-
-    val indexScheduler = new SearchIndexScheduler(this)
-
-    var indexerTaskId:String = null
 
     var backgroundIndexTask:BackgroundIndexTask = null
 
@@ -96,7 +91,6 @@ trait SearchComponentImpl extends SearchComponent{
     def tikaHostAddress = if(currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
 
     {
-
       if (indexPath != null) {
         initialize(INDEXER_COUNT)
       } else {
@@ -107,24 +101,21 @@ trait SearchComponentImpl extends SearchComponent{
     }
 
     def initialize(numberOfIndexers:Int) {
-      if (fileIndexer == null) {
-
-        for(i <- 1 to numberOfIndexers){
-          ramIndexers = createIndexer(i) :: ramIndexers
-        }
-
+      if (fileIndexHolder == null) {
         searcher = new Searcher(actorSystem, searchConfigurationManager)
 
-        fileIndexer = new FileIndexer(indexPath, searcher)
+        fileIndexHolder = new FileIndexHolder(indexPath, searcher)
+
+        indexer = new ParallelResourceIndexer(20, fileIndexHolder,
+          searchConfigurationManager,
+          extractDocumentContent,
+          new TikaHttpTextExtractor(tikaHostAddress))
 
         accessMediator ! RegisterNamedListenerMsg(async, 'SearchManager)
 
         backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
 
         taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, fixedPeriod = false)
-        indexerTaskId = backgroundIndexTask.id
-
-        indexScheduler.start()
 
         searcher ! NewIndexPathMsg(indexPath)
       }
@@ -144,18 +135,14 @@ trait SearchComponentImpl extends SearchComponent{
     class SearchManagerActor extends Actor{
 
       def receive = {
-        case ResourceAddedMsg(resource, source) => selectIndexer ! IndexMsg(resource)
+        case ResourceAddedMsg(resource, source) => indexer.index(resource, self)
 
-        case ResourceUpdatedMsg(resource, source) => {
-          fileIndexer.deleteForIndex(resource, self)
-        }
+        case ResourceUpdatedMsg(resource, source) => indexer.index(resource, self)
 
-        case ResourceDeletedMsg(address, source) => fileIndexer.delete(address)
-
-        case IndexMsg(resource) => selectIndexer ! IndexMsg(resource)
+        case ResourceDeletedMsg(address, source) => indexer.delete(address)
 
         case BackgroundIndexMsg(resource) =>
-          fileIndexer.deleteForIndex(resource, self)
+          indexer.index(resource, self)
           statisticsManager ! IncreaseStatisticsMsg("c3.search.background", 1)
 
         case ResourceIndexingFailed(address) =>
@@ -184,40 +171,27 @@ trait SearchComponentImpl extends SearchComponent{
 
         letItFall{
 
-          if(indexerTaskId != null){
-            taskManager.stopTask(indexerTaskId)
+          if(backgroundIndexTask != null){
+            taskManager.stopTask(backgroundIndexTask.id)
           }
 
           accessMediator ! UnregisterNamedListenerMsg(self, 'SearchManager)
           platformConfigManager ! UnregisterMsg(SearchManagerImpl.this)
         }
 
-
-        indexScheduler.interrupt()
-
-        fileIndexer.destroy()
+        indexer.destroy()
+        fileIndexHolder.destroy()
       }
     }
 
     def deleteIndexes(){
       log.info("Reseting search index")
-      fileIndexer.deleteIndex()
+      fileIndexHolder.deleteIndex(async)
       searchConfigurationManager ! DropFieldConfiguration
-      async ! UpdateIndexCreationTimestamp(System.currentTimeMillis())
-    }
-
-    def flushIndexes() {
-      ramIndexers.foreach(_ ! FlushIndex(force = true))
     }
 
     def dumpIndex(path: String) {
       taskManager.submitTask(new DumpIndexTask(indexPath, path))
-    }
-
-    def selectIndexer: RamIndexer = {
-      log trace "Selecting indexer..."
-      val num = math.abs(random.nextInt) % ramIndexers.size
-      ramIndexers.drop(num).head
     }
 
     def defaultValues: Map[String, String] = Map(
@@ -246,18 +220,13 @@ trait SearchComponentImpl extends SearchComponent{
 
             if(newPath != indexPath){
               log info "New path to store index set: " + newPath.stringValue
-              fileIndexer.updateIndexLocation(newPath, async)
+              fileIndexHolder.updateIndexLocation(newPath, async)
               indexPath = newPath
             }else{
               log info "New index path is the same as existing"
             }
           }
         }
-
-
-        case MAX_TMP_INDEX_SIZE =>
-          if (event.newValue != event.oldValue)
-            ramIndexers.foreach(_ ! SetMaxDocsCountMsg(Integer.parseInt(event.newValue)))
 
         case INDEX_CREATE_TIMESTAMP =>
           log info "Index creation timestamp value: " + event.newValue
@@ -269,14 +238,12 @@ trait SearchComponentImpl extends SearchComponent{
           log info "Setting " + EXTRACT_DOCUMENT_CONTENT + " value: " + event.newValue
           extractDocumentContent = event.newValue == "true"
 
-          for(indexer <- ramIndexers){
-            indexer.extractDocumentContent = extractDocumentContent
-          }
+          indexer.setDocumentExtractionRequired(extractDocumentContent)
 
         case TIKA_HOST =>
           log info "Setting tika host to " + event.newValue
           currentTikaAddress = event.newValue
-          ramIndexers.foreach(_ ! UpdateTextExtractor(new TikaHttpTextExtractor(event.newValue)))
+          indexer.updateTextExtractor(new TikaHttpTextExtractor(event.newValue))
 
         case THROTTLE_BACKGROUND_INDEX =>
           log info "Setting " + THROTTLE_BACKGROUND_INDEX + " to " + event.newValue
@@ -287,42 +254,14 @@ trait SearchComponentImpl extends SearchComponent{
     def throttleBackgroundIndex = {
       throttleBackgroundIndexer
     }
-
-    protected def createIndexer(number: Int): RamIndexer = {
-      new RamIndexer(actorSystem, fileIndexer,
-        searchConfigurationManager,
-        number,
-        extractDocumentContent,
-        new TikaHttpTextExtractor(tikaHostAddress))
-    }
   }
 
-  class SearchIndexScheduler(val searchManager:SearchManagerImpl) extends Thread{
+}
 
-    val log = Logger(getClass)
-
-    {
-      this.setDaemon(true)
-    }
-
-    override def run(){
-
-      log info "Started scheduler"
-
-      while(!Thread.currentThread.isInterrupted){
-        try{
-          Thread.sleep(1000 * 60)
-        }catch{
-          case e:InterruptedException =>
-            log info "Thread interrupted"
-            Thread.currentThread.interrupt()
-        }
-        searchManager.ramIndexers.foreach(_ ! FlushIndex(force = false))
-      }
-
-      log info "Search scheduler stopped"
-    }
-  }
+object SearchComponentProtocol{
+  case class ResourceIndexingFailed(address: String)
+  case class ResourceIndexedMsg(address: String, extractedMetadata: Map[String, String])
+  case class UpdateIndexCreationTimestamp(time:Long)
 }
 
 object SearchComponentConstants{
