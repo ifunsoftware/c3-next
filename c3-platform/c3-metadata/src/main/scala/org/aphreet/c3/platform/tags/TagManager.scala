@@ -1,9 +1,9 @@
 package org.aphreet.c3.platform.tags
 
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.ActorRefHolder
 import scala.collection.Map
 
-trait TagManager extends WatchedActor{
+trait TagManager extends ActorRefHolder {
 
 }
 

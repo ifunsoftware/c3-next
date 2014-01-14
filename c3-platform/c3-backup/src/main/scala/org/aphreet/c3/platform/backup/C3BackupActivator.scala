@@ -8,6 +8,7 @@ import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.aphreet.c3.platform.backup.impl.BackupComponentImpl
 import org.aphreet.c3.platform.filesystem.{FSManager, FSComponent}
 import org.osgi.framework.BundleContext
+import akka.actor.ActorRefFactory
 
 /**
  * Author: Mikhail Malygin
@@ -18,7 +19,7 @@ class C3BackupActivator extends C3Activator {
 
   def name = "c3-backup"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait DependencyProvider extends AccessComponent
     with StorageComponent

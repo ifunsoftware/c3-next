@@ -1,9 +1,11 @@
 package org.aphreet.c3.platform.tags.impl
 
+import akka.actor.ActorSystem
 import junit.framework.Assert._
 import junit.framework.TestCase
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, RegisterNamedListenerMsg}
 import org.aphreet.c3.platform.common.{ThreadWatcher, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.filesystem.{Directory, Node}
 import org.aphreet.c3.platform.resource.{MetadataHelper, Metadata, Resource}
@@ -65,13 +67,19 @@ class TagManagerImplTest extends TestCase {
       expect(accessManagerMock.get(parent2Path)).andReturn(parent2).anyTimes()
 
       expect(accessMediatorMock.!(RegisterNamedListenerMsg(anyObject(), 'tagManager)))
+      expect(accessMediatorMock.!(UnregisterNamedListenerMsg(anyObject(), 'tagManager)))
 
       replay(accessMediatorMock)
       replay(accessManagerMock)
 
+      val actorRefFactory = ActorSystem()
+
       val module = new Object with DefaultComponentLifecycle
         with AccessComponent
+        with ActorComponent
         with TagComponentImpl {
+
+        def actorSystem = actorRefFactory
 
         def accessManager = accessManagerMock
 
@@ -84,10 +92,10 @@ class TagManagerImplTest extends TestCase {
     }
 
     override def tearDown(){
+      app.stop()
+
       verify(app.accessManager)
       verify(app.accessMediator)
-
-      app.stop()
 
       Thread.sleep(500)
 

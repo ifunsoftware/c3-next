@@ -4,6 +4,8 @@ import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3AppHandle, C
 import org.osgi.framework.BundleContext
 import org.aphreet.c3.platform.access.{AccessMediator, AccessManager, AccessComponent}
 import org.aphreet.c3.platform.tags.impl.TagComponentImpl
+import akka.actor.{ActorRefFactory, ActorSystem}
+import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * Author: Mikhail Malygin
@@ -13,9 +15,11 @@ import org.aphreet.c3.platform.tags.impl.TagComponentImpl
 class C3TagsActivator extends C3Activator {
   def name: String = "c3-metadata"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
-    trait DependencyProvider extends AccessComponent {
+    trait DependencyProvider extends AccessComponent with ActorComponent {
+
+      val actorSystem = actorRefFactory
 
       val accessManager = getService(context, classOf[AccessManager])
 

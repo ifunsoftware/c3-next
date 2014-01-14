@@ -41,7 +41,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
 
     val backup = RemoteBackup.create(BACKUP_NAME, backupLocation, LOCAL_PORT, PASSWORD)
 
-    resourceList.foreach(backup.addResource(_))
+    resourceList.foreach(backup.addResource)
 
     val fsRoots = Map("domain1" -> "rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234",
                       "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
@@ -53,7 +53,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
     val backup1 = RemoteBackup.open(BACKUP_NAME, backupLocation, LOCAL_PORT, PASSWORD)
 
     for(resource <- backup1){
-      assertEquals(1, resourceList.filter(_.address == resource.address).size)
+      assertEquals(1, resourceList.count(_.address == resource.address))
       resourceList = resourceList.filterNot(_.address == resource.address)
     }
 
