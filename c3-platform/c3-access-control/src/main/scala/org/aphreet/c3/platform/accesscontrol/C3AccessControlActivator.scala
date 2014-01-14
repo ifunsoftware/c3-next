@@ -9,6 +9,7 @@ import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, P
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.domain.impl.DomainComponentImpl
 import org.osgi.framework.BundleContext
+import akka.actor.ActorRefFactory
 
 /**
  * Author: Mikhail Malygin
@@ -20,7 +21,7 @@ class C3AccessControlActivator extends C3Activator {
 
   def name = "c3-access-control"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait ServiceDependencyProvider extends CleanupComponent with PlatformConfigComponent{
       val cleanupManager = getService(context, classOf[CleanupManager])
