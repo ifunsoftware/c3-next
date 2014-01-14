@@ -3,7 +3,6 @@ package org.aphreet.c3.platform
 import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.access.{AccessMediator, CleanupManager, AccessManager}
-import org.aphreet.c3.platform.actor.impl.ActorComponentImpl
 import org.aphreet.c3.platform.common.{C3AppHandle, C3Activator, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
@@ -25,6 +24,7 @@ import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.osgi.framework.BundleContext
+import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * Author: Mikhail Malygin
@@ -35,17 +35,21 @@ class C3CoreActivator extends C3Activator {
 
   def name = "c3-core"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait LocalBundleContextProvider extends BundleContextProvider{
       def bundleContext: BundleContext = context
+    }
+
+    trait DependencyProvider extends ActorComponent{
+      val actorSystem = actorRefFactory
     }
 
     val module = new Object
       with DefaultComponentLifecycle
       with LocalBundleContextProvider
       with VersionComponentImpl
-      with ActorComponentImpl
+      with DependencyProvider
       with EnvironmentSystemDirectoryProvider
       with PlatformConfigComponentImpl
       with StatisticsComponentImpl
@@ -62,7 +66,6 @@ class C3CoreActivator extends C3Activator {
 
     new C3AppHandle {
       def registerServices(context: BundleContext) {
-        registerService(context, classOf[ActorRefFactory], module.actorSystem)
         registerService(context, classOf[AccessManager], module.accessManager)
         registerService(context, classOf[AccessMediator], module.accessMediator)
         registerService(context, classOf[CleanupManager], module.cleanupManager)

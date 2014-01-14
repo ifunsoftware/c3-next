@@ -64,7 +64,7 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
   val cleanupManager = new CleanupManagerImpl(storageUpdater, accessMediator.async)
 
-  val accessCounter = actorSystem.actorOf(Props.create(classOf[AccessCounter], accessMediator, statisticsManager.async))
+  val accessCounter = actorSystem.actorOf(Props.create(classOf[AccessCounter], accessMediator.async, statisticsManager.async))
 
   class AccessManagerImpl extends AccessManager with SPlatformPropertyListener {
 

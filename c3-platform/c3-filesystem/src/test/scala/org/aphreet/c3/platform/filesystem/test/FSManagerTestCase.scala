@@ -46,8 +46,12 @@ import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponen
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.aphreet.c3.platform.common.ComponentLifecycle
 import org.aphreet.c3.platform.config.impl.MemoryConfigPersister
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.ActorRefFactory
 
 class FSManagerTestCase extends TestCase with FSTestHelpers{
+
+  val actorSystemMock = createMock(classOf[ActorRefFactory])
 
   def testDeletePermission() {
 
@@ -225,6 +229,7 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
       with TaskComponent
       with FSCleanupComponent
       with ComponentLifecycle
+      with ActorComponent
       with FSComponentImpl{
       def queryManager: QueryManager = null
 
@@ -249,6 +254,8 @@ class FSManagerTestCase extends TestCase with FSTestHelpers{
       def platformConfigManager: PlatformConfigManager = null
 
       def configPersister: ConfigPersister = new MemoryConfigPersister
+
+      def actorSystem: ActorRefFactory = actorSystemMock
     }
 
     app.filesystemManager

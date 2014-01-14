@@ -14,7 +14,8 @@ import org.aphreet.c3.platform.storage.migration.impl.MigrationComponentImpl
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
-import org.aphreet.c3.platform.actor.impl.ActorComponentImpl
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.ActorSystem
 
 /**
  * Author: Mikhail Malygin
@@ -27,10 +28,16 @@ object AppRunner extends App{
 
   log.info("Starting c3-core")
 
+  trait DependencyProvider extends ActorComponent{
+
+    val actorSystem = ActorSystem()
+
+  }
+
   val app = new Object
     with DefaultComponentLifecycle
     with EnvironmentSystemDirectoryProvider
-    with ActorComponentImpl
+    with DependencyProvider
     with PlatformConfigComponentImpl
     with StatisticsComponentImpl
     with TaskComponentImpl

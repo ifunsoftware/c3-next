@@ -7,7 +7,7 @@ Bundle-Activator: org.aphreet.c3.platform.search.es.C3SearchActivator
 Import-Bundle: org.aphreet.c3.platform.core;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.search.api;version="[1.0.0,2.0.0)",
  org.scala-lang.scala-library;version="[2.10.1,2.11)",
- org.scala-lang.scala-actors;version="[2.10.1,2.11)",
+ com.typesafe.akka.osgi;version="[2.2.3,3.0.0)",
  com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  com.springsource.org.aopalliance;version="[1.0.0,1.0.0]",
  org.apache.servicemix.bundles.elasticsearch;version="[0.90,1.0.0)"

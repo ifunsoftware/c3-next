@@ -56,15 +56,18 @@ abstract class AbstractBDBStorageFactory(override val storageManager: StorageMan
     init()
   }
 
+
   override def init() {
 
     import actorSystem.dispatcher
+
+    implicit val timeout = Timeout(1, TimeUnit.MINUTES)
 
     log info "Post construct callback invoked"
     (platformConfigManager.async ? RegisterMsg(this)).onComplete(result => super.init()) //sync call. Setting properties before opening storages
   }
 
-  implicit val timeout = Timeout(1, TimeUnit.MINUTES)
+
 
   override def destroy() {
     log info "Pre destroy callback invoked"

@@ -136,10 +136,15 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.scala-lang</groupId>
-                                    <artifactId>scala-actors</artifactId>
+                                    <groupId>com.typesafe.akka</groupId>
+                                    <artifactId>akka-osgi_2.10</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.typesafe</groupId>
+                                    <artifactId>config</artifactId>
+                                    <version>1.0.2</version>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.deploy.tmp.dir}</outputDirectory>

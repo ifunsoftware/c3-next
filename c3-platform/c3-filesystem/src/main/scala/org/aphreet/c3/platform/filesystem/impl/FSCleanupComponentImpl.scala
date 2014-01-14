@@ -8,6 +8,8 @@ import org.aphreet.c3.platform.filesystem.lib.FSNodeBFSTreeTraversal
 import org.aphreet.c3.platform.filesystem.{FSCleanupComponent, Node, Directory, FSCleanupManager}
 import org.aphreet.c3.platform.resource.ResourceAddress
 import org.aphreet.c3.platform.storage.StorageComponent
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.{Props, Actor, ActorRefFactory}
 
 /**
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
@@ -18,44 +20,31 @@ trait FSCleanupComponentImpl extends FSCleanupComponent {
 
   this: ComponentLifecycle
     with StorageComponent
-    with AccessComponent =>
+    with AccessComponent
+    with ActorComponent =>
 
-  private val fsCleanupManagerImpl = new FSCleanupManagerImpl
-
-  destroy(Unit => fsCleanupManagerImpl.destroy())
+  private val fsCleanupManagerImpl = new FSCleanupManagerImpl(actorSystem)
 
   def filesystemCleanupManager: FSCleanupManager = fsCleanupManagerImpl
 
-  class FSCleanupManagerImpl extends FSNodeBFSTreeTraversal with FSCleanupManager{
+  class FSCleanupManagerImpl(val actorSystem: ActorRefFactory) extends FSNodeBFSTreeTraversal with FSCleanupManager{
 
     val log = Logger(getClass)
 
+    val async = actorSystem.actorOf(Props.create(classOf[FSCleanupManagerActor], this))
+
     {
       log.info("Starting FS Cleanup manager...")
-      start()
     }
 
-    override def act() {
-      loop{
-        react{
-          case task: CleanupDirectoryTask => {
-            val dir = task.directory
-            cleanupDirectory(dir)
-          }
-          case DestroyMsg => {
-            this.exit()
-          }
-          case msg => {
-            log.error("Unknown message is received! Msg: " + msg + ". Skipping...")
-          }
+    class FSCleanupManagerActor extends Actor{
+      def receive = {
+        case task: CleanupDirectoryTask => {
+          cleanupDirectory(task.directory)
         }
       }
     }
 
-    def destroy(){
-      log.info("Stopping FSCleanupManager")
-      this ! DestroyMsg
-    }
 
     def cleanupDirectory(d: Directory){
       val traversed = traverseFS(d).reverse

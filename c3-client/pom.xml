@@ -16,6 +16,16 @@
             <groupId>com.ifunsoftware.c3</groupId>
             <artifactId>accesslib</artifactId>
             <version>1.0.25</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-actors</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -2,14 +2,15 @@ package org.aphreet.c3.platform.common
 
 import org.osgi.framework.{BundleActivator, BundleContext}
 import java.util.Properties
-import akka.actor.{ActorRef, ActorRefFactory}
+import akka.actor.{ActorSystem, ActorRef, ActorRefFactory}
+import akka.osgi.ActorSystemActivator
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/14/13
  * Time:   3:00 AM
  */
-trait C3Activator extends BundleActivator {
+trait C3Activator extends ActorSystemActivator {
 
   val log = Logger(getClass)
 
@@ -17,13 +18,13 @@ trait C3Activator extends BundleActivator {
 
   def name: String
 
-  def createApplication(context: BundleContext): C3AppHandle
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle
 
-  def start(context: BundleContext) {
 
+  def configure(context: BundleContext, system: ActorSystem) {
     log.info("Starting {}", name)
 
-    val handle = createApplication(context)
+    val handle = createApplication(context, system)
 
     log.info("Initializing {}", name)
 
@@ -38,12 +39,14 @@ trait C3Activator extends BundleActivator {
     app = Some(handle)
   }
 
-  def stop(context: BundleContext) {
+  override def stop(context: BundleContext) {
     log.info("Stopping {}", name)
 
     app.foreach(_.stop())
 
     log.info("{}, stopped", name)
+
+    super.stop(context)
   }
 
   def registerService[T](context: BundleContext, clazz: Class[T], service: T){

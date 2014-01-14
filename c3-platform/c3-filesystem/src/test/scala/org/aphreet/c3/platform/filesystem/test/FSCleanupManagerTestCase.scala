@@ -8,6 +8,8 @@ import junit.framework.TestCase
 import org.aphreet.c3.platform.resource.ResourceAddress
 import org.aphreet.c3.platform.filesystem.impl.FSCleanupComponentImpl
 import org.aphreet.c3.platform.common.DefaultComponentLifecycle
+import akka.actor.ActorRefFactory
+import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * @author Dmitry Ivanov (id.ajantis@gmail.com)
@@ -44,16 +46,21 @@ class FSCleanupManagerTestCase extends TestCase with FSTestHelpers{
     expect(accessMediatorMock.!(ResourceDeletedMsg("00000000-c2fd-4bef-936e-59cef7943840-6a04", 'FSCleanupManager))).once()
     replay(accessMediatorMock)
 
+    val actorSystemMock = createMock(classOf[ActorRefFactory])
+
     val app = new Object
       with DefaultComponentLifecycle
       with StorageComponent
       with AccessComponent
+      with ActorComponent
       with FSCleanupComponentImpl {
       def accessManager: AccessManager = accessManagerMock
 
       def accessMediator: AccessMediator = accessMediatorMock
 
       def storageManager: StorageManager = storageManagerMock
+
+      def actorSystem: ActorRefFactory = actorSystemMock
     }
 
 

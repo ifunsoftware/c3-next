@@ -10,6 +10,8 @@ import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
 import org.aphreet.c3.platform.metadata.{TransientMetadataComponent, TransientMetadataManager}
 import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigPersister, PlatformConfigManager}
 import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
+import akka.actor.ActorRefFactory
+import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * Author: Mikhail Malygin
@@ -19,10 +21,11 @@ import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponen
 class C3FilesystemActivator extends C3Activator{
   def name = "c3-filesystem"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait DependencyProvider extends AccessComponent
     with StorageComponent
+    with ActorComponent
     with TaskComponent
     with QueryComponent
     with TransientMetadataComponent
@@ -45,9 +48,9 @@ class C3FilesystemActivator extends C3Activator{
       val configPersister = getService(context, classOf[ConfigPersister])
 
       val statisticsManager = getService(context, classOf[StatisticsManager])
-    }
 
-    log.info("Starting c3-filesystem")
+      val actorSystem = actorRefFactory
+    }
 
     val module = new Object
       with DefaultComponentLifecycle

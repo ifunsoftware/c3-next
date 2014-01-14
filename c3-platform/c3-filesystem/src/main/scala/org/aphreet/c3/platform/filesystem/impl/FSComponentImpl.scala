@@ -30,11 +30,13 @@
 
 package org.aphreet.c3.platform.filesystem.impl
 
+import akka.actor.{Props, ActorRefFactory, Actor}
 import annotation.tailrec
 import java.lang.IllegalStateException
 import org.aphreet.c3.platform.access.AccessComponent
-import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, DestroyMsg, RegisterNamedListenerMsg}
-import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger, WatchedActor, ComponentGuard}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.msg.{StoragePurgedMsg, UnregisterNamedListenerMsg, RegisterNamedListenerMsg}
+import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger, ComponentGuard}
 import org.aphreet.c3.platform.config.{ConfigAccessor, PlatformConfigComponent}
 import org.aphreet.c3.platform.filesystem.FSCleanupManagerProtocol.CleanupDirectoryTask
 import org.aphreet.c3.platform.filesystem._
@@ -48,6 +50,7 @@ import org.aphreet.c3.platform.task.TaskComponent
 trait FSComponentImpl extends FSComponent{
 
   this: AccessComponent
+    with ActorComponent
     with StorageComponent
     with TaskComponent
     with StatisticsComponent
@@ -60,18 +63,19 @@ trait FSComponentImpl extends FSComponent{
 
   def filesystemManager: FSManager = fsManagerImpl
 
-  private val fsManagerImpl = new FSManagerImpl(new FSConfigAccessorImpl(configPersister))
+  private val fsManagerImpl = new FSManagerImpl(actorSystem, new FSConfigAccessorImpl(configPersister))
 
   init(Unit => fsManagerImpl.init())
   destroy(Unit => fsManagerImpl.destroy())
 
-  class FSManagerImpl(val configAccessor: ConfigAccessor[Map[String, String]]) extends FSManager
+  class FSManagerImpl(val actorSystem: ActorRefFactory, val configAccessor: ConfigAccessor[Map[String, String]]) extends FSManager
   with FSPermissionCheckerResourceOwner
   with FSManagerInternal
-  with ComponentGuard
-  with WatchedActor {
+  with ComponentGuard{
 
     val log = Logger(classOf[FSComponentImpl])
+
+    val async = actorSystem.actorOf(Props.create(classOf[FSManagerActor], this))
 
     var fsRoots: Map[String, String] = Map()
 
@@ -83,15 +87,13 @@ trait FSComponentImpl extends FSComponent{
 
       log info "Initializing Filesystem manager"
 
-      start()
-
       accessManager.registerOwner(this)
 
       storageManager.registerConflictResolver(Node.DIRECTORY_CONTENT_TYPE, new DirectoryConflictResolver)
 
-      accessMediator ! RegisterNamedListenerMsg(this, 'FSManager)
+      accessMediator.async ! RegisterNamedListenerMsg(async, 'FSManager)
 
-      transientMetadataManager ! RegisterTransientMDBuildStrategy(new TransientMetadataBuildStrategy("c3.ext.fs.path", lookupResourcePath))
+      transientMetadataManager.async ! RegisterTransientMDBuildStrategy(new TransientMetadataBuildStrategy("c3.ext.fs.path", lookupResourcePath))
 
       fsRoots = configAccessor.load
     }
@@ -100,19 +102,14 @@ trait FSComponentImpl extends FSComponent{
 
       letItFall {
         accessManager.unregisterOwner(this)
-        accessMediator ! UnregisterNamedListenerMsg(this, 'FSManager)
+        accessMediator ! UnregisterNamedListenerMsg(async, 'FSManager)
       }
-
-      this ! DestroyMsg
     }
 
-    def act() {
-      loop {
-        react {
-          case StoragePurgedMsg(source) => this.resetFileSystemRoots()
-          case DestroyMsg => this.exit()
-          case _ =>
-        }
+    class FSManagerActor extends Actor {
+      def receive = {
+        case StoragePurgedMsg(source) => FSManagerImpl.this.resetFileSystemRoots()
+        case _ =>
       }
     }
 
