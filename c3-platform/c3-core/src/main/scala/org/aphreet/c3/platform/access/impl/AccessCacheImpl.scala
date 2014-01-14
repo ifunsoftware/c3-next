@@ -49,7 +49,7 @@ class AccessCacheImpl(val actorSystem: ActorRefFactory, val accessMediator: Acto
 
   val log = Logger(getClass)
 
-  val cacheActor = actorSystem.actorOf(Props[AccessCacheActor])
+  val cacheActor = actorSystem.actorOf(Props.create(classOf[AccessCacheActor], this))
 
   {
     val cacheManager = CacheManager.create()

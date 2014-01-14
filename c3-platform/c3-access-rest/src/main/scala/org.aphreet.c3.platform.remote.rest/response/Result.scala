@@ -32,7 +32,7 @@ package org.aphreet.c3.platform.remote.rest.response
 
 import fs.FSDirectory
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.search.SearchResultElement
+import org.aphreet.c3.platform.search.api.SearchResultElement
 import org.aphreet.c3.platform.remote.rest.controllers.SystemStatus
 
 class Result(val info:ResultInfo){

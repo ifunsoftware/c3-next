@@ -38,7 +38,7 @@ import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestEx
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
 import org.aphreet.c3.platform.remote.rest.response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
 import org.aphreet.c3.platform.resource.ResourceException
-import org.aphreet.c3.platform.search.SearchQueryException
+import org.aphreet.c3.platform.search.api.SearchQueryException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.aphreet.c3.platform.common.Logger

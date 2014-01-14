@@ -45,11 +45,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.gemini.blueprint</groupId>
-            <artifactId>gemini-blueprint-core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>net.sourceforge.ehcache</groupId>
             <artifactId>com.springsource.net.sf.ehcache</artifactId>
             <version>1.6.2</version>

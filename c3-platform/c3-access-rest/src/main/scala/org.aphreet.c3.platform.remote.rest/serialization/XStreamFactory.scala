@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.resource.{Resource, ResourceVersion}
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver
 import com.thoughtworks.xstream.io.xml.DomDriver
 import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter
-import org.aphreet.c3.platform.search.{SearchResultFragment, SearchResultElement}
+import org.aphreet.c3.platform.search.api.{SearchResultFragment, SearchResultElement}
 import org.aphreet.c3.platform.filesystem.NodeRef
 import org.aphreet.c3.platform.remote.rest.response._
 import fs.{FSNode, FSDirectory}

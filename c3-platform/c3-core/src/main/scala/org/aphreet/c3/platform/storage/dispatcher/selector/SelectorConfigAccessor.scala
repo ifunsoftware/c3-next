@@ -29,18 +29,12 @@
  */
 package org.aphreet.c3.platform.storage.dispatcher.selector
 
-import java.io.{StringWriter, File}
 
 import collection.JavaConversions._
-
-import org.aphreet.c3.platform.common.JSONFormatter
-import org.aphreet.c3.platform.config.ConfigAccessor
-import org.aphreet.c3.platform.config.PlatformConfigManager
-
 import com.springsource.json.parser._
-import com.springsource.json.writer.{JSONWriter, JSONWriterImpl}
+import com.springsource.json.writer.JSONWriter
+import org.aphreet.c3.platform.config.ConfigAccessor
 
-import org.springframework.beans.factory.annotation.Autowired
 
 abstract class SelectorConfigAccessor[T] extends ConfigAccessor[Map[T, Boolean]] {
 

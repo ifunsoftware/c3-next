@@ -48,7 +48,7 @@ trait StatisticsComponentImpl extends StatisticsComponent with ComponentLifecycl
 
     private val statistics = new mutable.HashMap[String, Any]
 
-    val async = actorSystem.actorOf(Props[StatisticsActor])
+    val async = actorSystem.actorOf(Props.create(classOf[StatisticsActor], this))
 
     {
       log info "Starting StatisticsManager"

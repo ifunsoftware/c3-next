@@ -40,7 +40,7 @@ class AccessMediatorImpl(val actorSystem: ActorRefFactory) extends AccessMediato
 
   val log = Logger(getClass)
 
-  val async = actorSystem.actorOf(Props[AccessMediatorActor])
+  val async = actorSystem.actorOf(Props.create(classOf[AccessMediatorActor], this))
 
   class AccessMediatorActor extends Actor {
 

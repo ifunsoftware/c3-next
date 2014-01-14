@@ -41,7 +41,7 @@ import javax.xml.validation.SchemaFactory
 import org.aphreet.c3.platform.remote.rest.response._
 import org.aphreet.c3.platform.remote.rest.response.fs.{FSNodeData, FSNode, FSDirectory}
 import org.aphreet.c3.platform.resource.{DataStream, Resource, ResourceVersion}
-import org.aphreet.c3.platform.search.{SearchResultElement, SearchResultFragment}
+import org.aphreet.c3.platform.search.api.{SearchResultElement, SearchResultFragment}
 import collection.mutable
 import java.util.Date
 

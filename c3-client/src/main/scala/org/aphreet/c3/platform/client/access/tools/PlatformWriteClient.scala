@@ -30,10 +30,10 @@
 
 package org.aphreet.c3.platform.client.access.tools
 
-import org.aphreet.c3.platform.client.common.CLI
-import org.aphreet.c3.platform.client.common.ArgumentType._
-import java.util.concurrent.{Executors, LinkedBlockingQueue}
 import java.io.{OutputStream, BufferedOutputStream, File, FileOutputStream}
+import java.util.concurrent.{Executors, LinkedBlockingQueue}
+import org.aphreet.c3.platform.client.access.tools.worker.WriteWorker
+import org.aphreet.c3.platform.client.common.CLI
 
 class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
 
@@ -51,17 +51,6 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
     )
 
   def run() {
-    //    println(pool.getBytes.toString)
-    //    println(pool.getBytes("UTF-8").toString)
-    //    pool = new String(pool.getBytes("UTF-8"))
-    //    println(pool)
-    //This is kind of magic
-    //This code works for UTF-8 locale
-    //But i don't know what will happen on windows machines
-    //Possibly
-    //pool = new String(pool.getBytes, "UTF-8")
-
-
     writeObjects(HOST_ARG, USER_ARG, KEY_ARG, COUNT_ARG, SIZE_ARG, THREADS_ARG, Map(), OUT_ARG)
   }
 
@@ -71,7 +60,7 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
 
     val queue = new LinkedBlockingQueue[String]
 
-    var writers: List[ResourceWriter] = List()
+    var writers: List[WriteWorker] = List()
 
     val perThread = count / threads
     val rest = count % threads
@@ -82,14 +71,14 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
       } else {
         perThread
       }
-      writers = new ResourceWriter(i, host, user, key, toWrite).size(size).metadata(metadata).queue(queue) :: writers
+      writers = new WriteWorker(i, host, user, key, toWrite).size(size).metadata(metadata).queue(queue) :: writers
     }
 
 
     val executor = Executors.newFixedThreadPool(threads)
 
     val startTime = System.currentTimeMillis
-    var time = startTime;
+    var time = startTime
     var totalWritten = 0
 
     writers.foreach(executor.submit(_))
@@ -117,8 +106,8 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
         time = currentTime
         val writtenResources = written(writers)
 
-        val rate = (writtenResources - totalWritten).asInstanceOf[Float] / (dif)
-        val avgRate = (writtenResources).asInstanceOf[Float] / ((time - startTime) / 1000)
+        val rate = (writtenResources - totalWritten).asInstanceOf[Float] / dif
+        val avgRate = writtenResources.asInstanceOf[Float] / ((time - startTime) / 1000)
 
         totalWritten = writtenResources
 
@@ -141,9 +130,9 @@ class PlatformWriteClient(override val args: Array[String]) extends CLI(args) {
 
   }
 
-  def isRunning(writers: List[ResourceWriter]): Boolean = writers.exists(!_.done)
+  def isRunning(writers: List[WriteWorker]): Boolean = writers.exists(!_.done)
 
-  def written(writers: List[ResourceWriter]): Int = writers.map(e => e.written).foldLeft(0)(_ + _)
+  def written(writers: List[WriteWorker]): Int = writers.map(e => e.written).sum
 
-  def errors(writers: List[ResourceWriter]): Int = writers.map(e => e.errors).foldLeft(0)(_ + _)
+  def errors(writers: List[WriteWorker]): Int = writers.map(e => e.errors).sum
 }

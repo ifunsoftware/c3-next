@@ -30,14 +30,16 @@
 
 package org.aphreet.c3.platform.client.access.tools.worker
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
 
-class DeleteWorker(override val host:String,
-                   override val user:String,
-                   override val key:String,
-                   override val queue:ArrayBlockingQueue[String])
-        extends ConsumerWorker(host, user, key, queue){
+class DeleteWorker(override val host: String,
+                   override val user: String,
+                   override val key: String,
+                   override val queue: BlockingQueue[String])
+  extends ConsumerWorker(host, user, key, queue) {
 
-  override def execute(address:String) = {client.delete(address); 0l}
+  override def execute(address: String) = {
+    client.delete(address); 0l
+  }
 
 }

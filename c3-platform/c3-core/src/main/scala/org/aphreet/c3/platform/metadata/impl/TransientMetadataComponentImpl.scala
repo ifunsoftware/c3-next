@@ -23,7 +23,7 @@ trait TransientMetadataComponentImpl extends TransientMetadataComponent with Com
 
     private val transientMetadataBuildStrategies = new mutable.HashMap[String, TransientMetadataBuildStrategy]()
 
-    val async = actorSystem.actorOf(Props[TransientMetadataManagerActor])
+    val async = actorSystem.actorOf(Props.create(classOf[TransientMetadataManagerActor], this))
 
     {
       logger.info("Starting Transient metadata manager")

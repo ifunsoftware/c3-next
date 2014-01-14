@@ -79,7 +79,7 @@ trait AccessComponentImpl extends AccessComponent with CleanupComponent with Com
 
     lazy val systemId = getSystemId
 
-    val async = actorSystem.actorOf(Props[AccessManagerActor])
+    val async = actorSystem.actorOf(Props.create(classOf[AccessManagerActor], this))
 
     {
       log info "Starting AccessManager"

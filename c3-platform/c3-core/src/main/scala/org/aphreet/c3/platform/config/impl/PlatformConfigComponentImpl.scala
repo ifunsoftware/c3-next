@@ -57,7 +57,7 @@ trait PlatformConfigComponentImpl extends PlatformConfigComponent with Component
 
     val log = Logger(classOf[PlatformConfigComponentImpl])
 
-    val async = actorSystem.actorOf(Props[PlatformConfigManagerActor])
+    val async = actorSystem.actorOf(Props.create(classOf[PlatformConfigManagerActor], this))
 
     private val propertyListeners = new mutable.HashMap[String, Set[PlatformPropertyListener]]
 
