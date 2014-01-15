@@ -34,7 +34,6 @@ trait TagComponentImpl extends TagComponent {
     def destroy(){
       log.info("Stopping TagManager")
       accessMediator ! UnregisterNamedListenerMsg(async, 'tagManager)
-      async ! PoisonPill
     }
 
     override def deleteResource(resource:Resource) {

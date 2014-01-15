@@ -1,8 +1,10 @@
 package org.aphreet.c3.platform.search.es
 
+import akka.actor.{Props, Actor, PoisonPill}
 import java.util
 import org.aphreet.c3.platform.access._
-import org.aphreet.c3.platform.common.msg.RegisterNamedListenerMsg
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.msg.{UnregisterNamedListenerMsg, RegisterNamedListenerMsg}
 import org.aphreet.c3.platform.common.{ComponentLifecycle, Logger}
 import org.aphreet.c3.platform.config.{PlatformConfigManager, PlatformConfigComponent, PropertyChangeEvent, SPlatformPropertyListener}
 import org.aphreet.c3.platform.resource.Resource
@@ -30,6 +32,7 @@ trait SearchComponentImpl extends SearchComponent {
 
   this: ComponentLifecycle
     with AccessComponent
+    with ActorComponent
     with PlatformConfigComponent =>
 
   val searchManager = new SearchManagerImpl(accessMediator, platformConfigManager)
@@ -38,7 +41,7 @@ trait SearchComponentImpl extends SearchComponent {
 
   class SearchManagerImpl(val accessMediator: AccessMediator,
                           val platformConfigManager: PlatformConfigManager)
-    extends SearchManager with WatchedActor  with SPlatformPropertyListener {
+    extends SearchManager  with SPlatformPropertyListener {
 
     val log = Logger(getClass)
 
@@ -46,14 +49,16 @@ trait SearchComponentImpl extends SearchComponent {
 
     val ES_CLUSTER_NAME = "ES_CLUSTER_NAME"
 
-    var esHost:String = "localhost"
+    var esHost = "localhost"
 
-    var esClusterName:String = "c3cluster"
+    var esClusterName = "c3cluster"
 
     var esClient: Option[TransportClient] = None
 
-    val indexName: String = "resources-index"
-    val docName: String = "resource"
+    val indexName = "resources-index"
+    val docName = "resource"
+
+    val async = actorSystem.actorOf(Props.create(classOf[SearchManagerActor], this))
 
     {
       init()
@@ -61,6 +66,7 @@ trait SearchComponentImpl extends SearchComponent {
 
     def destroy() {
       log info "Destroying SearchManager"
+      accessMediator ! UnregisterNamedListenerMsg(async, 'SearchManager)
       esClient.map(_.close())
     }
 
@@ -69,7 +75,6 @@ trait SearchComponentImpl extends SearchComponent {
       val settings = ImmutableSettings.settingsBuilder().put("cluster.name", esClusterName).build()
       val transportClient = new TransportClient(settings)
       esClient = Some(transportClient.addTransportAddress(new InetSocketTransportAddress(esHost, 9300)))
-      this.start()
 
       val exists = esClient.flatMap(client =>
         Some(client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()))
@@ -86,7 +91,7 @@ trait SearchComponentImpl extends SearchComponent {
         log info "mapping changed"
       }
 
-      accessMediator ! RegisterNamedListenerMsg(this, 'SearchManager)
+      accessMediator ! RegisterNamedListenerMsg(async, 'SearchManager)
     }
 
     lazy val mapping = Source.fromInputStream(getClass.getResourceAsStream("/config/index-mapping.json")).getLines().mkString
@@ -130,52 +135,45 @@ trait SearchComponentImpl extends SearchComponent {
 
     def dumpIndex(path: String) {}
 
-    def act() {
+    class SearchManagerActor extends Actor{
+      def receive = {
+        case ResourceAddedMsg(resource, source) =>
+          log.debug("Got resource added {}, {}", resource, source)
+          self ! IndexMsg(resource)
 
-      println("In the receive loop!")
+        case ResourceUpdatedMsg(resource, source) =>
+          log.debug("Got resource updated {}, {}", resource, source)
+          self ! DeleteFromIndexMsg(resource.address)
+          self ! IndexMsg(resource)
 
-      while (true) {
-        receive {
-          case ResourceAddedMsg(resource, source) =>
-            println("Got resource added!")
-            this ! IndexMsg(resource)
+        case ResourceDeletedMsg(address, source) =>
+          log.debug("Got resource deleted {}, {}", address, source)
+          self ! DeleteFromIndexMsg(address)
 
-          case ResourceUpdatedMsg(resource, source) =>
-            println("Got resource updated!")
-            this ! DeleteFromIndexMsg(resource.address)
-            this ! IndexMsg(resource)
+        case DeleteFromIndexMsg(address) =>
+          handling(classOf[Throwable]).by(e => {
+            log.warn("Failed to index resource " + address, e)
+            self ! ResourceDeleteFromIndexFailed(address)
+          }).apply {
+            log.trace("Got request to delete resource from index {}", address)
+            self ! ResourceDeletedFromIndexMsg(address, removeResourceFromIndex(address))
+          }
 
-          case ResourceDeletedMsg(address, source) =>
-            println("Got resource deleted!")
-            this ! DeleteFromIndexMsg(address)
+        case IndexMsg(resource) =>
+          handling(classOf[Throwable]).by(e => {
+            log.warn("Failed to index resource " + resource.address, e)
+            self ! ResourceIndexingFailed(resource.address)
+          }).apply {
+            log.trace("Got request to index {}", resource.address)
 
-          case DeleteFromIndexMsg(address) =>
-            handling(classOf[Throwable]).by(e => {
-              log.warn("Failed to index resource " + address, e)
-              this ! ResourceDeleteFromIndexFailed(address)
-            }).apply {
-              log.trace("Got request to delete resource from index {}", address)
-              this ! ResourceDeletedFromIndexMsg(address, removeResourceFromIndex(address))
+            if (shouldIndexResource(resource)) {
+              log.debug("Indexing resource {}", resource.address)
+              self ! ResourceIndexedMsg(resource.address, indexResource(resource))
+            } else {
+              log.debug("No need to index resource {}", resource.address)
             }
-
-          case IndexMsg(resource) =>
-            handling(classOf[Throwable]).by(e => {
-              log.warn("Failed to index resource " + resource.address, e)
-              this ! ResourceIndexingFailed(resource.address)
-            }).apply {
-              log.trace("Got request to index {}", resource.address)
-
-              if (shouldIndexResource(resource)) {
-                log.debug("Indexing resource {}", resource.address)
-                this ! ResourceIndexedMsg(resource.address, indexResource(resource))
-              } else {
-                log.debug("No need to index resource {}", resource.address)
-              }
-            }
-
-          case _ =>
-            log.warn("Got uknown message")
-        }
+          }
+        case _ => log.warn("Got uknown message")
       }
     }
 

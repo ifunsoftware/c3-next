@@ -5,6 +5,8 @@ import org.osgi.framework.BundleContext
 import org.aphreet.c3.platform.access.{AccessMediator, AccessManager, AccessComponent}
 import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigManager, PlatformConfigComponent}
 import org.aphreet.c3.platform.search.api.SearchManager
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.ActorRefFactory
 
 /**
  * Author: Mikhail Malygin
@@ -15,9 +17,10 @@ class C3SearchActivator extends C3Activator {
 
   def name: String = "c3-search-es"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
-    trait DependencyProvider extends  AccessComponent
+    trait DependencyProvider extends AccessComponent
+    with ActorComponent
     with PlatformConfigComponent {
       val accessManager = getService(context, classOf[AccessManager])
 
@@ -26,6 +29,8 @@ class C3SearchActivator extends C3Activator {
       val platformConfigManager = getService(context, classOf[PlatformConfigManager])
 
       val configPersister = getService(context, classOf[ConfigPersister])
+
+      val actorSystem = actorRefFactory
     }
 
     val module = new Object with DefaultComponentLifecycle

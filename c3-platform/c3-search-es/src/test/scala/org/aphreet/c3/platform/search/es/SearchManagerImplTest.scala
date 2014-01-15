@@ -10,6 +10,8 @@ import org.aphreet.c3.platform.search.api.SearchResultElement
 import org.easymock.EasyMock._
 import scala.collection.Map
 import scala.collection.mutable
+import org.aphreet.c3.platform.actor.ActorComponent
+import akka.actor.ActorSystem
 
 /**
 //hightlight
@@ -42,6 +44,7 @@ import scala.collection.mutable
 
   trait DependencyProvider extends AccessComponent
   with PlatformConfigComponent
+  with ActorComponent
   with DefaultComponentLifecycle{
     val accessManager = createMock(classOf[AccessManager])
 
@@ -50,6 +53,8 @@ import scala.collection.mutable
     val platformConfigManager = createMock(classOf[PlatformConfigManager])
 
     val configPersister = createMock(classOf[ConfigPersister])
+
+    val actorSystem = ActorSystem()
   }
 
   val searchComponent = new Object with DependencyProvider with SearchComponentImpl
