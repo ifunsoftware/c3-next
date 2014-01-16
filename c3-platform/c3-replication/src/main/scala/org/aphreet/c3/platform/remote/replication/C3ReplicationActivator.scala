@@ -11,6 +11,9 @@ import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
 import org.aphreet.c3.platform.auth.{AuthenticationManager, AuthenticationComponent}
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationComponentImpl
+import akka.actor.ActorRefFactory
+import org.aphreet.c3.platform.actor.ActorComponent
+import com.typesafe.config.{ConfigFactory, Config}
 
 /**
  * Author: Mikhail Malygin
@@ -20,10 +23,11 @@ import org.aphreet.c3.platform.remote.replication.impl.ReplicationComponentImpl
 class C3ReplicationActivator extends C3Activator {
   def name: String = "c3-replication"
 
-  def createApplication(context: BundleContext): C3AppHandle = {
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait DependencyProvider extends PlatformConfigComponent
       with DomainComponent
+      with ActorComponent
       with FSComponent
       with AccessComponent
       with StorageComponent
@@ -50,6 +54,8 @@ class C3ReplicationActivator extends C3Activator {
       val configPersister = getService(context, classOf[ConfigPersister])
 
       val filesystemManager = getService(context, classOf[FSManager])
+
+      val actorSystem = actorRefFactory
     }
 
     val module = new Object with DefaultComponentLifecycle
@@ -64,4 +70,8 @@ class C3ReplicationActivator extends C3Activator {
       val app = module
     }
   }
+
+  override def getActorSystemName(context: BundleContext): String = "c3-replication"
+
+  override def getActorSystemConfiguration(context: BundleContext): Config = ConfigFactory.load()
 }

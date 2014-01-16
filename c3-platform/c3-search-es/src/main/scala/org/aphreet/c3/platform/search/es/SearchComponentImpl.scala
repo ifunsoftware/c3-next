@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.search.es
 
-import akka.actor.{Props, Actor, PoisonPill}
+import akka.actor.{Props, Actor}
 import java.util
 import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.actor.ActorComponent

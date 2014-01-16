@@ -34,16 +34,17 @@ import org.aphreet.c3.platform.task.IterableTask
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.Storage
 import org.aphreet.c3.platform.access.ResourceAddedMsg
+import akka.actor.ActorRef
 
-class CopyTask(val storage:Storage, val link:ReplicationLink)
+class CopyTask(val storage:Storage, val link:ActorRef, val localSystemId: String)
   extends IterableTask[Resource](storage){
 
-  override val id = name + "-" + storage.id + "-" + link.localSystemId
+  override val id = name + "-" + storage.id + "-" + localSystemId
 
   override
   def preStart() {
     super.preStart()
-    log.info("Starting copy task from storage " + storage.id + " to target " + link.localSystemId)
+    log.info("Starting copy task from storage " + storage.id + " to target " + localSystemId)
   }
 
   def processElement(element: Resource) {

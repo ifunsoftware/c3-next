@@ -33,11 +33,15 @@ package org.aphreet.c3.platform.remote.test.replication
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.aphreet.c3.platform.remote.replication.impl.data.stats.DelayHistory
+import org.easymock.EasyMock
+import akka.actor.ActorRefFactory
 
 class DelayHistoryTestCase extends TestCase{
 
+  val mock = EasyMock.createMock(classOf[ActorRefFactory])
+
   def testHistory(){
-    val history = new DelayHistory(null)
+    val history = new DelayHistory(mock, null)
 
     history.add(500, 1000)
     history.add(300, 1000) //300

@@ -30,28 +30,28 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
+import akka.actor.{Props, ActorRefFactory, Actor, ActorRef}
+import collection.mutable
 import encryption.DataEncryptor
-import org.aphreet.c3.platform.common.msg.DestroyMsg
-import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
-import org.aphreet.c3.platform.storage.StorageManager
-import actors.{Actor, AbstractActor}
 import org.aphreet.c3.platform.access._
+import org.aphreet.c3.platform.common.{ActorRefHolder, Logger}
+import org.aphreet.c3.platform.domain.{Domain, DomainManager}
+import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
-import org.aphreet.c3.platform.common.{Logger, WatchedActor}
-import org.aphreet.c3.platform.domain.{Domain, DomainManager}
-import collection.mutable
+import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
-import stats.DelayInfoMsg
-import org.aphreet.c3.platform.exception.StorageNotFoundException
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.remote.replication.impl.data.stats.{DelayHistory, DelayInfoMsg}
 
-class ReplicationTargetWorker(val localSystemId: String,
+class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
+                              val localSystemId: String,
                               val storageManager: StorageManager,
                               val accessMediator: AccessMediator,
                               val configurationManager: ConfigurationManager,
                               val domainManager: DomainManager,
                               val statisticsManager: StatisticsManager,
-                              val delayHistory: Actor) extends WatchedActor {
+                              val delayHistory: DelayHistory) extends ActorRefHolder {
 
   val log = Logger(getClass)
 
@@ -61,13 +61,13 @@ class ReplicationTargetWorker(val localSystemId: String,
 
   var useSecureDataConnection = false
 
+  val async = actorSystem.actorOf(Props.create(classOf[ReplicationTargetWorkerActor], this))
+
   def startWithConfig(config: Map[String, ReplicationHost]) = {
 
     log info "Starting replication worker"
 
     updateConfig(config)
-
-    this.start()
   }
 
   def updateConfig(config: Map[String, ReplicationHost]) {
@@ -82,27 +82,20 @@ class ReplicationTargetWorker(val localSystemId: String,
     decryptors = map
   }
 
-  override def act() {
-    loop {
-      react {
+  class ReplicationTargetWorkerActor extends Actor{
 
-        case ProcessAddMsg(bytes, sign, target) => replicateAdd(bytes, sign, target)
+    def receive = {
+      case ProcessAddMsg(bytes, sign, target) => replicateAdd(bytes, sign, target)
 
-        case ProcessUpdateMsg(bytes, sign, target) => replicateUpdate(bytes, sign, target)
+      case ProcessUpdateMsg(bytes, sign, target) => replicateUpdate(bytes, sign, target)
 
-        case ProcessDeleteMsg(address, sign, target) => replicateDelete(address, sign, target)
+      case ProcessDeleteMsg(address, sign, target) => replicateDelete(address, sign, target)
 
-        case ReplicateSystemConfigMsg(configuration, sign) => processConfiguration(configuration, sign)
-
-        case DestroyMsg => {
-          log info "Stopping replication worker"
-          this.exit()
-        }
-      }
+      case ReplicateSystemConfigMsg(configuration, sign) => processConfiguration(configuration, sign)
     }
   }
 
-  private def replicateAdd(bytes: Array[Byte], signature: ReplicationSignature, target: AbstractActor) {
+  private def replicateAdd(bytes: Array[Byte], signature: ReplicationSignature, target: ActorRef) {
 
     log debug "Replicating incoming add"
     try {
@@ -145,7 +138,7 @@ class ReplicationTargetWorker(val localSystemId: String,
     }
   }
 
-  private def replicateUpdate(bytes: Array[Byte], signature: ReplicationSignature, target: AbstractActor) {
+  private def replicateUpdate(bytes: Array[Byte], signature: ReplicationSignature, target: ActorRef) {
 
     log debug "Replicating incoming update"
 
@@ -195,7 +188,7 @@ class ReplicationTargetWorker(val localSystemId: String,
     }
   }
 
-  private def replicateDelete(address: String, signature: ReplicationSignature, target: AbstractActor) {
+  private def replicateDelete(address: String, signature: ReplicationSignature, target: ActorRef) {
     try {
 
       val host = checkSignature(address.getBytes("UTF-8"), signature)
@@ -284,18 +277,18 @@ class ReplicationTargetWorker(val localSystemId: String,
 case class ProcessAddMsg(
                           resource: Array[Byte],
                           signature: ReplicationSignature,
-                          target: AbstractActor
+                          target: ActorRef
                           )
 
 case class ProcessUpdateMsg(
                              resource: Array[Byte],
                              signature: ReplicationSignature,
-                             target: AbstractActor
+                             target: ActorRef
                              )
 
 
 case class ProcessDeleteMsg(
                              address: String,
                              signature: ReplicationSignature,
-                             target: AbstractActor
+                             target: ActorRef
                              )

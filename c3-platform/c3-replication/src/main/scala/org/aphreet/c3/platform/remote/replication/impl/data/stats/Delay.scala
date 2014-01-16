@@ -30,10 +30,10 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data.stats
 
+import akka.actor.{Props, ActorRefFactory, Actor}
 import collection.mutable
-import org.aphreet.c3.platform.common.WatchedActor
-import org.aphreet.c3.platform.common.msg.DestroyMsg
 import org.aphreet.c3.platform.statistics.{SetStatisticsMsg, StatisticsManager}
+import org.aphreet.c3.platform.common.ActorRefHolder
 
 case class Delay(time: Long) {
 
@@ -47,13 +47,12 @@ case class Delay(time: Long) {
   }
 }
 
-class DelayHistory(val statisticsManager: StatisticsManager) extends WatchedActor{
+class DelayHistory(val actorSystem: ActorRefFactory, val statisticsManager: StatisticsManager) extends ActorRefHolder{
 
   var history: mutable.Queue[Delay] = mutable.Queue(new Delay(roundTime(0)))
 
-  {
-    this.start()
-  }
+  val async = actorSystem.actorOf(Props.create(classOf[DelayHistoryActor], this))
+
   def add(delay: Long, timestamp: Long){
     val time = roundTime(timestamp)
 
@@ -64,20 +63,13 @@ class DelayHistory(val statisticsManager: StatisticsManager) extends WatchedActo
     history.last.update(delay)
   }
 
-  def destroy(){
-    this ! DestroyMsg
-  }
-
-  override def act(){
-    loop {
-      react{
-        case DelayInfoMsg(timestamp, delay) => this.add(delay, timestamp)
-        case DestroyMsg => this.exit()
-      }
+  class DelayHistoryActor extends Actor {
+    def receive = {
+      case DelayInfoMsg(timestamp, delay) => add(delay, timestamp)
     }
   }
 
-  private def roundTime(time: Long): Long = (time / 1000)
+  private def roundTime(time: Long): Long = time / 1000
 
   private def append(time: Long){
     history.enqueue(new Delay(time))

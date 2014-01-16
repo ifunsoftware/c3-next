@@ -4,5 +4,5 @@ Bundle-Name: C3 Search API
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.search.api
 Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
- com.typesafe.akka.osgi;version="[2.2.3,3.0.0)",
+ com.typesafe.akka.osgi;version="[2.2.3,3.0.0)"
 Export-Package: org.aphreet.c3.platform.search.api

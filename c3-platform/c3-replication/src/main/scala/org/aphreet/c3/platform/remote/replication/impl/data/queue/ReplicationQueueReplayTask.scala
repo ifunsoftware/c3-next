@@ -30,18 +30,18 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data.queue
 
-import org.aphreet.c3.platform.task.Task
-import org.aphreet.c3.platform.storage.StorageManager
-import actors.Actor
-import org.aphreet.c3.platform.resource.ResourceAddress
+import akka.actor.ActorRef
 import org.aphreet.c3.platform.exception.StorageNotFoundException
-import org.aphreet.c3.platform.remote.replication.impl.data._
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationManagerImpl
+import org.aphreet.c3.platform.remote.replication.impl.data._
+import org.aphreet.c3.platform.resource.ResourceAddress
+import org.aphreet.c3.platform.storage.StorageManager
+import org.aphreet.c3.platform.task.Task
 
 class ReplicationQueueReplayTask(val replicationManager:ReplicationManagerImpl,
                                  val storageManager:StorageManager,
                                  val queueStorage:ReplicationQueueStorage,
-                                 val sourceActor:Actor) extends Task {
+                                 val sourceActor:ActorRef) extends Task {
 
   var iterator: ReplicationQueueIterator = _
 

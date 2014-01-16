@@ -5,8 +5,10 @@ Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.aphreet.c3.platform.replication
 Bundle-Activator: org.aphreet.c3.platform.remote.replication.C3ReplicationActivator
 Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
- org.scala-lang.scala-actors;version="[2.10.1,2.11)",
  com.springsource.com.sleepcat.je;version="[5.0.58,5.0.58]",
+ com.typesafe.config;version="[1.0.0,2.0.0)",
+ com.typesafe.akka.osgi;version="[2.2.3,3.0.0)",
+ com.typesafe.akka.remote;version="[2.2.3,3.0.0)",
  eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  com.springsource.org.apache.commons.io;version="[1.4.0,1.4.0]",
  com.springsource.org.apache.commons.codec;version="[1.4.0,1.4.0]",

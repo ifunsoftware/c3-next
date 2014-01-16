@@ -29,10 +29,10 @@
  */
 package org.aphreet.c3.platform.remote.replication
 
-import org.aphreet.c3.platform.common.WatchedActor
+import org.aphreet.c3.platform.common.ActorRefHolder
 
 
-trait ReplicationManager extends WatchedActor {
+trait ReplicationManager {
 
   def listFailedReplicationQueues:Array[String]
 

@@ -37,4 +37,6 @@ object ReplicationConstants {
   val REPLICATION_QUEUE_KEY = "c3.remote.replication.queue"
   val REPLICATION_SECURE_KEY = "c3.remote.replication.secure_data"
 
+  object ActorInitialized
+
 }

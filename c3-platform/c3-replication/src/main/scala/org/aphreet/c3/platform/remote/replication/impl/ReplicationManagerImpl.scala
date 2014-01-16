@@ -29,84 +29,67 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
-import actors.remote.RemoteActor
+import akka.actor.{Props, Actor, ActorRefFactory}
 import config._
 import data._
-import encryption.{DataEncryptor, AsymmetricDataEncryptor, AsymmetricKeyGenerator}
 import java.io.File
 import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common._
-import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.exception.{PlatformException, ConfigurationException}
+import org.aphreet.c3.platform.remote.replication.ReplicationHost
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
-import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsg
-import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateKeyExchangeMsgReply
-import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterSourceMsg
-import org.aphreet.c3.platform.remote.replication.impl.config.NegotiateRegisterSourceMsgReply
-import org.aphreet.c3.platform.remote.replication.impl.data.QueuedTasksReply
-import org.aphreet.c3.platform.remote.replication.impl.data.queue.{ReplicationQueueDumpTask, ReplicationQueueStorageImpl, ReplicationQueueReplayTask, ReplicationQueueStorage}
-import org.aphreet.c3.platform.remote.replication.{ReplicationHost, ReplicationException, ReplicationManager}
+import org.aphreet.c3.platform.remote.replication.impl.data.queue._
+import org.aphreet.c3.platform.remote.replication.{ReplicationException, ReplicationManager}
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
 import org.aphreet.c3.platform.task.TaskManager
 import scala.Some
-import scala.actors.remote.Node
 
-class ReplicationManagerImpl(val accessMediator: AccessMediator,
-                              val storageManager: StorageManager,
-                              val taskManager: TaskManager,
-                              val domainManager: DomainManager,
-                              val statisticsManager: StatisticsManager,
-                              val platformConfigManager: PlatformConfigManager,
-                              val configPersister: ConfigPersister,
-                              val configurationManager: ConfigurationManager,
-                              val replicationPortRetriever: ReplicationPortRetriever) extends ReplicationManager with SPlatformPropertyListener with ComponentGuard{
-
-  private val NEGOTIATE_MSG_TIMEOUT = 60 * 1000 //Negotiate timeout
+class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
+                             val accessMediator: AccessMediator,
+                             val storageManager: StorageManager,
+                             val taskManager: TaskManager,
+                             val domainManager: DomainManager,
+                             val statisticsManager: StatisticsManager,
+                             val platformConfigManager: PlatformConfigManager,
+                             val configPersister: ConfigPersister,
+                             val configurationManager: ConfigurationManager,
+                             val replicationPortRetriever: ReplicationPortRetriever) extends ReplicationManager with SPlatformPropertyListener with ComponentGuard {
 
   val log = Logger(getClass)
 
-  var localSystemId:String = ""
+  var localSystemId: String = ""
 
   private var currentTargetConfig = Map[String, ReplicationHost]()
 
   private var currentSourceConfig = Map[String, ReplicationHost]()
 
-  var replicationQueuePath:Path = null
-
-  var replicationQueueStorage:ReplicationQueueStorage = null
+  val replicationQueueStorageHolder = new ReplicationQueueStorageHolderImpl
 
   var isTaskRunning = false
 
-  var sourceReplicationActor = new ReplicationSenderActor(accessMediator, statisticsManager,
-                                                      configurationManager, this)
+  var replicationSenderActor = new ReplicationSender(actorSystem, accessMediator, statisticsManager,
+    configurationManager, replicationQueueStorageHolder)
 
-  val localReplicationActor = new ReplicationAcceptorActor(accessMediator,
-                              storageManager, configurationManager, domainManager, statisticsManager, sourceReplicationActor)
-
+  val localReplicationActor = new ReplicationAcceptor(actorSystem, accessMediator,
+    storageManager, configurationManager, domainManager, statisticsManager)
 
 
   val sourcesConfigAccessor = new ReplicationSourcesConfigAccessor(configPersister)
 
   val targetsConfigAccessor = new ReplicationTargetsConfigAccessor(configPersister)
 
-
   {
-
-    //Overriding classLoader
-    RemoteActor.classLoader = getClass.getClassLoader
-
-
     log info "Starting replication manager..."
 
-    val replicationPort = platformConfigManager.getPlatformProperties.get(REPLICATION_PORT_KEY) match{
+    val replicationPort = platformConfigManager.getPlatformProperties.get(REPLICATION_PORT_KEY) match {
       case Some(x) => x.toInt
       case None => replicationPortRetriever.getReplicationPort
     }
 
-    localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match{
+    localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(x) => x
       case None => throw new ConfigurationException("Local system ID is not found")
     }
@@ -115,169 +98,70 @@ class ReplicationManagerImpl(val accessMediator: AccessMediator,
     localReplicationActor.startWithConfig(currentSourceConfig, replicationPort, localSystemId)
 
     currentTargetConfig = targetsConfigAccessor.load
-    sourceReplicationActor.startWithConfig(currentTargetConfig, localSystemId)
-
-    runQueueMaintainer()
-
-    this.start()
+    replicationSenderActor.startWithConfig(currentTargetConfig, localSystemId)
 
     platformConfigManager ! RegisterMsg(this)
 
     log info "Replicationg manager started"
   }
 
-  def destroy(){
+  def destroy() {
     log info "Destroying ReplicationManager"
 
-    this ! DestroyMsg
-  }
-
-  override def act(){
-    loop{
-      react{
-        case QueuedTasks => {
-          log debug "Getting list of queued resources"
-          sourceReplicationActor ! QueuedTasks
-        }
-
-        case QueuedTasksReply(tasks) => {
-          log debug "Got list of queued resources"
-
-          if(replicationQueueStorage != null){
-
-            replicationQueueStorage.add(tasks)
-
-
-          }else{
-            log warn "Replication queue path is not set. Queue will be lost!"
-          }
-        }
-
-        case StoragePurgedMsg(source) => {
-          replicationQueueStorage.clear()
-        }
-
-        case SendConfigurationMsg => {
-          log debug "Sending configuration to targets"
-          sourceReplicationActor ! SendConfigurationMsg
-        }
-
-        case DestroyMsg => {
-
-          letItFall{
-            platformConfigManager ! UnregisterMsg(this)
-          }
-
-          sourceReplicationActor.destroy()
-          localReplicationActor.destroy()
-
-          log info "RemoteManagerActor stopped"
-          this.exit()
-
-        }
-      }
+    letItFall {
+      platformConfigManager ! UnregisterMsg(this)
     }
   }
 
-  def listFailedReplicationQueues:Array[String] = {
-    if(replicationQueuePath != null){
-
-      val file = replicationQueuePath.file
-
-      if(file.isDirectory){
-        file.list
-      }else{
-        throw new ConfigurationException("Replication queue path is file")
-      }
-
-    }else{
-      throw new ConfigurationException("Replication queue path is not set")
-    }
+  def listFailedReplicationQueues: Array[String] = {
+    Array()
   }
 
-  def showFailedReplicationQueue(index:Int):Array[String] = {
+  def showFailedReplicationQueue(index: Int): Array[String] = {
     throw new PlatformException("Is not implemented yet")
   }
 
-  def retryFailedReplicationQueue(index:Int) {
+  def retryFailedReplicationQueue(index: Int) {
     throw new PlatformException("Is not implemented yet")
   }
 
-  def listReplicationTargets:Array[ReplicationHost] = {
+  def listReplicationTargets: Array[ReplicationHost] = {
     currentTargetConfig.values.toArray
   }
 
-  def getReplicationTarget(systemId:String):ReplicationHost = {
+  def getReplicationTarget(systemId: String): ReplicationHost = {
     currentTargetConfig.get(systemId) match {
       case Some(host) => host
       case None => null
     }
   }
 
-  def establishReplication(host:String, port:Int, user:String, password:String) {
+  def establishReplication(host: String, port: Int, user: String, password: String) {
+    val replicationHost = new ReplicationNegotiatorClient(actorSystem, localSystemId, configurationManager)
+      .establishReplication(host, port, user, password)
 
-    val keyPair = AsymmetricKeyGenerator.generateKeys
-
-    val node = Node(host, port)
-
-    val negotiator = RemoteActor.select(node, 'ReplicationNegotiator)
-
-    val keyExchangeReply = negotiator !?(NEGOTIATE_MSG_TIMEOUT, NegotiateKeyExchangeMsg(localSystemId, keyPair._1)) match {
-      case Some(reply) => reply.asInstanceOf[NegotiateKeyExchangeMsgReply]
-      case None => throw new ReplicationException("Failed to perform key exchange")
-    }
-
-    //base64-encoded key
-    val sharedKey = new String(AsymmetricDataEncryptor.decrypt(keyExchangeReply.encryptedSharedKey, keyPair._2), "UTF-8")
-
-    val dataEncryptor = new DataEncryptor(sharedKey)
-
-    val sourceConfiguration = configurationManager.getSerializedConfiguration
-
-    val registerSourceReply = negotiator !?(NEGOTIATE_MSG_TIMEOUT,
-      NegotiateRegisterSourceMsg(
-        localSystemId,
-        dataEncryptor.encrypt(sourceConfiguration),
-        dataEncryptor.encrypt(user),
-        dataEncryptor.encrypt(password)
-      )) match {
-      case Some(reply) => reply.asInstanceOf[NegotiateRegisterSourceMsgReply]
-      case None => throw new ReplicationException("Failed to perform configuration exchange")
-    }
-
-    if(registerSourceReply.status == "OK"){
-      val remoteConfiguration = dataEncryptor.decryptString(registerSourceReply.configuration)
-      val platformInfo = configurationManager.deserializeConfiguration(remoteConfiguration)
-
-      val host = platformInfo.host
-      host.encryptionKey = sharedKey
-
-      registerReplicationTarget(host)
-
-    }else{
-      throw new ReplicationException("Failed to establish replication")
-    }
+    registerReplicationTarget(replicationHost)
   }
 
-  def copyToTarget(targetId:String){
+  def copyToTarget(targetId: String) {
 
     log.info("Creating tasks for copying data to target " + targetId)
 
-    sourceReplicationActor
+    replicationSenderActor
       .createCopyTasks(targetId, storageManager.listStorages) match {
       case Some(tasks) => tasks.foreach(taskManager.submitTask(_))
       case None => throw new ReplicationException("Can't find target with id " + targetId)
     }
   }
 
-  def cancelReplication(id:String) {
+  def cancelReplication(id: String) {
     targetsConfigAccessor.update(config => config - id)
     currentTargetConfig = targetsConfigAccessor.load
 
-    sourceReplicationActor.removeReplicationTarget(id)
+    replicationSenderActor.removeReplicationTarget(id)
   }
 
-  def registerReplicationSource(host:ReplicationHost) {
+  def registerReplicationSource(host: ReplicationHost) {
     sourcesConfigAccessor.update(config => config + ((host.systemId, host)))
 
     currentSourceConfig = sourcesConfigAccessor.load
@@ -286,21 +170,17 @@ class ReplicationManagerImpl(val accessMediator: AccessMediator,
     log info "Registered replication source " + host.hostname + " with id " + host.systemId
   }
 
-  private def registerReplicationTarget(host:ReplicationHost) {
+  private def registerReplicationTarget(host: ReplicationHost) {
 
     targetsConfigAccessor.update(config => config + ((host.systemId, host)))
     currentTargetConfig = targetsConfigAccessor.load
 
-    sourceReplicationActor.addReplicationTarget(host)
+    replicationSenderActor.addReplicationTarget(host)
 
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
   }
 
-  private def runQueueMaintainer() {
-    new ReplicationMaintainThread(this).start()
-  }
-
-  override def defaultValues:Map[String, String] =
+  override def defaultValues: Map[String, String] =
     Map(HTTP_PORT_KEY -> "7373",
       HTTPS_PORT_KEY -> "7374",
       REPLICATION_PORT_KEY -> replicationPortRetriever.getReplicationPort.toString,
@@ -308,18 +188,14 @@ class ReplicationManagerImpl(val accessMediator: AccessMediator,
       REPLICATION_SECURE_KEY -> "false",
       Constants.C3_PUBLIC_HOSTNAME -> "localhost")
 
-  override def propertyChanged(event:PropertyChangeEvent) {
+  override def propertyChanged(event: PropertyChangeEvent) {
 
     event.name match {
       case REPLICATION_QUEUE_KEY =>
-        if(event.newValue.isEmpty){
-          replicationQueuePath = null
-        }else{
-          replicationQueuePath = new Path(event.newValue)
-          if(replicationQueueStorage != null){
-            replicationQueueStorage.close()
-          }
-          replicationQueueStorage = new ReplicationQueueStorageImpl(replicationQueuePath)
+        if (event.newValue.isEmpty) {
+          replicationQueueStorageHolder.updateStoragePath(None)
+        } else {
+          replicationQueueStorageHolder.updateStoragePath(Some(Path(event.newValue)))
         }
 
       case REPLICATION_SECURE_KEY =>
@@ -331,18 +207,16 @@ class ReplicationManagerImpl(val accessMediator: AccessMediator,
   }
 
 
-
   override def replayReplicationQueue() {
-    this.synchronized{
-      if(isTaskRunning) throw new ReplicationException("Task already started")
-      if(replicationQueueStorage != null){
-        val task = new ReplicationQueueReplayTask(this, storageManager, replicationQueueStorage, sourceReplicationActor)
+    this.synchronized {
+      if (isTaskRunning) throw new ReplicationException("Task already started")
+
+      replicationQueueStorageHolder.storage.map{storage =>
+        val task = new ReplicationQueueReplayTask(this, storageManager, storage, replicationSenderActor.async)
 
         taskManager.submitTask(task)
         isTaskRunning = true
         log info "Replay task submitted"
-      }else{
-        throw new ReplicationException("Replication queue storage is not initialized")
       }
     }
   }
@@ -350,48 +224,16 @@ class ReplicationManagerImpl(val accessMediator: AccessMediator,
   override def resetReplicationQueue() {
     this.synchronized {
       log.info("Clearing replication queue")
-      replicationQueueStorage.clear()
+      replicationQueueStorageHolder.storage.map(_.clear())
     }
   }
 
   def dumpReplicationQueue(path: String) {
-    log.info("Dumping replication queue to path: " + path)
-    taskManager.submitTask(new ReplicationQueueDumpTask(replicationQueueStorage, Path(path)))
-  }
-}
-
-class ReplicationMaintainThread(val manager: ReplicationManager) extends Thread{
-
-  val log = Logger(getClass)
-
-  {
-    setDaemon(true)
-  }
-
-  override def run() {
-
-    log.info("Starting replication maintain thread")
-
-    while(!isInterrupted){
-
-      Thread.sleep(5 * 60 * 1000l)
-
-      triggerConfigExchange()
-      triggerQueueProcess()
+    replicationQueueStorageHolder.storage.map{
+      storage => log.info("Dumping replication queue to path: " + path)
+        taskManager.submitTask(new ReplicationQueueDumpTask(storage, Path(path)))
     }
-
-    log.info("Replication maintain thread has completed")
-  }
-
-  def triggerConfigExchange(){
-    log debug "Sending configuration to targets"
-
-    manager ! SendConfigurationMsg
-  }
-
-  def triggerQueueProcess(){
-    log debug "Getting replication queue"
-
-    manager ! QueuedTasks
   }
 }
+
+
