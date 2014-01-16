@@ -52,7 +52,9 @@ import scala.collection.mutable
     val configPersister = createMock(classOf[ConfigPersister])
   }
 
-  val searchComponent = new Object with DependencyProvider with SearchComponentImpl
+  val searchComponent = new Object with DependencyProvider
+    with ESTransportClientFactoryProvider
+    with SearchComponentImpl
 
   val searchManagerImpl = searchComponent.searchManager
 
