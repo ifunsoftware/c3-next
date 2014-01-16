@@ -1,9 +1,8 @@
 package akka.cluster
 
 /**
- * Author: Mikhail Malygin
- * Date:   1/16/14
- * Time:   7:16 PM
+ * This class is here just because of bug in akka-osgi, that includes
+ * cluster configuration even if we don't have akka-cluster module
  */
 trait ClusterMessage {
 
