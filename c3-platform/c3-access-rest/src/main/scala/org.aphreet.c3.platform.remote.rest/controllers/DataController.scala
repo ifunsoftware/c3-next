@@ -30,9 +30,7 @@
 
 package org.aphreet.c3.platform.remote.rest.controllers
 
-import scala.collection.mutable
 import java.io.{FileOutputStream, File, BufferedOutputStream}
-import java.util.UUID
 import javax.servlet.ServletContext
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.commons.codec.binary.Base64
@@ -55,8 +53,9 @@ import org.aphreet.c3.platform.resource.{DataStream, ResourceVersion, Resource}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.ServletContextAware
 import scala.Some
+import scala.collection.mutable
 
-class DataController extends AbstractController with ServletContextAware with RestController{
+class DataController extends AbstractController with ServletContextAware with RestController {
 
   var servletContext: ServletContext = _
 
@@ -95,8 +94,9 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       resp.reset()
 
-      resource.systemMetadata(Node.NODE_FIELD_NAME).foreach{value =>
-        resp.setHeader("Content-Disposition", "inline; filename=\"" + value + "\"")
+      resource.systemMetadata(Node.NODE_FIELD_NAME).foreach {
+        value =>
+          resp.setHeader("Content-Disposition", "inline; filename=\"" + value + "\"")
       }
 
       resp.setStatus(HttpServletResponse.SC_OK)
@@ -118,39 +118,39 @@ class DataController extends AbstractController with ServletContextAware with Re
     }
   }
 
-  protected def sendDirectoryContents(node: Node, childMeta:String, needsData:Boolean, accessTokens: AccessTokens, request: HttpServletRequest, response: HttpServletResponse) {
+  protected def sendDirectoryContents(node: Node, childMeta: String, needsData: Boolean, accessTokens: AccessTokens, request: HttpServletRequest, response: HttpServletResponse) {
     accessTokens.checkAccess(node.resource)
 
     val directory = node.asInstanceOf[Directory]
 
-    val allMetaKeys:Set[String] = if(childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
+    val allMetaKeys: Set[String] = if (childMeta != null) childMeta.split(",").filter(!_.isEmpty).toSet else Set()
 
     val sysMetaKeys = allMetaKeys.filter(_.startsWith("system.")).map(_.replaceFirst("system\\.", ""))
     val metaKeys = allMetaKeys.filter(!_.startsWith("system."))
 
-    val fsDirectory = if(!allMetaKeys.isEmpty || needsData){
+    val fsDirectory = if (!allMetaKeys.isEmpty || needsData) {
 
-      val children:List[Option[FSNode]] = directory.children.map((child:NodeRef) => {
+      val children: List[Option[FSNode]] = directory.children.map((child: NodeRef) => {
 
         accessManager.getOption(child.address) match {
           case Some(resource) => {
             Some(new FSNode(child,
               buildMetadataMap(resource, metaKeys, sysMetaKeys),
-              if(needsData){
+              if (needsData) {
                 resource.versions.last.systemMetadata("c3.data.length") match {
-                  case Some(value) => if(value.toLong < 10240) resource.versions.last else null
+                  case Some(value) => if (value.toLong < 10240) resource.versions.last else null
                   case None => null
                 }
               } else
                 null
-              ))
+            ))
           }
           case None => None
         }
       }).toList
 
       FSDirectory.fromNodeAndChildren(directory, children.flatten)
-    }else{
+    } else {
       FSDirectory.fromNode(directory)
     }
 
@@ -167,19 +167,19 @@ class DataController extends AbstractController with ServletContextAware with Re
     map ++= resource.systemMetadata.asMap.filterKeys(sysMetaKeys.contains)
 
     //This is actually a hack, but we don't have a created field in metadata
-    if(sysMetaKeys.contains("c3.created")){
+    if (sysMetaKeys.contains("c3.created")) {
       map.put("c3.created", resource.createDate.getTime.toString)
     }
 
-    if(sysMetaKeys.contains("c3.data.length")){
+    if (sysMetaKeys.contains("c3.data.length")) {
       map.put("c3.data.length", resource.versions.last.systemMetadata.asMap.getOrElse(Resource.MD_DATA_LENGTH, "-1"))
     }
 
-    if(sysMetaKeys.contains("c3.versions.number")){
+    if (sysMetaKeys.contains("c3.versions.number")) {
       map.put("c3.versions.number", resource.versions.size.toString)
     }
 
-    if(sysMetaKeys.contains("c3.data.hash")){
+    if (sysMetaKeys.contains("c3.data.hash")) {
       map.put("c3.data.hash", resource.versions.last.systemMetadata.asMap.getOrElse(ResourceVersion.RESOURCE_VERSION_HASH, ""))
     }
 
@@ -265,8 +265,7 @@ class DataController extends AbstractController with ServletContextAware with Re
           if (item.isInMemory) {
             data = DataStream.create(item.get)
           } else {
-            tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
-            factory.getFileCleaningTracker.track(tmpFile, request)
+            tmpFile = createTempFile()
             item.write(tmpFile)
             data = DataStream.create(tmpFile)
           }
@@ -300,40 +299,44 @@ class DataController extends AbstractController with ServletContextAware with Re
 
       val metadata = getMetadata(request)
 
-      if(request.getContentLength > 0) {
-        val factory = createDiskFileItemFactory
+      var tmpFile: File = null
 
-        val tmpFile = new File(factory.getRepository, UUID.randomUUID.toString)
+      try {
+        if (request.getContentLength > 0) {
+          tmpFile = createTempFile()
 
-        factory.getFileCleaningTracker.track(tmpFile, request)
+          val os = new FileOutputStream(tmpFile)
 
-        val os = new FileOutputStream(tmpFile)
+          try {
+            IOUtils.copy(request.getInputStream, os)
+          } finally {
+            os.close()
+          }
 
-        try{
-          IOUtils.copy(request.getInputStream, os)
-        }finally {
-          os.close()
+          val version = new ResourceVersion
+          version.data = DataStream.create(tmpFile)
+          resource.addVersion(version)
         }
 
-        val version = new ResourceVersion
-        version.data = DataStream.create(tmpFile)
-        resource.addVersion(version)
+        getMetadataToDelete(request).foreach(resource.metadata.remove)
+
+        resource.metadata ++= metadata
+
+        accessTokens.updateMetadata(resource)
+        log debug "Executing callback"
+        runResourceStore(resource, request, processStore)
+        log debug "Upload done"
+      } finally {
+        if (tmpFile != null) {
+          tmpFile.delete()
+        }
       }
-
-      getMetadataToDelete(request).foreach(resource.metadata.remove)
-
-      resource.metadata ++= metadata
-
-      accessTokens.updateMetadata(resource)
-      log debug "Executing callback"
-      runResourceStore(resource, request, processStore)
-      log debug "Upload done"
     }
   }
 
-  protected def runResourceStore(resource:Resource, request:HttpServletRequest, callback : () => Unit){
-    if(request.getMethod == "POST"){
-      if(resource.versions.isEmpty){
+  protected def runResourceStore(resource: Resource, request: HttpServletRequest, callback: () => Unit) {
+    if (request.getMethod == "POST") {
+      if (resource.versions.isEmpty) {
         throw new WrongRequestException("No data in create resource request")
       }
     }
@@ -388,5 +391,9 @@ class DataController extends AbstractController with ServletContextAware with Re
     (for {
       header <- metadataHeaders
     } yield header.toString).toList
+  }
+
+  private def createTempFile(): File = {
+    File.createTempFile("upload_", ".tmp")
   }
 }

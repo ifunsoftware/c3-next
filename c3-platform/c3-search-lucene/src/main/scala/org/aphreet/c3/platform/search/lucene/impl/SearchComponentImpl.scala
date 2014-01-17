@@ -195,7 +195,6 @@ trait SearchComponentImpl extends SearchComponent{
     }
 
     def defaultValues: Map[String, String] = Map(
-      MAX_TMP_INDEX_SIZE -> "100",
       INDEX_CREATE_TIMESTAMP -> "0",
       EXTRACT_DOCUMENT_CONTENT -> "false",
       INDEX_PATH -> new File(platformConfigManager.dataDir, "index").getAbsolutePath,
@@ -204,7 +203,7 @@ trait SearchComponentImpl extends SearchComponent{
     )
 
     override def listeningForProperties: Array[String] = Array(
-      INDEX_PATH, MAX_TMP_INDEX_SIZE, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT, TIKA_HOST, THROTTLE_BACKGROUND_INDEX
+      INDEX_PATH, INDEX_CREATE_TIMESTAMP, EXTRACT_DOCUMENT_CONTENT, TIKA_HOST, THROTTLE_BACKGROUND_INDEX
     )
 
     def propertyChanged(event: PropertyChangeEvent) {
