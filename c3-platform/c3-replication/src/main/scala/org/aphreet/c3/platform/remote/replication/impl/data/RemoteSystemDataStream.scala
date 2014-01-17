@@ -29,30 +29,30 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import java.nio.channels.Channels
 import java.io._
-import org.apache.commons.httpclient.methods.GetMethod
-import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.resource.{DataStream, AbstractFileDataStream}
-import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
+import java.nio.channels.Channels
 import java.text.SimpleDateFormat
 import java.util.Date
+import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.commons.httpclient.{Header, HttpMethodBase, HttpClient, HttpStatus}
 import org.aphreet.c3.platform.auth.HashUtil
 import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
+import org.aphreet.c3.platform.resource.{DataStream, AbstractFileDataStream}
 
-class RemoteSystemDataStream(val host:ReplicationHost,
-                              val secure:Boolean,
-                              val address:String,
-                              val version:Int,
-                              val domainId:String,
-                              val domainKey:String) extends AbstractFileDataStream{
+class RemoteSystemDataStream(val host: ReplicationHost,
+                             val secure: Boolean,
+                             val address: String,
+                             val version: Int,
+                             val domainId: String,
+                             val domainKey: String) extends AbstractFileDataStream {
 
   private var created = false
 
-  override def getFile:File = {
+  override def getFile: File = {
 
-    val file:File = File.createTempFile(address, version.toString)
+    val file: File = File.createTempFile(address, version.toString)
 
     file.deleteOnExit()
 
@@ -66,33 +66,33 @@ class RemoteSystemDataStream(val host:ReplicationHost,
     getMethod.addRequestHeader(header)
 
     //Check if we work with anonymous domain
-    if(!domainKey.isEmpty){
+    if (!domainKey.isEmpty) {
       addAuthHeader(getMethod, requestUri, domainId, domainKey)
     }
 
-    try{
+    try {
       val status = new HttpClient().executeMethod(getMethod)
       status match {
         case HttpStatus.SC_OK => {
           val fileChannel = new FileOutputStream(file).getChannel
           val inChannel = Channels.newChannel(new BufferedInputStream(getMethod.getResponseBodyAsStream))
-          try{
+          try {
             fileChannel.transferFrom(inChannel, 0, getMethod.getResponseContentLength)
-          }finally{
+          } finally {
             fileChannel.close()
             inChannel.close()
           }
         }
         case _ => throw new StorageException("Failed to get resource data, code " + status)
       }
-    }finally{
+    } finally {
       getMethod.releaseConnection()
     }
 
     file
   }
 
-  def addAuthHeader(method:HttpMethodBase, resource:String, domainId:String, domainKey:String) {
+  def addAuthHeader(method: HttpMethodBase, resource: String, domainId: String, domainKey: String) {
 
     val dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z")
 
@@ -109,21 +109,21 @@ class RemoteSystemDataStream(val host:ReplicationHost,
     method.addRequestHeader(hostHeader)
   }
 
-  override def copy:DataStream = new RemoteSystemDataStream(host, secure, address, version, domainId, domainKey)
+  override def copy: DataStream = new RemoteSystemDataStream(host, secure, address, version, domainId, domainKey)
 
-  override def finalize(){
-    if(created){
-      try{
+  override def finalize() {
+    if (created) {
+      try {
         file.delete
         RemoteSystemDataWrapper.log.debug("Deleted tmp file for ra " + address)
-      }catch{
+      } catch {
         case e: Throwable => e.printStackTrace()
       }
     }
   }
 }
 
-object RemoteSystemDataWrapper{
+object RemoteSystemDataWrapper {
 
   val log = Logger(getClass)
 

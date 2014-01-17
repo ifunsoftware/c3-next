@@ -29,13 +29,13 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl.data.encryption
 
-import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64
 
-class DataEncryptor(val sharedKey:Array[Byte]) {
+class DataEncryptor(val sharedKey: Array[Byte]) {
 
-  def this(base64EncodedKey:String) = this(Base64.decodeBase64(base64EncodedKey.getBytes))
+  def this(base64EncodedKey: String) = this(Base64.decodeBase64(base64EncodedKey.getBytes))
 
   private val keySpec = new SecretKeySpec(sharedKey, "AES")
 
@@ -52,19 +52,19 @@ class DataEncryptor(val sharedKey:Array[Byte]) {
     cipher
   }
 
-  def encrypt(data:Array[Byte]):Array[Byte] = {
+  def encrypt(data: Array[Byte]): Array[Byte] = {
     encCipher.doFinal(data)
   }
 
-  def encrypt(data:String):Array[Byte] = {
+  def encrypt(data: String): Array[Byte] = {
     encrypt(data.getBytes("UTF-8"))
   }
 
-  def decrypt(data:Array[Byte]):Array[Byte] = {
+  def decrypt(data: Array[Byte]): Array[Byte] = {
     decCipher.doFinal(data)
   }
 
-  def decryptString(data:Array[Byte]):String = {
+  def decryptString(data: Array[Byte]): String = {
     new String(decrypt(data), "UTF-8")
   }
 }

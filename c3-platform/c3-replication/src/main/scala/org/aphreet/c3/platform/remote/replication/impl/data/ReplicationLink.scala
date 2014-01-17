@@ -30,7 +30,6 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import scala.language.postfixOps
 import akka.actor.{Terminated, ActorRef, Actor}
 import akka.util.Timeout
 import encryption.DataEncryptor
@@ -38,16 +37,17 @@ import java.util.concurrent.TimeUnit
 import org.aphreet.c3.platform.access.{ResourceUpdatedMsg, ResourceDeletedMsg, ResourceAddedMsg}
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import scala.collection.mutable
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
+import scala.concurrent.duration._
+import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
-class ReplicationLink(val localSystemId:String,
-                      val host:ReplicationHost,
-                      val statisticsManager:StatisticsManager) extends Actor{
+class ReplicationLink(val localSystemId: String,
+                      val host: ReplicationHost,
+                      val statisticsManager: StatisticsManager) extends Actor {
 
   implicit val timeout = Timeout(1, TimeUnit.MINUTES)
 
@@ -65,12 +65,12 @@ class ReplicationLink(val localSystemId:String,
 
   import ExecutionContext.Implicits.global
 
-  override def preStart(){
+  override def preStart() {
     log info "Establishing replication link to " + host.systemId
   }
 
-  override def postStop(){
-    if(remoteActor != null){
+  override def postStop() {
+    if (remoteActor != null) {
       context.unwatch(remoteActor)
     }
   }
@@ -79,7 +79,7 @@ class ReplicationLink(val localSystemId:String,
     val selection = context.actorSelection(s"akka.tcp://c3-replication@${host.hostname}:${host.replicationPort}/user/ReplicationAcceptor")
     val acceptorFuture = selection.resolveOne(timeout.duration)
 
-    acceptorFuture.onComplete{
+    acceptorFuture.onComplete {
       case Success(acceptor) => {
         remoteActor = acceptor
         log.info("Got remote actor, becoming alive")
@@ -111,19 +111,19 @@ class ReplicationLink(val localSystemId:String,
 
       statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.add." + host.systemId, 1l)
 
-      if(log.isTraceEnabled)
+      if (log.isTraceEnabled)
         log trace "Adding RAE to queue " + resource.address
 
       queue += ((ReplicationTask(host.systemId, resource.address, AddAction), System.currentTimeMillis))
     }
 
     case ReplicateAddAckMsg(address, signature) => {
-      if(calculator.verify(address, signature)){
+      if (calculator.verify(address, signature)) {
         queue -= ReplicationTask(host.systemId, address, AddAction)
 
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.add." + host.systemId, 1l)
 
-        if(log.isTraceEnabled)
+        if (log.isTraceEnabled)
           log trace "Removing RAE from queue " + address
       }
     }
@@ -137,9 +137,9 @@ class ReplicationLink(val localSystemId:String,
 
       statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.update." + host.systemId, 1l)
 
-      val timestamp:java.lang.Long = resource.lastUpdateDate.getTime
+      val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
 
-      if(log.isTraceEnabled)
+      if (log.isTraceEnabled)
         log trace "Adding RUE to queue " + resource.address
 
       queue += ((ReplicationTask(host.systemId, resource.address, UpdateAction(timestamp.longValue)), System.currentTimeMillis))
@@ -147,11 +147,11 @@ class ReplicationLink(val localSystemId:String,
     }
 
     case ReplicateUpdateAckMsg(address, timestamp, signature) => {
-      if(calculator.verify(address, signature)){
+      if (calculator.verify(address, signature)) {
 
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.update." + host.systemId, 1l)
 
-        if(log.isTraceEnabled)
+        if (log.isTraceEnabled)
           log trace "Removing RUE from queue " + address
 
         queue -= ReplicationTask(host.systemId, address, UpdateAction(timestamp.longValue))
@@ -159,24 +159,23 @@ class ReplicationLink(val localSystemId:String,
     }
 
 
-
     case ResourceDeletedMsg(address, source) => {
       remoteActor ! ReplicateDeleteMsg(address, calculator.calculate(address))
 
       statisticsManager ! IncreaseStatisticsMsg("c3.replication.submit.delete." + host.systemId, 1l)
 
-      if(log.isTraceEnabled)
+      if (log.isTraceEnabled)
         log trace "Adding RDE to queue " + address
 
       queue += ((ReplicationTask(host.systemId, address, DeleteAction), System.currentTimeMillis))
     }
 
     case ReplicateDeleteAckMsg(address, signature) => {
-      if(calculator.verify(address, signature)){
+      if (calculator.verify(address, signature)) {
 
         statisticsManager ! IncreaseStatisticsMsg("c3.replication.ack.delete." + host.systemId, 1l)
 
-        if(log.isTraceEnabled)
+        if (log.isTraceEnabled)
           log trace "Removing RDE from queue " + address
 
         queue -= ReplicationTask(host.systemId, address, DeleteAction)
@@ -221,29 +220,29 @@ class ReplicationLink(val localSystemId:String,
 
   def receive = waitForConnection
 
-  private def sendQueuedTasks(sender: ActorRef){
+  private def sendQueuedTasks(sender: ActorRef) {
     log debug "Retrieving queued tasks"
 
     val set = new mutable.HashSet[ReplicationTask]
 
     set ++= queue.filter(System.currentTimeMillis.longValue - _._2.longValue > replicationTimeout).map(e => e._1)
 
-    if(!set.isEmpty){
+    if (!set.isEmpty) {
 
       queue --= set
 
-      if(log.isTraceEnabled)
+      if (log.isTraceEnabled)
         log.trace("Returning queue: " + set.toString)
 
       persistTasks(sender, set)
 
-    }else{
-      if(log.isTraceEnabled)
+    } else {
+      if (log.isTraceEnabled)
         log.trace("Replication queue is empty for id " + host.systemId)
     }
   }
 
-  private def persistTasks(sender: ActorRef, tasks: Iterable[ReplicationTask]){
+  private def persistTasks(sender: ActorRef, tasks: Iterable[ReplicationTask]) {
     statisticsManager ! IncreaseStatisticsMsg("c3.replication.queued." + host.systemId, tasks.size)
 
     sender ! QueuedTasksReply(tasks)
@@ -254,4 +253,5 @@ class ReplicationLink(val localSystemId:String,
 case class ResolveAcceptor(host: ReplicationHost)
 
 object QueuedTasks
+
 case class QueuedTasksReply(tasks: Iterable[ReplicationTask])

@@ -32,8 +32,8 @@ package org.aphreet.c3.platform.remote.replication.impl.data.stats
 
 import akka.actor.{Props, ActorRefFactory, Actor}
 import collection.mutable
-import org.aphreet.c3.platform.statistics.{SetStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.common.ActorRefHolder
+import org.aphreet.c3.platform.statistics.{SetStatisticsMsg, StatisticsManager}
 
 case class Delay(time: Long) {
 
@@ -42,21 +42,21 @@ case class Delay(time: Long) {
   var points = 0
 
   def update(delay: Long) {
-    value = (value * points + delay)/(points + 1)
+    value = (value * points + delay) / (points + 1)
     points = points + 1
   }
 }
 
-class DelayHistory(val actorSystem: ActorRefFactory, val statisticsManager: StatisticsManager) extends ActorRefHolder{
+class DelayHistory(val actorSystem: ActorRefFactory, val statisticsManager: StatisticsManager) extends ActorRefHolder {
 
   var history: mutable.Queue[Delay] = mutable.Queue(new Delay(roundTime(0)))
 
   val async = actorSystem.actorOf(Props.create(classOf[DelayHistoryActor], this))
 
-  def add(delay: Long, timestamp: Long){
+  def add(delay: Long, timestamp: Long) {
     val time = roundTime(timestamp)
 
-    if(history.last.time != time){
+    if (history.last.time != time) {
       append(time)
     }
 
@@ -71,15 +71,15 @@ class DelayHistory(val actorSystem: ActorRefFactory, val statisticsManager: Stat
 
   private def roundTime(time: Long): Long = time / 1000
 
-  private def append(time: Long){
+  private def append(time: Long) {
     history.enqueue(new Delay(time))
-    while(time - history.last.time > 10 * 60){
+    while (time - history.last.time > 10 * 60) {
       history.dequeue()
     }
 
     val currentTimestamp = System.currentTimeMillis()
 
-    if(statisticsManager != null){
+    if (statisticsManager != null) {
       statisticsManager ! SetStatisticsMsg("c3.replication.delay.5sec", averageDelay(5, currentTimestamp).toString)
       statisticsManager ! SetStatisticsMsg("c3.replication.delay.1min", averageDelay(60, currentTimestamp).toString)
       statisticsManager ! SetStatisticsMsg("c3.replication.delay.10min", averageDelay(600, currentTimestamp).toString)
@@ -93,7 +93,7 @@ class DelayHistory(val actorSystem: ActorRefFactory, val statisticsManager: Stat
     val elements = history.filter(_.time >= time - period + 1)
 
     if (!elements.isEmpty)
-      elements.foldRight(0L)(_.value + _) /elements.size
+      elements.foldRight(0L)(_.value + _) / elements.size
     else
       0L
   }

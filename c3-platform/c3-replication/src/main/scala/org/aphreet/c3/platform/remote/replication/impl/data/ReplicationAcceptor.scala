@@ -35,11 +35,11 @@ import org.aphreet.c3.platform.access.AccessMediator
 import org.aphreet.c3.platform.common.{ActorRefHolder, Logger}
 import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.remote.replication._
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
 import org.aphreet.c3.platform.remote.replication.impl.data.stats.DelayHistory
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 
 class ReplicationAcceptor(val actorSystem: ActorRefFactory,
                           val accessMediator: AccessMediator,
@@ -95,7 +95,7 @@ class ReplicationAcceptor(val actorSystem: ActorRefFactory,
     log info "ReplicationAcceptor started"
   }
 
-  class ReplicationAcceptorActor extends Actor{
+  class ReplicationAcceptorActor extends Actor {
 
     def alive: Receive = {
       case ReplicateAddMsg(resource, signature) => {
@@ -127,7 +127,7 @@ class ReplicationAcceptor(val actorSystem: ActorRefFactory,
   }
 
 
-  private def getNextWorker: ReplicationTargetWorker  = {
+  private def getNextWorker: ReplicationTargetWorker = {
     if (iterator.hasNext) {
       iterator.next()
     } else {

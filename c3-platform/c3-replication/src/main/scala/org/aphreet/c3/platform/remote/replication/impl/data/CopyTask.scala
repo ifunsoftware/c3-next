@@ -30,14 +30,14 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import org.aphreet.c3.platform.task.IterableTask
+import akka.actor.ActorRef
+import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.Storage
-import org.aphreet.c3.platform.access.ResourceAddedMsg
-import akka.actor.ActorRef
+import org.aphreet.c3.platform.task.IterableTask
 
-class CopyTask(val storage:Storage, val link:ActorRef, val localSystemId: String)
-  extends IterableTask[Resource](storage){
+class CopyTask(val storage: Storage, val link: ActorRef, val localSystemId: String)
+  extends IterableTask[Resource](storage) {
 
   override val id = name + "-" + storage.id + "-" + localSystemId
 
@@ -52,5 +52,5 @@ class CopyTask(val storage:Storage, val link:ActorRef, val localSystemId: String
     Thread.sleep(100)
   }
 
-  override def progress:Int = processed
+  override def progress: Int = processed
 }

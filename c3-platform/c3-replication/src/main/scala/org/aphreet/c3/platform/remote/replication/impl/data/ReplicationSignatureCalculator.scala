@@ -33,9 +33,9 @@ package org.aphreet.c3.platform.remote.replication.impl.data
 import com.twmacinta.util.MD5
 import org.aphreet.c3.platform.remote.replication.{ReplicationHost, ReplicationSignature}
 
-class ReplicationSignatureCalculator(val localSystemId:String, val host:ReplicationHost){
+class ReplicationSignatureCalculator(val localSystemId: String, val host: ReplicationHost) {
 
-  def calculate(bytes:Array[Byte]):ReplicationSignature = {
+  def calculate(bytes: Array[Byte]): ReplicationSignature = {
 
     val md5 = new MD5
     md5.Update(bytes)
@@ -47,12 +47,12 @@ class ReplicationSignatureCalculator(val localSystemId:String, val host:Replicat
     ReplicationSignature(localSystemId, md5.asHex)
   }
 
-  def calculate(string:String):ReplicationSignature =
+  def calculate(string: String): ReplicationSignature =
     calculate(string.getBytes("UTF-8"))
 
-  def verify(bytes:Array[Byte], signature:ReplicationSignature):Boolean = {
+  def verify(bytes: Array[Byte], signature: ReplicationSignature): Boolean = {
 
-    if(host.systemId != signature.systemId) return false
+    if (host.systemId != signature.systemId) return false
 
     val md5 = new MD5
     md5.Update(bytes)
@@ -64,19 +64,19 @@ class ReplicationSignatureCalculator(val localSystemId:String, val host:Replicat
 
   }
 
-  def verify(string:String, signature:ReplicationSignature):Boolean =
+  def verify(string: String, signature: ReplicationSignature): Boolean =
     verify(string.getBytes("UTF-8"), signature)
 }
 
-object ReplicationSignatureCalculator{
+object ReplicationSignatureCalculator {
 
-  def foundAndVerify(bytes:Array[Byte], signature:ReplicationSignature, hosts:Map[String, ReplicationHost]):Option[ReplicationHost] = {
+  def foundAndVerify(bytes: Array[Byte], signature: ReplicationSignature, hosts: Map[String, ReplicationHost]): Option[ReplicationHost] = {
 
     hosts.get(signature.systemId) match {
       case Some(host) =>
-        if(new ReplicationSignatureCalculator(null, host).verify(bytes, signature)){
+        if (new ReplicationSignatureCalculator(null, host).verify(bytes, signature)) {
           Some(host)
-        }else{
+        } else {
           None
         }
       case None => None
@@ -84,13 +84,13 @@ object ReplicationSignatureCalculator{
 
   }
 
-  def foundAndVerify(data:String, signature:ReplicationSignature, hosts:Map[String, ReplicationHost]):Option[ReplicationHost] = {
+  def foundAndVerify(data: String, signature: ReplicationSignature, hosts: Map[String, ReplicationHost]): Option[ReplicationHost] = {
 
     hosts.get(signature.systemId) match {
       case Some(host) =>
-        if(new ReplicationSignatureCalculator(null, host).verify(data, signature)){
+        if (new ReplicationSignatureCalculator(null, host).verify(data, signature)) {
           Some(host)
-        }else{
+        } else {
           None
         }
       case None => None

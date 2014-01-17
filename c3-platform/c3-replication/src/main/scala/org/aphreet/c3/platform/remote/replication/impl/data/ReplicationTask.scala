@@ -30,13 +30,13 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
-import org.aphreet.c3.platform.remote.replication.ReplicationException
 import java.io.{DataOutputStream, ByteArrayInputStream, DataInputStream}
 import org.apache.commons.io.output.ByteArrayOutputStream
+import org.aphreet.c3.platform.remote.replication.ReplicationException
 
-case class ReplicationTask(systemId:String, address:String, action:ReplicationAction) {
+case class ReplicationTask(systemId: String, address: String, action: ReplicationAction) {
 
-  def getKeyBytes:Array[Byte] = {
+  def getKeyBytes: Array[Byte] = {
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
 
@@ -54,7 +54,7 @@ case class ReplicationTask(systemId:String, address:String, action:ReplicationAc
 
 object ReplicationTask {
 
-  def fromByteArrays(key:Array[Byte], value:Array[Byte]):ReplicationTask = {
+  def fromByteArrays(key: Array[Byte], value: Array[Byte]): ReplicationTask = {
     val byteIn = new ByteArrayInputStream(key)
     val dataIn = new DataInputStream(byteIn)
 
@@ -69,7 +69,7 @@ object ReplicationTask {
 
 abstract sealed class ReplicationAction {
 
-  def toBytes:Array[Byte] = {
+  def toBytes: Array[Byte] = {
 
     val byteOs = new ByteArrayOutputStream
     val dataOs = new DataOutputStream(byteOs)
@@ -86,12 +86,12 @@ abstract sealed class ReplicationAction {
     byteOs.toByteArray
   }
 
-  def isStronger(action:ReplicationAction):Boolean
+  def isStronger(action: ReplicationAction): Boolean
 }
 
 object ReplicationAction {
 
-  def fromBytes(bytes:Array[Byte]):ReplicationAction = {
+  def fromBytes(bytes: Array[Byte]): ReplicationAction = {
     val byteIn = new ByteArrayInputStream(bytes)
     val dataIn = new DataInputStream(byteIn)
 
@@ -109,9 +109,9 @@ object ReplicationAction {
   }
 }
 
-case class UpdateAction(timestamp:Long) extends ReplicationAction {
+case class UpdateAction(timestamp: Long) extends ReplicationAction {
 
-  def isStronger(action:ReplicationAction):Boolean = {
+  def isStronger(action: ReplicationAction): Boolean = {
     action match {
       case AddAction => true
       case DeleteAction => false
@@ -122,16 +122,18 @@ case class UpdateAction(timestamp:Long) extends ReplicationAction {
   override def toString = "UPDATE"
 
 }
+
 object AddAction extends ReplicationAction {
 
-  def isStronger(action:ReplicationAction):Boolean = false
+  def isStronger(action: ReplicationAction): Boolean = false
 
   override def toString = "ADD"
 
 }
-object DeleteAction extends ReplicationAction{
 
-  def isStronger(action:ReplicationAction):Boolean = true
+object DeleteAction extends ReplicationAction {
+
+  def isStronger(action: ReplicationAction): Boolean = true
 
   override def toString = "UPDATE"
 }

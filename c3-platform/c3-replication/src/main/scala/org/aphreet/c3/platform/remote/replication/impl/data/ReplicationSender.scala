@@ -34,52 +34,54 @@ import org.aphreet.c3.platform.access._
 import org.aphreet.c3.platform.common.msg._
 import org.aphreet.c3.platform.common.{ActorRefHolder, Logger, ComponentGuard}
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 import org.aphreet.c3.platform.remote.replication.impl.config.ConfigurationManager
+import org.aphreet.c3.platform.remote.replication.impl.data.queue.ReplicationQueueStorageHolder
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.statistics.StatisticsManager
 import org.aphreet.c3.platform.storage.Storage
 import scala.Some
-import org.aphreet.c3.platform.remote.replication.impl.data.queue.ReplicationQueueStorageHolder
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 
 class ReplicationSender(val actorSystem: ActorRefFactory,
-                         val accessMediator: AccessMediator,
-                              val statisticsManager: StatisticsManager,
-                              val configurationManager: ConfigurationManager,
-                              val replicationQueueStorageHolder: ReplicationQueueStorageHolder) extends ActorRefHolder with ComponentGuard{
+                        val accessMediator: AccessMediator,
+                        val statisticsManager: StatisticsManager,
+                        val configurationManager: ConfigurationManager,
+                        val replicationQueueStorageHolder: ReplicationQueueStorageHolder) extends ActorRefHolder with ComponentGuard {
 
   private var remoteReplicationActors = Map[String, ActorRef]()
 
   val log = Logger(getClass)
 
-  var localSystemId:String = _
+  var localSystemId: String = _
 
   val async = actorSystem.actorOf(Props.create(classOf[ReplicationSenderActor], this))
 
-  def startWithConfig(config:Map[String, ReplicationHost], localSystemId:String) {
+  def startWithConfig(config: Map[String, ReplicationHost], localSystemId: String) {
 
-    log info "Starting ReplicationSourceActor..."
+    log info "Starting ReplicationSender"
 
     this.localSystemId = localSystemId
 
-    for((id, host) <- config) {
-      remoteReplicationActors = remoteReplicationActors + ((id, createReplicationLink(id, host, statisticsManager)))
+    for ((id, host) <- config) {
+      remoteReplicationActors = remoteReplicationActors + ((id, createReplicationLink(localSystemId, host, statisticsManager)))
     }
 
     accessMediator ! RegisterNamedListenerMsg(async, 'ReplicationManager)
 
     new ReplicationMaintainThread().start()
 
-    log info "ReplicationSourceActor started"
+    async ! ActorInitialized
+
+    log info "ReplicationSender started"
   }
-  
+
   private def createReplicationLink(systemId: String, host: ReplicationHost, statisticsManager: StatisticsManager): ActorRef = {
     val actorRef = actorSystem.actorOf(Props.create(classOf[ReplicationLink], systemId, host, statisticsManager))
     actorRef ! ActorInitialized
     actorRef
   }
 
-  class ReplicationSenderActor extends Actor{
+  class ReplicationSenderActor extends Actor {
 
     def initialized: Receive = {
       case ResourceAddedMsg(resource, source) => sendToAllLinks(ResourceAddedMsg(resource, source))
@@ -121,16 +123,16 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
       case ActorInitialized => context.become(initialized)
     }
 
-    override def postStop(){
+    override def postStop() {
       accessMediator ! UnregisterNamedListenerMsg(self, 'ReplicationManager)
     }
   }
 
-  def addReplicationTarget(host:ReplicationHost) {
+  def addReplicationTarget(host: ReplicationHost) {
     remoteReplicationActors = remoteReplicationActors + ((host.systemId, createReplicationLink(localSystemId, host, statisticsManager)))
   }
 
-  def removeReplicationTarget(remoteSystemId:String) {
+  def removeReplicationTarget(remoteSystemId: String) {
     val link = remoteReplicationActors.get(remoteSystemId).get
 
     remoteReplicationActors = remoteReplicationActors - remoteSystemId
@@ -138,7 +140,7 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
     link ! PoisonPill
   }
 
-  def createCopyTasks(id:String, storageList:List[Storage]):Option[List[CopyTask]] = {
+  def createCopyTasks(id: String, storageList: List[Storage]): Option[List[CopyTask]] = {
 
     remoteReplicationActors.get(id) match {
       case Some(replicationLink) => Some(storageList.map(s => new CopyTask(s, replicationLink, localSystemId)))
@@ -147,18 +149,18 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
 
   }
 
-  private def sendToAllLinks(msg:Any) {
-    try{
-      for((id, link) <- remoteReplicationActors){
+  private def sendToAllLinks(msg: Any) {
+    try {
+      for ((id, link) <- remoteReplicationActors) {
 
         link ! msg
       }
-    }catch{
+    } catch {
       case e: Throwable => log.error("Failed to post message: " + msg, e)
     }
   }
 
-  private def sendToLinkWithId(id:String, msg:Any) {
+  private def sendToLinkWithId(id: String, msg: Any) {
     remoteReplicationActors.get(id) match {
       case Some(link) => {
         link ! msg
@@ -205,10 +207,13 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
 
 }
 
-case class ReplicationReplayAdd(resource:Resource, systemId:String)
-case class ReplicationReplayDelete(address:String, systemId:String)
-case class ReplicationReplayUpdate(resource:Resource, systemId:String)
+case class ReplicationReplayAdd(resource: Resource, systemId: String)
+
+case class ReplicationReplayDelete(address: String, systemId: String)
+
+case class ReplicationReplayUpdate(resource: Resource, systemId: String)
 
 object SendConfigurationMsg
-case class SendConfigurationMsg(configuration:String)
+
+case class SendConfigurationMsg(configuration: String)
 

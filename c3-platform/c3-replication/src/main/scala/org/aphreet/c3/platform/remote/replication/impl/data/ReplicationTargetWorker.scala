@@ -39,10 +39,10 @@ import org.aphreet.c3.platform.domain.{Domain, DomainManager}
 import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.remote.replication.impl.config._
+import org.aphreet.c3.platform.remote.replication.impl.data.stats.{DelayHistory, DelayInfoMsg}
 import org.aphreet.c3.platform.resource.{ResourceAddress, Resource}
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.remote.replication.impl.data.stats.{DelayHistory, DelayInfoMsg}
 
 class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
                               val localSystemId: String,
@@ -82,7 +82,7 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
     decryptors = map
   }
 
-  class ReplicationTargetWorkerActor extends Actor{
+  class ReplicationTargetWorkerActor extends Actor {
 
     def receive = {
       case ProcessAddMsg(bytes, sign, target) => replicateAdd(bytes, sign, target)
@@ -247,7 +247,7 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
     }
   }
 
-  private def handleDelay(resource: Resource){
+  private def handleDelay(resource: Resource) {
     val timestamp = System.currentTimeMillis()
 
     val modificationTimestamp = resource.versions.last.date.getTime
