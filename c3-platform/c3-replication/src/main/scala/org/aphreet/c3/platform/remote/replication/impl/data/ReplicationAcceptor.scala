@@ -54,8 +54,6 @@ class ReplicationAcceptor(val actorSystem: ActorRefFactory,
 
   var delayHistory = new DelayHistory(actorSystem, statisticsManager)
 
-  var replicationPort: Int = -1
-
   var config: Map[String, ReplicationHost] = Map()
 
   var workers = List[ReplicationTargetWorker]()
@@ -73,13 +71,11 @@ class ReplicationAcceptor(val actorSystem: ActorRefFactory,
     workers.foreach(_.useSecureDataConnection = secureDataConnection)
   }
 
-  def startWithConfig(config: Map[String, ReplicationHost], replicationPort: Int, localSystemId: String) {
+  def startWithConfig(config: Map[String, ReplicationHost], localSystemId: String) {
 
-    log info "Starting ReplicationTargetActor on port " + replicationPort
+    log info "Starting ReplicationAcceptor"
 
     this.localSystemId = localSystemId
-
-    this.replicationPort = replicationPort
 
     this.config = config
 
@@ -96,7 +92,7 @@ class ReplicationAcceptor(val actorSystem: ActorRefFactory,
 
     async ! ActorInitialized
 
-    log info "ReplicationTargetActor started"
+    log info "ReplicationAcceptor started"
   }
 
   class ReplicationAcceptorActor extends Actor{

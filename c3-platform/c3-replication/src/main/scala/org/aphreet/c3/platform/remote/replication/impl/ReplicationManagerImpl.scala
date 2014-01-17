@@ -29,7 +29,7 @@
  */
 package org.aphreet.c3.platform.remote.replication.impl
 
-import akka.actor.{Props, Actor, ActorRefFactory}
+import akka.actor.ActorRefFactory
 import config._
 import data._
 import java.io.File
@@ -55,8 +55,7 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
                              val statisticsManager: StatisticsManager,
                              val platformConfigManager: PlatformConfigManager,
                              val configPersister: ConfigPersister,
-                             val configurationManager: ConfigurationManager,
-                             val replicationPortRetriever: ReplicationPortRetriever) extends ReplicationManager with SPlatformPropertyListener with ComponentGuard {
+                             val configurationManager: ConfigurationManager) extends ReplicationManager with SPlatformPropertyListener with ComponentGuard {
 
   val log = Logger(getClass)
 
@@ -70,10 +69,10 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
 
   var isTaskRunning = false
 
-  var replicationSenderActor = new ReplicationSender(actorSystem, accessMediator, statisticsManager,
+  var replicationSender = new ReplicationSender(actorSystem, accessMediator, statisticsManager,
     configurationManager, replicationQueueStorageHolder)
 
-  val localReplicationActor = new ReplicationAcceptor(actorSystem, accessMediator,
+  val replicationAcceptor = new ReplicationAcceptor(actorSystem, accessMediator,
     storageManager, configurationManager, domainManager, statisticsManager)
 
 
@@ -84,21 +83,16 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
   {
     log info "Starting replication manager..."
 
-    val replicationPort = platformConfigManager.getPlatformProperties.get(REPLICATION_PORT_KEY) match {
-      case Some(x) => x.toInt
-      case None => replicationPortRetriever.getReplicationPort
-    }
-
     localSystemId = platformConfigManager.getPlatformProperties.get(Constants.C3_SYSTEM_ID) match {
       case Some(x) => x
       case None => throw new ConfigurationException("Local system ID is not found")
     }
 
     currentSourceConfig = sourcesConfigAccessor.load
-    localReplicationActor.startWithConfig(currentSourceConfig, replicationPort, localSystemId)
+    replicationAcceptor.startWithConfig(currentSourceConfig, localSystemId)
 
     currentTargetConfig = targetsConfigAccessor.load
-    replicationSenderActor.startWithConfig(currentTargetConfig, localSystemId)
+    replicationSender.startWithConfig(currentTargetConfig, localSystemId)
 
     platformConfigManager ! RegisterMsg(this)
 
@@ -147,7 +141,7 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
 
     log.info("Creating tasks for copying data to target " + targetId)
 
-    replicationSenderActor
+    replicationSender
       .createCopyTasks(targetId, storageManager.listStorages) match {
       case Some(tasks) => tasks.foreach(taskManager.submitTask(_))
       case None => throw new ReplicationException("Can't find target with id " + targetId)
@@ -158,14 +152,14 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
     targetsConfigAccessor.update(config => config - id)
     currentTargetConfig = targetsConfigAccessor.load
 
-    replicationSenderActor.removeReplicationTarget(id)
+    replicationSender.removeReplicationTarget(id)
   }
 
   def registerReplicationSource(host: ReplicationHost) {
     sourcesConfigAccessor.update(config => config + ((host.systemId, host)))
 
     currentSourceConfig = sourcesConfigAccessor.load
-    localReplicationActor.updateConfig(currentSourceConfig)
+    replicationAcceptor.updateConfig(currentSourceConfig)
 
     log info "Registered replication source " + host.hostname + " with id " + host.systemId
   }
@@ -175,7 +169,7 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
     targetsConfigAccessor.update(config => config + ((host.systemId, host)))
     currentTargetConfig = targetsConfigAccessor.load
 
-    replicationSenderActor.addReplicationTarget(host)
+    replicationSender.addReplicationTarget(host)
 
     log info "Registered replication target " + host.hostname + " with id " + host.systemId
   }
@@ -183,10 +177,9 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
   override def defaultValues: Map[String, String] =
     Map(HTTP_PORT_KEY -> "7373",
       HTTPS_PORT_KEY -> "7374",
-      REPLICATION_PORT_KEY -> replicationPortRetriever.getReplicationPort.toString,
       REPLICATION_QUEUE_KEY -> new File(platformConfigManager.dataDir, "queue").getAbsolutePath,
-      REPLICATION_SECURE_KEY -> "false",
-      Constants.C3_PUBLIC_HOSTNAME -> "localhost")
+      REPLICATION_SECURE_KEY -> "false"
+    )
 
   override def propertyChanged(event: PropertyChangeEvent) {
 
@@ -199,7 +192,7 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
         }
 
       case REPLICATION_SECURE_KEY =>
-        localReplicationActor.setUseSecureDataConnection(event.newValue == "true")
+        replicationAcceptor.setUseSecureDataConnection(event.newValue == "true")
 
       case _ =>
         log warn "To get new port config working system restart is required"
@@ -212,7 +205,7 @@ class ReplicationManagerImpl(val actorSystem: ActorRefFactory,
       if (isTaskRunning) throw new ReplicationException("Task already started")
 
       replicationQueueStorageHolder.storage.map{storage =>
-        val task = new ReplicationQueueReplayTask(this, storageManager, storage, replicationSenderActor.async)
+        val task = new ReplicationQueueReplayTask(this, storageManager, storage, replicationSender.async)
 
         taskManager.submitTask(task)
         isTaskRunning = true

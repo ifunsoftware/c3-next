@@ -10,7 +10,7 @@ import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
 import org.aphreet.c3.platform.auth.{AuthenticationManager, AuthenticationComponent}
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationComponentImpl
+import org.aphreet.c3.platform.remote.replication.impl.{NetworkSettings, ReplicationComponentImpl}
 import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.actor.ActorComponent
 import com.typesafe.config.{ConfigFactory, Config}
@@ -26,14 +26,14 @@ class C3ReplicationActivator extends C3Activator {
   def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
     trait DependencyProvider extends PlatformConfigComponent
-      with DomainComponent
-      with ActorComponent
-      with FSComponent
-      with AccessComponent
-      with StorageComponent
-      with TaskComponent
-      with StatisticsComponent
-      with AuthenticationComponent{
+    with DomainComponent
+    with ActorComponent
+    with FSComponent
+    with AccessComponent
+    with StorageComponent
+    with TaskComponent
+    with StatisticsComponent
+    with AuthenticationComponent {
 
       val authenticationManager = getService(context, classOf[AuthenticationManager])
 
@@ -73,5 +73,19 @@ class C3ReplicationActivator extends C3Activator {
 
   override def getActorSystemName(context: BundleContext): String = "c3-replication"
 
-  override def getActorSystemConfiguration(context: BundleContext): Config = ConfigFactory.load()
+  override def getActorSystemConfiguration(context: BundleContext): Config = {
+
+    val bindAddress = NetworkSettings.replicationBindAddress
+    val bindPort = NetworkSettings.replicationBindPort
+
+    log.info("Binding akka remote on {}:{}", bindAddress, bindPort)
+
+    ConfigFactory.parseString(
+      s"""
+        |akka.remote.netty.tcp {
+        |  hostname = "$bindAddress"
+        |  port = $bindPort
+        |}
+      """.stripMargin).withFallback(ConfigFactory.load())
+  }
 }

@@ -30,6 +30,7 @@
 
 package org.aphreet.c3.platform.remote.replication.impl.data
 
+import scala.language.postfixOps
 import akka.actor.{Terminated, ActorRef, Actor}
 import akka.util.Timeout
 import encryption.DataEncryptor
@@ -39,8 +40,10 @@ import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.remote.replication._
 import org.aphreet.c3.platform.statistics.{IncreaseStatisticsMsg, StatisticsManager}
 import scala.collection.mutable
+import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants.ActorInitialized
 
 class ReplicationLink(val localSystemId:String,
                       val host:ReplicationHost,
@@ -64,7 +67,6 @@ class ReplicationLink(val localSystemId:String,
 
   override def preStart(){
     log info "Establishing replication link to " + host.systemId
-    resolveReplicationAcceptor(host)
   }
 
   override def postStop(){
@@ -84,13 +86,16 @@ class ReplicationLink(val localSystemId:String,
         context.become(alive)
         context.watch(remoteActor)
       }
-      case Failure(t) => self ! ResolveAcceptor(host)
+      case Failure(t) => {
+        log.info("Failed to resolve remote actor")
+        context.system.scheduler.scheduleOnce(5 seconds, self, ResolveAcceptor(host))
+      }
     }
   }
 
   def alive: Receive = {
 
-    case Terminated =>
+    case Terminated(remote) =>
       log.info("Got terminated message for remote actor, starting wait for reconnection")
       context.unwatch(remoteActor)
       context.become(waitForConnection)
@@ -203,6 +208,10 @@ class ReplicationLink(val localSystemId:String,
 
     case ResourceDeletedMsg(address, source) => {
       persistTasks(sender, List(ReplicationTask(host.systemId, address, DeleteAction)))
+    }
+
+    case ActorInitialized => {
+      self ! ResolveAcceptor(host)
     }
 
     case QueuedTasks => sendQueuedTasks(sender)

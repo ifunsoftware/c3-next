@@ -33,15 +33,13 @@ trait ReplicationComponentImpl extends ReplicationComponent {
     with ComponentLifecycle
     =>
 
-  val configurationManager = new ConfigurationManager(filesystemManager, domainManager, platformConfigManager)
-
-  val replicationPortRetriever = new ReplicationPortRetriever
+  val replicationConfigurationManager = new ConfigurationManager(filesystemManager, domainManager, platformConfigManager)
 
   val replicationManager = new ReplicationManagerImpl(actorSystem, accessMediator, storageManager, taskManager, domainManager,
-    statisticsManager, platformConfigManager, configPersister, configurationManager, replicationPortRetriever)
+    statisticsManager, platformConfigManager, configPersister, replicationConfigurationManager)
 
-  val replicationNegotiator = actorSystem.actorOf(Props.create(classOf[ReplicationNegotiatorServer], authenticationManager, configurationManager,
-    replicationManager, replicationPortRetriever), ReplicationNegotiator.ACTOR_NAME)
+  val replicationNegotiator = actorSystem.actorOf(Props.create(classOf[ReplicationNegotiatorServer], authenticationManager, replicationConfigurationManager,
+    replicationManager), ReplicationNegotiator.ACTOR_NAME)
 
   destroy(Unit => replicationManager.destroy())
 

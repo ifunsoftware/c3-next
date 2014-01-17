@@ -33,7 +33,7 @@ class ReplicationNegotiatorClient(val actorSystem: ActorRefFactory, val localSys
 
     val keyExchangeReply = Await.result(keyExchangeFuture, timeout.duration)
 
-    if(isOk(keyExchangeReply.status)){
+    if(!isOk(keyExchangeReply.status)){
       throw new ReplicationException("Failed to establish replication, status is " + keyExchangeReply.status)
     }
 

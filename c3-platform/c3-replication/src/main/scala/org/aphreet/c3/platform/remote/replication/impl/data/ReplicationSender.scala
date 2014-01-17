@@ -74,7 +74,9 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
   }
   
   private def createReplicationLink(systemId: String, host: ReplicationHost, statisticsManager: StatisticsManager): ActorRef = {
-    actorSystem.actorOf(Props.create(classOf[ReplicationLink], systemId, host, statisticsManager))
+    val actorRef = actorSystem.actorOf(Props.create(classOf[ReplicationLink], systemId, host, statisticsManager))
+    actorRef ! ActorInitialized
+    actorRef
   }
 
   class ReplicationSenderActor extends Actor{

@@ -40,8 +40,11 @@ import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
 import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
+import org.aphreet.c3.platform.remote.replication.impl.NetworkReplicationSettingsRetriever
 
 class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainManager, val platformConfigManager: PlatformConfigManager) extends DtoConvertor{
+
+  val networkSettingsRetriever = new NetworkReplicationSettingsRetriever(platformConfigManager)
 
   val log = Logger(getClass)
 
@@ -94,17 +97,14 @@ class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainMa
   }
 
   def createLocalReplicationHost:ReplicationHost = {
-    createReplicationHost(createLocalPropertyRetriever)
-  }
-
-  private def createReplicationHost(propertyRetriever:(String) => String):ReplicationHost = {
+    val propertyRetriever = createLocalPropertyRetriever
 
     val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
-    val systemHost = propertyRetriever(Constants.C3_PUBLIC_HOSTNAME)
+    val systemHost = networkSettingsRetriever.localReplicationHost
     val httpPort = propertyRetriever(HTTP_PORT_KEY).toInt
     val httpsPort = propertyRetriever(HTTPS_PORT_KEY).toInt
-    val replicationPort = propertyRetriever(REPLICATION_PORT_KEY).toInt
-    
+    val replicationPort = networkSettingsRetriever.localReplicationPort.toInt
+
     ReplicationHost(systemId, systemHost, null, httpPort, httpsPort, replicationPort, null)
   }
 

@@ -34,7 +34,6 @@ import collection.mutable
 import org.aphreet.c3.platform.auth.AuthenticationManager
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.remote.replication._
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationPortRetriever
 import org.aphreet.c3.platform.remote.replication.impl.data.encryption.{DataEncryptor, SymmetricKeyGenerator, AsymmetricDataEncryptor}
 import org.aphreet.c3.platform.resource.IdGenerator
 import scala.None
@@ -43,8 +42,7 @@ import org.aphreet.c3.platform.remote.replication.impl.config.ReplicationNegotia
 
 class ReplicationNegotiatorServer(val authManager: AuthenticationManager,
                             val configurationManager: ConfigurationManager,
-                            val replicationManager: ReplicationManager,
-                            val replicationPortRetriever: ReplicationPortRetriever) extends Actor{
+                            val replicationManager: ReplicationManager) extends Actor{
 
   val log = Logger(getClass)
 

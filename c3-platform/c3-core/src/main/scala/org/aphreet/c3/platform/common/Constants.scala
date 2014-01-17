@@ -35,8 +35,6 @@ object Constants {
 
   val C3_SYSTEM_ID = "c3.platform.id"
 
-  val C3_PUBLIC_HOSTNAME = "c3.public.hostname"
- 
   val STORAGE_MODE_NONE = ""
   val STORAGE_MODE_USER = "user"
   val STORAGE_MODE_MIGRATION = "migration"

@@ -33,9 +33,11 @@ object ReplicationConstants {
 
   val HTTP_PORT_KEY = "c3.remote.http.port"
   val HTTPS_PORT_KEY = "c3.remote.https.port"
-  val REPLICATION_PORT_KEY = "c3.remote.replication.port"
   val REPLICATION_QUEUE_KEY = "c3.remote.replication.queue"
   val REPLICATION_SECURE_KEY = "c3.remote.replication.secure_data"
+
+  val REPLICATION_NAT_HOST = "c3.remote.nat.replication.host"
+  val REPLICATION_NAT_PORT = "c3.remote.nat.replication.port"
 
   object ActorInitialized
 
