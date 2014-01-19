@@ -1,29 +1,29 @@
 package org.aphreet.c3.platform.search.lucene
 
+import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.{AccessManager, AccessMediator, AccessComponent}
-import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3AppHandle, C3Activator}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.{C3ActorActivator, DefaultComponentLifecycle, C3AppHandle}
 import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
+import org.aphreet.c3.platform.search.api.SearchManager
+import org.aphreet.c3.platform.search.lucene.impl.SearchComponentImpl
 import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
 import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.osgi.framework.BundleContext
-import org.aphreet.c3.platform.search.lucene.impl.SearchComponentImpl
-import org.aphreet.c3.platform.search.api.SearchManager
-import org.aphreet.c3.platform.actor.ActorComponent
-import akka.actor.ActorRefFactory
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/21/13
  * Time:   4:20 PM
  */
-class C3SearchActivator extends C3Activator {
+class C3SearchActivator extends C3ActorActivator {
 
   def name: String = "c3-search-lucene"
 
   def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
-    trait DependencyProvider extends  AccessComponent
+    trait DependencyProvider extends AccessComponent
     with StorageComponent
     with PlatformConfigComponent
     with TaskComponent
@@ -47,11 +47,11 @@ class C3SearchActivator extends C3Activator {
     }
 
     val module = new Object with DefaultComponentLifecycle
-    with DependencyProvider
-    with SearchComponentImpl
+      with DependencyProvider
+      with SearchComponentImpl
 
     new C3AppHandle {
-      def registerServices(context: BundleContext){
+      def registerServices(context: BundleContext) {
         registerService(context, classOf[SearchManager], module.searchManager)
       }
 

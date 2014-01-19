@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-client</artifactId>
     <packaging>jar</packaging>
@@ -49,13 +50,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>1.6.4</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.5</version>
+            <version>1.6.4</version>
         </dependency>
 
         <dependency>
@@ -135,7 +136,9 @@
                         <phase>pre-integration-test</phase>
                         <configuration combine.self="override">
                             <tasks>
-                                <copy toDir="${project.client.tmp.dir}/lib" file="${project.build.directory}/${project.build.finalName}.${project.packaging}" overwrite="true" />
+                                <copy toDir="${project.client.tmp.dir}/lib"
+                                      file="${project.build.directory}/${project.build.finalName}.${project.packaging}"
+                                      overwrite="true"/>
                             </tasks>
                         </configuration>
                         <goals>

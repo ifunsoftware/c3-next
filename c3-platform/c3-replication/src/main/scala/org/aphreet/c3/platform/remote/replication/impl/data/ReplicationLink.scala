@@ -87,7 +87,7 @@ class ReplicationLink(val localSystemId: String,
         context.watch(remoteActor)
       }
       case Failure(t) => {
-        log.info("Failed to resolve remote actor")
+        log.info("Failed to resolve remote actor", t.getMessage)
         context.system.scheduler.scheduleOnce(5 seconds, self, ResolveAcceptor(host))
       }
     }

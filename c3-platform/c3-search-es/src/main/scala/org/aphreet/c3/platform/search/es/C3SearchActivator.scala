@@ -1,19 +1,19 @@
 package org.aphreet.c3.platform.search.es
 
-import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3AppHandle, C3Activator}
-import org.osgi.framework.BundleContext
+import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.{AccessMediator, AccessManager, AccessComponent}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.{C3ActorActivator, DefaultComponentLifecycle, C3AppHandle}
 import org.aphreet.c3.platform.config.{ConfigPersister, PlatformConfigManager, PlatformConfigComponent}
 import org.aphreet.c3.platform.search.api.SearchManager
-import org.aphreet.c3.platform.actor.ActorComponent
-import akka.actor.ActorRefFactory
+import org.osgi.framework.BundleContext
 
 /**
  * Author: Mikhail Malygin
  * Date:   1/13/14
  * Time:   5:09 PM
  */
-class C3SearchActivator extends C3Activator {
+class C3SearchActivator extends C3ActorActivator {
 
   def name: String = "c3-search-es"
 
@@ -38,7 +38,7 @@ class C3SearchActivator extends C3Activator {
       with SearchComponentImpl
 
     new C3AppHandle {
-      def registerServices(context: BundleContext){
+      def registerServices(context: BundleContext) {
         registerService(context, classOf[SearchManager], module.searchManager)
       }
 

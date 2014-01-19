@@ -3,7 +3,8 @@ package org.aphreet.c3.platform
 import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.impl.AccessComponentImpl
 import org.aphreet.c3.platform.access.{AccessMediator, CleanupManager, AccessManager}
-import org.aphreet.c3.platform.common.{C3AppHandle, C3Activator, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.{C3ActorActivator, C3AppHandle, DefaultComponentLifecycle}
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.config.impl.PlatformConfigComponentImpl
 import org.aphreet.c3.platform.config.impl.VersionComponentImpl
@@ -24,24 +25,23 @@ import org.aphreet.c3.platform.storage.updater.impl.StorageUpdaterComponentImpl
 import org.aphreet.c3.platform.task.TaskManager
 import org.aphreet.c3.platform.task.impl.TaskComponentImpl
 import org.osgi.framework.BundleContext
-import org.aphreet.c3.platform.actor.ActorComponent
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/11/13
  * Time:   1:08 AM
  */
-class C3CoreActivator extends C3Activator {
+class C3CoreActivator extends C3ActorActivator {
 
   def name = "c3-core"
 
   def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
 
-    trait LocalBundleContextProvider extends BundleContextProvider{
+    trait LocalBundleContextProvider extends BundleContextProvider {
       def bundleContext: BundleContext = context
     }
 
-    trait DependencyProvider extends ActorComponent{
+    trait DependencyProvider extends ActorComponent {
       val actorSystem = actorRefFactory
     }
 

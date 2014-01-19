@@ -1,30 +1,30 @@
 package org.aphreet.c3.platform.common
 
-import org.osgi.framework.{BundleActivator, BundleContext}
-import java.util.Properties
-import akka.actor.{ActorSystem, ActorRef, ActorRefFactory}
+import akka.actor.{ActorSystem, ActorRefFactory}
 import akka.osgi.ActorSystemActivator
+import com.typesafe.config.{ConfigFactory, Config}
+import java.util.Properties
+import org.osgi.framework.{BundleActivator, BundleContext}
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/14/13
  * Time:   3:00 AM
  */
-trait C3Activator extends ActorSystemActivator {
+trait C3Activator {
 
   val log = Logger(getClass)
 
-  var app: Option[C3AppHandle] = None
-
   def name: String
 
-  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle
+  protected def app: Option[C3AppHandle]
 
+  protected def app_=(value: Option[C3AppHandle]): Unit
 
-  def configure(context: BundleContext, system: ActorSystem) {
+  def init(context: BundleContext, appCreator: Unit => C3AppHandle) {
     log.info("Starting {}", name)
 
-    val handle = createApplication(context, system)
+    val handle: C3AppHandle = appCreator()
 
     log.info("Initializing {}", name)
 
@@ -39,17 +39,15 @@ trait C3Activator extends ActorSystemActivator {
     app = Some(handle)
   }
 
-  override def stop(context: BundleContext) {
+  def destroy(context: BundleContext) {
     log.info("Stopping {}", name)
 
-    app.foreach(_.stop())
+    app.map(_.stop())
 
     log.info("{}, stopped", name)
-
-    super.stop(context)
   }
 
-  def registerService[T](context: BundleContext, clazz: Class[T], service: T){
+  def registerService[T](context: BundleContext, clazz: Class[T], service: T) {
     context.registerService(clazz.getCanonicalName, service, new Properties())
   }
 
@@ -57,6 +55,42 @@ trait C3Activator extends ActorSystemActivator {
     val reference = context.getServiceReference(clazz.getCanonicalName)
 
     context.getService(reference).asInstanceOf[T]
+  }
+}
+
+abstract class C3ActorActivator extends ActorSystemActivator with C3Activator {
+
+  var app: Option[C3AppHandle] = None
+
+  def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle
+
+  def configure(context: BundleContext, system: ActorSystem) {
+    init(context, Unit => createApplication(context, system))
+  }
+
+  override def stop(context: BundleContext) {
+    destroy(context)
+    super.destroy(context)
+  }
+
+  override def getActorSystemConfiguration(context: BundleContext): Config = {
+    ConfigFactory.parseString("akka.loggers = [\"org.aphreet.c3.platform.actor.Slf4jLogger\"]")
+  }
+}
+
+abstract class C3SimpleActivator extends BundleActivator with C3Activator {
+
+  var app: Option[C3AppHandle] = None
+
+  def createApplication(context: BundleContext): C3AppHandle
+
+  override def start(context: BundleContext) {
+    init(context, Unit => createApplication(context))
+  }
+
+  override def stop(context: BundleContext) {
+    destroy(context)
+    super.destroy(context)
   }
 }
 
@@ -70,7 +104,7 @@ trait C3AppHandle {
     app.start()
   }
 
-  def stop(){
+  def stop() {
     app.stop()
   }
 

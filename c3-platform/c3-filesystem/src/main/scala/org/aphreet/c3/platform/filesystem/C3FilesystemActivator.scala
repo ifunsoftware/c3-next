@@ -1,24 +1,24 @@
 package org.aphreet.c3.platform.filesystem
 
-import org.aphreet.c3.platform.common.{C3AppHandle, DefaultComponentLifecycle, C3Activator}
-import org.osgi.framework.BundleContext
-import org.aphreet.c3.platform.filesystem.impl.{FSComponentImpl, FSCleanupComponentImpl}
+import akka.actor.ActorRefFactory
 import org.aphreet.c3.platform.access.{AccessComponent, AccessMediator, AccessManager}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.common.{C3ActorActivator, C3AppHandle, DefaultComponentLifecycle}
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigPersister, PlatformConfigManager}
+import org.aphreet.c3.platform.filesystem.impl.{FSComponentImpl, FSCleanupComponentImpl}
+import org.aphreet.c3.platform.metadata.{TransientMetadataComponent, TransientMetadataManager}
+import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
+import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
 import org.aphreet.c3.platform.storage.{StorageComponent, StorageManager}
 import org.aphreet.c3.platform.task.{TaskComponent, TaskManager}
-import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
-import org.aphreet.c3.platform.metadata.{TransientMetadataComponent, TransientMetadataManager}
-import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigPersister, PlatformConfigManager}
-import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
-import akka.actor.ActorRefFactory
-import org.aphreet.c3.platform.actor.ActorComponent
+import org.osgi.framework.BundleContext
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/18/13
  * Time:   12:01 AM
  */
-class C3FilesystemActivator extends C3Activator{
+class C3FilesystemActivator extends C3ActorActivator {
   def name = "c3-filesystem"
 
   def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {

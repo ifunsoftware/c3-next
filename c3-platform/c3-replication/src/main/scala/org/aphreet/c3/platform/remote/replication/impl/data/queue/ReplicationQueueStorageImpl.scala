@@ -59,7 +59,7 @@ class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorag
               database.put(null, key, value) match {
                 case OperationStatus.SUCCESS =>
                 case putStatus: OperationStatus =>
-                  log.warn("Can't put task to queue {} operation status is {}", task, putStatus)
+                  log.warn("Can't put task to queue {} operation status is {}", Array(task, putStatus))
               }
             }
 
@@ -71,12 +71,12 @@ class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorag
             database.put(null, key, value) match {
               case OperationStatus.SUCCESS =>
               case putStatus: OperationStatus =>
-                log.warn("Can't put task to queue {} operation status is {}", task, putStatus)
+                log.warn("Can't put task to queue {} operation status is {}", Array(task, putStatus))
             }
           }
 
           case _ => {
-            log.warn("Can't put task to queue {} operation status is {}", task, status)
+            log.warn("Can't put task to queue {} operation status is {}", Array(task, status))
           }
         }
       } catch {
@@ -122,7 +122,7 @@ class ReplicationQueueStorageImpl(val path: Path) extends ReplicationQueueStorag
 
 }
 
-class ReplicationQueueIteratorImpl(val database: Database) extends ReplicationQueueIterator{
+class ReplicationQueueIteratorImpl(val database: Database) extends ReplicationQueueIterator {
 
   val cursor = database.openCursor(null, null)
 

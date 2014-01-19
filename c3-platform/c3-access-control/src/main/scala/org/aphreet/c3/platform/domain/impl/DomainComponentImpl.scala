@@ -37,12 +37,12 @@ import java.util.{Random, UUID}
 import org.aphreet.c3.platform.access.CleanupComponent
 import org.aphreet.c3.platform.auth.HashUtil
 import org.aphreet.c3.platform.common.Logger
-import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigAccessor, SystemDirectoryProvider}
+import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigAccessor}
 import org.aphreet.c3.platform.domain._
 import org.aphreet.c3.platform.exception.PlatformException
 import scala.Some
 
-trait DomainComponentImpl extends DomainComponent{
+trait DomainComponentImpl extends DomainComponent {
 
   this: CleanupComponent
     with PlatformConfigComponent =>
@@ -148,12 +148,12 @@ trait DomainComponentImpl extends DomainComponent{
     def deleteDomain(name: String) {
       domains.get(name) match {
         case Some(domain) => {
-          if (domain.deleted){
+          if (domain.deleted) {
             throw new PlatformException("Domain with such name has been already deleted")
-          }else if (defaultDomainId == domain.id){
+          } else if (defaultDomainId == domain.id) {
             throw new PlatformException("Default domain can't be deleted")
-          }else{
-            log.info("Deleting domain {} ({})", domain.id, domain.name)
+          } else {
+            log.info("Deleting domain " + domain.id + " " + domain.name)
             domain.deleted = true
             storeDomainConfig()
             reloadDomainConfig()
@@ -180,10 +180,10 @@ trait DomainComponentImpl extends DomainComponent{
     }
 
     def setDefaultDomain(domainId: String) {
-      if (domainById.contains(domainId)){
+      if (domainById.contains(domainId)) {
         defaultDomainId = domainId
         storeDomainConfig()
-      }else{
+      } else {
         throw new DomainException("Can't find domain with id " + domainId)
       }
     }
@@ -204,7 +204,6 @@ trait DomainComponentImpl extends DomainComponent{
     }
 
 
-
     def domainById(id: String): Option[Domain] = {
       domainById.get(id)
     }
@@ -215,7 +214,7 @@ trait DomainComponentImpl extends DomainComponent{
       domains.get(name) match {
         case Some(d) => {
 
-          if (d.deleted){
+          if (d.deleted) {
             throw new DomainException("Domain not found")
           }
 
@@ -236,7 +235,7 @@ trait DomainComponentImpl extends DomainComponent{
           domainById.get(name) match {
             case Some(d) => {
 
-              if (d.deleted){
+              if (d.deleted) {
                 throw new DomainException("Domain not found")
               }
 
@@ -270,6 +269,7 @@ trait DomainComponentImpl extends DomainComponent{
     }
 
   }
+
 }
 
 object DomainManagerImpl {
@@ -283,7 +283,7 @@ object DomainManagerImpl {
         if (domain.name != importedDomain.name
           || domain.key != importedDomain.key
           || domain.mode != importedDomain.mode
-          || domain.deleted != importedDomain.deleted){
+          || domain.deleted != importedDomain.deleted) {
 
           log.debug("Updating domain " + domain + " with imported domain: " + importedDomain)
 

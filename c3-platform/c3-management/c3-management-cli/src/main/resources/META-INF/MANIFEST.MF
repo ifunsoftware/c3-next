@@ -6,7 +6,6 @@ Bundle-SymbolicName: org.aphreet.c3.platform.management.cli
 Bundle-Classpath: WEB-INF/classes
 Web-ContextPath: /manage
 Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
- eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  org.springframework.core;version="[2.5.6.SEC01,3.1.0.RELEASE]",
  org.springframework.context;version="[2.5.6.SEC01,3.1.0.RELEASE]",
  org.springframework.beans;version="[2.5.6.SEC01,3.1.0.RELEASE]",
@@ -21,6 +20,7 @@ Import-Bundle: org.scala-lang.scala-library;version="[2.10.1,2.11)",
  org.aphreet.c3.platform.accesscontrol;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.replication;version="[1.0.0,2.0.0)",
  org.aphreet.c3.platform.backup;version="[1.0.0,2.0.0)",
+ eu.medsea.mimeutil.mime-util;version="[2.1.2,2.1.2]",
  com.springsource.json;version="[1.0.1.RELEASE,1.0.1.RELEASE]",
  com.springsource.org.apache.commons.codec;version="[1.4.0,1.4.0]"
 Import-Package: javax.annotation;version="[1.0.0,1.0.0]",

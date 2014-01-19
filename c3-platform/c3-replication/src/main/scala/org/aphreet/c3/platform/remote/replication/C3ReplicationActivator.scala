@@ -1,26 +1,26 @@
 package org.aphreet.c3.platform.remote.replication
 
-import org.aphreet.c3.platform.common.{DefaultComponentLifecycle, C3AppHandle, C3Activator}
-import org.osgi.framework.BundleContext
-import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
-import org.aphreet.c3.platform.filesystem.{FSManager, FSComponent}
-import org.aphreet.c3.platform.domain.{DomainManager, DomainComponent}
+import akka.actor.ActorRefFactory
+import com.typesafe.config.{ConfigFactory, Config}
 import org.aphreet.c3.platform.access.{AccessManager, AccessMediator, AccessComponent}
+import org.aphreet.c3.platform.actor.ActorComponent
+import org.aphreet.c3.platform.auth.{AuthenticationManager, AuthenticationComponent}
+import org.aphreet.c3.platform.common.{C3ActorActivator, DefaultComponentLifecycle, C3AppHandle}
+import org.aphreet.c3.platform.config.{PlatformConfigManager, ConfigPersister, PlatformConfigComponent}
+import org.aphreet.c3.platform.domain.{DomainManager, DomainComponent}
+import org.aphreet.c3.platform.filesystem.{FSManager, FSComponent}
+import org.aphreet.c3.platform.remote.replication.impl.{NetworkSettings, ReplicationComponentImpl}
+import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
 import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
-import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponent}
-import org.aphreet.c3.platform.auth.{AuthenticationManager, AuthenticationComponent}
-import org.aphreet.c3.platform.remote.replication.impl.{NetworkSettings, ReplicationComponentImpl}
-import akka.actor.ActorRefFactory
-import org.aphreet.c3.platform.actor.ActorComponent
-import com.typesafe.config.{ConfigFactory, Config}
+import org.osgi.framework.BundleContext
 
 /**
  * Author: Mikhail Malygin
  * Date:   12/27/13
  * Time:   3:13 PM
  */
-class C3ReplicationActivator extends C3Activator {
+class C3ReplicationActivator extends C3ActorActivator {
   def name: String = "c3-replication"
 
   def createApplication(context: BundleContext, actorRefFactory: ActorRefFactory): C3AppHandle = {
@@ -78,7 +78,7 @@ class C3ReplicationActivator extends C3Activator {
     val bindAddress = NetworkSettings.replicationBindAddress
     val bindPort = NetworkSettings.replicationBindPort
 
-    log.info("Binding akka remote on {}:{}", bindAddress, bindPort)
+    log.info(s"Binding akka remote on $bindAddress:$bindPort")
 
     ConfigFactory.parseString(
       s"""

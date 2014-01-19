@@ -41,7 +41,7 @@ trait SearchComponentImpl extends SearchComponent {
 
   class SearchManagerImpl(val accessMediator: AccessMediator,
                           val platformConfigManager: PlatformConfigManager)
-    extends SearchManager  with SPlatformPropertyListener {
+    extends SearchManager with SPlatformPropertyListener {
 
     val log = Logger(getClass)
 
@@ -70,7 +70,7 @@ trait SearchComponentImpl extends SearchComponent {
       esClient.map(_.close())
     }
 
-    def init(){
+    def init() {
       log info "init SearchManagerImpl es"
       val settings = ImmutableSettings.settingsBuilder().put("cluster.name", esClusterName).build()
       val transportClient = new TransportClient(settings)
@@ -80,10 +80,10 @@ trait SearchComponentImpl extends SearchComponent {
         Some(client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()))
         .flatMap(response => Some(response.isExists))
 
-      if(exists.isEmpty){
+      if (exists.isEmpty) {
         esClient.flatMap(client => Some(client.admin().indices().prepareCreate(indexName).setSettings(
           ImmutableSettings.settingsBuilder()
-            .put ("index.mapping.attachment.ignore_errors",false)
+            .put("index.mapping.attachment.ignore_errors", false)
             .put("number_of_shards", 1)
             .put("index.numberOfReplicas", 0))
           .addMapping(docName, mapping)
@@ -99,32 +99,32 @@ trait SearchComponentImpl extends SearchComponent {
     def search(domain: String, text: String): SearchResult = {
       log debug "Search called with query: " + text
 
-      val queryBuilder:QueryStringQueryBuilder = QueryBuilders.queryString(text)
+      val queryBuilder: QueryStringQueryBuilder = QueryBuilders.queryString(text)
 
       val resp = esClient.flatMap(client => Some(client.prepareSearch(indexName)
-        .setQuery(queryBuilder )
+        .setQuery(queryBuilder)
         .addHighlightedField("document")
         .setHighlighterPreTags("<b>")
         .setHighlighterPostTags("</b>")
         .addHighlightedField("*")
-        .addFields("*","address")
+        .addFields("*", "address")
         .execute()
         .actionGet()))
 
       val searchResults = resp.flatMap(resp => Some(resp.getHits.hits().map(hit => {
         log debug "hit " + hit
-        if (!hit.getFields.containsKey("address"))  {
+        if (!hit.getFields.containsKey("address")) {
           None
         } else {
           val score = hit.getScore
           val address = hit.getFields.get("address").values().get(0).asInstanceOf[String]
-          val searchResultFragment = mapAsScalaMap(hit.getHighlightFields).map(e =>  SearchResultFragment(e._1, e._2.getFragments.map(_.string()))).toArray
+          val searchResultFragment = mapAsScalaMap(hit.getHighlightFields).map(e => SearchResultFragment(e._1, e._2.getFragments.map(_.string()))).toArray
           Some(SearchResultElement(address, null, score, searchResultFragment))
         }
       }).flatten.toList.toArray))
 
       searchResults match {
-        case Some(results) =>  SearchResult(text, results)
+        case Some(results) => SearchResult(text, results)
         case None => SearchResult(text, new Array[SearchResultElement](0))
       }
     }
@@ -135,19 +135,19 @@ trait SearchComponentImpl extends SearchComponent {
 
     def dumpIndex(path: String) {}
 
-    class SearchManagerActor extends Actor{
+    class SearchManagerActor extends Actor {
       def receive = {
         case ResourceAddedMsg(resource, source) =>
-          log.debug("Got resource added {}, {}", resource, source)
+          log.debug("Got resource added {}", resource)
           self ! IndexMsg(resource)
 
         case ResourceUpdatedMsg(resource, source) =>
-          log.debug("Got resource updated {}, {}", resource, source)
+          log.debug("Got resource updated {}", resource)
           self ! DeleteFromIndexMsg(resource.address)
           self ! IndexMsg(resource)
 
         case ResourceDeletedMsg(address, source) =>
-          log.debug("Got resource deleted {}, {}", address, source)
+          log.debug("Got resource deleted {}", address)
           self ! DeleteFromIndexMsg(address)
 
         case DeleteFromIndexMsg(address) =>
@@ -181,12 +181,12 @@ trait SearchComponentImpl extends SearchComponent {
       log.debug("{}: Deleting resource {}", address)
       var response: Option[DeleteResponse] = None
       try {
-        response = esClient.flatMap(client => Some(client.prepareDelete(indexName, docName, address).execute().actionGet() ))
+        response = esClient.flatMap(client => Some(client.prepareDelete(indexName, docName, address).execute().actionGet()))
       } catch {
         case e: Exception => log error "exception caught: " + e.printStackTrace()
       }
 
-      log.debug("Resource deleted from index ({}) : {}", address, response)
+      log.debug("Resource deleted from index ({}) : {}", Array(address, response))
       Map("address" -> address, "2" -> "3")
     }
 
@@ -210,7 +210,7 @@ trait SearchComponentImpl extends SearchComponent {
           .field("document", Base64.encodeBytes(resource.versions.head.data.getBytes))
           .endObject()
 
-        response = esClient.flatMap(client => Some (client.prepareIndex(indexName, docName, resource.address)
+        response = esClient.flatMap(client => Some(client.prepareIndex(indexName, docName, resource.address)
           .setSource(doc)
           .execute()
           .actionGet()))
@@ -220,7 +220,7 @@ trait SearchComponentImpl extends SearchComponent {
         case e: Exception => log error "exception caught: " + e.printStackTrace()
       }
 
-      log.debug("Resource writen to index ({}) : {}", resource.address, response.toString)
+      log.debug("Resource writen to index ({}) : {}", Array(resource.address, response))
       Map("address" -> resource.address,
         "es_metadata" -> "unknown") //TODO get indexed doc metadata (author, title, ...)
 
@@ -269,5 +269,7 @@ trait SearchComponentImpl extends SearchComponent {
     case class ResourceDeletedFromIndexMsg(address: String, extractedMetadata: Map[String, String])
 
     case class DeleteFromIndexMsg(address: String)
+
   }
+
 }

@@ -3,7 +3,7 @@ package org.aphreet.c3.platform.search
 import junit.framework.Assert._
 import org.aphreet.c3.platform.search.api.SearchResultElement
 
-class MultipleMetadataSearchTestCase extends AbstractSearchTestCase{
+class MultipleMetadataSearchTestCase extends AbstractSearchTestCase {
 
   def searchQuery = "+content-type:message +author:user0"
 
@@ -15,6 +15,6 @@ class MultipleMetadataSearchTestCase extends AbstractSearchTestCase{
   )
 
   def verifyResults(found: List[SearchResultElement]) {
-    assertEquals(List("address0", "address2"), found.map(e => e.address))
+    assertEquals(Set("address0", "address2"), found.map(e => e.address).toSet)
   }
 }
