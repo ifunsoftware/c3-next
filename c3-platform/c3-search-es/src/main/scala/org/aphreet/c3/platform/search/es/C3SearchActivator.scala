@@ -35,6 +35,7 @@ class C3SearchActivator extends C3ActorActivator {
 
     val module = new Object with DefaultComponentLifecycle
       with DependencyProvider
+      with ESTransportClientFactoryProvider
       with SearchComponentImpl
 
     new C3AppHandle {

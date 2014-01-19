@@ -12,16 +12,15 @@ import org.aphreet.c3.platform.search.api._
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
 import org.elasticsearch.action.delete.DeleteResponse
 import org.elasticsearch.action.index.IndexResponse
-import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.Base64
 import org.elasticsearch.common.settings.ImmutableSettings
-import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.xcontent.{XContentFactory, XContentBuilder}
 import org.elasticsearch.index.query.{QueryStringQueryBuilder, QueryBuilders}
 import scala.Some
 import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.util.control.Exception._
+import org.elasticsearch.client.Client
 
 /**
  * Need plugin
@@ -33,14 +32,16 @@ trait SearchComponentImpl extends SearchComponent {
   this: ComponentLifecycle
     with AccessComponent
     with ActorComponent
+    with ESClientFactoryProvider
     with PlatformConfigComponent =>
 
-  val searchManager = new SearchManagerImpl(accessMediator, platformConfigManager)
+  val searchManager = new SearchManagerImpl(accessMediator, platformConfigManager, clientFactory)
 
   destroy(Unit => searchManager.destroy())
 
   class SearchManagerImpl(val accessMediator: AccessMediator,
-                          val platformConfigManager: PlatformConfigManager)
+                          val platformConfigManager: PlatformConfigManager,
+                          val esClientFactory: ESClientFactory)
     extends SearchManager with SPlatformPropertyListener {
 
     val log = Logger(getClass)
@@ -53,7 +54,7 @@ trait SearchComponentImpl extends SearchComponent {
 
     var esClusterName = "c3cluster"
 
-    var esClient: Option[TransportClient] = None
+    var esClient: Option[Client] = None
 
     val indexName = "resources-index"
     val docName = "resource"
@@ -61,20 +62,22 @@ trait SearchComponentImpl extends SearchComponent {
     val async = actorSystem.actorOf(Props.create(classOf[SearchManagerActor], this))
 
     {
-      init()
+
+      init(esClientFactory)
     }
 
     def destroy() {
       log info "Destroying SearchManager"
       accessMediator ! UnregisterNamedListenerMsg(async, 'SearchManager)
-      esClient.map(_.close())
+      esClient.map(esClientFactory.destroyClient)
     }
 
-    def init() {
+
+    def init(esClientFactory: ESClientFactory){
+      destroy()
       log info "init SearchManagerImpl es"
       val settings = ImmutableSettings.settingsBuilder().put("cluster.name", esClusterName).build()
-      val transportClient = new TransportClient(settings)
-      esClient = Some(transportClient.addTransportAddress(new InetSocketTransportAddress(esHost, 9300)))
+      esClient = Some(esClientFactory.createClient(settings, Some(esHost)))
 
       val exists = esClient.flatMap(client =>
         Some(client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet()))
@@ -237,14 +240,14 @@ trait SearchComponentImpl extends SearchComponent {
           if (esHost != newHost) {
             log info "New esHost address : " + newHost
             esHost = newHost
-            init()
+            init(esClientFactory)
           }
         case ES_CLUSTER_NAME =>
           val newClusterName = event.newValue
           if (esClusterName != newClusterName) {
             log info "New esClusterName : " + newClusterName
             esClusterName = newClusterName
-            init()
+            init(esClientFactory)
           }
       }
     }
