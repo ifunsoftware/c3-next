@@ -12,6 +12,7 @@ import org.aphreet.c3.platform.search.api._
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
 import org.elasticsearch.action.delete.DeleteResponse
 import org.elasticsearch.action.index.IndexResponse
+import org.elasticsearch.client.Client
 import org.elasticsearch.common.Base64
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.xcontent.{XContentFactory, XContentBuilder}
@@ -20,7 +21,6 @@ import scala.Some
 import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.util.control.Exception._
-import org.elasticsearch.client.Client
 
 /**
  * Need plugin
@@ -73,7 +73,7 @@ trait SearchComponentImpl extends SearchComponent {
     }
 
 
-    def init(esClientFactory: ESClientFactory){
+    def init(esClientFactory: ESClientFactory) {
       destroy()
       log info "init SearchManagerImpl es"
       val settings = ImmutableSettings.settingsBuilder().put("cluster.name", esClusterName).build()

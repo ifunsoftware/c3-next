@@ -6,10 +6,10 @@ trait ESClientFactoryProvider {
 
 }
 
-trait ESTransportClientFactoryProvider extends ESClientFactoryProvider{
+trait ESTransportClientFactoryProvider extends ESClientFactoryProvider {
   def clientFactory = ESClientFactoryImpl
 }
 
-trait ESEmbededClientFactoryProvider extends ESClientFactoryProvider{
+trait ESEmbededClientFactoryProvider extends ESClientFactoryProvider {
   def clientFactory = ESEmbeddedClientFactoryImpl
 }
