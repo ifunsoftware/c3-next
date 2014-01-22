@@ -3,13 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>c3-platform</artifactId>
+        <artifactId>c3-search</artifactId>
         <groupId>org.aphreet.c3</groupId>
         <version>1.3.10-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-search-es</artifactId>
+    <name>C3 Search ES</name>
+    <packaging>jar</packaging>
+
     <properties>
       <es.version>0.90.5_1</es.version>
     </properties>
