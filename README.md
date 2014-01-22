@@ -38,8 +38,9 @@ cd $VIRGO_HOME/virgo/bin/
 ```
 
 ### C3 management console
-admin/password
-http://localhost:8080/manage/
+* URL: http://localhost:8080/manage/
+* Default credentials: admin/password
+
 
 ### File system endpoint
 
