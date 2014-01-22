@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-platform</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
     <name>C3 Platform</name>
 
     <parent>
         <groupId>org.aphreet.c3</groupId>
         <artifactId>c3-next</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1-SNAPSHOT</version>
     </parent>
 
     <modules>

@@ -33,7 +33,7 @@
     <parent>
         <artifactId>c3-platform</artifactId>
         <groupId>org.aphreet.c3</groupId>
-        <version>1.4.0</version>
+        <version>1.4.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
