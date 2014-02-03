@@ -33,21 +33,22 @@ package org.aphreet.c3.platform.management.cli.command.impl
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
-object MigrationCommands extends Commands{
+object MigrationCommands extends Commands {
 
   def instances = List(
-      new StartMigrationCommand
-    )
+    new StartMigrationCommand
+  )
 
 }
-class StartMigrationCommand extends Command{
+
+class StartMigrationCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 2){
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 2) {
       "Not enought params.\nUsage: start migration <source id> <target id>"
-    }else{
-      management.migrateStorage(params.head, params.tail.head)
+    } else {
+      management.coreManagement.migrateFromStorageToStorage(params.head, params.tail.head)
       "Migration started"
     }
   }

@@ -30,39 +30,39 @@
 
 package org.aphreet.c3.platform.remote.impl
 
-import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import org.aphreet.c3.platform.remote.api.RemoteException
+import javax.annotation.PostConstruct
 import org.aphreet.c3.platform.access.AccessManager
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.filesystem.{Directory, Node}
+import org.aphreet.c3.platform.remote.api.RemoteException
+import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
 import org.aphreet.c3.platform.resource.{IdGenerator, ResourceAddress, ResourceException, ResourceSerializer}
 import org.aphreet.c3.platform.storage.StorageManager
-import org.aphreet.c3.platform.filesystem.{Directory, Node}
-import javax.annotation.PostConstruct
-import org.aphreet.c3.platform.common.Logger
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 @Component("platformAccessService")
-class PlatformAccessServiceImpl extends PlatformAccessService{
+class PlatformAccessServiceImpl extends PlatformAccessService {
 
   @Autowired
-  var accessManager:AccessManager = _
+  var accessManager: AccessManager = _
 
   @Autowired
-  var storageManager:StorageManager = _
+  var storageManager: StorageManager = _
 
   val logger = Logger(getClass)
 
   @PostConstruct
-  def init(){
+  def init() {
     logger.info("Starting platform access service")
   }
 
-  def getResourceAsString(ra:String):String = {
+  def getResourceAsString(ra: String): String = {
 
-    try{
+    try {
       val resultBuilder = new StringBuilder
 
-      try{
+      try {
         val address = ResourceAddress(ra)
 
         resultBuilder.append("Resource info:\n")
@@ -71,8 +71,8 @@ class PlatformAccessServiceImpl extends PlatformAccessService{
 
         resultBuilder.append("\nStorages: " + storageManager.storageForAddress(address).map(_.id).getOrElse("Can't find storage for resource")).append("\n\n")
 
-      }catch{
-        case e:ResourceException => resultBuilder.append(e.getMessage)
+      } catch {
+        case e: ResourceException => resultBuilder.append(e.getMessage)
       }
 
 
@@ -80,7 +80,7 @@ class PlatformAccessServiceImpl extends PlatformAccessService{
         case Some(resource) => {
           resultBuilder.append(ResourceSerializer.toJSON(resource, full = true)).append("\n\n")
 
-          if (Node.canBuildFromResource(resource)){
+          if (Node.canBuildFromResource(resource)) {
 
             Node.fromResource(resource) match {
               case d: Directory => resultBuilder.append(d.toJSON)
@@ -94,7 +94,7 @@ class PlatformAccessServiceImpl extends PlatformAccessService{
 
       resultBuilder.toString()
 
-    }catch{
+    } catch {
       case e: Throwable => throw new RemoteException(e.getMessage)
     }
   }

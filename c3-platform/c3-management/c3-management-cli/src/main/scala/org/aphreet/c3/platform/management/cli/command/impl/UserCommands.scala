@@ -39,23 +39,23 @@ object UserCommands extends Commands {
     new AddUserCommand,
     new UpdateUserCommand,
     new DeleteUserCommand
-    )
+  )
 }
 
 class ListUsersCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService): String = {
+  def execute(management: PlatformManagementService): String = {
 
-    val users = management.listUsers
+    val users = management.userManagement.list
 
     val builder = new StringBuilder
 
     builder.append(String.format("%-12s %-8s\n", "User name", "Enabled"))
 
-    for(user <- users){
+    for (user <- users) {
 
-      builder.append(String.format("%-12s %-8b\n", user.name, user.enabled))
+      builder.append(String.format("%-12s %-8s\n", user.name, user.enabled.toString))
 
     }
 
@@ -69,7 +69,7 @@ class ListUsersCommand extends Command {
 class AddUserCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
+  def execute(params: List[String], management: PlatformManagementService) = {
 
     if (params.size < 3) {
       wrongParameters("create user <name> <password>")
@@ -77,7 +77,7 @@ class AddUserCommand extends Command {
 
       val array = params.toArray
 
-      management.addUser(array(0), array(1))
+      management.userManagement.create(array(0), array(1))
       "User created"
     }
   }
@@ -88,14 +88,14 @@ class AddUserCommand extends Command {
 class UpdateUserCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
+  def execute(params: List[String], management: PlatformManagementService) = {
     if (params.size < 3) {
       wrongParameters("update user <name> <password> <enabled>")
     } else {
 
       val array = params.toArray
 
-      management.updateUser(array(0), array(1), (array(2) == "true"))
+      management.userManagement.update(array(0), array(1), array(2) == "true")
       "User updated"
     }
 
@@ -108,11 +108,11 @@ class UpdateUserCommand extends Command {
 class DeleteUserCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
+  def execute(params: List[String], management: PlatformManagementService) = {
     if (params.size < 1) {
       wrongParameters("remove user <name>")
     } else {
-      management.deleteUser(params.head)
+      management.userManagement.delete(params.head)
       "User deleted"
     }
   }

@@ -31,9 +31,10 @@
 package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, RemoteTaskDescription}
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.task.{RUNNING, PAUSED, TaskState, TaskDescription}
 
-object TaskCommands extends Commands{
+object TaskCommands extends Commands {
 
   def instances = List(
     new ListRunningTasksCommand,
@@ -48,7 +49,7 @@ object TaskCommands extends Commands{
 abstract class ListTasksCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
+  def execute(management: PlatformManagementService): String = {
 
     val tasks = getTasks(management)
 
@@ -57,28 +58,28 @@ abstract class ListTasksCommand extends Command {
     builder.append(String.format("%-40s %-25s %-10s %s\n", "Task Id", "Task name", "Status", "Progress"))
 
 
-    for(t <- tasks){
+    for (t <- tasks) {
 
       val progress = t.progress match {
-        case "-1" => "N/A"
-        case _ => t.progress
+        case -1 => "N/A"
+        case _ => t.progress.toString
       }
 
-      builder.append(String.format("%-40s %-25s %-10s %s\n", t.id, t.name, t.status, progress))
+      builder.append(String.format("%-40s %-25s %-10s %s\n", t.id, t.name, t.state.toString, progress))
     }
 
     builder.toString()
 
   }
 
-  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription]
+  def getTasks(management: PlatformManagementService): List[TaskDescription]
 
 }
 
 class ListRunningTasksCommand extends ListTasksCommand {
 
   override
-  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listTasks
+  def getTasks(management: PlatformManagementService) = management.coreManagement.listTasks
 
   override
   def name = List("list", "tasks")
@@ -88,16 +89,16 @@ class ListRunningTasksCommand extends ListTasksCommand {
 class ListFinishedTasksCommand extends ListTasksCommand {
 
   override
-  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listFinishedTasks
+  def getTasks(management: PlatformManagementService) = management.coreManagement.listFinishedTasks
 
   override
   def name = List("list", "finished", "tasks")
 }
 
-class ListScheduledTasksCommand extends  ListTasksCommand {
+class ListScheduledTasksCommand extends ListTasksCommand {
 
   override
-  def getTasks(management:PlatformManagementService):Array[RemoteTaskDescription] = management.listScheduledTasks
+  def getTasks(management: PlatformManagementService) = management.coreManagement.listScheduledTasks
 
   override
   def name = List("list", "scheduled", "tasks")
@@ -106,12 +107,19 @@ class ListScheduledTasksCommand extends  ListTasksCommand {
 class SetTaskMode extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
-    if(params.size < 2){
+    if (params.size < 2) {
       wrongParameters("set task mode <id> <pause|resume>")
-    }else{
-      management.setTaskMode(params.head, params.tail.head )
+    } else {
+
+      val state: TaskState = params.tail.head match {
+        case "pause" => PAUSED
+        case "resume" => RUNNING
+        case _ => throw new IllegalArgumentException("Unknown state " + params.tail.head)
+      }
+
+      management.coreManagement.setTaskMode(params.head, state)
       "Resumed"
     }
   }
@@ -122,18 +130,18 @@ class SetTaskMode extends Command {
 class RescheduleTaskCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
-    if(params.size < 2){
+    if (params.size < 2) {
       wrongParameters("reschedule task <id> <crontab schedule>")
-    }else{
+    } else {
       val builder = new StringBuilder
       for (item <- params.tail) {
         builder.append(item).append(" ")
       }
       val crontabSchedule = builder.toString().replaceAll("\"", "").trim
 
-      management.rescheduleTask(params(0), crontabSchedule)
+      management.coreManagement.rescheduleTask(params(0), crontabSchedule)
       "Rescheduled"
     }
   }
@@ -144,11 +152,11 @@ class RescheduleTaskCommand extends Command {
 class RemoveScheduledTaskCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
     params.headOption match {
       case Some(value) => {
-        management.removeScheduledTask(value)
+        management.coreManagement.removeScheduledTask(value)
         "Removed"
       }
       case None => wrongParameters("remove scheduled task <id>")

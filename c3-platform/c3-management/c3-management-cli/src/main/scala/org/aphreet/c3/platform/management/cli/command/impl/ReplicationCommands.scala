@@ -57,7 +57,7 @@ class AddReplicationTarget extends Command {
 
       val paramsArray = params.toArray
 
-      management.createReplicationTarget(paramsArray(0), paramsArray(1).toInt, paramsArray(2), paramsArray(3))
+      management.replicationManagement.establishReplication(paramsArray(0), paramsArray(1).toInt, paramsArray(2), paramsArray(3))
       "Done"
     }
   }
@@ -72,7 +72,7 @@ class RemoveReplicationTarget extends Command {
     if (params.size < 1) {
       "Not enough params.\nUsage: remove replication target <systemid>"
     } else {
-      management.removeReplicationTarget(params.head)
+      management.replicationManagement.cancelReplication(params.head)
       "Done"
     }
   }
@@ -84,14 +84,14 @@ class ListReplicationTargets extends Command {
 
   override
   def execute(management: PlatformManagementService): String = {
-    val targets = management.listReplicationTargets
+    val targets = management.replicationManagement.listReplicationTargets
 
     val header = "|        ID       |              Host              |\n" +
       "|-----------------|--------------------------------|\n"
 
     val footer = "|-----------------|--------------------------------|\n"
 
-    targets.map(e => (String.format("| %-15s | %-30s |\n", e.systemId, e.hostname))).foldLeft(header)(_ + _) + footer
+    targets.map(e => String.format("| %-15s | %-30s |\n", e.systemId, e.hostname)).foldLeft(header)(_ + _) + footer
 
   }
 
@@ -102,7 +102,7 @@ class ReplayReplicationQueueCommand extends Command {
 
   override
   def execute(management: PlatformManagementService): String = {
-    management.replayReplicationQueue()
+    management.replicationManagement.replayReplicationQueue()
     "Retry started"
   }
 
@@ -114,7 +114,7 @@ class ResetReplicationQueueCommand extends Command {
 
   override
   def execute(management: PlatformManagementService): String = {
-    management.resetReplicationQueue()
+    management.replicationManagement.resetReplicationQueue()
     "Queue has been reset"
   }
 
@@ -129,7 +129,7 @@ class DumpReplicationQueueCommand extends Command {
 
     params.headOption match {
       case Some(path) => {
-        management.dumpReplicationQueue(path)
+        management.replicationManagement.dumpReplicationQueue(path)
         "Task has been submitted"
       }
 
@@ -146,7 +146,7 @@ class CopyDataToTargetCommand extends Command {
   override
   def execute(params: List[String], management: PlatformManagementService): String = {
     params.headOption match {
-      case Some(id) => management.copyDataToReplicationTarget(id); "Copy task submitted"
+      case Some(id) => management.replicationManagement.copyToTarget(id); "Copy task submitted"
       case None => wrongParameters("copy data to target <systemid>")
     }
   }

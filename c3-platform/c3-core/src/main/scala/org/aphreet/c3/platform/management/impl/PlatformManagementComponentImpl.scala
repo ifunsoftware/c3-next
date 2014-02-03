@@ -1,7 +1,5 @@
 package org.aphreet.c3.platform.management.impl
 
-import java.util
-import java.util.{Map => JMap}
 import org.aphreet.c3.platform.access.AccessComponent
 import org.aphreet.c3.platform.common.msg.StoragePurgedMsg
 import org.aphreet.c3.platform.common.{Logger, Path}
@@ -12,8 +10,9 @@ import org.aphreet.c3.platform.storage.dispatcher.selector.mime._
 import org.aphreet.c3.platform.storage.migration.MigrationComponent
 import org.aphreet.c3.platform.storage.{StorageComponent, StorageIndex, Storage, StorageMode}
 import org.aphreet.c3.platform.task._
+import scala.collection.Map
 
-trait PlatformManagementComponentImpl extends PlatformManagementComponent{
+trait PlatformManagementComponentImpl extends PlatformManagementComponent {
 
   this: TaskComponent
     with StatisticsComponent
@@ -25,7 +24,7 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
 
   val platformManagementEndpoint: PlatformManagementEndpoint = new PlatformManagementEndpointImpl
 
-  class PlatformManagementEndpointImpl extends PlatformManagementEndpoint{
+  class PlatformManagementEndpointImpl extends PlatformManagementEndpoint {
 
     val log = Logger(getClass)
 
@@ -33,17 +32,17 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
       log.info("Starting PlatformManagementEndpoint")
     }
 
-    def listStorages:List[Storage] = storageManager.listStorages
+    def listStorages: List[Storage] = storageManager.listStorages
 
-    def listStorageTypes:List[String] = storageManager.listStorageTypes
+    def listStorageTypes: List[String] = storageManager.listStorageTypes
 
-    def createStorage(storageType:String, path:String): Storage = {
-      val storagePath = if(path == null || path.isEmpty) None else Some(Path(path))
+    def createStorage(storageType: String, path: String): Storage = {
+      val storagePath = if (path == null || path.isEmpty) None else Some(Path(path))
 
       storageManager.createStorage(storageType, storagePath)
     }
 
-    def removeStorage(id:String) {
+    def removeStorage(id: String) {
       storageManager.storageForId(id).map(storageManager.removeStorage)
     }
 
@@ -52,37 +51,32 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
       accessMediator.async ! StoragePurgedMsg('PlatformManagement)
     }
 
-    def setStorageMode(id:String, mode:StorageMode) {
+    def setStorageMode(id: String, mode: StorageMode) {
       storageManager.setStorageMode(id, mode)
     }
 
-    def migrateFromStorageToStorage(sourceId:String, targetId:String) {
+    def migrateFromStorageToStorage(sourceId: String, targetId: String) {
       migrationManager.migrateStorageToStorage(sourceId, targetId)
     }
 
-    def getPlatformProperties:JMap[String, String] = {
-
-      val properties = new util.HashMap[String, String]
-
-      platformConfigManager.getPlatformProperties.foreach{e => properties.put(e._1, e._2)}
-
-      properties
+    def getPlatformProperties: Map[String, String] = {
+      platformConfigManager.getPlatformProperties
     }
 
-    def setPlatformProperty(key:String, value:String) {
+    def setPlatformProperty(key: String, value: String) {
 
-      if(key == null || value == null){
+      if (key == null || value == null) {
         throw new NullPointerException("Properties must be not-null")
       }
 
       platformConfigManager.async ! SetPropertyMsg(key, value)
     }
 
-    def listTasks:List[TaskDescription] = taskManager.taskList
+    def listTasks: List[TaskDescription] = taskManager.taskList
 
-    def listFinishedTasks:List[TaskDescription] = taskManager.finishedTaskList
+    def listFinishedTasks: List[TaskDescription] = taskManager.finishedTaskList
 
-    def setTaskMode(taskId:String, state:TaskState) {
+    def setTaskMode(taskId: String, state: TaskState) {
       state match {
         case PAUSED => taskManager.pauseTask(taskId)
         case RUNNING => taskManager.resumeTask(taskId)
@@ -100,27 +94,28 @@ trait PlatformManagementComponentImpl extends PlatformManagementComponent{
       taskManager.removeScheduledTask(id)
     }
 
-    def listTypeMappings:List[(String, Boolean)] = {
+    def listTypeMappings: List[(String, Boolean)] = {
       mimeStorageSelector.configEntries
     }
 
-    def addTypeMapping(mapping:(String, Boolean)) {
+    def addTypeMapping(mapping: (String, Boolean)) {
       mimeStorageSelector.addEntry(mapping)
     }
 
-    def removeTypeMapping(mimeType:String) {
+    def removeTypeMapping(mimeType: String) {
       mimeStorageSelector.removeEntry(mimeType)
     }
 
-    def statistics:Map[String,String] = statisticsManager.fullStatistics
+    def statistics: Map[String, String] = statisticsManager.fullStatistics
 
-    def createIndex(index:StorageIndex) {
+    def createIndex(index: StorageIndex) {
       storageManager.createIndex(index)
     }
 
-    def removeIndex(name:String) {
+    def removeIndex(name: String) {
       storageManager.removeIndex(name)
     }
 
   }
+
 }

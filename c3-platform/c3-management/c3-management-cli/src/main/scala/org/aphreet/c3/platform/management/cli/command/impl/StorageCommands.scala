@@ -29,11 +29,14 @@
  */
 package org.aphreet.c3.platform.management.cli.command.impl
 
+import org.aphreet.c3.platform.common.Constants._
+import org.aphreet.c3.platform.exception.StorageException
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, StorageDescription}
 import org.aphreet.c3.platform.remote.api.access.PlatformAccessService
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
+import org.aphreet.c3.platform.storage._
 
-object StorageCommands extends Commands{
+object StorageCommands extends Commands {
 
   def instances = List(
     new AddStorageCommand,
@@ -47,17 +50,17 @@ object StorageCommands extends Commands{
     new RemoveStorageIndexCommand,
     new StorageSummaryCommand,
     new PurgeStorageData
-    )
+  )
 }
 
-class AddStorageCommand extends Command{
+class AddStorageCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 1){
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 1) {
       wrongParameters("create storage <type> [<path>]")
-    }else{
-      management.createStorage(params.head, params.tail.headOption.getOrElse(""))
+    } else {
+      management.coreManagement.createStorage(params.head, params.tail.headOption.getOrElse(""))
       "Storage created"
     }
   }
@@ -66,15 +69,14 @@ class AddStorageCommand extends Command{
 }
 
 
-
-class DeleteStorageCommand extends Command{
+class DeleteStorageCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 1){
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 1) {
       wrongParameters("remove storage <storage id>")
-    }else{
-      management.removeStorage(params.head)
+    } else {
+      management.coreManagement.removeStorage(params.head)
       "Storage deleted"
     }
   }
@@ -83,15 +85,25 @@ class DeleteStorageCommand extends Command{
 
 }
 
-class SetStorageModeCommand extends Command{
+class SetStorageModeCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
-    if(params.size < 2){
-      "Not enought params.\nUsage: set storage mode <id> <mode>"
-    }else{
-      management.setStorageMode(params.head, params.tail.head)
+    if (params.size < 2) {
+      "Not enought params.\nUsage: set storage mode <id> RW|RO|U"
+    } else {
+
+      val storageId = params.head
+
+      val storageMode = params.tail.head match {
+        case "RW" => RW(STORAGE_MODE_USER)
+        case "RO" => RO(STORAGE_MODE_USER)
+        case "U" => U(STORAGE_MODE_USER)
+        case _ => throw new StorageException("No mode named " + params.tail.head)
+      }
+
+      management.coreManagement.setStorageMode(storageId, storageMode)
       "Mode set"
     }
   }
@@ -101,37 +113,35 @@ class SetStorageModeCommand extends Command{
 
 class ListStorageCommand extends Command {
 
-  def format(desc:StorageDescription):String =
+  def format(desc: Storage): String =
     String.format("| %-20s | %4s | %-10s | %6d | %-30s |\n",
-      desc.storageType,
-      desc.id,
-      desc.mode,
-      desc.count,
-      desc.path)
+      Array(desc.params.storageType,
+        desc.id,
+        desc.mode.toString,
+        desc.count,
+        desc.path.stringValue))
 
   val header = "|         Type         |  ID  |    Mode    | Count  |              Path              |\n" +
-          "|----------------------|------|------------|--------|--------------------------------|\n"
+    "|----------------------|------|------------|--------|--------------------------------|\n"
   val footer = "|----------------------|------|------------|--------|--------------------------------|\n"
 
   override
-  def execute(management:PlatformManagementService):String = {
-
-    management.listStorages.map(s => format(s)).foldLeft(header)(_ + _) + footer
-
+  def execute(management: PlatformManagementService): String = {
+    management.coreManagement.listStorages.map(format).foldLeft(header)(_ + _) + footer
   }
 
   def name = List("list", "storages")
 }
 
-class ListStorageTypesCommand extends Command{
+class ListStorageTypesCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
-    val types = management.listStorageTypes
+  def execute(management: PlatformManagementService): String = {
+    val types = management.coreManagement.listStorageTypes
 
     val builder = new StringBuilder
 
-    for(tp <- types){
+    for (tp <- types) {
       builder.append(tp).append("\n")
     }
 
@@ -145,15 +155,15 @@ class ListStorageTypesCommand extends Command{
 class ShowResourceCommand extends Command {
 
   override
-  def execute(params:List[String], access:PlatformAccessService, management:PlatformManagementService) = {
+  def execute(params: List[String], access: PlatformAccessService, management: PlatformManagementService) = {
 
-    if(params.length < 1){
+    if (params.length < 1) {
       "Not enought params.\nUsage: show resource <address>"
-    }else{
+    } else {
       val result = access.getResourceAsString(params.head)
-      if(result != null){
+      if (result != null) {
         result
-      }else{
+      } else {
         "Resource not found"
       }
     }
@@ -165,32 +175,32 @@ class ShowResourceCommand extends Command {
 class ShowStorageCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
-    if(params.length < 1){
+  def execute(params: List[String], management: PlatformManagementService) = {
+    if (params.length < 1) {
       "Not enough params.\nUsage: show storage <storage id>"
-    }else{
-      val storages = management.listStorages.filter(_.id == params.head)
+    } else {
+      val storages = management.coreManagement.listStorages.filter(_.id == params.head)
 
-      if(storages.size > 0){
+      if (storages.size > 0) {
         val storage = storages(0)
 
-        val indexes = if(storage.indexes != null){
-          storage.indexes.map(idx => {
+        val indexes = if (storage.params.indexes != null) {
+          storage.params.indexes.map(idx => {
             idx.name + " (" + idx.fields.reduceRight(_ + ", " + _) + ") sys:" + idx.system + " mul:" + idx.multi + " date:" + idx.created
           }).foldRight("")(_ + "\n" + _)
-        }else{
+        } else {
           ""
         }
 
         "Storage:\n" +
-                "Id     : " + storage.id + "\n" +
-                "Type   : " + storage.storageType + "\n" +
-                "Path   : " + storage.path + "\n" +
-                "Mode   : " + storage.mode + "\n" +
-                "Res.cnt: " + storage.count + "\n" +
-                "Indexes:\n" + indexes
+          "Id     : " + storage.id + "\n" +
+          "Type   : " + storage.params.storageType + "\n" +
+          "Path   : " + storage.path + "\n" +
+          "Mode   : " + storage.mode + "\n" +
+          "Res.cnt: " + storage.count + "\n" +
+          "Indexes:\n" + indexes
 
-      }else{
+      } else {
         "Storage with id \"" + params.head + "\" is not found"
       }
     }
@@ -202,18 +212,18 @@ class ShowStorageCommand extends Command {
 class CreateStorageIndexCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
-    if(params.length < 4){
+  def execute(params: List[String], management: PlatformManagementService) = {
+    if (params.length < 4) {
       "Not enough arguments.\nUsage: create storage index <index name> <system?> <multi?> <field0> <field1> ..."
-    }else{
+    } else {
       val indexParams = params.toArray
 
       val name = indexParams(0)
       val system = indexParams(1) == "true"
       val multi = indexParams(2) == "true"
-      val fields = params.drop(3).toArray
+      val fields = params.drop(3)
 
-      management.createStorageIndex(name, fields, system, multi)
+      management.coreManagement.createIndex(StorageIndex(name, fields, multi, system, System.currentTimeMillis()))
 
       "Index created"
     }
@@ -226,11 +236,11 @@ class CreateStorageIndexCommand extends Command {
 class RemoveStorageIndexCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService) = {
-    if(params.length < 1){
+  def execute(params: List[String], management: PlatformManagementService) = {
+    if (params.length < 1) {
       "Not enough arguments.\nUsage: remove storage index <index name>"
-    }else{
-      management.removeStorageIndex(params.head)
+    } else {
+      management.coreManagement.removeIndex(params.head)
       "Index removed"
     }
   }
@@ -241,9 +251,9 @@ class RemoveStorageIndexCommand extends Command {
 class StorageSummaryCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService) = {
+  def execute(management: PlatformManagementService) = {
 
-    val resourceNumber = management.listStorages.foldLeft(0l)(_ + _.getCount.longValue())
+    val resourceNumber = management.coreManagement.listStorages.foldLeft(0l)(_ + _.count.longValue())
 
     "The system is happily keeping " + resourceNumber + " resources"
   }
@@ -254,8 +264,8 @@ class StorageSummaryCommand extends Command {
 class PurgeStorageData extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
-    management.purgeStorageData()
+  def execute(management: PlatformManagementService): String = {
+    management.coreManagement.purgeStorageData()
 
     "All storage data purged"
   }

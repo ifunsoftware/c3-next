@@ -31,66 +31,65 @@
 package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.aphreet.c3.platform.management.cli.command.{Command, Commands}
-import org.aphreet.c3.platform.remote.api.management.{PlatformManagementService, Pair}
-import collection.immutable.TreeSet
+import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object PlatformPropertiesCommands extends Commands {
 
   def instances = List(
-      new SetPlatformPropertyCommand,
-      new ListPlatformPropertiesCommand,
-      new ListStatisticsCommand
-    )
+    new SetPlatformPropertyCommand,
+    new ListPlatformPropertiesCommand,
+    new ListStatisticsCommand
+  )
 }
 
 
-class SetPlatformPropertyCommand extends Command{
+class SetPlatformPropertyCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
-    if(params.size < 2){
+    if (params.size < 2) {
       "Not enought params\nUsage: set platform property <key> <value>"
-    }else{
-      management.setPlatformProperty(params.head, params.tail.head)
+    } else {
+      management.coreManagement.setPlatformProperty(params.head, params.tail.head)
       "Property set"
     }
 
   }
 
-  def name:List[String] = List("set", "platform", "property")
+  def name: List[String] = List("set", "platform", "property")
 }
 
-class ListPlatformPropertiesCommand extends Command{
+class ListPlatformPropertiesCommand extends Command {
 
-  val header = "|                    Key                     |                        Value                       |\n"+
-               "|--------------------------------------------|----------------------------------------------------|\n"
+  val header = "|                    Key                     |                        Value                       |\n" +
+    "|--------------------------------------------|----------------------------------------------------|\n"
 
   val footer = "|--------------------------------------------|----------------------------------------------------|\n"
 
   override
-  def execute(management:PlatformManagementService):String = {
-    management.platformProperties.sortBy(_.key)
-      .map(e => String.format("| %-42s | %-50s |\n", e.key, e.value)).foldLeft(header)(_ + _) + footer
+  def execute(management: PlatformManagementService): String = {
+    management.coreManagement.getPlatformProperties.toSeq.sortBy(_._1)
+      .map(e => String.format("| %-42s | %-50s |\n", e._1, e._2)).foldLeft(header)(_ + _) + footer
 
   }
 
-  def name:List[String] = List("list", "platform", "properties")
-  
+  def name: List[String] = List("list", "platform", "properties")
+
 }
 
-class ListStatisticsCommand extends Command{
+class ListStatisticsCommand extends Command {
 
   val header = "|                    Key                   |      Value      |\n" +
-               "|------------------------------------------|-----------------|\n"
+    "|------------------------------------------|-----------------|\n"
 
   val footer = "|------------------------------------------|-----------------|\n"
 
   override
-  def execute(management:PlatformManagementService):String = {
-    management.statistics.sortBy(_.key)
-      .map(e => (String.format("| %-40s | %15s |\n", e.key, e.value))).foldLeft(header)(_ + _) + footer
-    
+  def execute(management: PlatformManagementService): String = {
+    management.coreManagement.statistics.toSeq.sortBy(_._1)
+      .map(e => String.format("| %-40s | %15s |\n", e._1, e._2)).foldLeft(header)(_ + _) + footer
+
   }
 
   def name = List("show", "statistics")

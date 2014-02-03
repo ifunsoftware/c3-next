@@ -30,21 +30,19 @@
 
 package org.aphreet.c3.platform.remote.impl
 
-import org.aphreet.c3.platform.remote.api.RemoteApiService
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
 import org.aphreet.c3.platform.config.VersionManager
-import javax.jws.{WebMethod, WebService}
+import org.aphreet.c3.platform.remote.api.RemoteApiService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import org.springframework.web.context.support.SpringBeanAutowiringSupport
-import org.springframework.web.context.ContextLoader
 
 @Component("remoteApiService")
-class RemoteApiServiceImpl extends SpringBeanAutowiringSupport with RemoteApiService{
+class RemoteApiServiceImpl extends SpringBeanAutowiringSupport with RemoteApiService {
 
   @Autowired
-  var versionManager:VersionManager = _
+  var versionManager: VersionManager = _
 
-  def getVersion:String = versionManager.listC3Modules.get("org.aphreet.c3.platform.core") match {
+  def getVersion: String = versionManager.listC3Modules.get("org.aphreet.c3.platform.core") match {
     case Some(v) => v
     case None => "Unknown"
   }

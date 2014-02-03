@@ -33,27 +33,27 @@ package org.aphreet.c3.platform.management.cli.command.impl
 import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
-object TypeMappingCommands extends Commands{
+object TypeMappingCommands extends Commands {
 
   def instances = List(
-      new AddTypeMappingCommand,
-      new DeleteTypeMappingCommand,
-      new ListTypeMappingCommand
+    new AddTypeMappingCommand,
+    new DeleteTypeMappingCommand,
+    new ListTypeMappingCommand
   )
 }
 
-class AddTypeMappingCommand extends Command{
+class AddTypeMappingCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
-    if(params.size < 2)
+  def execute(params: List[String], management: PlatformManagementService): String = {
+    if (params.size < 2)
       wrongParameters("create type mapping <mimetype> <versioned>")
-    else{
+    else {
 
       val mimeType = params.head
       val versioned = params(1) == "true"
 
-      management.addTypeMapping(mimeType, versioned)
+      management.coreManagement.addTypeMapping(mimeType, versioned)
 
       "Type mapping added"
     }
@@ -63,15 +63,15 @@ class AddTypeMappingCommand extends Command{
 
 }
 
-class DeleteTypeMappingCommand extends Command{
+class DeleteTypeMappingCommand extends Command {
 
   override
-  def execute(params:List[String], management:PlatformManagementService):String = {
+  def execute(params: List[String], management: PlatformManagementService): String = {
 
-    if(params.size < 1){
+    if (params.size < 1) {
       wrongParameters("remove type mapping <mimetype>")
-    }else{
-      management.removeTypeMapping(params.head)
+    } else {
+      management.coreManagement.removeTypeMapping(params.head)
       "Type mapping removed"
     }
   }
@@ -79,15 +79,15 @@ class DeleteTypeMappingCommand extends Command{
   def name = List("remove", "type", "mapping")
 }
 
-class ListTypeMappingCommand extends Command{
+class ListTypeMappingCommand extends Command {
 
   override
-  def execute(management:PlatformManagementService):String = {
+  def execute(management: PlatformManagementService): String = {
 
     val builder = new StringBuilder
 
-    for(mapping <- management.listTypeMappings)
-      builder.append(String.format("%20s %b\n", mapping.mimeType, mapping.versioned))
+    for (mapping <- management.coreManagement.listTypeMappings)
+      builder.append(String.format("%20s %s\n", mapping._1, mapping._2.toString))
 
 
     builder.toString()
