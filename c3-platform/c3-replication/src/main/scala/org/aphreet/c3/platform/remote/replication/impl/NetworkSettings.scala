@@ -1,7 +1,7 @@
 package org.aphreet.c3.platform.remote.replication.impl
 
-import scala.collection.JavaConversions._
 import java.net.{InetAddress, NetworkInterface}
+import scala.collection.JavaConversions._
 
 /**
  * Author: Mikhail Malygin
@@ -11,20 +11,20 @@ import java.net.{InetAddress, NetworkInterface}
 object NetworkSettings {
 
   lazy val replicationBindAddress = resolveBindAddress()
-  
+
   lazy val replicationBindPort = resolveBindPort()
-  
+
   private def resolveBindPort(): String = {
-    getSystemProperty("c3.replication.address") match {
+    getSystemProperty("c3.replication.port") match {
       case Some(value) => value
-      case None => "2552"
+      case None => "7375"
     }
   }
-  
+
   private def resolveBindAddress(): String = {
     getConfiguredAddress match {
       case Some(value) => value
-      case None => nonLoacalIpAddresses().headOption match {
+      case None => nonLocalIpAddresses().headOption match {
         case Some(value) => value
         case None => "127.0.0.1"
       }
@@ -33,18 +33,18 @@ object NetworkSettings {
 
   private def getSystemProperty(name: String): Option[String] = {
     val value = System.getProperty(name)
-    if(value != null){
+    if (value != null) {
       Some(value)
-    }else{
+    } else {
       None
     }
   }
-  
-  private def getConfiguredAddress:Option[String] = {
+
+  private def getConfiguredAddress: Option[String] = {
     getSystemProperty("c3.replication.address")
   }
 
-  private def nonLoacalIpAddresses(): List[String] = {
+  private def nonLocalIpAddresses(): List[String] = {
 
     val interfaceAddresses = NetworkInterface.getNetworkInterfaces
       .toList.sortBy(_.getName).map(iface =>

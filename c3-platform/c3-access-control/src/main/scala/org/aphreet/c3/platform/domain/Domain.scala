@@ -35,7 +35,7 @@ import org.aphreet.c3.platform.common.Constants
 
 abstract sealed class DomainMode(val name: String) {
 
-  override def toString {
+  override def toString = {
     name
   }
 

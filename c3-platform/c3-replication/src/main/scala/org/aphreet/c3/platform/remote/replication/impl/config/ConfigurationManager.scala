@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met:
- * 
- 
+ *
+
  * 1. Redistributions of source code must retain the above copyright 
  * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above 
@@ -39,39 +39,39 @@ import org.aphreet.c3.platform.domain.DomainManager
 import org.aphreet.c3.platform.exception.ConfigurationException
 import org.aphreet.c3.platform.filesystem.FSManager
 import org.aphreet.c3.platform.remote.replication.ReplicationHost
-import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 import org.aphreet.c3.platform.remote.replication.impl.NetworkReplicationSettingsRetriever
+import org.aphreet.c3.platform.remote.replication.impl.ReplicationConstants._
 
-class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainManager, val platformConfigManager: PlatformConfigManager) extends DtoConvertor{
+class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainManager, val platformConfigManager: PlatformConfigManager) extends DtoConvertor {
 
   val networkSettingsRetriever = new NetworkReplicationSettingsRetriever(platformConfigManager)
 
   val log = Logger(getClass)
 
-  def processSerializedRemoteConfiguration(configuration:String) {
+  def processSerializedRemoteConfiguration(configuration: String) {
     processRemoteConfiguration(deserializeConfiguration(configuration))
   }
 
-  def deserializeConfiguration(configuration:String):PlatformInfo = {
-    val xStream = new XStream(new DomDriver("UTF-8"))
-
-    xStream.setClassLoader(classOf[PlatformInfo].getClassLoader)
-
-    xStream.fromXML(configuration).asInstanceOf[PlatformInfo]
+  def deserializeConfiguration(configuration: String): PlatformInfo = {
+    createStream().fromXML(configuration).asInstanceOf[PlatformInfo]
   }
 
-  def getSerializedConfiguration:String = {
+  def getSerializedConfiguration: String = {
     serializeConfiguration(getLocalConfiguration)
   }
 
-  def serializeConfiguration(platformInfo:PlatformInfo):String = {
-    val xStream = new XStream(new DomDriver("UTF-8"))
-
-    xStream.toXML(platformInfo)
+  def serializeConfiguration(platformInfo: PlatformInfo): String = {
+    createStream().toXML(platformInfo)
   }
-  
-  def processRemoteConfiguration(info:PlatformInfo){
-    synchronized{
+
+  private def createStream(): XStream = {
+    val xStream = new XStream(new DomDriver("UTF-8"))
+    xStream.setClassLoader(classOf[PlatformInfo].getClassLoader)
+    xStream
+  }
+
+  def processRemoteConfiguration(info: PlatformInfo) {
+    synchronized {
 
       log debug "Importing fs roots..."
 
@@ -83,7 +83,7 @@ class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainMa
     }
   }
 
-  def getLocalConfiguration:PlatformInfo = {
+  def getLocalConfiguration: PlatformInfo = {
 
     val domains = domainManager.domainList.map(d => new DomainDescription(d.id, d.name, d.key, d.mode.name, d.deleted)).toSeq.toArray
 
@@ -93,10 +93,10 @@ class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainMa
       createLocalReplicationHost,
       domains,
       fsRoots)
-    
+
   }
 
-  def createLocalReplicationHost:ReplicationHost = {
+  def createLocalReplicationHost: ReplicationHost = {
     val propertyRetriever = createLocalPropertyRetriever
 
     val systemId = propertyRetriever(Constants.C3_SYSTEM_ID)
@@ -108,21 +108,21 @@ class ConfigurationManager(val fsManager: FSManager, val domainManager: DomainMa
     ReplicationHost(systemId, systemHost, null, httpPort, httpsPort, replicationPort, null)
   }
 
-  private def createLocalPropertyRetriever:(String) => String = {
+  private def createLocalPropertyRetriever: (String) => String = {
     (key: String) => platformConfigManager.getPlatformProperties.get(key) match {
       case Some(value) => value
       case None => throw new ConfigurationException("Failed to get property " + key)
     }
   }
 
-  private def importDomains(remoteDomains:Array[DomainDescription], remoteSystemId:String) {
-    for(domain <- remoteDomains){
+  private def importDomains(remoteDomains: Array[DomainDescription], remoteSystemId: String) {
+    for (domain <- remoteDomains) {
       domainManager.importDomain(domainFromDescription(domain), remoteSystemId)
     }
   }
-  
-  private def importFsRoots(remoteRoots:Array[Pair]) {
-    for(pair <- remoteRoots){
+
+  private def importFsRoots(remoteRoots: Array[Pair]) {
+    for (pair <- remoteRoots) {
       fsManager.importFileSystemRoot(pair.key, pair.value)
     }
   }
