@@ -55,8 +55,10 @@ class BackupConfigAccessor(val persister: ConfigPersister) extends ConfigAccesso
 
       writer.key("schedule")
       writer.array()
-      for (s <- location.schedule) {
-        writer.value(s)
+      if(location.schedule != null){
+        for (s <- location.schedule) {
+          writer.value(s)
+        }
       }
       writer.endArray()
 

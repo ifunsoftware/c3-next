@@ -143,7 +143,7 @@ class ReplicationSender(val actorSystem: ActorRefFactory,
   def createCopyTasks(id: String, storageList: List[Storage]): Option[List[CopyTask]] = {
 
     remoteReplicationActors.get(id) match {
-      case Some(replicationLink) => Some(storageList.map(s => new CopyTask(s, replicationLink, localSystemId)))
+      case Some(replicationLink) => Some(storageList.map(s => new CopyTask(s, replicationLink, id)))
       case None => None
     }
 

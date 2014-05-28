@@ -83,7 +83,8 @@ class RemoteSystemDataStream(val host: ReplicationHost,
             inChannel.close()
           }
         }
-        case _ => throw new StorageException("Failed to get resource data, code " + status)
+        case _ => throw new StorageException("Failed to get resource data for resource "
+          + address + ", domain " + domainId + ", code " + status)
       }
     } finally {
       getMethod.releaseConnection()

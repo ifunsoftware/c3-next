@@ -115,11 +115,11 @@ class ListStorageCommand extends Command {
 
   def format(desc: Storage): String =
     String.format("| %-20s | %4s | %-10s | %6d | %-30s |\n",
-      Array(desc.params.storageType,
+      desc.params.storageType,
         desc.id,
         desc.mode.toString,
-        desc.count,
-        desc.path.stringValue))
+        desc.count.toString,
+        desc.path.stringValue)
 
   val header = "|         Type         |  ID  |    Mode    | Count  |              Path              |\n" +
     "|----------------------|------|------------|--------|--------------------------------|\n"

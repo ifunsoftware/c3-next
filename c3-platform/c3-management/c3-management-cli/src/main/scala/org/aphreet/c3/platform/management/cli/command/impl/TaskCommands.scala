@@ -65,7 +65,7 @@ abstract class ListTasksCommand extends Command {
         case _ => t.progress.toString
       }
 
-      builder.append(String.format("%-40s %-25s %-10s %s\n", t.id, t.name, t.state.toString, progress))
+      builder.append(String.format("%-40s %-25s %-10s %s\n", t.id, t.name, t.state.name, progress))
     }
 
     builder.toString()
