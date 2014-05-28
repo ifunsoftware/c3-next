@@ -93,11 +93,11 @@ class CreateLocalTargetCommand extends Command {
       wrongParameters("create target local <id> <path>")
     } else {
       management.backupManagement.createLocalTarget(params(0), params(1))
-      "Local target created"
+      "Local backup target created"
     }
   }
 
-  def name = List("create", "target", "local")
+  def name = List("create", "backup", "target", "local")
 }
 
 
@@ -115,11 +115,11 @@ class CreateRemoteTargetCommand extends Command {
       val key = new String(Base64.decodeBase64(encodedKey), "UTF-8")
 
       management.backupManagement.createRemoteTarget(paramsArray(0), paramsArray(1), paramsArray(2), paramsArray(3), key)
-      "Remote target created"
+      "Remote backup target created"
     }
   }
 
-  def name = List("create", "target", "remote")
+  def name = List("create", "backup", "target", "remote")
 }
 
 class RemoveTargetCommand extends Command {
@@ -132,11 +132,11 @@ class RemoveTargetCommand extends Command {
         "Target deleted"
       }
 
-      case None => wrongParameters("remove target <id / number>")
+      case None => wrongParameters("remove backup target <id / number>")
     }
   }
 
-  def name = List("remove", "target")
+  def name = List("remove", "backup", "target")
 }
 
 
@@ -170,7 +170,7 @@ class ListTargetsCommand extends Command {
     builder.toString()
   }
 
-  def name = List("list", "targets")
+  def name = List("list", "backup", "targets")
 }
 
 class ShowTargetInfoCommand extends Command {
@@ -205,5 +205,5 @@ class ShowTargetInfoCommand extends Command {
     }
   }
 
-  def name = List("show", "target")
+  def name = List("show", "backup", "target")
 }
