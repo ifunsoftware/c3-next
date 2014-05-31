@@ -1,18 +1,22 @@
 package org.aphreet.c3.platform.domain.impl
 
 import org.aphreet.c3.platform.accesscontrol.{LocalAccess, RemoteAccess, AccessType}
-import org.aphreet.c3.platform.domain.{DomainManager, Domain}
+import org.aphreet.c3.platform.auth.HashUtil
+import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.domain.{DomainException, DomainManager, Domain}
 
-class RestDomainAccessTokenFactory(val domainManager: DomainManager) extends DomainAccessTokenFactory{
+class RestDomainAccessTokenFactory(val domainManager: DomainManager) extends DomainAccessTokenFactory {
 
-  def supportsAccess(accessType: AccessType):Boolean = {
+  val log = Logger(getClass)
+
+  def supportsAccess(accessType: AccessType): Boolean = {
     accessType match {
       case RemoteAccess => true
       case LocalAccess => false
     }
   }
 
-  def retrieveDomain(accessParams: Map[String, String]):Domain = {
+  def retrieveDomain(accessParams: Map[String, String]): Domain = {
     import RestDomainAccessTokenFactory._
 
     val requestedDomain = accessParams.getOrElse(DOMAIN_HEADER, domainManager.getDefaultDomainId)
@@ -25,11 +29,31 @@ class RestDomainAccessTokenFactory(val domainManager: DomainManager) extends Dom
 
     val hash = accessParams.getOrElse(SIGN_HEADER, "")
 
-    domainManager.checkDomainAccess(requestedDomain, hash, hashBase)
+    verifySignatures(requestedDomain, hash, hashBase)
+  }
+
+  def verifySignatures(requestedDomain: String, hash: String, keyBase: String): Domain = {
+    domainManager.findDomain(requestedDomain) match {
+      case None => throw new DomainException("Requested domain " + requestedDomain + " not found")
+      case Some(domain) => {
+        val key = domain.key
+
+        if (key.isEmpty) {
+          domain
+        } else {
+          if (HashUtil.hmac(key, keyBase) == hash) {
+            domain
+          } else {
+            log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
+            throw new DomainException("Incorrect signature for signature base " + keyBase)
+          }
+        }
+      }
+    }
   }
 }
 
-object RestDomainAccessTokenFactory{
+object RestDomainAccessTokenFactory {
 
   val DOMAIN_HEADER = "x-c3-domain"
   val SIGN_HEADER = "x-c3-sign"

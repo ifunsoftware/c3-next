@@ -35,7 +35,6 @@ import collection.immutable.HashMap
 import java.lang.Integer
 import java.util.{Random, UUID}
 import org.aphreet.c3.platform.access.CleanupComponent
-import org.aphreet.c3.platform.auth.HashUtil
 import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.config.{PlatformConfigComponent, ConfigAccessor}
 import org.aphreet.c3.platform.domain._
@@ -208,55 +207,11 @@ trait DomainComponentImpl extends DomainComponent {
       domainById.get(id)
     }
 
-
-    def checkDomainAccess(name: String, hash: String, keyBase: String): Domain = {
-
-      domains.get(name) match {
-        case Some(d) => {
-
-          if (d.deleted) {
-            throw new DomainException("Domain not found")
-          }
-
-          val key = d.key
-
-          if (key.isEmpty) {
-            d
-          } else {
-            if (HashUtil.hmac(key, keyBase) == hash) {
-              d
-            } else {
-              log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
-              throw new DomainException("Incorrect signature for signature base " + keyBase)
-            }
-          }
-        }
-        case None => {
-          domainById.get(name) match {
-            case Some(d) => {
-
-              if (d.deleted) {
-                throw new DomainException("Domain not found")
-              }
-
-              val key = d.key
-              if (!key.isEmpty) {
-                if (HashUtil.hmac(key, keyBase) == hash) {
-                  d
-                } else {
-                  log.warn("Incorrect access attempt for signature base '" + keyBase + "' and key '" + key + "'")
-                  throw new DomainException("Incorrect signature for signature base " + keyBase)
-                }
-              } else {
-                d
-              }
-            }
-            case None => {
-              throw new DomainException("Domain not found")
-            }
-          }
-        }
-      }
+    def findDomain(idOrName: String): Option[Domain] = {
+      (domainById.get(idOrName) match {
+        case Some(domain) => Some(domain)
+        case None => domains.get(idOrName)
+      }).filter(!_.deleted)
     }
 
     def generateKey: String = {

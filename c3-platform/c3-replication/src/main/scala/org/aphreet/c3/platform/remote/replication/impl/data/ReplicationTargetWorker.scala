@@ -110,6 +110,12 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
 
       val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
+      if (shouldSkipReplication(resource)) {
+        log.info("Skipping add of resource {} due to disabled domain ", resource.address)
+        sendAddAck(target, resource, localSystemId, host)
+        return
+      }
+
       fillWithData(resource, host)
 
       storageManager.storageForResource(resource) match {
@@ -118,9 +124,7 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
 
           storage.update(resource)
 
-          val calculator = new ReplicationSignatureCalculator(localSystemId, host)
-
-          target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
+          sendAddAck(target, resource, localSystemId, host)
 
           accessMediator ! ResourceAddedMsg(resource, 'ReplicationManager)
 
@@ -154,13 +158,14 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
 
       val resource = Resource.fromByteArray(decryptor.decrypt(bytes))
 
+      if (shouldSkipReplication(resource)) {
+        log.info("Skipping update of resource {} due to disabled domain", resource.address)
+        sendUpdateAck(target, resource, localSystemId, host)
+        return
+      }
+
       storageManager.storageForResource(resource).filter(_.mode.allowWrite) match {
         case Some(storage) => {
-          if (!storage.mode.allowWrite) {
-            log warn "Failed to store resource, storage is not writable"
-            return
-          }
-
           fillWithData(resource, host)
 
           resource.verifyCheckSums()
@@ -172,11 +177,7 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
 
           handleDelay(resource)
 
-          val calculator = new ReplicationSignatureCalculator(localSystemId, host)
-
-          val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
-
-          target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
+          sendUpdateAck(target, resource, localSystemId, host)
         }
         case None => throw new StorageNotFoundException("Can't find storage for resource " + resource.address)
       }
@@ -186,6 +187,22 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
         log.error("Failed to replicate update", e)
       }
     }
+  }
+
+  private def sendUpdateAck(target: ActorRef, resource: Resource,
+                            localSystemId: String, host: ReplicationHost) {
+    val calculator = new ReplicationSignatureCalculator(localSystemId, host)
+
+    val timestamp: java.lang.Long = resource.lastUpdateDate.getTime
+
+    target ! ReplicateUpdateAckMsg(resource.address, timestamp, calculator.calculate(resource.address))
+  }
+
+  private def sendAddAck(target: ActorRef, resource: Resource,
+                         localSystemId: String, host: ReplicationHost) {
+    val calculator = new ReplicationSignatureCalculator(localSystemId, host)
+
+    target ! ReplicateAddAckMsg(resource.address, calculator.calculate(resource.address))
   }
 
   private def replicateDelete(address: String, signature: ReplicationSignature, target: ActorRef) {
@@ -231,14 +248,20 @@ class ReplicationTargetWorker(val actorSystem: ActorRefFactory,
     }
   }
 
-  private def fillWithData(resource: Resource, replicationHost: ReplicationHost) {
-
+  private def getDomain(resource: Resource): Domain = {
     val domainId = resource.systemMetadata(Domain.MD_FIELD).get
 
-    val domain = domainManager.domainById(domainId) match {
-      case Some(d) => d
-      case None => throw new ReplicationException("Failed to replicate resource: " + resource.address + " due to unknown domain")
+    domainManager.domainById(domainId).getOrElse {
+      throw new ReplicationException("Failed to replicate resource: " + resource.address + " due to unknown domain")
     }
+  }
+
+  private def shouldSkipReplication(resource: Resource): Boolean = {
+    getDomain(resource).deleted
+  }
+
+  private def fillWithData(resource: Resource, replicationHost: ReplicationHost) {
+    val domain = getDomain(resource)
 
     for (i <- 0 to resource.versions.size - 1) {
       val version = resource.versions(i)

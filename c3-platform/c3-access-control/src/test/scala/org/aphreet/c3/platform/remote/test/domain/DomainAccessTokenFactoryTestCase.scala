@@ -29,23 +29,23 @@
  */
 package org.aphreet.c3.platform.remote.test.domain
 
-import junit.framework.TestCase
-import org.easymock.EasyMock._
+import impl.{RestDomainAccessTokenFactory, DomainAccessToken}
 import junit.framework.Assert._
+import junit.framework.TestCase
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, UPDATE, READ}
 import org.aphreet.c3.platform.domain._
-import impl.{RestDomainAccessTokenFactory, DomainAccessToken}
+import org.easymock.EasyMock._
 
 
-class DomainAccessTokenFactoryTestCase extends TestCase{
+class DomainAccessTokenFactoryTestCase extends TestCase {
 
-  def testAnonymousDomain(){
+  def testAnonymousDomain() {
 
     val expectedDomain = Domain("anonymous-id", "anonymous", "", FullMode, deleted = false)
 
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+    val domainManager = createMock(classOf[DomainManager])
     expect(domainManager.getDefaultDomainId).andReturn("anonymous-id")
-    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain)
+    expect(domainManager.findDomain("anonymous-id")).andReturn(Some(expectedDomain))
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
@@ -57,13 +57,13 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     assertEquals(expectedDomain, token.asInstanceOf[DomainAccessToken].domain)
   }
 
-  def testAnonymousDomainRO(){
+  def testAnonymousDomainRO() {
 
     val expectedDomain = Domain("anonymous-id", "anonymous", "", ReadOnlyMode, deleted = false)
 
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
     expect(domainManager.getDefaultDomainId).andReturn("anonymous-id").times(2)
-    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain).times(2)
+    expect(domainManager.findDomain("anonymous-id")).andReturn(Some(expectedDomain)).times(2)
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
@@ -74,56 +74,55 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     assertEquals(READ, token.action)
     assertEquals(expectedDomain, token.asInstanceOf[DomainAccessToken].domain)
 
-    try{
+    try {
       tokenFactory.createAccessToken(UPDATE, Map("" -> ""))
 
       assertTrue(false)
-    }catch{
-      case e:AccessControlException =>
+    } catch {
+      case e: AccessControlException =>
       case e: Throwable => e.printStackTrace(); assertTrue(false)
     }
 
     verify(domainManager)
   }
 
-  def testAnonymousDomainDisabled(){
+  def testAnonymousDomainDisabled() {
     val expectedDomain = Domain("anonymous-id", "anonymous", "", DisabledMode, deleted = false)
 
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
     expect(domainManager.getDefaultDomainId).andReturn("anonymous-id").times(2)
-    expect(domainManager.checkDomainAccess("anonymous-id", "", "anonymous-id")).andReturn(expectedDomain).times(2)
+    expect(domainManager.findDomain("anonymous-id")).andReturn(None).times(2)
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
 
-    try{
+    try {
       tokenFactory.createAccessToken(READ, Map("" -> ""))
 
       assertTrue(false)
-    }catch{
-      case e:AccessControlException =>
+    } catch {
+      case e: AccessControlException =>
       case e: Throwable => assertTrue(false)
     }
 
-    try{
+    try {
       tokenFactory.createAccessToken(UPDATE, Map("" -> ""))
 
       assertTrue(false)
-    }catch{
-      case e:AccessControlException =>
+    } catch {
+      case e: AccessControlException =>
       case e: Throwable => assertTrue(false)
     }
 
     verify(domainManager)
   }
 
-  def testNamedDomain(){
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+  def testNamedDomain() {
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
 
-    val keyBase = "/rest/fs/directory/file.txtSun, 13 Mar 2011 23:37:51 MSKplab"
     val hash = "ee358e0b804ae5b18bc3ecf3924bee7dbc1c01425ab48e3dcb1990a038d2ea70"
 
-    expect(domainManager.checkDomainAccess("plab", hash, keyBase)).andReturn(Domain("domain-id", "plab", "", FullMode, deleted = false))
+    expect(domainManager.findDomain("plab")).andReturn(Some(Domain("domain-id", "plab", "", FullMode, deleted = false)))
 
     replay(domainManager)
 
@@ -142,71 +141,67 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
     verify(domainManager)
   }
 
-  def testNamedDomainNoSign(){
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+  def testNamedDomainNoSign() {
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
 
-    val keyBase = "/rest/fs/directory/file.txtSun, 13 Mar 2011 23:37:51 MSKplab"
-
-    expect(domainManager.checkDomainAccess("plab", "", keyBase)).andThrow(new DomainException())
+    expect(domainManager.findDomain("plab")).andReturn(Some(Domain("domain-id", "plab", "qwe", FullMode, deleted = false)))
 
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
 
-    try{
+    try {
       tokenFactory.createAccessToken(READ,
         Map("x-c3-domain" -> "plab",
           "x-c3-date" -> "Sun, 13 Mar 2011 23:37:51 MSK",
           "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
 
       assertTrue(false)
-    }catch{
-      case e:DomainException =>
+    } catch {
+      case e: DomainException =>
       case e: Throwable => e.printStackTrace()
-      assertTrue(false)
+        assertTrue(false)
     }
 
     verify(domainManager)
   }
 
-  def testNamedDomainNoDate(){
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+  def testNamedDomainNoDate() {
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
 
-    val keyBase = "/rest/fs/directory/file.txtplab"
-
-    expect(domainManager.checkDomainAccess("plab", "", keyBase)).andThrow(new DomainException())
+    expect(domainManager.findDomain("plab")).andReturn(
+      Some(Domain("domain-id", "plab", "qwe", FullMode, deleted = false)))
 
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
 
-    try{
+    try {
       tokenFactory.createAccessToken(READ,
         Map("x-c3-domain" -> "plab",
           "x-c3-request-uri" -> "/rest/fs/directory/file.txt"))
 
       assertTrue(false)
-    }catch{
-      case e:DomainException =>
+    } catch {
+      case e: DomainException =>
       case e: Throwable => assertTrue(false)
     }
 
     verify(domainManager)
   }
 
-  def testDeletedDomain(){
-    val domainManager:DomainManager = createMock(classOf[DomainManager])
+  def testDeletedDomain() {
+    val domainManager: DomainManager = createMock(classOf[DomainManager])
 
-    val keyBase = "/rest/fs/directory/file.txtSun, 13 Mar 2011 23:37:51 MSKplab"
     val hash = "ee358e0b804ae5b18bc3ecf3924bee7dbc1c01425ab48e3dcb1990a038d2ea70"
 
-    expect(domainManager.checkDomainAccess("plab", hash, keyBase)).andThrow(new DomainException("Domain not found"))
+    expect(domainManager.findDomain("plab")).andReturn(None)
 
     replay(domainManager)
 
     val tokenFactory = new RestDomainAccessTokenFactory(domainManager)
 
-    try{
+    try {
       tokenFactory.createAccessToken(READ,
         Map("x-c3-domain" -> "plab",
           "x-c3-sign" -> hash,
@@ -215,8 +210,8 @@ class DomainAccessTokenFactoryTestCase extends TestCase{
 
       fail("DomainException expected")
 
-    }catch{
-      case e: DomainException => assertEquals("Domain not found", e.getMessage)
+    } catch {
+      case e: DomainException => assertEquals("Requested domain plab not found", e.getMessage)
     }
     verify(domainManager)
   }

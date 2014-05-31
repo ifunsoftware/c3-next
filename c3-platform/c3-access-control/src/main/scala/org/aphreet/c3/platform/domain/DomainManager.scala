@@ -51,16 +51,16 @@ trait DomainManager {
 
   def domainById(id: String): Option[Domain]
 
-  def checkDomainAccess(name: String, hash: String, keyBase: String): Domain
-
   def getDefaultDomain: Domain
 
   def importDomain(domain: Domain, systemId: String)
 
   def deleteDomain(name: String)
+
+  def findDomain(idOrName: String): Option[Domain]
 }
 
-trait DomainComponent{
+trait DomainComponent {
 
   def domainManager: DomainManager
 
