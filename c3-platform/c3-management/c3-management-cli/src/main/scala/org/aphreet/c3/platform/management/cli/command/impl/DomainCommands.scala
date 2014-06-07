@@ -78,9 +78,13 @@ class CreateDomainCommand extends Command {
       wrongParameters("create domain <name>")
     } else {
 
-      management.domainManagement.addDomain(params.head)
+      if (management.domainManagement.domainList.contains(params.head)) {
+        "Domain with such name already exists (or existed and was deleted)"
+      } else {
+        management.domainManagement.addDomain(params.head)
 
-      "Domain created"
+        "Domain created"
+      }
     }
   }
 

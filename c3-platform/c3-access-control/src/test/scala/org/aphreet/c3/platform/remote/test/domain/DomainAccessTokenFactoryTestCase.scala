@@ -29,11 +29,11 @@
  */
 package org.aphreet.c3.platform.remote.test.domain
 
-import impl.{RestDomainAccessTokenFactory, DomainAccessToken}
 import junit.framework.Assert._
 import junit.framework.TestCase
 import org.aphreet.c3.platform.accesscontrol.{AccessControlException, UPDATE, READ}
 import org.aphreet.c3.platform.domain._
+import org.aphreet.c3.platform.domain.impl.{DomainAccessToken, RestDomainAccessTokenFactory}
 import org.easymock.EasyMock._
 
 
@@ -87,7 +87,7 @@ class DomainAccessTokenFactoryTestCase extends TestCase {
   }
 
   def testAnonymousDomainDisabled() {
-    val expectedDomain = Domain("anonymous-id", "anonymous", "", DisabledMode, deleted = false)
+    //    val expectedDomain = Domain("anonymous-id", "anonymous", "", DisabledMode, deleted = false)
 
     val domainManager: DomainManager = createMock(classOf[DomainManager])
     expect(domainManager.getDefaultDomainId).andReturn("anonymous-id").times(2)
