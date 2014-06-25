@@ -1,49 +1,50 @@
 package org.aphreet.c3.platform.storage.test.integration
 
-import junit.framework.TestCase
-import java.io.File
-import org.aphreet.c3.platform.common.Path
-import org.aphreet.c3.platform.storage._
-import collection.mutable
 import bdb.{AbstractBDBStorage, BDBStorageIterator}
-import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataStream, Resource}
+import java.io.File
+import java.util.{UUID, Date}
 import junit.framework.Assert._
+import junit.framework.TestCase
+import org.aphreet.c3.platform.common.Path
+import org.aphreet.c3.platform.query.impl.GlobalResourceIterator
+import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataStream, Resource}
+import org.aphreet.c3.platform.storage._
 import scala.Some
-import java.util.Date
+import scala.collection.mutable
 
-abstract class AbstractStorageTestCase extends TestCase{
+abstract class AbstractStorageTestCase extends TestCase {
 
-  var testDir:File = null
+  var testDir: File = null
 
-  var storagePath:Path = null
+  var storagePath: Path = null
 
   val conflictResolverProvider: ConflictResolverProvider = new ConflictResolverProvider {
     def conflictResolverFor(resource: Resource) = new DefaultConflictResolver
   }
 
-  def createStorage(id:String, disableIteratorFunctionFilter:Boolean = false):Storage = {
+  def createStorage(id: String, disableIteratorFunctionFilter: Boolean = false): Storage = {
     val params = new mutable.HashMap[String, String]()
 
     params.put(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT, "true")
 
-    if (disableIteratorFunctionFilter){
+    if (disableIteratorFunctionFilter) {
       params.put(AbstractBDBStorage.DISABLE_BDB_FUNCTION_FILTER, "true")
     }
 
     createStorage(id, params)
   }
 
-  def createStorage(id:String, params:mutable.HashMap[String, String]):Storage
+  def createStorage(id: String, params: mutable.HashMap[String, String]): Storage
 
-  override def setUp(){
-    testDir = new File(System.getProperty("user.home"), "c3_int_test")
+  override def setUp() {
+    testDir = new File(System.getProperty("user.home"), "c3_int_test-" + UUID.randomUUID().toString)
     testDir.mkdirs
-    storagePath = new Path(testDir.getAbsolutePath)
+    storagePath = new Path(testDir.getAbsoluteFile)
   }
 
-  override def tearDown(){
-    def delDir(directory:File) {
-      if(directory.isDirectory) directory.listFiles.foreach(delDir(_))
+  override def tearDown() {
+    def delDir(directory: File) {
+      if (directory.isDirectory) directory.listFiles.foreach(delDir(_))
       directory.delete
     }
     delDir(testDir)
@@ -53,7 +54,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     var storage = createStorage("1000")
 
-    try{
+    try {
 
       val resource = createResource()
 
@@ -68,7 +69,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(resource, readResource)
 
-      resource.versions(0).systemMetadata(Resource.MD_DATA_LENGTH) match{
+      resource.versions(0).systemMetadata(Resource.MD_DATA_LENGTH) match {
         case Some(value) => assertEquals(lengthString, value)
         case None => assertTrue("Data length sys md is not found", false)
       }
@@ -83,7 +84,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       }
 
       compareResources(resource, readResource)
-    }finally
+    } finally
       storage.close()
   }
 
@@ -91,13 +92,13 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     var storage = createStorage("1000")
 
-    try{
+    try {
 
       val resource = createResource()
 
       val ra = storage.add(resource)
 
-      var readResource:Resource = storage.get(ra) match {
+      var readResource: Resource = storage.get(ra) match {
         case Some(r) => r
         case None => null
       }
@@ -108,7 +109,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       storage = createStorage("1000")
 
-      storage.appendMetadata(ra, Map("sysmd1"->"sysvalue1"), system=true)
+      storage.appendMetadata(ra, Map("sysmd1" -> "sysvalue1"), system = true)
 
       readResource = storage.get(ra) match {
         case Some(r) => r
@@ -119,14 +120,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals("some_value", readResource.systemMetadata("key1").get)
 
 
-    }finally
+    } finally
       storage.close()
   }
 
   def testVersionedUpdate() {
     val storage = createStorage("1001")
 
-    try{
+    try {
 
       val resource = createResource(versioned = true)
       resource.isVersioned = true
@@ -150,14 +151,14 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close()
+    } finally storage.close()
 
   }
 
   def testVersionedNonTrivialUpdate() {
     val storage = createStorage("1001_1")
 
-    try{
+    try {
 
       val resource = createResource(versioned = true)
       resource.isVersioned = true
@@ -183,14 +184,14 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(resource, readResource, comparePersistedFlag = false)
 
-    }finally storage.close()
+    } finally storage.close()
 
   }
 
   def testVersionedNonTrivialUpdate2() {
     val storage = createStorage("1001_2")
 
-    try{
+    try {
 
       val resource = createResource(versioned = true)
       resource.isVersioned = true
@@ -235,7 +236,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals(readResource.versions(1).data.stringValue, "This is new data")
       assertEquals(readResource.versions(2).data.stringValue, "This is another data")
 
-    }finally storage.close()
+    } finally storage.close()
 
   }
 
@@ -243,7 +244,7 @@ abstract class AbstractStorageTestCase extends TestCase{
   def testVersionedNonTrivialUpdate3() {
     val storage = createStorage("1001_3")
 
-    try{
+    try {
 
       val resource = createResource(versioned = true)
       resource.isVersioned = true
@@ -300,14 +301,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertEquals(readResource.versions(3).data.stringValue, "This is fully new new data")
 
 
-    }finally storage.close()
+    } finally storage.close()
 
   }
 
   def testUnversionedUpdate() {
     val storage = createStorage("1002")
 
-    try{
+    try {
 
       val resource = createResource()
 
@@ -328,59 +329,59 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(resource, readResource)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testUnversionedNonTrivialUpdate() {
     val storage = createStorage("1002_1")
 
-        try{
-          val resource = createResource(versioned = false)
+    try {
+      val resource = createResource(versioned = false)
 
-          val ra = storage.add(resource)
+      val ra = storage.add(resource)
 
-          Thread.sleep(10) //Just to make sure we have another version timestamp
+      Thread.sleep(10) //Just to make sure we have another version timestamp
 
-          val readResource1 = storage.get(ra).get
-          readResource1.metadata("new_key") = "new_value"
-          readResource1.systemMetadata("new_md_key") = "new_md_value"
-          readResource1.addVersion(createVersion())
+      val readResource1 = storage.get(ra).get
+      readResource1.metadata("new_key") = "new_value"
+      readResource1.systemMetadata("new_md_key") = "new_md_value"
+      readResource1.addVersion(createVersion())
 
-          Thread.sleep(10)
+      Thread.sleep(10)
 
-          val readResource2 = storage.get(ra).get
-          readResource2.metadata("new_key") = "new_value3"
-          readResource2.systemMetadata("new_md_key2") = "new_md_value2"
-          readResource2.addVersion(createVersion("This is another data"))
+      val readResource2 = storage.get(ra).get
+      readResource2.metadata("new_key") = "new_value3"
+      readResource2.systemMetadata("new_md_key2") = "new_md_value2"
+      readResource2.addVersion(createVersion("This is another data"))
 
-          Thread.sleep(10)
+      Thread.sleep(10)
 
-          storage.update(readResource1)
-          storage.update(readResource2)
+      storage.update(readResource1)
+      storage.update(readResource2)
 
-          val readResource = storage.get(ra) match {
-            case Some(r) => r
-            case None => null
-          }
+      val readResource = storage.get(ra) match {
+        case Some(r) => r
+        case None => null
+      }
 
-          assertEquals(1, readResource.versions.size)
+      assertEquals(1, readResource.versions.size)
 
-          val expectedMeta = resource.metadata ++ readResource2.metadata
-          val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
+      val expectedMeta = resource.metadata ++ readResource2.metadata
+      val expectedSystemMeta = resource.systemMetadata ++ readResource1.systemMetadata ++ readResource2.systemMetadata
 
-          assertEquals(expectedMeta, readResource.metadata)
-          assertEquals(expectedSystemMeta, readResource.systemMetadata)
+      assertEquals(expectedMeta, readResource.metadata)
+      assertEquals(expectedSystemMeta, readResource.systemMetadata)
 
-          assertEquals(readResource.versions(0).data.stringValue, "This is another data")
+      assertEquals(readResource.versions(0).data.stringValue, "This is another data")
 
-        }finally storage.close()
-    }
+    } finally storage.close()
+  }
 
-  def testDelete(){
+  def testDelete() {
 
     val storage = createStorage("1003")
 
-    try{
+    try {
       val resource = createResource()
 
       val ra = storage.add(resource)
@@ -402,14 +403,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       assertTrue("Resource can't be not null after delete", readAfterDelete == null)
 
 
-    }finally storage.close()
+    } finally storage.close()
 
   }
 
   def testIterator() {
-    val storage  = createStorage("1004")
+    val storage = createStorage("1004")
 
-    try{
+    try {
 
       val res0 = createResource("1")
       val ra0 = storage.add(res0)
@@ -433,10 +434,10 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertEquals(1, storage.asInstanceOf[AbstractBDBStorage].iterators.size)
 
-      while(iterator.hasNext){
+      while (iterator.hasNext) {
         val readResource = iterator.next()
 
-        raMap.get(readResource.address) match{
+        raMap.get(readResource.address) match {
           case None => assertFalse("Found resource that we did not save", false)
           case Some(r) => {
             compareResources(r, readResource)
@@ -451,16 +452,16 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertTrue("Not all resource was accessed via iterator", raMap.size == 0)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
 
   def testIteratorWithOneIndex() {
-    val storage  = createStorage("1008", disableIteratorFunctionFilter = true)
+    val storage = createStorage("1008", disableIteratorFunctionFilter = true)
 
-    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system = false, multi = false, created = 0l))
 
-    try{
+    try {
 
       val res0 = createResource("1")
       res0.metadata("pool") = "pool0"
@@ -481,14 +482,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       raMap.put(ra2, res2)
 
 
-      val iterator = storage.iterator(fields=Map("pool" -> "pool0"))
+      val iterator = storage.iterator(fields = Map("pool" -> "pool0"))
 
       assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
-      while(iterator.hasNext){
+      while (iterator.hasNext) {
         val readResource = iterator.next()
 
-        raMap.get(readResource.address) match{
+        raMap.get(readResource.address) match {
           case None => assertFalse("Found resource that we did not save", false)
           case Some(r) => {
             compareResources(r, readResource)
@@ -501,15 +502,15 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testIteratorWithOneSystemIndex() {
-    val storage  = createStorage("1009", disableIteratorFunctionFilter = true)
+    val storage = createStorage("1009", disableIteratorFunctionFilter = true)
 
-    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=true, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system = true, multi = false, created = 0l))
 
-    try{
+    try {
 
       val res0 = createResource("1")
       res0.systemMetadata("pool") = "pool0"
@@ -530,14 +531,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       raMap.put(ra2, res2)
 
 
-      val iterator = storage.iterator(systemFields=Map("pool" -> "pool0"))
+      val iterator = storage.iterator(systemFields = Map("pool" -> "pool0"))
 
       assertEquals(1, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
-      while(iterator.hasNext){
+      while (iterator.hasNext) {
         val readResource = iterator.next()
 
-        raMap.get(readResource.address) match{
+        raMap.get(readResource.address) match {
           case None => assertFalse("Found resource that we did not save", false)
           case Some(r) => {
             compareResources(r, readResource)
@@ -550,19 +551,19 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testIteratorWithTwoIndexes() {
-    val storage  = createStorage("1010", disableIteratorFunctionFilter = true)
+    val storage = createStorage("1010", disableIteratorFunctionFilter = true)
 
-    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
-    storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system=true, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system = false, multi = false, created = 0l))
+    storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system = true, multi = false, created = 0l))
 
-    try{
+    try {
 
       val res0 = createResource("1")
-      res0.metadata("pool") ="pool0"
+      res0.metadata("pool") = "pool0"
       res0.systemMetadata("c3.pool") = "pool0"
       val ra0 = storage.add(res0)
 
@@ -592,14 +593,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       raMap.put(ra2, res2)
 
 
-      val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
+      val iterator = storage.iterator(fields = Map("pool" -> "pool0"), systemFields = Map("c3.pool" -> "pool0"))
 
       assertEquals(2, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
-      while(iterator.hasNext){
+      while (iterator.hasNext) {
         val readResource = iterator.next()
 
-        raMap.get(readResource.address) match{
+        raMap.get(readResource.address) match {
           case None => assertFalse("Found resource that we did not save", false)
           case Some(r) => {
             compareResources(r, readResource)
@@ -612,16 +613,16 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testIteratorWithoutIndexes() {
-    val storage  = createStorage("1011")
+    val storage = createStorage("1011")
 
     //storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
     //storage.createIndex(new StorageIndex("pool_idx_sys", List("c3.pool"), system=true, multi=false, created=0l))
 
-    try{
+    try {
 
       val res0 = createResource("1")
       res0.metadata("pool") = "pool0"
@@ -644,7 +645,7 @@ abstract class AbstractStorageTestCase extends TestCase{
       storage.add(res4)
 
       val res5 = createResource("5")
-      res5.systemMetadata("c3.pool") ="pool0"
+      res5.systemMetadata("c3.pool") = "pool0"
       storage.add(res5)
 
 
@@ -654,14 +655,14 @@ abstract class AbstractStorageTestCase extends TestCase{
       raMap.put(ra2, res2)
 
 
-      val iterator = storage.iterator(fields=Map("pool" -> "pool0"), systemFields=Map("c3.pool" -> "pool0"))
+      val iterator = storage.iterator(fields = Map("pool" -> "pool0"), systemFields = Map("c3.pool" -> "pool0"))
 
       assertEquals(0, iterator.asInstanceOf[BDBStorageIterator].secCursors.size)
 
-      while(iterator.hasNext){
+      while (iterator.hasNext) {
         val readResource = iterator.next()
 
-        raMap.get(readResource.address) match{
+        raMap.get(readResource.address) match {
           case None => assertFalse("Found resource that we did not save", false)
           case Some(r) => {
             compareResources(r, readResource)
@@ -674,16 +675,16 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       assertTrue("Not all resources were accessed via iterator", raMap.size == 0)
 
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testSize() {
     val storage = createStorage("1005")
 
-    try{
+    try {
       storage.add(createResource())
       assertTrue(storage.usedCapacity > 0)
-    }finally storage.close()
+    } finally storage.close()
   }
 
   def testPut() {
@@ -691,7 +692,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     val storage1 = createStorage("1007")
 
     val resource = createResource()
-    try{
+    try {
       val ra = storage0.add(resource)
 
       val readResource = storage0.get(ra) match {
@@ -708,13 +709,13 @@ abstract class AbstractStorageTestCase extends TestCase{
 
       compareResources(readResource, readFrom1)
 
-    }finally{
+    } finally {
       storage0.close()
       storage1.close()
     }
   }
 
-  def testLateIndexCreate(){
+  def testLateIndexCreate() {
 
     val storage = createStorage("1012", disableIteratorFunctionFilter = true)
 
@@ -734,7 +735,7 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     verifyIteratorContents(expectedResources, iterator)
 
-    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system = false, multi = false, created = 0l))
 
     //verifying that index has been recreated
     expectedResources.put(ra, resource)
@@ -746,12 +747,12 @@ abstract class AbstractStorageTestCase extends TestCase{
     storage.close()
   }
 
-  def testIterateOverCreatedField(){
+  def testIterateOverCreatedField() {
 
     val storage = createStorage("1013", disableIteratorFunctionFilter = true)
 
-    storage.createIndex(new StorageIndex("created_idx", List("created"), system=true, multi=false, created=0l))
-    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system=false, multi=false, created=0l))
+    storage.createIndex(new StorageIndex("created_idx", List("created"), system = true, multi = false, created = 0l))
+    storage.createIndex(new StorageIndex("pool_idx", List("pool"), system = false, multi = false, created = 0l))
 
     val resource1 = createResource("qweqweqwe")
     resource1.createDate = new Date(1)
@@ -786,8 +787,43 @@ abstract class AbstractStorageTestCase extends TestCase{
 
   }
 
-  private def verifyIteratorContents(expectedResources:mutable.HashMap[String, Resource], iterator:StorageIterator){
-    while(iterator.hasNext){
+  def testGlobalIterator() {
+
+    System.out.println("Testing " + getClass.getSimpleName)
+
+    val storageList = List(
+      createStorage("1014"),
+      createStorage("1015"),
+      createStorage("1016")
+    )
+
+    val addresses = new mutable.HashSet[String]
+
+    addresses.add(storageList(0).add(createResource("czcxcc")))
+    addresses.add(storageList(0).add(createResource("bla-bla-bla")))
+    addresses.add(storageList(1).add(createResource("qewew")))
+    addresses.add(storageList(1).add(createResource("dadsadasd")))
+    addresses.add(storageList(2).add(createResource("zxcxzcx")))
+    addresses.add(storageList(2).add(createResource("qweqweeqwewew")))
+
+    val iterator = new GlobalResourceIterator(storageList, Map(), Map())
+
+    while (iterator.hasNext) {
+      val resource = iterator.next()
+      if (addresses.contains(resource.address)) {
+        addresses.remove(resource.address)
+      } else {
+        fail("Unexpected resource " + resource.address)
+      }
+    }
+
+    iterator.close()
+
+    assertTrue(addresses.isEmpty)
+  }
+
+  private def verifyIteratorContents(expectedResources: mutable.HashMap[String, Resource], iterator: StorageIterator) {
+    while (iterator.hasNext) {
       val fetchedResource = iterator.next()
 
       expectedResources.get(fetchedResource.address) match {
@@ -804,7 +840,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     assertTrue("Not all resources found via iterator: " + expectedResources.keySet.toList, expectedResources.isEmpty)
   }
 
-  private def compareResources(res0:Resource, res1:Resource, comparePersistedFlag: Boolean = true) {
+  private def compareResources(res0: Resource, res1: Resource, comparePersistedFlag: Boolean = true) {
     assertFalse("Resource can't be null", res0 == null || res1 == null)
 
     assertEquals("Resource addresses do not match", res0.address, res1.address)
@@ -819,17 +855,17 @@ abstract class AbstractStorageTestCase extends TestCase{
 
     assertEquals("Resources have different version count", res0.versions.size, res1.versions.size)
 
-    for(i <- 0 to res0.versions.size - 1){
+    for (i <- 0 to res0.versions.size - 1) {
       val v0 = res0.versions(i)
       val v1 = res1.versions(i)
 
       assertEquals("Version dates do not match", v0.date, v1.date)
 
-      assertEquals("Version metadata do not match" , v0.systemMetadata, v1.systemMetadata)
+      assertEquals("Version metadata do not match", v0.systemMetadata, v1.systemMetadata)
 
       assertEquals("Version revision do not match", v0.revision, v1.revision)
 
-      if (comparePersistedFlag){
+      if (comparePersistedFlag) {
         assertEquals("Version persisted flag do not match", v0.persisted, v1.persisted)
       }
 
@@ -837,14 +873,14 @@ abstract class AbstractStorageTestCase extends TestCase{
     }
   }
 
-  private def isDatumEqual(d0:DataStream, d1:DataStream):Boolean = {
+  private def isDatumEqual(d0: DataStream, d1: DataStream): Boolean = {
 
-    if(d0.length != d1.length){
-      println("data lengths are not equal " + d0.length + " " + d1.length )
+    if (d0.length != d1.length) {
+      println("data lengths are not equal " + d0.length + " " + d1.length)
       return false
     }
 
-    if(d0.mimeType != d1.mimeType){
+    if (d0.mimeType != d1.mimeType) {
       println("data mime types are not equal " + d0.mimeType + " " + d1.mimeType)
       return false
     }
@@ -852,8 +888,8 @@ abstract class AbstractStorageTestCase extends TestCase{
     val thisBytes = d0.getBytes
     val thatBytes = d1.getBytes
 
-    for(i <- 0 to thatBytes.size - 1){
-      if(thisBytes(i) != thatBytes(i)){
+    for (i <- 0 to thatBytes.size - 1) {
+      if (thisBytes(i) != thatBytes(i)) {
         printf("Byte streams are not equal at position %d exp: %d act: %d\n", i, thisBytes(i), thatBytes(i))
         return false
       }
@@ -862,7 +898,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     true
   }
 
-  private def createResource(data:String = "", versioned:Boolean=false):Resource = {
+  private def createResource(data: String = "", versioned: Boolean = false): Resource = {
 
     val resource = new Resource
     resource.metadata("key") = "some_value"
@@ -881,7 +917,7 @@ abstract class AbstractStorageTestCase extends TestCase{
     resource
   }
 
-  private def createVersion(data:String = "This is new data") :ResourceVersion = {
+  private def createVersion(data: String = "This is new data"): ResourceVersion = {
     val version = new ResourceVersion
 
     version.systemMetadata("key3") = "some_value3"

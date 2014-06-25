@@ -31,18 +31,19 @@
 package org.aphreet.c3.platform.query.impl
 
 import org.aphreet.c3.platform.common.Disposable._
-import org.aphreet.c3.platform.common.Logger
+import org.aphreet.c3.platform.common.{CloseableIterator, Logger}
 import org.aphreet.c3.platform.query._
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.StorageComponent
 import scala.util.control.Exception._
 
-trait QueryComponentImpl extends QueryComponent{
+trait QueryComponentImpl extends QueryComponent {
 
   this: StorageComponent =>
 
   val queryManager: QueryManager = new QueryManagerImpl
 
-  class QueryManagerImpl extends QueryManager{
+  class QueryManagerImpl extends QueryManager {
 
     val log = Logger(classOf[QueryComponentImpl])
 
@@ -51,9 +52,9 @@ trait QueryComponentImpl extends QueryComponent{
     }
 
     override
-    def executeQuery[T](fields:Map[String, String],
-                        systemFields:Map[String, String],
-                        consumer:GenericQueryConsumer[T]): T = {
+    def executeQuery[T](fields: Map[String, String],
+                        systemFields: Map[String, String],
+                        consumer: GenericQueryConsumer[T]): T = {
 
       log.debug("Starting query fields: " + fields + " systemFields: " + systemFields)
 
@@ -62,12 +63,20 @@ trait QueryComponentImpl extends QueryComponent{
         .apply(
         storageManager.listStorages.filter(_.mode.allowRead).foreach(storage =>
           using(storage.iterator(fields, systemFields))(iterator =>
-            while(iterator.hasNext && consumer.consume(iterator.next())){}
+            while (iterator.hasNext && consumer.consume(iterator.next())) {}
           )
         )
       )
 
       consumer.result
     }
+
+    def contentIterator(fields: Map[String, String],
+                        systemFields: Map[String, String]): CloseableIterator[Resource] = {
+
+      new GlobalResourceIterator(storageManager.listStorages.filter(_.mode.allowRead), fields, systemFields)
+    }
   }
+
+
 }

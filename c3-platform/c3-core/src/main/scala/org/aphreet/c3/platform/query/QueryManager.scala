@@ -30,15 +30,21 @@
 
 package org.aphreet.c3.platform.query
 
-trait QueryManager{
+import org.aphreet.c3.platform.common.CloseableIterator
+import org.aphreet.c3.platform.resource.Resource
 
-  def executeQuery[T](fields:Map[String, String] = Map(),
-                   systemFields:Map[String, String] = Map(),
-                   consumer:GenericQueryConsumer[T]): T
+trait QueryManager {
+
+  def executeQuery[T](fields: Map[String, String] = Map(),
+                      systemFields: Map[String, String] = Map(),
+                      consumer: GenericQueryConsumer[T]): T
+
+  def contentIterator(fields: Map[String, String] = Map(),
+                      systemFields: Map[String, String] = Map()): CloseableIterator[Resource]
 
 }
 
-trait QueryComponent{
+trait QueryComponent {
 
   def queryManager: QueryManager
 
