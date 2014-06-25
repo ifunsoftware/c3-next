@@ -11,6 +11,7 @@ import org.aphreet.c3.platform.statistics.{StatisticsManager, StatisticsComponen
 import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.osgi.framework.BundleContext
+import org.aphreet.c3.platform.query.{QueryManager, QueryComponent}
 
 /**
  * Author: Mikhail Malygin
@@ -28,6 +29,7 @@ class C3SearchActivator extends C3ActorActivator {
     with PlatformConfigComponent
     with TaskComponent
     with ActorComponent
+    with QueryComponent
     with StatisticsComponent {
       val accessManager = getService(context, classOf[AccessManager])
 
@@ -44,6 +46,8 @@ class C3SearchActivator extends C3ActorActivator {
       val configPersister = getService(context, classOf[ConfigPersister])
 
       val actorSystem = actorRefFactory
+
+      val queryManager = getService(context, classOf[QueryManager])
     }
 
     val module = new Object with DefaultComponentLifecycle

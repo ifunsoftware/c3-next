@@ -46,8 +46,9 @@ import org.aphreet.c3.platform.search.lucene.DropFieldConfiguration
 import org.aphreet.c3.platform.actor.ActorComponent
 import org.aphreet.c3.platform.search.lucene.impl.index.extractor.TikaHttpTextExtractor
 import org.aphreet.c3.platform.search.lucene.impl.SearchComponentProtocol.{UpdateIndexCreationTimestamp, ResourceIndexedMsg, ResourceIndexingFailed}
+import org.aphreet.c3.platform.query.QueryComponent
 
-trait SearchComponentImpl extends SearchComponent{
+trait SearchComponentImpl extends SearchComponent {
 
   this: AccessComponent
     with ActorComponent
@@ -55,6 +56,7 @@ trait SearchComponentImpl extends SearchComponent{
     with PlatformConfigComponent
     with TaskComponent
     with StatisticsComponent
+    with QueryComponent
     with ComponentLifecycle =>
 
   val searchConfigurationManager = new SearchConfigurationManagerImpl(actorSystem,
@@ -74,9 +76,9 @@ trait SearchComponentImpl extends SearchComponent{
 
     var indexer: ResourceIndexer = null
 
-    var searcher:Searcher = null
+    var searcher: Searcher = null
 
-    var backgroundIndexTask:BackgroundIndexTask = null
+    var backgroundIndexTask: BackgroundIndexTask = null
 
     var throttleBackgroundIndexer: Boolean = true
 
@@ -88,7 +90,7 @@ trait SearchComponentImpl extends SearchComponent{
 
     val async = actorSystem.actorOf(Props.create(classOf[SearchManagerActor], this))
 
-    def tikaHostAddress = if(currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
+    def tikaHostAddress = if (currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
 
     {
       if (indexPath != null) {
@@ -100,7 +102,7 @@ trait SearchComponentImpl extends SearchComponent{
       platformConfigManager ! RegisterMsg(this)
     }
 
-    def initialize(numberOfIndexers:Int) {
+    def initialize(numberOfIndexers: Int) {
       if (fileIndexHolder == null) {
         searcher = new Searcher(actorSystem, searchConfigurationManager)
 
@@ -113,7 +115,7 @@ trait SearchComponentImpl extends SearchComponent{
 
         accessMediator ! RegisterNamedListenerMsg(async, 'SearchManager)
 
-        backgroundIndexTask = new BackgroundIndexTask(storageManager, this, indexCreateTimestamp)
+        backgroundIndexTask = new BackgroundIndexTask(queryManager, this, indexCreateTimestamp)
 
         taskManager.scheduleTask(backgroundIndexTask, INDEX_DELAY, START_INDEX_DELAY, fixedPeriod = false)
 
@@ -121,18 +123,18 @@ trait SearchComponentImpl extends SearchComponent{
       }
     }
 
-    def search(domain:String, query: String): SearchResult = {
+    def search(domain: String, query: String): SearchResult = {
 
       log debug "Search called with query: " + query
 
-      if(searcher == null){
+      if (searcher == null) {
         log debug "Searcher is null"
         SearchResult(query, new Array[SearchResultElement](0))
       }
       else searcher.search(domain, query)
     }
 
-    class SearchManagerActor extends Actor{
+    class SearchManagerActor extends Actor {
 
       def receive = {
         case ResourceAddedMsg(resource, source) => indexer.index(resource, self)
@@ -152,10 +154,10 @@ trait SearchComponentImpl extends SearchComponent{
           statisticsManager ! IncreaseStatisticsMsg("c3.search.background.runs", 1)
 
         case ResourceIndexedMsg(address, extractedMetadata) =>
-          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString), system=true)
+          accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString), system = true)
 
-          if(!extractedMetadata.isEmpty){
-            accessManager ! UpdateMetadataMsg(address, extractedMetadata, system=false)
+          if (!extractedMetadata.isEmpty) {
+            accessManager ! UpdateMetadataMsg(address, extractedMetadata, system = false)
           }
 
           statisticsManager ! IncreaseStatisticsMsg("c3.search.indexed", 1)
@@ -166,12 +168,12 @@ trait SearchComponentImpl extends SearchComponent{
         case StoragePurgedMsg(source) => deleteIndexes()
       }
 
-      override def postStop(){
+      override def postStop() {
         log info "Destroying SearchManager actor"
 
-        letItFall{
+        letItFall {
 
-          if(backgroundIndexTask != null){
+          if (backgroundIndexTask != null) {
             taskManager.stopTask(backgroundIndexTask.id)
           }
 
@@ -184,7 +186,7 @@ trait SearchComponentImpl extends SearchComponent{
       }
     }
 
-    def deleteIndexes(){
+    def deleteIndexes() {
       log.info("Reseting search index")
       fileIndexHolder.deleteIndex(async)
       searchConfigurationManager ! DropFieldConfiguration
@@ -211,17 +213,17 @@ trait SearchComponentImpl extends SearchComponent{
         case INDEX_PATH => {
           val newPath = new Path(event.newValue)
 
-          if(indexPath == null){
+          if (indexPath == null) {
             log info "Found path to store index: " + newPath.stringValue
             indexPath = newPath
             initialize(INDEXER_COUNT)
-          }else{
+          } else {
 
-            if(newPath != indexPath){
+            if (newPath != indexPath) {
               log info "New path to store index set: " + newPath.stringValue
               fileIndexHolder.updateIndexLocation(newPath, async)
               indexPath = newPath
-            }else{
+            } else {
               log info "New index path is the same as existing"
             }
           }
@@ -230,7 +232,7 @@ trait SearchComponentImpl extends SearchComponent{
         case INDEX_CREATE_TIMESTAMP =>
           log info "Index creation timestamp value: " + event.newValue
           indexCreateTimestamp = event.newValue.toLong
-          if(backgroundIndexTask != null)
+          if (backgroundIndexTask != null)
             backgroundIndexTask.indexCreateTimestamp = indexCreateTimestamp
 
         case EXTRACT_DOCUMENT_CONTENT =>
@@ -257,13 +259,17 @@ trait SearchComponentImpl extends SearchComponent{
 
 }
 
-object SearchComponentProtocol{
+object SearchComponentProtocol {
+
   case class ResourceIndexingFailed(address: String)
+
   case class ResourceIndexedMsg(address: String, extractedMetadata: Map[String, String])
-  case class UpdateIndexCreationTimestamp(time:Long)
+
+  case class UpdateIndexCreationTimestamp(time: Long)
+
 }
 
-object SearchComponentConstants{
+object SearchComponentConstants {
 
   val INDEXER_COUNT = 4
 
@@ -279,8 +285,8 @@ object SearchComponentConstants{
 
   val THROTTLE_BACKGROUND_INDEX = "c3.search.index.throttle_background_index"
 
-  val START_INDEX_DELAY : Long = 3 * 60 * 1000
+  val START_INDEX_DELAY: Long = 3 * 60 * 1000
 
-  val INDEX_DELAY : Long = 60 * 60 * 1000
+  val INDEX_DELAY: Long = 60 * 60 * 1000
 
 }

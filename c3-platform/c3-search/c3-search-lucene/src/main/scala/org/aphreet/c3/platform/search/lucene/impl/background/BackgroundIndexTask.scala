@@ -30,74 +30,38 @@
 
 package org.aphreet.c3.platform.search.lucene.impl.background
 
-import org.aphreet.c3.platform.task.Task
-import org.aphreet.c3.platform.exception.StorageException
-import org.aphreet.c3.platform.storage.{Storage, StorageIterator, StorageManager}
-import org.aphreet.c3.platform.resource.Resource
 import java.util.Date
+import org.aphreet.c3.platform.query.QueryManager
+import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.search.lucene.impl.SearchManagerInternal
+import org.aphreet.c3.platform.task.IteratorTask
 
-class BackgroundIndexTask(val storageManager: StorageManager, val searchManager: SearchManagerInternal, var indexCreateTimestamp:Long) extends Task {
+class BackgroundIndexTask(val queryManager: QueryManager, val searchManager: SearchManagerInternal, var indexCreateTimestamp: Long)
+  extends IteratorTask[Resource](queryManager.contentIterator(Map(), Map())) {
 
   //We suppose that it should take no more than hour for resource to be indexed
   val indexedTimeout: Long = 1000 * 60 * 60
 
-  var iterator: StorageIterator = null
-
-  var currentStorage: Storage = null
-
-  //Initial storage list is all storages in storageManager
-  var storagesToIndex:List[Storage] = List()
-
-  {
-    log info "Creating BackgroundIndexTask"
-  }
-
-  override def preStart() {
-    log info "Starting BackgroundIndexTask"
-    storagesToIndex = storageManager.listStorages
-  }
-
-  override def step() {
-
-    if (iterator == null) {
-      initIterator()
-    } else {
-      try {
-        if (iterator.hasNext) {
-          val resource = iterator.next()
-          log trace "Checking resource " + resource.address
-          if (shouldIndex(resource)) {
-            log trace "Resource " + resource.address + " should be indexed"
-            searchManager ! BackgroundIndexMsg(resource)
-          }
-        } else {
-          log debug "Iteration over storage " + currentStorage.id + " has competed"
-          iterator.close()
-          iterator = null
-        }
-      } catch {
-        case e: StorageException => {
-          log.warn("Got exception while iterating over storage", e)
-          if (iterator != null) {
-            iterator.close()
-            iterator = null
-          }
-        }
-      }
-    }
-
+  override def throttle() {
     if (searchManager.throttleBackgroundIndex) {
       Thread.sleep(1000)
     }
   }
 
-  override def postFailure() {
-    if (iterator != null)
-      iterator.close()
+  def processElement(resource: Resource) {
+    log trace "Checking resource " + resource.address
+    if (shouldIndex(resource)) {
+      log trace "Resource " + resource.address + " should be indexed"
+      searchManager ! BackgroundIndexMsg(resource)
+    }
   }
 
-  override def postComplete(){
+  override def preStart() {
+    log info "Starting BackgroundIndexTask"
+  }
+
+  override def postComplete() {
+    log info "Iteration is complete"
     searchManager ! BackgroundIndexRunCompletedMsg
   }
 
@@ -107,39 +71,27 @@ class BackgroundIndexTask(val storageManager: StorageManager, val searchManager:
       System.currentTimeMillis - date.getTime > indexedTimeout
     }
 
-    def isInPreviousIndex(indexedValue:String):Boolean = {
-      try{
+    def isInPreviousIndex(indexedValue: String): Boolean = {
+      try {
         indexedValue.toLong < indexCreateTimestamp
-      }catch{
+      } catch {
         case e: Throwable => false
       }
     }
 
-    if(!resource.systemMetadata.has("c3.skip.index")){
+    if (!resource.systemMetadata.has("c3.skip.index")) {
       resource.systemMetadata("indexed") match {
         case Some(x) => isInPreviousIndex(x)
         case None => isOutOfTimeout(resource.versions.last.date)
       }
-    }else{
-      false
-    }
-  }
-
-  private def initIterator() {
-
-    if (storagesToIndex.size > 0) {
-      currentStorage = storagesToIndex.head
-      storagesToIndex = storagesToIndex.tail
-      iterator = currentStorage.iterator()
-      log debug "Starting iteration over storage " + currentStorage.id
     } else {
-      log debug "All storages have been checked"
-      shouldStopFlag = true
+      false
     }
   }
 
   override def name = "BackgroundIndexer"
 }
 
-case class BackgroundIndexMsg(resource:Resource)
+case class BackgroundIndexMsg(resource: Resource)
+
 object BackgroundIndexRunCompletedMsg

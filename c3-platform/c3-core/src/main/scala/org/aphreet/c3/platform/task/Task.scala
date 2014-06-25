@@ -1,11 +1,11 @@
 package org.aphreet.c3.platform.task
 
-import org.aphreet.c3.platform.common.{Logger, CloseableIterable, ThreadWatcher}
+import org.aphreet.c3.platform.common.{CloseableIterator, Logger, CloseableIterable, ThreadWatcher}
 import scala.util.control.Exception._
 import java.util.concurrent.Future
 import org.aphreet.c3.platform.exception.PlatformException
 
-abstract class Task extends Runnable{
+abstract class Task extends Runnable {
 
   val log = Logger(getClass)
 
@@ -19,11 +19,11 @@ abstract class Task extends Runnable{
 
   val SLEEP_ON_PAUSE_INTERVAL = 5000
 
-  private var taskState:TaskState = PENDING
+  private var taskState: TaskState = PENDING
 
   private var observers = List.empty[TaskScheduleObserver]
 
-  def state:TaskState = taskState
+  def state: TaskState = taskState
 
   var taskFuture: Future[_] = null
 
@@ -31,22 +31,22 @@ abstract class Task extends Runnable{
 
     ThreadWatcher + this
 
-    while(!canStart){
+    while (!canStart) {
       taskState = PENDING
       Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
     }
 
-    try{
-      if(!shouldStop && !Thread.currentThread.isInterrupted){
+    try {
+      if (!shouldStop && !Thread.currentThread.isInterrupted) {
         taskState = RUNNING
         log.info(id + " started")
         preStart()
 
-        try{
+        try {
           work()
-        }catch{
+        } catch {
           case e: InterruptedException => {
-            if(!shouldStop){
+            if (!shouldStop) {
               throw new PlatformException("Unexpected interrupted event for task " + id, e)
             }
           }
@@ -54,18 +54,18 @@ abstract class Task extends Runnable{
         postComplete()
         taskState = FINISHED
         log.info(id + " stopped")
-      }else{
+      } else {
         taskState = INTERRUPTED
-        log.info(id + " interrupted") 
+        log.info(id + " interrupted")
       }
-    }catch{
+    } catch {
       case e: Throwable => {
         taskState = CRASHED
         log.error("Task crashed", e)
         e.printStackTrace()
         postFailure()
       }
-    }finally {
+    } finally {
       if (isRestartable) {
         shouldStopFlag = false
       }
@@ -77,11 +77,11 @@ abstract class Task extends Runnable{
     }
   }
 
-  protected def work(){
-    while(!shouldStop && !Thread.currentThread.isInterrupted){
-      if(!isPaused){
+  protected def work() {
+    while (!shouldStop && !Thread.currentThread.isInterrupted) {
+      if (!isPaused) {
         step()
-      }else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
+      } else Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
     }
   }
 
@@ -95,21 +95,25 @@ abstract class Task extends Runnable{
 
   protected def cleanup() {}
 
-  protected def canStart:Boolean = true
+  protected def canStart: Boolean = true
 
-  def shouldStop:Boolean = shouldStopFlag
+  def shouldStop: Boolean = shouldStopFlag
 
-  def name:String = getClass.getSimpleName
+  def name: String = getClass.getSimpleName
 
-  def progress:Int = -1
+  def progress: Int = -1
 
-  def description:TaskDescription = new TaskDescription(id, name, state, progress, schedule)
+  def description: TaskDescription = new TaskDescription(id, name, state, progress, schedule)
 
-  protected def isPaused:Boolean = {taskState == PAUSED}
+  protected def isPaused: Boolean = {
+    taskState == PAUSED
+  }
 
   def isRestartable: Boolean = restartableFlag
 
-  def setRestartable(restartable: Boolean) { restartableFlag = restartable }
+  def setRestartable(restartable: Boolean) {
+    restartableFlag = restartable
+  }
 
   def getSchedule: String = schedule
 
@@ -129,7 +133,7 @@ abstract class Task extends Runnable{
 
   def stop() {
 
-    if(taskFuture != null){
+    if (taskFuture != null) {
       taskFuture.cancel(true)
     }
 
@@ -138,51 +142,67 @@ abstract class Task extends Runnable{
   }
 
   def pause() {
-    if(taskState == RUNNING){
+    if (taskState == RUNNING) {
       taskState = PAUSED
     }
   }
 
   def resume() {
-    if(taskState == PAUSED)
+    if (taskState == PAUSED)
       taskState = RUNNING
   }
 }
 
-abstract class IterableTask[T](val iterable:CloseableIterable[T]) extends Task{
+abstract class IteratorTask[T](val iterator: CloseableIterator[T], val size: Int = -1) extends Task {
 
   var processed = 0
 
-  override def work(){
-    val iterator = iterable.iterator
+  override def work() {
 
-    try{
-      while(iterator.hasNext && !Thread.currentThread.isInterrupted){
-        if(!isPaused){
+    try {
+      while (iterator.hasNext && !Thread.currentThread.isInterrupted) {
+        if (!isPaused) {
           processElement(iterator.next())
           processed = processed + 1
-        }else {
+          throttle()
+        } else {
           Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
         }
       }
-    }finally {
+    } finally {
       iterator.close()
     }
   }
 
-  override def progress:Int = {
-    ((processed.toFloat / iterable.size) * 100).toInt
+  override def progress: Int = {
+    if (size == -1) {
+      -1
+    } else {
+      ((processed.toFloat / size) * 100).toInt
+    }
   }
 
   def processElement(element: T)
+
+  def throttle() {}
+
+}
+
+abstract class IterableTask[T](val iterable: CloseableIterable[T])
+  extends IteratorTask(iterable.iterator, iterable.size) {
 }
 
 
-sealed class TaskState(val name:String, val isFinalState:Boolean)
+sealed class TaskState(val name: String, val isFinalState: Boolean)
 
 object RUNNING extends TaskState("Running", false)
+
 object PENDING extends TaskState("Pending", false)
-object PAUSED  extends TaskState("Paused", false)
+
+object PAUSED extends TaskState("Paused", false)
+
 object INTERRUPTED extends TaskState("Interrupted", false)
+
 object FINISHED extends TaskState("Finished", true)
-object CRASHED  extends TaskState("Crashed", true)
+
+object CRASHED extends TaskState("Crashed", true)

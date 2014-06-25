@@ -1,6 +1,5 @@
 package org.aphreet.c3.platform.storage.test.integration
 
-import bdb.{AbstractBDBStorage, BDBStorageIterator}
 import java.io.File
 import java.util.{UUID, Date}
 import junit.framework.Assert._
@@ -11,6 +10,7 @@ import org.aphreet.c3.platform.resource.{ResourceAddress, ResourceVersion, DataS
 import org.aphreet.c3.platform.storage._
 import scala.Some
 import scala.collection.mutable
+import org.aphreet.c3.platform.storage.bdb.{BDBStorageIterator, AbstractBDBStorage}
 
 abstract class AbstractStorageTestCase extends TestCase {
 
@@ -44,7 +44,7 @@ abstract class AbstractStorageTestCase extends TestCase {
 
   override def tearDown() {
     def delDir(directory: File) {
-      if (directory.isDirectory) directory.listFiles.foreach(delDir(_))
+      if (directory.isDirectory) directory.listFiles.foreach(delDir)
       directory.delete
     }
     delDir(testDir)
