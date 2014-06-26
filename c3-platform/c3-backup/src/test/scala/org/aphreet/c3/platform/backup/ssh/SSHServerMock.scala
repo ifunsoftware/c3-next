@@ -38,8 +38,8 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
   private def selectConfigDir(baseDir: String): String = {
     val dirsToCheck = List(baseDir, "c3-backup/" + baseDir, "c3-platform/c3-backup/" + baseDir)
 
-    for(dir <- dirsToCheck){
-      if(checkDirectory(dir)){
+    for (dir <- dirsToCheck) {
+      if (checkDirectory(dir)) {
         return dir
       }
     }
@@ -47,7 +47,7 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
     ""
   }
 
-  private def checkDirectory(dir: String):Boolean = {
+  private def checkDirectory(dir: String): Boolean = {
     val file = new File(dir)
 
     log.info("Checking directory " + file.getAbsolutePath)
@@ -71,7 +71,7 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
           def configureServices(connection: ConnectionProtocol) {
             connection.addChannelFactory(SessionChannelFactory.SESSION_CHANNEL, new SessionChannelFactory)
             if (ConfigurationLoader.isConfigurationAvailable(classOf[ServerConfiguration])) {
-              if ((ConfigurationLoader.getConfiguration(classOf[ServerConfiguration]).asInstanceOf[ServerConfiguration]).getAllowTcpForwarding) {
+              if (ConfigurationLoader.getConfiguration(classOf[ServerConfiguration]).asInstanceOf[ServerConfiguration].getAllowTcpForwarding) {
                 new ForwardingServer(connection)
               }
             }
@@ -87,9 +87,9 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
       }
     })
 
-    try{
+    try {
       future.get(2, TimeUnit.SECONDS)
-    }catch{
+    } catch {
       case e: TimeoutException => //no errors in startup so far
     }
   }
@@ -98,10 +98,10 @@ class SSHServerMock(var serverXmlRelativePath: String = null, var platformXmlRel
     log.info("SSH server is shutting down...")
 
     val socket: Socket =
-      new Socket(InetAddress.getLocalHost, (ConfigurationLoader.getConfiguration(classOf[ServerConfiguration]).asInstanceOf[ServerConfiguration]).getCommandPort)
+      new Socket(InetAddress.getLocalHost, ConfigurationLoader.getConfiguration(classOf[ServerConfiguration]).asInstanceOf[ServerConfiguration].getCommandPort)
     socket.getOutputStream.write(0x3a)
     val msg: String = "bye"
-    val len: Int = if ((msg.length <= 255)) msg.length else 255
+    val len: Int = if (msg.length <= 255) msg.length else 255
     socket.getOutputStream.write(len)
     if (len > 0) {
       socket.getOutputStream.write(msg.substring(0, len).getBytes)

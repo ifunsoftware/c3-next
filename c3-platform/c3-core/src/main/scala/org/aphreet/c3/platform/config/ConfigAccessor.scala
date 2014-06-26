@@ -42,7 +42,7 @@ trait ConfigAccessor[T] {
 
   def load: T = {
 
-    if(!persister.configExists(name)){
+    if (!persister.configExists(name)) {
       store(defaultConfig)
     }
 
@@ -64,8 +64,8 @@ trait ConfigAccessor[T] {
           writeConfig(data, new JSONWriterImpl(writer))
           JSONFormatter.format(writer.toString)
 
-//          Files.write(configFile.toPath, JSONFormatter.format(writer.toString).getBytes("UTF-8"),
-//            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
+          //          Files.write(configFile.toPath, JSONFormatter.format(writer.toString).getBytes("UTF-8"),
+          //            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
         }
       )
     }
@@ -75,15 +75,15 @@ trait ConfigAccessor[T] {
     readConfig(new AntlrJSONParser().parse(config))
   }
 
-  implicit def asMap(node:Node):MapNode = node.asInstanceOf[MapNode]
+  implicit def asMap(node: Node): MapNode = node.asInstanceOf[MapNode]
 
-  implicit def asList(node:Node):ListNode = node.asInstanceOf[ListNode]
+  implicit def asList(node: Node): ListNode = node.asInstanceOf[ListNode]
 
-  implicit def asScalar(node:Node):ScalarNode = node.asInstanceOf[ScalarNode]
+  implicit def asScalar(node: Node): ScalarNode = node.asInstanceOf[ScalarNode]
 
-  implicit def asStringScalarNodeValue(node:Node):String = node.asInstanceOf[ScalarNode].getValue[String]
+  implicit def asStringScalarNodeValue(node: Node): String = node.asInstanceOf[ScalarNode].getValue[String]
 
-  implicit def asBooleanScalarNodeValue(node:Node):Boolean = node.asInstanceOf[ScalarNode].getValue[Boolean]
+  implicit def asBooleanScalarNodeValue(node: Node): Boolean = node.asInstanceOf[ScalarNode].getValue[Boolean]
 
 
   protected def name: String
@@ -94,6 +94,6 @@ trait ConfigAccessor[T] {
 
   def writeConfig(data: T, writer: JSONWriter)
 
-  def readConfig(node:Node):T
+  def readConfig(node: Node): T
 
 }

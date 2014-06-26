@@ -1,15 +1,15 @@
 package org.aphreet.c3.platform.backup
 
 import junit.framework.Assert._
-import impl.Backup
+import impl.LocalBackup
 import org.aphreet.c3.platform.common.Path
 import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
 import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 
 
-class BackupTestCase extends AbstractTestWithFileSystem{
+class LocalBackupTestCase extends AbstractTestWithFileSystem {
 
-  def testResourceCreate(){
+  def testResourceCreate() {
 
     var resourceList = List(
       createResource("rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
@@ -21,21 +21,23 @@ class BackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backup = Backup.create(new Path(testDir.getAbsolutePath + "/backup.zip"))
+    val location = new LocalBackupLocation("", testDir.getAbsolutePath + "/backup", Nil)
 
-    resourceList.foreach(backup.addResource(_))
+    val backup = location.createBackup("mybk1.zip")
+
+    resourceList.foreach(backup.addResource)
 
     val fsRoots = Map("domain1" -> "rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234",
-                      "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
+      "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
 
     backup.writeFileSystemRoots(fsRoots)
 
     backup.close()
 
-    val backup1 = Backup.open(new Path(testDir.getAbsolutePath + "/backup.zip"))
+    val backup1 = location.openBackup("mybk1.zip")
 
-    for(resource <- backup1){
-      assertEquals(1, resourceList.filter(_.address == resource.address).size)
+    for (resource <- backup1) {
+      assertEquals(1, resourceList.count(_.address == resource.address))
       resourceList = resourceList.filterNot(_.address == resource.address)
     }
 
@@ -46,7 +48,7 @@ class BackupTestCase extends AbstractTestWithFileSystem{
     backup1.close()
   }
 
-  def createResource(name:String):Resource = {
+  def createResource(name: String): Resource = {
     val resource = new Resource
     resource.isVersioned = true
     resource.address = name

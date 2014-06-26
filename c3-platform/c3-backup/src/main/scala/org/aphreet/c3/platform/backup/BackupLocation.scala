@@ -2,20 +2,54 @@ package org.aphreet.c3.platform.backup
 
 import ssh.SftpConnector
 import scala.beans.BeanProperty
-import java.io.File
-import org.aphreet.c3.platform.common.Logger
+import java.io.{IOException, File}
+import org.aphreet.c3.platform.common.{Disposable, Logger}
+import org.aphreet.c3.platform.backup.impl.{LocalBackup, RemoteBackup}
 
-case class BackupLocation(
-            @BeanProperty var id: String,
-            @BeanProperty var backupType: String,
-            @BeanProperty var host: String,
-            @BeanProperty var user: String,
-            @BeanProperty var folder: String,
-            @BeanProperty var privateKey: String,
-            @BeanProperty var schedule: List[String]
-        ) extends java.io.Serializable {
+trait BackupLocation {
 
-  def this() = this(null, null, null, null, null, null, null)
+  def id: String
+
+  def schedule: List[String]
+
+  def schedule_=(schedule: List[String])
+
+  def createBackup(name: String): AbstractBackup
+
+  def openBackup(name: String): AbstractBackup
+
+  def listBackups: List[String]
+}
+
+case class LocalBackupLocation(
+                                var id: String,
+                                var directory: String,
+                                var schedule: List[String]) extends BackupLocation {
+
+  def createBackup(name: String): AbstractBackup =
+    new LocalBackup(new File(directory, name), true)
+
+  def openBackup(name: String): AbstractBackup =
+    new LocalBackup(new File(directory, name), false)
+
+  def listBackups: List[String] = ???
+}
+
+case class RemoteBackupLocation(
+                                 var id: String,
+                                 var host: String,
+                                 var port: Int = 22,
+                                 var user: String,
+                                 var folder: String,
+                                 var privateKey: String,
+                                 var password: String,
+                                 var schedule: List[String]) extends BackupLocation {
+
+  def createBackup(name: String): AbstractBackup = new RemoteBackup(name, true, this)
+
+  def openBackup(name: String): AbstractBackup = new RemoteBackup(name, false, this)
+
+  def listBackups: List[String] = RemoteBackup.listBackups(this)
 }
 
 
@@ -23,20 +57,19 @@ object LocalBackupLocation {
 
   val log = Logger(getClass)
 
-  def create(id: String, path: String) : BackupLocation =  {
+  def create(id: String, path: String): BackupLocation = {
 
     val folder = new File(path)
+
     if (folder.exists()) {
       if (!folder.isDirectory) {
-        throw new IllegalStateException("Path is not a folder")
+        throw new IllegalArgumentException("Path is not a folder")
       }
-    } else if (folder.mkdirs()) {
-      log.info("Diretory " + path + " was created")
-    } else {
-      throw new IllegalStateException("Folder creation failed")
     }
 
-    new BackupLocation(id, "local", "", "", path, "", null)
+    folder.mkdirs()
+
+    LocalBackupLocation(id, path, Nil)
   }
 }
 
@@ -45,7 +78,8 @@ object RemoteBackupLocation {
 
   val log = Logger(getClass)
 
-  def create(id: String, host: String, user: String, path: String, privateKeyFile: String) : BackupLocation=  {
+  def create(id: String, host: String, port: Int, user: String, path: String,
+             privateKeyFile: String, password: String): BackupLocation = {
 
     val file = new File(privateKeyFile)
 
@@ -56,19 +90,15 @@ object RemoteBackupLocation {
       throw new IllegalArgumentException("Private key file isn't a real file")
     }
 
-    val connector = new SftpConnector(host, user, privateKeyFile)
-    try {
-      connector.connect()
+    Disposable.using(new SftpConnector(host, user, privateKeyFile))(connector => {
       if (!connector.isConnected) {
-        throw new IllegalStateException("Connection failed! Target isn't going to be created.")
+        throw new IOException("Connection failed! Target isn't going to be created.")
       }
 
       connector.makeDir(path)
-      log.info("Diretory " + path + " was created")
-    } finally {
-      connector.disconnect()
-    }
+      log.info("Directory " + path + " was created")
+    })
 
-    new BackupLocation(id, "remote", host, user, path, privateKeyFile, Nil)
+    RemoteBackupLocation(id, host, port, user, path, privateKeyFile, password, Nil)
   }
 }

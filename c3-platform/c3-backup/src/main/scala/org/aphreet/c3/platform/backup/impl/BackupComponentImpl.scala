@@ -30,21 +30,18 @@
 
 package org.aphreet.c3.platform.backup.impl
 
-import java.io.File
 import org.aphreet.c3.platform.access.ResourceAddedMsg
 import org.aphreet.c3.platform.access.{AccessComponent, AccessMediator}
 import org.aphreet.c3.platform.backup._
-import org.aphreet.c3.platform.common.{Logger, Path}
+import org.aphreet.c3.platform.common.Logger
 import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.filesystem.{FSComponent, FSManager}
+import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.{StorageComponent, StorageManager}
 import org.aphreet.c3.platform.task._
 import scala._
-import scala.collection.mutable.ListBuffer
-import ssh.SftpConnector
-import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
 
 trait BackupComponentImpl extends BackupComponent {
 
@@ -85,11 +82,7 @@ trait BackupComponentImpl extends BackupComponent {
     def restoreBackup(targetId: String, name: String) {
       val target = getBackupLocation(targetId)
 
-      val backup: AbstractBackup = target.backupType match {
-        case "local" => Backup.open(Path(target.folder + "/" + name))
-        case "remote" => RemoteBackup.open(name, target)
-        case _ => throw new IllegalStateException("Wrong target type")
-      }
+      val backup = target.createBackup(name)
 
       storageManager.resetStorages()
 
@@ -115,60 +108,8 @@ trait BackupComponentImpl extends BackupComponent {
     }
 
     def listBackups(targetId: String): List[String] = {
-      val target = getBackupLocation(targetId)
-
-      target.backupType match {
-        case "local" => listLocalBackups(target)
-        case "remote" => listRemoteBackups(target)
-        case _ => throw new IllegalStateException("Wrong target type")
-      }
+      getBackupLocation(targetId).listBackups
     }
-
-    def listLocalBackups(target: BackupLocation): List[String] = {
-      val listBuffer = new ListBuffer[String]()
-      val folder = new File(target.folder)
-
-      if (folder.exists() && folder.isDirectory) {
-        val filesList = folder.listFiles()
-
-        filesList
-          .filter(file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
-          .foreach(file => listBuffer += file.getAbsolutePath)
-      }
-
-      listBuffer.toList
-    }
-
-    def listRemoteBackups(target: BackupLocation): List[String] = {
-      val listBuffer = new ListBuffer[String]()
-
-      val connector = new SftpConnector(target.host, target.user, target.privateKey)
-      connector.connect()
-
-      val allFilesNames = connector.listFiles(target.folder)
-
-      log.info("All file Names in folder:")
-      for (name <- allFilesNames) {
-        log.info(name)
-      }
-
-      allFilesNames
-        .filter(fileName => fileName.endsWith(".zip")
-        && !allFilesNames.find(str => str.equals(fileName + ".md5")).isEmpty
-        && RemoteBackup.hasValidChecksum(connector, target.folder, fileName))
-
-        .foreach(fileName => listBuffer += fileName)
-
-      connector.disconnect()
-
-      log.info("Filtered file names in folder:")
-      for (name <- listBuffer) {
-        log.info(name)
-      }
-
-      listBuffer.toList
-    }
-
 
     def createLocalTarget(id: String, path: String) {
       if (existsTargetId(id)) {
@@ -185,7 +126,7 @@ trait BackupComponentImpl extends BackupComponent {
         throw new IllegalArgumentException("There is already a target with specified ID")
       }
 
-      val target = RemoteBackupLocation.create(id, host, user, path, privateKeyFile)
+      val target = RemoteBackupLocation.create(id, host, 22, user, path, privateKeyFile, null)
       targets ::= target
       configAccessor.update(l => targets)
     }
@@ -256,10 +197,7 @@ trait BackupComponentImpl extends BackupComponent {
 
     var backup: AbstractBackup = null
 
-    var backupName: Path = null
-
-    var isLocal: Boolean = true
-
+    var backupName: String = null
 
     def processElement(element: Resource) {
       doBackup(element)
@@ -269,40 +207,15 @@ trait BackupComponentImpl extends BackupComponent {
       if (backup != null) {
         backup.close()
       }
-
-      if (isLocal) {
-        if (backupName.file.exists()) {
-          backupName.file.delete()
-        }
-      }
     }
 
     override def preStart() {
-      isLocal = target.backupType match {
-        case "local" => true
-        case "remote" => false
-        case _ => throw new IllegalStateException("Wrong type of target")
-      }
 
-      if (isLocal) {
-        val directory = new Path(target.folder)
-        if (!directory.file.exists()) {
-          directory.file.mkdirs()
-        }
+      backupName = "backup-" + System.currentTimeMillis() + ".zip"
 
-        backupName = directory.append("backup-" + System.currentTimeMillis() + ".zip")
+      log.info("Creating backup file " + backupName)
 
-        log.info("Creating backup file " + backupName.stringValue)
-
-        backup = Backup.create(backupName)
-
-      } else {
-        backupName = new Path("backup-" + System.currentTimeMillis() + ".zip")
-
-        log.info("Creating backup file " + backupName.stringValue)
-
-        backup = RemoteBackup.create(backupName.stringValue, target)
-      }
+      backup = target.createBackup(backupName)
     }
 
     override def postComplete() {

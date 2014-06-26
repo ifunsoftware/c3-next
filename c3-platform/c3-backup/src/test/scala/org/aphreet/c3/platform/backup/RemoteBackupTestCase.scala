@@ -1,12 +1,10 @@
 package org.aphreet.c3.platform.backup
 
-import impl.RemoteBackup
-import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
 import junit.framework.Assert._
-import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
-import java.io.File
-import ssh.SSHServerMock
 import org.apache.commons.logging.LogFactory
+import org.aphreet.c3.platform.resource.{StringDataStream, ResourceVersion, Resource}
+import org.aphreet.c3.platform.test.integration.AbstractTestWithFileSystem
+import ssh.SSHServerMock
 
 /**
  *
@@ -14,7 +12,7 @@ import org.apache.commons.logging.LogFactory
  * Date: 02.02.13
  * Time: 0:31
  */
-class RemoteBackupTestCase extends AbstractTestWithFileSystem{
+class RemoteBackupTestCase extends AbstractTestWithFileSystem {
 
   val BACKUP_NAME = "backup.zip"
   val LOCALHOST = "127.0.0.1"
@@ -22,11 +20,11 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
   val USER = System.getProperty("user.name")
   val PASSWORD = ""
 
-  var server : SSHServerMock = null
+  var server: SSHServerMock = null
   val log = LogFactory getLog getClass
 
 
-  def testResourceCreate(){
+  def testResourceCreate() {
     var resourceList = List(
       createResource("rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234"),
       createResource("rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234"),
@@ -37,22 +35,21 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
       createResource("dZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
     )
 
-    val backupLocation = new BackupLocation("", "remote", LOCALHOST, USER, "backups", "", null)
+    val backupLocation = new RemoteBackupLocation("", LOCALHOST, LOCAL_PORT, USER, "backups", "", PASSWORD, null)
 
-    val backup = RemoteBackup.create(BACKUP_NAME, backupLocation, LOCAL_PORT, PASSWORD)
-
+    val backup = backupLocation.createBackup(BACKUP_NAME)
     resourceList.foreach(backup.addResource)
 
     val fsRoots = Map("domain1" -> "rZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f48-12341234",
-                      "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
+      "domain2" -> "uZ1L9jbMHZgqCvT8gNk3u5iC-139e8b70f47-12341234")
 
     backup.writeFileSystemRoots(fsRoots)
 
     backup.close()
 
-    val backup1 = RemoteBackup.open(BACKUP_NAME, backupLocation, LOCAL_PORT, PASSWORD)
+    val backup1 = backupLocation.openBackup(BACKUP_NAME)
 
-    for(resource <- backup1){
+    for (resource <- backup1) {
       assertEquals(1, resourceList.count(_.address == resource.address))
       resourceList = resourceList.filterNot(_.address == resource.address)
     }
@@ -64,7 +61,7 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
     backup1.close()
   }
 
-  def createResource(name:String):Resource = {
+  def createResource(name: String): Resource = {
     val resource = new Resource
     resource.isVersioned = true
     resource.address = name
@@ -80,8 +77,8 @@ class RemoteBackupTestCase extends AbstractTestWithFileSystem{
     resource
   }
 
-  override def setUp(){
-  	super.setUp()
+  override def setUp() {
+    super.setUp()
 
     server = new SSHServerMock()
     server.start()

@@ -34,60 +34,61 @@ import org.aphreet.c3.platform.common.{Path => C3Path}
 import java.nio.file._
 import java.util
 import java.net.URI
-import org.aphreet.c3.platform.backup.AbstractBackup
+import org.aphreet.c3.platform.backup.{LocalBackupLocation, BackupLocation, AbstractBackup}
 import java.io.{File, FileReader, BufferedReader, FileInputStream}
 import org.apache.commons.codec.digest.DigestUtils
 import org.aphreet.c3.platform.common.Disposable._
+import org.aphreet.c3.platform.exception.PlatformException
+import scala.collection.mutable.ListBuffer
 
 
-class Backup(val uri:URI, val create:Boolean) extends AbstractBackup {
+class LocalBackup(val path: File, val create: Boolean) extends AbstractBackup {
 
   {
+    if (!create) {
+      if (!LocalBackup.hasValidChecksum(path)) {
+        throw new PlatformException("Invalid checksum for backup " + path)
+      }
+    }
+
+    path.getParentFile.mkdirs()
+
     val env = new util.HashMap[String, String]()
     env.put("create", create.toString)
-    zipFs = FileSystems.newFileSystem(uri, env, null)
+    zipFs = FileSystems.newFileSystem(URI.create("jar:file:" + path.getAbsolutePath), env, null)
 
-    zipFilePath = uri.toString.substring("jar:file:".length)
+    zipFilePath = path.getAbsolutePath
     md5FilePath = zipFilePath + ".md5"
   }
+
 }
 
+object LocalBackup {
+  def listBackups(target: LocalBackupLocation): List[String] = {
+    val listBuffer = new ListBuffer[String]()
+    val folder = new File(target.directory)
 
-object Backup{
+    if (folder.exists() && folder.isDirectory) {
+      val filesList = folder.listFiles()
 
-  def open(path:C3Path):Backup = {
-    val zipFile = URI.create("jar:file:" + path)
-
-    if (hasValidChecksum(path.stringValue)) {
-      new Backup(zipFile, false)
-    } else {
-      throw new IllegalStateException("Backup " + path + " doesn't have valid checksum")
+      filesList
+        .filter(file => file.isFile && file.getName.endsWith(".zip") && hasValidChecksum(file))
+        .foreach(file => listBuffer += file.getAbsolutePath)
     }
+
+    listBuffer.toList
   }
 
-  def create(path:C3Path):Backup = {
-    val zipFile = URI.create("jar:file:" + path)
-    new Backup(zipFile, true)
-  }
-
-  def directoryForAddress(fs:FileSystem, address:String):Path = {
-    val firstLetter = address.charAt(0).toString
-    val secondLetter = address.charAt(1).toString
-    val thirdLetter = address.charAt(2).toString
-
-    fs.getPath(firstLetter, secondLetter, thirdLetter)
-  }
-
-  def hasValidChecksum(path : String): Boolean = {
+  def hasValidChecksum(path: File): Boolean = {
     var isValid = false
 
-    using(new FileInputStream(path)) (is => {
+    using(new FileInputStream(path))(is => {
       val calculatedMd5 = DigestUtils.md5Hex(is)
 
       val md5File = new File(path + ".md5")
 
       if (md5File.exists() && md5File.isFile) {
-        using(new BufferedReader(new FileReader(md5File))) (reader => {
+        using(new BufferedReader(new FileReader(md5File)))(reader => {
           isValid = reader.readLine().equals(calculatedMd5)
         })
       }
@@ -96,3 +97,4 @@ object Backup{
     isValid
   }
 }
+

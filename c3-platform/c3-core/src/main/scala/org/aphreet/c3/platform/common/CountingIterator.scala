@@ -18,7 +18,7 @@ class SimpleCountingIterator[T](val iterator: CloseableIterator[T], val totalEle
 
   private var elementsProcessed = 0l
 
-  def processedElements: Long = processedElements
+  def processedElements: Long = elementsProcessed
 
   def hasNext: Boolean = iterator.hasNext
 
