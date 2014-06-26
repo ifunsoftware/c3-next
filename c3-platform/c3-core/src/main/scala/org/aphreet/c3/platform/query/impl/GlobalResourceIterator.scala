@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.query.impl
 
-import org.aphreet.c3.platform.common.CloseableIterator
+import org.aphreet.c3.platform.common.{CountingIterator, CloseableIterator}
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.{StorageIterator, Storage}
 
@@ -10,13 +10,17 @@ import org.aphreet.c3.platform.storage.{StorageIterator, Storage}
  */
 class GlobalResourceIterator(val storages: List[Storage],
                              val fields: Map[String, String],
-                             val sysFields: Map[String, String]) extends CloseableIterator[Resource] {
+                             val sysFields: Map[String, String]) extends CountingIterator[Resource] {
 
   private var storagesToProcess: List[Storage] = storages
 
   private var iterator: Option[StorageIterator] = None
 
   private var currentResource: Resource = fetchNext()
+
+  private var objectsProcessed: Int = 0
+
+  private val totalObjectsToProcess = storages.foldLeft(0l)(_ + _.count)
 
   private def fetchNext(): Resource = {
     val iterator = getIterator
@@ -49,6 +53,7 @@ class GlobalResourceIterator(val storages: List[Storage],
   }
 
   private def discardIterator() {
+    objectsProcessed = objectsProcessed + iterator.map(_.objectsProcessed).getOrElse(0)
     iterator.map(_.close())
     iterator = None
   }
@@ -65,4 +70,10 @@ class GlobalResourceIterator(val storages: List[Storage],
   def close(): Unit = {
     discardIterator()
   }
+
+  def processedElements = {
+    objectsProcessed + iterator.map(_.objectsProcessed).getOrElse(0)
+  }
+
+  def totalElements = totalObjectsToProcess
 }

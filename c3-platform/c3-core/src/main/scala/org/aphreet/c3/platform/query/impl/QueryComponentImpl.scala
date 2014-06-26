@@ -31,7 +31,7 @@
 package org.aphreet.c3.platform.query.impl
 
 import org.aphreet.c3.platform.common.Disposable._
-import org.aphreet.c3.platform.common.{CloseableIterator, Logger}
+import org.aphreet.c3.platform.common.{CountingIterator, Logger}
 import org.aphreet.c3.platform.query._
 import org.aphreet.c3.platform.resource.Resource
 import org.aphreet.c3.platform.storage.StorageComponent
@@ -72,7 +72,7 @@ trait QueryComponentImpl extends QueryComponent {
     }
 
     def contentIterator(fields: Map[String, String],
-                        systemFields: Map[String, String]): CloseableIterator[Resource] = {
+                        systemFields: Map[String, String]): CountingIterator[Resource] = {
 
       new GlobalResourceIterator(storageManager.listStorages.filter(_.mode.allowRead), fields, systemFields)
     }

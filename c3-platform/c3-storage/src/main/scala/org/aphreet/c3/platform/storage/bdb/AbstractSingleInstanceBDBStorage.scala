@@ -36,15 +36,15 @@ import org.aphreet.c3.platform.storage.{ConflictResolverProvider, U, StorageInde
 import java.util.concurrent.TimeUnit
 import collection.mutable
 
-abstract class AbstractSingleInstanceBDBStorage (override val parameters: StorageParams,
-                     override val systemId:String,
-                     override val config: BDBConfig,
-                     override val conflictResolverProvider: ConflictResolverProvider)
+abstract class AbstractSingleInstanceBDBStorage(override val parameters: StorageParams,
+                                                override val systemId: String,
+                                                override val config: BDBConfig,
+                                                override val conflictResolverProvider: ConflictResolverProvider)
   extends AbstractBDBStorage(parameters, systemId, config, conflictResolverProvider) {
 
-  protected var env : Environment = null
+  protected var env: Environment = null
 
-  var database : Database = null
+  var database: Database = null
 
   val secondaryDatabases = new mutable.HashMap[String, SecondaryDatabase]
 
@@ -54,7 +54,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
   }
 
 
-  def open(bdbConfig:BDBConfig) {
+  def open(bdbConfig: BDBConfig) {
     log info "Opening storage " + id + " with config " + config
 
     val envConfig = new EnvironmentConfig
@@ -62,22 +62,22 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     envConfig setSharedCache true
     envConfig setTransactional true
     envConfig setCachePercent bdbConfig.cachePercent
-    envConfig setClassLoader(getClass.getClassLoader)
+    envConfig setClassLoader getClass.getClassLoader
 
-    if(params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)){
+    if (params.params.contains(AbstractBDBStorage.USE_SHORT_LOCK_TIMEOUT)) {
       envConfig.setLockTimeout(5, TimeUnit.SECONDS)
-    }else{
+    } else {
       envConfig.setLockTimeout(5, TimeUnit.MINUTES)
     }
 
-    if(bdbConfig.txNoSync){
+    if (bdbConfig.txNoSync) {
       envConfig.setDurability(Durability.COMMIT_NO_SYNC)
-    }else{
+    } else {
       envConfig.setDurability(Durability.COMMIT_SYNC)
     }
 
     val storagePathFile = new File(storagePath, "metadata")
-    if(!storagePathFile.exists){
+    if (!storagePathFile.exists) {
       storagePathFile.mkdirs
     }
 
@@ -92,7 +92,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
 
     log info "Opening secondary databases..."
 
-    for(index <- indexes){
+    for (index <- indexes) {
 
       log info "Index " + index.name + "..."
 
@@ -119,7 +119,7 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     startObjectCounter()
   }
 
-  def createIndex(index:StorageIndex){
+  def createIndex(index: StorageIndex) {
     val secConfig = new SecondaryConfig
     secConfig setAllowCreate true
     secConfig setTransactional true
@@ -143,10 +143,10 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
     indexes = index :: indexes
   }
 
-  def removeIndex(index:StorageIndex){
+  def removeIndex(index: StorageIndex) {
     val idxName = index.name
 
-    secondaryDatabases.get(idxName) match{
+    secondaryDatabases.get(idxName) match {
       case None => {}
       case Some(secDb) => {
         secDb.close()
@@ -160,37 +160,37 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
   override def close() {
     log info "Closing storage " + id
     super.close()
-    if(this.mode.allowRead)
+    if (this.mode.allowRead)
       mode = U(Constants.STORAGE_MODE_NONE)
 
 
-    try{
+    try {
 
       log info "Closing iterators..."
 
       val iteratorList = iterators.toList
 
-      for(iterator <- iteratorList){
+      for (iterator <- iteratorList) {
         iterator.close()
       }
 
-    }catch{
+    } catch {
       case e: Throwable => log.error("Failed to close iterator: ", e)
     }
 
 
-    for((name, secDb) <- secondaryDatabases){
+    for ((name, secDb) <- secondaryDatabases) {
       secDb.close()
     }
 
     secondaryDatabases.clear()
 
-    if(database != null){
+    if (database != null) {
       database.close()
       database = null
     }
 
-    if(env != null){
+    if (env != null) {
       env.cleanLog
       env.close()
       env = null
@@ -200,11 +200,11 @@ abstract class AbstractSingleInstanceBDBStorage (override val parameters: Storag
   }
 
 
-  override def getDatabase(writeFlag : Boolean) : Database = {
+  override def getDatabase(writeFlag: Boolean): Database = {
     database
   }
 
-  override def secondaryDatabases(writeFlag : Boolean) : mutable.HashMap[String, SecondaryDatabase] = {
+  override def secondaryDatabases(writeFlag: Boolean): mutable.HashMap[String, SecondaryDatabase] = {
     secondaryDatabases
   }
 

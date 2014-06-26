@@ -30,7 +30,7 @@
 
 package org.aphreet.c3.platform.query
 
-import org.aphreet.c3.platform.common.CloseableIterator
+import org.aphreet.c3.platform.common.CountingIterator
 import org.aphreet.c3.platform.resource.Resource
 
 trait QueryManager {
@@ -40,7 +40,7 @@ trait QueryManager {
                       consumer: GenericQueryConsumer[T]): T
 
   def contentIterator(fields: Map[String, String] = Map(),
-                      systemFields: Map[String, String] = Map()): CloseableIterator[Resource]
+                      systemFields: Map[String, String] = Map()): CountingIterator[Resource]
 
 }
 

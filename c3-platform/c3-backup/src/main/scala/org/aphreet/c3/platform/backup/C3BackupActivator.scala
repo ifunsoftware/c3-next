@@ -8,6 +8,7 @@ import org.aphreet.c3.platform.filesystem.{FSManager, FSComponent}
 import org.aphreet.c3.platform.storage.{StorageManager, StorageComponent}
 import org.aphreet.c3.platform.task.{TaskManager, TaskComponent}
 import org.osgi.framework.BundleContext
+import org.aphreet.c3.platform.query.{QueryManager, QueryComponent}
 
 /**
  * Author: Mikhail Malygin
@@ -24,6 +25,7 @@ class C3BackupActivator extends C3SimpleActivator {
     with StorageComponent
     with PlatformConfigComponent
     with TaskComponent
+    with QueryComponent
     with FSComponent {
       val accessManager = getService(context, classOf[AccessManager])
 
@@ -38,6 +40,8 @@ class C3BackupActivator extends C3SimpleActivator {
       val configPersister = getService(context, classOf[ConfigPersister])
 
       val filesystemManager: FSManager = getService(context, classOf[FSManager])
+
+      val queryManager = getService(context, classOf[QueryManager])
     }
 
     log.info("Starting c3-backup")

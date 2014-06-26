@@ -51,6 +51,4 @@ class CopyTask(val storage: Storage, val link: ActorRef, val targetId: String)
     link ! ResourceAddedMsg(element, 'CopyTask)
     Thread.sleep(100)
   }
-
-  override def progress: Int = processed
 }

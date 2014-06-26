@@ -34,25 +34,25 @@ import org.aphreet.c3.platform.task.Task
 import org.aphreet.c3.platform.storage.StorageIterator
 import org.aphreet.c3.platform.storage.Storage
 
-class StorageTransformTask(val storages:List[Storage], val transformations:List[Transformation]) extends Task{
+class StorageTransformTask(val storages: List[Storage], val transformations: List[Transformation]) extends Task {
 
   var storagesToProcess = storages
-  var currentStorage:Storage = null
-  var currentIterator:StorageIterator = null
+  var currentStorage: Storage = null
+  var currentIterator: StorageIterator = null
 
   var totalObjectsToProcess = 0l
   var processedObjects = 0l
 
 
-  override def preStart(){
+  override def preStart() {
     totalObjectsToProcess = storages.foldLeft(0l)(_ + _.count)
 
     log.info("Starting StorageUpdate task. Estimated entries to process " + totalObjectsToProcess)
   }
 
-  override def step(){
+  override def step() {
 
-    if(currentStorage == null){
+    if (currentStorage == null) {
       currentStorage = selectStorage match {
         case Some(storage) => {
           log.info("Starting update for storage with id " + storage.id)
@@ -64,13 +64,13 @@ class StorageTransformTask(val storages:List[Storage], val transformations:List[
           null
         }
       }
-    }else{
+    } else {
       processNextResource()
     }
 
   }
 
-  def selectStorage:Option[Storage] = {
+  def selectStorage: Option[Storage] = {
 
     storagesToProcess.headOption match {
       case Some(storage) => {
@@ -81,19 +81,19 @@ class StorageTransformTask(val storages:List[Storage], val transformations:List[
     }
   }
 
-  def processNextResource(){
-    if(currentIterator == null){
+  def processNextResource() {
+    if (currentIterator == null) {
       currentIterator = currentStorage.iterator()
     }
 
-    if(currentIterator.hasNext){
-      val resource = currentIterator.next
-      try{
+    if (currentIterator.hasNext) {
+      val resource = currentIterator.next()
+      try {
         transformations.foreach(t => t(currentStorage, resource))
-      }catch{
+      } catch {
         case e: Throwable => log.warn("Failed to transform resource " + resource.address + " in storage " + currentStorage.id, e)
       }
-    }else{
+    } else {
 
       log.info("Storage " + currentStorage.id + " processing complete")
 
@@ -104,16 +104,16 @@ class StorageTransformTask(val storages:List[Storage], val transformations:List[
     }
   }
 
-  override def progress:Int = {
-    if(currentIterator != null){
-      ((processedObjects + currentIterator.objectsProcessed)/totalObjectsToProcess.toFloat).toInt * 100
-    }else{
-      ((processedObjects.toFloat)/totalObjectsToProcess).toInt * 100
+  override def progress: Int = {
+    if (currentIterator != null) {
+      ((processedObjects + currentIterator.objectsProcessed) / totalObjectsToProcess.toFloat).toInt * 100
+    } else {
+      ((processedObjects.toFloat) / totalObjectsToProcess).toInt * 100
     }
   }
 
-  override def postFailure(){
-    if(currentIterator != null){
+  override def postFailure() {
+    if (currentIterator != null) {
       currentIterator.close()
     }
   }

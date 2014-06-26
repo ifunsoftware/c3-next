@@ -37,7 +37,7 @@ import org.aphreet.c3.platform.search.lucene.impl.SearchManagerInternal
 import org.aphreet.c3.platform.task.IteratorTask
 
 class BackgroundIndexTask(val queryManager: QueryManager, val searchManager: SearchManagerInternal, var indexCreateTimestamp: Long)
-  extends IteratorTask[Resource](queryManager.contentIterator(Map(), Map())) {
+  extends IteratorTask[Resource](() => queryManager.contentIterator(Map(), Map())) {
 
   //We suppose that it should take no more than hour for resource to be indexed
   val indexedTimeout: Long = 1000 * 60 * 60

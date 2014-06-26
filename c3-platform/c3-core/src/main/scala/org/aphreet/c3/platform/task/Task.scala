@@ -1,6 +1,6 @@
 package org.aphreet.c3.platform.task
 
-import org.aphreet.c3.platform.common.{CloseableIterator, Logger, CloseableIterable, ThreadWatcher}
+import org.aphreet.c3.platform.common._
 import scala.util.control.Exception._
 import java.util.concurrent.Future
 import org.aphreet.c3.platform.exception.PlatformException
@@ -153,17 +153,20 @@ abstract class Task extends Runnable {
   }
 }
 
-abstract class IteratorTask[T](val iterator: CloseableIterator[T], val size: Int = -1) extends Task {
+abstract class IteratorTask[T](val iteratorFunction: () => CountingIterator[T]) extends Task {
 
-  var processed = 0
+  private var progressFetcher: Option[() => Int] = None
 
   override def work() {
+
+    val iterator = iteratorFunction()
+
+    progressFetcher = Some(() => iterator.progress)
 
     try {
       while (iterator.hasNext && !Thread.currentThread.isInterrupted) {
         if (!isPaused) {
           processElement(iterator.next())
-          processed = processed + 1
           throttle()
         } else {
           Thread.sleep(SLEEP_ON_PAUSE_INTERVAL)
@@ -175,11 +178,7 @@ abstract class IteratorTask[T](val iterator: CloseableIterator[T], val size: Int
   }
 
   override def progress: Int = {
-    if (size == -1) {
-      -1
-    } else {
-      ((processed.toFloat / size) * 100).toInt
-    }
+    progressFetcher.map(_()).getOrElse(-1)
   }
 
   def processElement(element: T)
@@ -189,7 +188,7 @@ abstract class IteratorTask[T](val iterator: CloseableIterator[T], val size: Int
 }
 
 abstract class IterableTask[T](val iterable: CloseableIterable[T])
-  extends IteratorTask(iterable.iterator, iterable.size) {
+  extends IteratorTask(() => new SimpleCountingIterator(iterable.iterator, iterable.size)) {
 }
 
 

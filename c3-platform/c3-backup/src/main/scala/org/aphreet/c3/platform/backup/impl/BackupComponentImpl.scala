@@ -39,17 +39,18 @@ import org.aphreet.c3.platform.config._
 import org.aphreet.c3.platform.exception.StorageNotFoundException
 import org.aphreet.c3.platform.filesystem.{FSComponent, FSManager}
 import org.aphreet.c3.platform.resource.Resource
-import org.aphreet.c3.platform.storage.{StorageComponent, StorageIterator, Storage, StorageManager}
+import org.aphreet.c3.platform.storage.{StorageComponent, StorageManager}
 import org.aphreet.c3.platform.task._
-import org.springframework.stereotype.Component
 import scala._
 import scala.collection.mutable.ListBuffer
 import ssh.SftpConnector
+import org.aphreet.c3.platform.query.{QueryComponent, QueryManager}
 
-trait BackupComponentImpl extends BackupComponent{
+trait BackupComponentImpl extends BackupComponent {
 
   this: PlatformConfigComponent
     with StorageComponent
+    with QueryComponent
     with AccessComponent
     with FSComponent
     with TaskComponent =>
@@ -60,7 +61,7 @@ trait BackupComponentImpl extends BackupComponent{
 
     val BACKUP_LOCATION = "c3.platform.backup.location"
 
-    var targets : List[BackupLocation] = null
+    var targets: List[BackupLocation] = null
 
     val log = Logger(getClass)
 
@@ -73,10 +74,10 @@ trait BackupComponentImpl extends BackupComponent{
       targets.foreach(target => target.schedule.foreach(s => scheduleBackup(target, s)))
     }
 
-    def createBackup(targetId : String) {
+    def createBackup(targetId: String) {
       val target = getBackupLocation(targetId)
 
-      val task = new BackupTask(storageManager, filesystemManager, target)
+      val task = new BackupTask(queryManager, filesystemManager, target)
 
       taskManager.submitTask(task)
     }
@@ -84,7 +85,7 @@ trait BackupComponentImpl extends BackupComponent{
     def restoreBackup(targetId: String, name: String) {
       val target = getBackupLocation(targetId)
 
-      val backup : AbstractBackup = target.backupType match {
+      val backup: AbstractBackup = target.backupType match {
         case "local" => Backup.open(Path(target.folder + "/" + name))
         case "remote" => RemoteBackup.open(name, target)
         case _ => throw new IllegalStateException("Wrong target type")
@@ -96,7 +97,7 @@ trait BackupComponentImpl extends BackupComponent{
       taskManager.submitTask(task)
     }
 
-    def scheduleBackup(targetId:String, crontabSchedule: String) {
+    def scheduleBackup(targetId: String, crontabSchedule: String) {
       val target = getBackupLocation(targetId)
 
       scheduleBackup(target, crontabSchedule)
@@ -105,15 +106,15 @@ trait BackupComponentImpl extends BackupComponent{
       configAccessor.update(l => targets)
     }
 
-    private def scheduleBackup(target: BackupLocation, crontabSchedule: String){
-      val task = new BackupTask(storageManager, filesystemManager, target)
+    private def scheduleBackup(target: BackupLocation, crontabSchedule: String) {
+      val task = new BackupTask(queryManager, filesystemManager, target)
 
       taskManager.scheduleTask(task, crontabSchedule)
 
       task.addObserver(this)
     }
 
-    def listBackups(targetId:String) : List[String] = {
+    def listBackups(targetId: String): List[String] = {
       val target = getBackupLocation(targetId)
 
       target.backupType match {
@@ -123,7 +124,7 @@ trait BackupComponentImpl extends BackupComponent{
       }
     }
 
-    def listLocalBackups(target: BackupLocation) : List[String] = {
+    def listLocalBackups(target: BackupLocation): List[String] = {
       val listBuffer = new ListBuffer[String]()
       val folder = new File(target.folder)
 
@@ -131,14 +132,14 @@ trait BackupComponentImpl extends BackupComponent{
         val filesList = folder.listFiles()
 
         filesList
-          .filter( file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
-          .foreach( file => listBuffer += file.getAbsolutePath)
+          .filter(file => file.isFile && file.getName.endsWith(".zip") && Backup.hasValidChecksum(file.getAbsolutePath))
+          .foreach(file => listBuffer += file.getAbsolutePath)
       }
 
       listBuffer.toList
     }
 
-    def listRemoteBackups(target: BackupLocation) : List[String] = {
+    def listRemoteBackups(target: BackupLocation): List[String] = {
       val listBuffer = new ListBuffer[String]()
 
       val connector = new SftpConnector(target.host, target.user, target.privateKey)
@@ -152,11 +153,11 @@ trait BackupComponentImpl extends BackupComponent{
       }
 
       allFilesNames
-        .filter( fileName => fileName.endsWith(".zip")
+        .filter(fileName => fileName.endsWith(".zip")
         && !allFilesNames.find(str => str.equals(fileName + ".md5")).isEmpty
         && RemoteBackup.hasValidChecksum(connector, target.folder, fileName))
 
-        .foreach( fileName => listBuffer += fileName)
+        .foreach(fileName => listBuffer += fileName)
 
       connector.disconnect()
 
@@ -195,11 +196,11 @@ trait BackupComponentImpl extends BackupComponent{
       configAccessor.update(l => targets)
     }
 
-    def listTargets() : List[BackupLocation] = targets
+    def listTargets(): List[BackupLocation] = targets
 
-    def showTargetInfo(targetId : String) : BackupLocation = getBackupLocation(targetId)
+    def showTargetInfo(targetId: String): BackupLocation = getBackupLocation(targetId)
 
-    def getBackupLocation(targetId : String) : BackupLocation = {
+    def getBackupLocation(targetId: String): BackupLocation = {
       val maybeLocation = targets.find(target => target.id.equals(targetId))
 
       val backupLocation = maybeLocation match {
@@ -237,7 +238,7 @@ trait BackupComponentImpl extends BackupComponent{
       }
     }
 
-    def existsTargetId(targetId : String) : Boolean = {
+    def existsTargetId(targetId: String): Boolean = {
       targets.find(target => target.id.equals(targetId)) match {
 
         case Some(value) => true
@@ -250,61 +251,33 @@ trait BackupComponentImpl extends BackupComponent{
     def defaultValues = Map(BACKUP_LOCATION -> System.getProperty("user.home"))
   }
 
-  class BackupTask(val storageManager: StorageManager, val fsManager:FSManager, val target: BackupLocation) extends Task{
+  class BackupTask(val queryManager: QueryManager, val fsManager: FSManager, val target: BackupLocation)
+    extends IteratorTask[Resource](() => queryManager.contentIterator(Map(), Map())) {
 
-    var iterator:StorageIterator = null
+    var backup: AbstractBackup = null
 
-    var storagesToProcess: List[Storage] = null
+    var backupName: Path = null
 
-    var backup : AbstractBackup = null
-
-    var backupName:Path = null
-
-    var isLocal : Boolean = true
+    var isLocal: Boolean = true
 
 
-    protected override def step() {
-      if (iterator == null){
-        storagesToProcess.headOption match {
-          case Some(storage) => {
-
-            log.info("Starting backup for storage " + storage.id)
-
-            iterator = storage.iterator()
-            storagesToProcess = storagesToProcess.tail
-          }
-          case None => shouldStopFlag = true
-        }
-      }else{
-        if (iterator.hasNext){
-          doBackup(iterator.next())
-        }else{
-          log.info("Backup for storage complete")
-          iterator.close()
-          iterator = null
-        }
-      }
+    def processElement(element: Resource) {
+      doBackup(element)
     }
 
-    override def postFailure(){
-      if (iterator != null){
-        iterator.close()
-      }
-
-      if (backup != null){
+    override def postFailure() {
+      if (backup != null) {
         backup.close()
       }
 
       if (isLocal) {
-        if (backupName.file.exists()){
+        if (backupName.file.exists()) {
           backupName.file.delete()
         }
       }
     }
 
-    override def preStart(){
-      storagesToProcess = storageManager.listStorages
-
+    override def preStart() {
       isLocal = target.backupType match {
         case "local" => true
         case "remote" => false
@@ -313,7 +286,7 @@ trait BackupComponentImpl extends BackupComponent{
 
       if (isLocal) {
         val directory = new Path(target.folder)
-        if(!directory.file.exists()){
+        if (!directory.file.exists()) {
           directory.file.mkdirs()
         }
 
@@ -332,7 +305,7 @@ trait BackupComponentImpl extends BackupComponent{
       }
     }
 
-    override def postComplete(){
+    override def postComplete() {
 
       backup.writeFileSystemRoots(fsManager.fileSystemRoots)
 
@@ -341,8 +314,8 @@ trait BackupComponentImpl extends BackupComponent{
       log.info("Backup successfully completed")
     }
 
-    protected def doBackup(resource: Resource){
-      if (log.isDebugEnabled){
+    protected def doBackup(resource: Resource) {
+      if (log.isDebugEnabled) {
         log.debug("Adding resource " + resource.address + " to backup")
       }
       backup.addResource(resource)
@@ -352,9 +325,9 @@ trait BackupComponentImpl extends BackupComponent{
 
   class RestoreTask(val storageManager: StorageManager, val accessMediator: AccessMediator,
                     val fsManager: FSManager, val backup: AbstractBackup)
-    extends IterableTask[Resource](backup){
+    extends IterableTask[Resource](backup) {
 
-    override def processElement(resource:Resource){
+    override def processElement(resource: Resource) {
 
       if (log.isDebugEnabled)
         log.debug("Importing resource " + resource.address)
@@ -363,15 +336,15 @@ trait BackupComponentImpl extends BackupComponent{
         case Some(storage) => storage.update(resource)
         case None => throw new StorageNotFoundException("Can't find storage to import resource " + resource.address)
       }
-      accessMediator ! ResourceAddedMsg (resource, 'BackupManager)
+      accessMediator ! ResourceAddedMsg(resource, 'BackupManager)
     }
 
-    override protected def preStart(){
-      for ((domain, address) <- backup.readFileSystemRoots){
+    override protected def preStart() {
+      for ((domain, address) <- backup.readFileSystemRoots) {
         try {
           fsManager.importFileSystemRoot(domain, address)
         } catch {
-          case e:Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
+          case e: Throwable => log.warn("Failed to import file system root for " + domain + ": " + address, e)
         }
       }
     }

@@ -9,15 +9,15 @@ trait CloseableIterator[T] extends Iterator[T] {
 
 }
 
-trait CloseableIterable[T] extends Iterable[T]{
+trait CloseableIterable[T] extends Iterable[T] {
 
-  override def iterator:CloseableIterator[T]
+  override def iterator: CloseableIterator[T]
 
 }
 
-class SimpleCloseableIterable[T](val iterable:Iterable[T]) extends CloseableIterable[T] {
+class SimpleCloseableIterable[T](val iterable: Iterable[T]) extends CloseableIterable[T] {
 
-  override def iterator:CloseableIterator[T] = new CloseableIterator[T] {
+  override def iterator: CloseableIterator[T] = new CloseableIterator[T] {
 
     val internalIterator = iterable.iterator
 
@@ -27,12 +27,11 @@ class SimpleCloseableIterable[T](val iterable:Iterable[T]) extends CloseableIter
 
     def close() {}
   }
-
 }
 
-object CloseableIterable{
+object CloseableIterable {
 
-  def apply[T](iterable:Iterable[T]):CloseableIterable[T] = {
+  def apply[T](iterable: Iterable[T]): CloseableIterable[T] = {
     new SimpleCloseableIterable[T](iterable)
   }
 
