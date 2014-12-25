@@ -1,8 +1,8 @@
 package org.aphreet.c3.platform.management.cli.command.impl
 
 import org.apache.commons.codec.binary.Base64
-import org.aphreet.c3.platform.backup.BackupLocation
-import org.aphreet.c3.platform.management.cli.command.{Commands, Command}
+import org.aphreet.c3.platform.backup.{ LocalBackupLocation, RemoteBackupLocation, BackupLocation }
+import org.aphreet.c3.platform.management.cli.command.{ Commands, Command }
 import org.aphreet.c3.platform.remote.api.management.PlatformManagementService
 
 object BackupCommands extends Commands {
@@ -146,15 +146,13 @@ class ListTargetsCommand extends Command {
   val footer = "|----|----------------|----------------------------------|--------------------------------------------|\n"
 
   def format(counter: Int, desc: BackupLocation): String =
-    String.format("| %2s | %14s | %-32s | %42s |\n",
-      counter.toString,
-      desc.id,
-      desc.backupType match {
-        case "local" => "localhost"
-        case "remote" => desc.host
-        case _ => ""
-      },
-      desc.folder)
+      desc match {
+        case local: LocalBackupLocation  =>
+          String.format("| %2s | %14s | %-32s | %42s |\n", counter.toString, desc.id, "localhost", local.directory)
+
+        case remote: RemoteBackupLocation =>
+          String.format("| %2s | %14s | %-32s | %42s |\n", counter.toString, desc.id, remote.host, remote.folder)
+      }
 
   override def execute(management: PlatformManagementService): String = {
     val builder = new StringBuilder(header)
@@ -182,19 +180,17 @@ class ShowTargetInfoCommand extends Command {
 
         val builder = new StringBuilder("Target info\n")
         builder.append("ID: ").append(location.id).append("\n")
+        builder.append("Type: ").append(location.typeAlias).append("\n")
 
-        val isRemote = location.backupType.equals("remote")
-        builder.append("Type: ").append(location.backupType).append("\n")
+        location match {
+          case local: LocalBackupLocation   =>
+            builder.append("Directory: ").append(local.directory).append("\n")
 
-        if (isRemote) {
-          builder.append("Host: ").append(location.host).append("\n")
-          builder.append("User: ").append(location.user).append("\n")
-        }
-
-        builder.append("Folder: ").append(location.folder).append("\n")
-
-        if (isRemote) {
-          builder.append("Key: ").append(location.privateKey).append("\n")
+          case remote: RemoteBackupLocation =>
+            builder.append("Host: ").append(remote.host).append("\n")
+            builder.append("User: ").append(remote.user).append("\n")
+            builder.append("Key: ").append(remote.privateKey).append("\n")
+            builder.append("Folder: ").append(remote.folder).append("\n")
         }
 
         builder.toString()
