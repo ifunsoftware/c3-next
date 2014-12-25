@@ -1,12 +1,11 @@
 package org.aphreet.c3.platform.backup
 
 import ssh.SftpConnector
-import scala.beans.BeanProperty
 import java.io.{IOException, File}
 import org.aphreet.c3.platform.common.{Disposable, Logger}
 import org.aphreet.c3.platform.backup.impl.{LocalBackup, RemoteBackup}
 
-trait BackupLocation {
+sealed trait BackupLocation {
 
   def id: String
 
@@ -19,6 +18,8 @@ trait BackupLocation {
   def openBackup(name: String): AbstractBackup
 
   def listBackups: List[String]
+
+  def typeAlias: String
 }
 
 case class LocalBackupLocation(
@@ -33,6 +34,8 @@ case class LocalBackupLocation(
     new LocalBackup(new File(directory, name), false)
 
   def listBackups: List[String] = ???
+
+  def typeAlias: String = "local"
 }
 
 case class RemoteBackupLocation(
@@ -50,6 +53,8 @@ case class RemoteBackupLocation(
   def openBackup(name: String): AbstractBackup = new RemoteBackup(name, false, this)
 
   def listBackups: List[String] = RemoteBackup.listBackups(this)
+
+  def typeAlias: String = "remote"
 }
 
 

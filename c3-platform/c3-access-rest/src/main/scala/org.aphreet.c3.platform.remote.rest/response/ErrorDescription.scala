@@ -27,38 +27,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.aphreet.c3.platform.remote.rest.response
 
-import java.io.{PrintWriter, StringWriter}
+import ErrorDescription._
 
+class ErrorDescription(val message: String, val exception: String) {
 
-class ErrorDescription(val message:String, val exception:String){
+  def this(message: String) = this(message, "")
 
-  def this(message:String) = this(message, "")
+  def this(message: String, e: Throwable) = this(message, buildDescriptionFromException(e))
 
-  def this(message:String, e:Throwable) = this(message, {
-    val writer = new StringWriter
+}
 
-    e.printStackTrace(new PrintWriter(writer))
+object ErrorDescription {
 
-    val result = writer.toString
+  private[response] def buildDescriptionFromException(e: Throwable): String = {
+    val result = new StringBuilder(e.toString)
+    val NewLine = System.getProperty("line.separator")
+    result.append(NewLine)
 
-    writer.close()
-
-    result
-  })
-
-  private def buildDescriptionFromException(e:Throwable):String = {
-
-    val writer = new StringWriter
-
-    e.printStackTrace(new PrintWriter(writer))
-
-    val result = writer.toString
-
-    writer.close()
-
-    result
+    //add each element of the stack trace and delimit them with a new line
+    for (element <- e.getStackTrace) {
+      result.append(element)
+      result.append(NewLine)
+    }
+    result.toString()
   }
-
 }
