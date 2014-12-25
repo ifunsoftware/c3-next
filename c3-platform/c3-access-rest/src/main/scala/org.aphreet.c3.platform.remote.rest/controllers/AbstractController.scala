@@ -33,10 +33,10 @@ package org.aphreet.c3.platform.remote.rest.controllers
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.aphreet.c3.platform.accesscontrol.AccessControlException
 import org.aphreet.c3.platform.auth.exception.AuthFailedException
-import org.aphreet.c3.platform.exception.ResourceNotFoundException
-import org.aphreet.c3.platform.filesystem.{FSNotFoundException, FSWrongRequestException}
+import org.aphreet.c3.platform.exception.{ StorageNotFoundException, ResourceNotFoundException }
+import org.aphreet.c3.platform.filesystem.{ FSNotFoundException, FSWrongRequestException }
 import org.aphreet.c3.platform.remote.rest.WrongRequestException
-import org.aphreet.c3.platform.remote.rest.response.{ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription}
+import org.aphreet.c3.platform.remote.rest.response.{ ResultWriter, ResultWriterSelector, ErrorResult, ErrorDescription }
 import org.aphreet.c3.platform.resource.ResourceException
 import org.aphreet.c3.platform.search.api.SearchQueryException
 import org.springframework.beans.factory.annotation.Autowired
@@ -140,6 +140,14 @@ class AbstractController {
     getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription(e.getMessage)), response)
   }
 
+  @ExceptionHandler(Array(classOf[StorageNotFoundException]))
+  def handleStorageNotFoundException(e: StorageNotFoundException, request:HttpServletRequest, response:HttpServletResponse) {
+
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    getResultWriter(request).writeResponse(new ErrorResult(new ErrorDescription("Storage for specified node is not found. " +
+      "Please verify if you have any storage defined in CLI console ('list storages' command). " +
+      "If you don't have any storage yet, consider creating one with 'create storage CompositeStorage' command.")), response)
+  }
 
   def getResultWriter(expectedType: String): ResultWriter = {
     writerSelector.selectWriterForType(expectedType)
