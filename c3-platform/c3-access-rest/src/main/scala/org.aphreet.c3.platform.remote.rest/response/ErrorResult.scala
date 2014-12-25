@@ -30,8 +30,6 @@
 
 package org.aphreet.c3.platform.remote.rest.response
 
-import java.io.{PrintWriter, StringWriter}
-
 class ErrorResult(override val info:ResultInfo, val errorDescription:ErrorDescription) extends Result(info){
 
   def this(errorDescription:ErrorDescription) = this(new ResultInfo("1.0", "ERROR"), errorDescription)

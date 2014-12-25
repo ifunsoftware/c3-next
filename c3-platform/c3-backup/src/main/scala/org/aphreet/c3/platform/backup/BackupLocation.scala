@@ -1,7 +1,6 @@
 package org.aphreet.c3.platform.backup
 
 import ssh.SftpConnector
-import scala.beans.BeanProperty
 import java.io.{IOException, File}
 import org.aphreet.c3.platform.common.{Disposable, Logger}
 import org.aphreet.c3.platform.backup.impl.{LocalBackup, RemoteBackup}
