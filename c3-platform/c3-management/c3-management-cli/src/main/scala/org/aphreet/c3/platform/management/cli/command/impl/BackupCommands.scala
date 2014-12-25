@@ -27,7 +27,6 @@ class RestoreBackupCommand extends Command {
   def name = List("restore", "backup")
 }
 
-
 class CreateBackupCommand extends Command {
 
   override
