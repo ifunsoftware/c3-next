@@ -86,11 +86,11 @@ trait SearchComponentImpl extends SearchComponent {
 
     var extractDocumentContent = false
 
-    var currentTikaAddress: String = null
+    var currentTikaAddress: Option[String] = None
 
     val async = actorSystem.actorOf(Props.create(classOf[SearchManagerActor], this))
 
-    def tikaHostAddress = if (currentTikaAddress == null) defaultValues.get(TIKA_HOST).get else currentTikaAddress
+    def tikaHostAddress: String = currentTikaAddress.getOrElse(defaultValues.get(TIKA_HOST).get)
 
     {
       if (indexPath != null) {
@@ -156,7 +156,7 @@ trait SearchComponentImpl extends SearchComponent {
         case ResourceIndexedMsg(address, extractedMetadata) =>
           accessManager ! UpdateMetadataMsg(address, Map("indexed" -> System.currentTimeMillis.toString), system = true)
 
-          if (!extractedMetadata.isEmpty) {
+          if (extractedMetadata.nonEmpty) {
             accessManager ! UpdateMetadataMsg(address, extractedMetadata, system = false)
           }
 
@@ -210,7 +210,7 @@ trait SearchComponentImpl extends SearchComponent {
 
     def propertyChanged(event: PropertyChangeEvent) {
       event.name match {
-        case INDEX_PATH => {
+        case INDEX_PATH =>
           val newPath = new Path(event.newValue)
 
           if (indexPath == null) {
@@ -227,7 +227,6 @@ trait SearchComponentImpl extends SearchComponent {
               log info "New index path is the same as existing"
             }
           }
-        }
 
         case INDEX_CREATE_TIMESTAMP =>
           log info "Index creation timestamp value: " + event.newValue
@@ -243,7 +242,7 @@ trait SearchComponentImpl extends SearchComponent {
 
         case TIKA_HOST =>
           log info "Setting tika host to " + event.newValue
-          currentTikaAddress = event.newValue
+          currentTikaAddress = Some(event.newValue)
           indexer.updateTextExtractor(new TikaHttpTextExtractor(event.newValue))
 
         case THROTTLE_BACKGROUND_INDEX =>

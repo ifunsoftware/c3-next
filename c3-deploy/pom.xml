@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c3-deploy</artifactId>
     <packaging>jar</packaging>
@@ -61,16 +62,35 @@
                         <configuration combine.self="override">
                             <tasks>
                                 <copy toDir="${project.build.directory}/server-package/server/lib">
-                                    <mapper type="flatten" />
+                                    <mapper type="flatten"/>
                                     <fileset dir="..">
-                                        <include name="**/target/c3deploy/*" />
+                                        <include name="**/target/c3deploy/*"/>
                                     </fileset>
                                 </copy>
                                 <copy toDir="${project.build.directory}/server-package/server/pickup">
                                     <fileset dir="${basedir}/src/main/config">
-                                        <include name="*.plan" />
+                                        <include name="*.plan"/>
                                     </fileset>
                                 </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>prepare-docker</id>
+                        <phase>package</phase>
+                        <configuration combine.self="override">
+                            <tasks>
+                                <copy toDir="${project.build.directory}/docker">
+                                    <mapper type="flatten"/>
+                                    <fileset dir="${project.basedir}/src/main/docker">
+                                        <include name="Dockerfile"/>
+                                    </fileset>
+                                </copy>
+                                <copy file="${project.build.directory}/c3-${project.version}.${project.packaging}"
+                                      toFile="${project.build.directory}/docker/c3.jar"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -95,7 +115,8 @@
                                 <phase>install</phase>
                                 <configuration combine.self="override">
                                     <tasks>
-                                        <copy file="${basedir}/src/main/config/c3.plan" toDir="${virgo.path.pickup}" overwrite="true" failonerror="false" />
+                                        <copy file="${basedir}/src/main/config/c3.plan" toDir="${virgo.path.pickup}"
+                                              overwrite="true" failonerror="false"/>
                                     </tasks>
                                 </configuration>
                                 <goals>

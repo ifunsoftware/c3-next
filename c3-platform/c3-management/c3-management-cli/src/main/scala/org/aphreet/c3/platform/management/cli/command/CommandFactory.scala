@@ -34,7 +34,7 @@ import impl._
 
 import collection.mutable
 
-class CommandFactory(additionalCommands:List[Commands] = List()) {
+class CommandFactory(additionalCommands: List[Commands] = List()) {
 
   val root: CommandTreeNode = new CommandTreeNode(null)
 
@@ -57,7 +57,7 @@ class CommandFactory(additionalCommands:List[Commands] = List()) {
 
     register(SearchCommands)
 
-    additionalCommands.foreach(register(_))
+    additionalCommands.foreach(register)
 
     register(new HelpCommand)
   }
@@ -99,7 +99,7 @@ class CommandTreeNode(val commandClass: Class[_]) {
     if (input.size > 0) {
       map.get(input.head) match {
         case Some(node) => node.classForInput(input.tail)
-        case None => {
+        case None =>
           if (commandClass != null)
             (commandClass, input)
           else {
@@ -110,7 +110,6 @@ class CommandTreeNode(val commandClass: Class[_]) {
               (commandClass, input)
             }
           }
-        }
       }
     } else {
       (commandClass, List())
@@ -140,11 +139,10 @@ class CommandTreeNode(val commandClass: Class[_]) {
     } else {
       map.get(input.head) match {
         case Some(node) => node.addCommand(input.tail, commandClass)
-        case None => {
+        case None =>
           val node = new CommandTreeNode(null)
           map.put(input.head, node)
           node.addCommand(input.tail, commandClass)
-        }
       }
     }
   }
