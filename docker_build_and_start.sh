@@ -28,7 +28,6 @@ get_docker_ip() {
         	# Probably Linux platform
         	echo "127.0.0.1"
     	fi
-	echo $(echo $DOCKER_HOST | cut -d ':' -f 2 | sed -e 's/\///g')	 
     fi
 }
 
