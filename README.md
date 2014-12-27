@@ -60,5 +60,16 @@ cd c3-deploy/target/docker/ && docker build -t c3-next .
 docker run -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 c3-next
 ```
 
-See https://github.com/ifunsoftware/c3-next-docker repository for more details about C3 Docker support.
+or you can just run the script:
 
+```
+./docker_build_and_start.sh
+```
+
+Which does the following:
+1) Builds C3 artifacts.
+2) Stops all currently running containers with latest c3-next image.
+3) Builds Docker image with new artifacts.
+4) Starts new container.
+
+See https://github.com/ifunsoftware/c3-next-docker repository for more details about C3 Docker support.
