@@ -55,7 +55,7 @@ http://localhost:8080/rest/fs/
 After C3 is built with `mvn install` you can immediately build & run a Docker image with new C3 binaries:
 
 ```
-mvn clean install
+mvn clean install -Pdocker
 cd c3-deploy/target/docker/ && docker build -t c3-next .
 docker run -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 c3-next
 ```
