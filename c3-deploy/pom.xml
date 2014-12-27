@@ -150,10 +150,10 @@
                             <!-- optional -->
                             <workingDirectory>${project.basedir}</workingDirectory>
                             <arguments>
-                                <!--<argument>-H</argument>-->
-                                <!--<argument>tcp://192.168.105.130:2375</argument>-->
                                 <argument>build</argument>
-                                <argument>target/docker</argument>
+                                <argument>-t</argument>
+				<argument>c3-next</argument>
+				<argument>target/docker</argument>
                             </arguments>
                         </configuration>
                     </plugin>

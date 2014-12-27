@@ -16,13 +16,19 @@ set -e
 #docker build -t c3-next c3-deploy/target/docker/
 
 get_docker_ip() {
-    if [ "$(uname)" == "Darwin" ]; then
-        # Mac OS X platform
-        # Assuming using boot2docker
-        boot2docker ip 2> /dev/null
+    DOCKER_PROTO=$(echo $DOCKER_HOST | cut -d ':' -f 1)
+    if [ "$DOCKER_PROTO" = "tcp" ] ; then 
+	echo $(echo $DOCKER_HOST | cut -d ':' -f 2 | sed -e 's/\///g')
     else
-        # Probably Linux platform
-        echo "127.0.0.1"
+	if [ "$(uname)" == "Darwin" ]; then
+        	# Mac OS X platform
+        	# Assuming using boot2docker
+       		boot2docker ip 2> /dev/null
+    	else
+        	# Probably Linux platform
+        	echo "127.0.0.1"
+    	fi
+	echo $(echo $DOCKER_HOST | cut -d ':' -f 2 | sed -e 's/\///g')	 
     fi
 }
 
