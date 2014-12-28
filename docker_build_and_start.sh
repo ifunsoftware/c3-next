@@ -6,12 +6,14 @@
 # Abort on first error
 set -e 
 
-# Build app binaries
-#mvn clean install -Pdocker
-
 # Stop all currently running containers with c3-next image
 docker ps -a | grep ifunsoftware/c3-next:snapshot | awk '{ print $1 }' | xargs docker rm -f
 
+# Build app binaries and new docker image
+mvn install -Pdocker
+
+# Prepare a new Docker image
+#docker build -t ifunsoftware/c3-next:snapshot c3-deploy/target/docker/
 
 get_docker_ip() {
     DOCKER_PROTO=$(echo $DOCKER_HOST | cut -d ':' -f 1)
