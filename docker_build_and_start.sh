@@ -7,13 +7,13 @@
 set -e 
 
 # Build app binaries
-#mvn install
+mvn install
 
 # Stop all currently running containers with c3-next image
-#docker ps | grep "c3-next:latest" | awk '{ print $1 }' | xargs docker stop
+docker ps | grep "c3-next:latest" | awk '{ print $1 }' | xargs docker stop
 
 # Prepare a new Docker image
-#docker build -t c3-next c3-deploy/target/docker/
+docker build -t c3-next c3-deploy/target/docker/
 
 get_docker_ip() {
     DOCKER_PROTO=$(echo $DOCKER_HOST | cut -d ':' -f 1)
