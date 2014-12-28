@@ -7,13 +7,11 @@
 set -e 
 
 # Build app binaries
-#mvn install
+#mvn clean install -Pdocker
 
 # Stop all currently running containers with c3-next image
-#docker ps | grep "c3-next:latest" | awk '{ print $1 }' | xargs docker stop
+docker ps -a | grep ifunsoftware/c3-next:snapshot | awk '{ print $1 }' | xargs docker rm -f
 
-# Prepare a new Docker image
-#docker build -t c3-next c3-deploy/target/docker/
 
 get_docker_ip() {
     DOCKER_PROTO=$(echo $DOCKER_HOST | cut -d ':' -f 1)
@@ -32,6 +30,6 @@ get_docker_ip() {
 }
 
 # Run Docker container with new binaries
-docker run -d -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 c3-next \
+docker run -d -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 -v /var/lib/c3:/opt/c3 ifunsoftware/c3-next:snapshot \
     && echo "[Success] C3 container is started. Web CLI will be available shortly at http://$(get_docker_ip):8080/manage/" \
     || echo "[Error] Failed to start C3 container"
