@@ -22,6 +22,7 @@
         <module>c3-replication</module>
         <module>c3-backup</module>
         <module>c3-metadata</module>
+        <module>c3-splash</module>
     </modules>
 
     <dependencies>
