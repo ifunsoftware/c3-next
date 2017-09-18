@@ -234,7 +234,7 @@ class SftpConnector(val host: String, val user: String, val privateKey: String, 
         try {
           md5 = getMd5Hash(folder, fileName)
         } catch {
-          case e => log.warn("Failed to calcualte md5 of backup ")
+          case e: Exception => log.warn("Failed to calculate md5 of backup ", e)
         }
         if (md5.equals("")) {
           log.info("Downloading file " + fileName + " to the local temporary directory...")
