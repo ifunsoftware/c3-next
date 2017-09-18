@@ -40,8 +40,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.twmacinta.util</groupId>
-            <artifactId>md5</artifactId>
+            <groupId>com.joyent.util</groupId>
+            <artifactId>fast-md5</artifactId>
         </dependency>
 
         <dependency>
@@ -118,8 +118,8 @@
                                     <overWrite>false</overWrite>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>com.twmacinta.util</groupId>
-                                    <artifactId>md5</artifactId>
+                                    <groupId>com.joyent.util</groupId>
+                                    <artifactId>fast-md5</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                 </artifactItem>
