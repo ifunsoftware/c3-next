@@ -35,6 +35,6 @@ get_docker_ip() {
 }
 
 # Run Docker container with new binaries
-docker run -d -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 -v /var/lib/c3:/opt/c3 ifunsoftware/c3-next:snapshot \
+docker run -d -p 8080:8080 -p 7375:7375 -p 8443:8443 -p 8022:22 -v /tmp/c3:/opt/c3 ifunsoftware/c3-next:snapshot \
     && echo "[Success] C3 container is started. Web CLI will be available shortly at http://$(get_docker_ip):8080/manage/" \
     || echo "[Error] Failed to start C3 container"
