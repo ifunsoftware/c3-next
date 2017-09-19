@@ -18,8 +18,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.twmacinta.util</groupId>
-            <artifactId>md5</artifactId>
+            <groupId>com.ifunsoftware</groupId>
+            <artifactId>fast-md5</artifactId>
             <version>${md5.version}</version>
             <scope>test</scope>
         </dependency>
