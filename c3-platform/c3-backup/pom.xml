@@ -37,7 +37,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.joyent.util</groupId>
+            <groupId>com.ifunsoftware</groupId>
             <artifactId>fast-md5</artifactId>
         </dependency>
 

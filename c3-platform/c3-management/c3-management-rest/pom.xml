@@ -54,9 +54,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.joyent.util</groupId>
+            <groupId>com.ifunsoftware</groupId>
             <artifactId>fast-md5</artifactId>
-            <version>2.7.1</version>
+            <version>2.7.8</version>
             <scope>provided</scope>
         </dependency>
 
