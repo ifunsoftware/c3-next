@@ -10,7 +10,7 @@ set -e
 docker ps -a | grep ifunsoftware/c3-next:snapshot | awk '{ print $1 }' | xargs docker rm -f
 
 # Build app binaries and new docker image
-mvn install
+mvn clean install
 
 # Prepare a new Docker image
 docker build -t ifunsoftware/c3-next:snapshot c3-deploy/target/docker/
